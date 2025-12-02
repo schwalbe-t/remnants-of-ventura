@@ -3,7 +3,9 @@ plugins {
     application
 }
 
-dependencies {}
+dependencies {
+    implementation(project(":common"))
+}
 
 application {
     mainClass.set("MainKt")

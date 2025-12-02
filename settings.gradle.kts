@@ -1,4 +1,4 @@
 
 rootProject.name = "remnants-of-ventura"
 
-include("server", "client")
+include("common", "client", "server")

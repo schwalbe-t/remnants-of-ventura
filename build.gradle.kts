@@ -1,6 +1,6 @@
 
 plugins {
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "2.2.21"
 }
 
 allprojects {
@@ -21,6 +21,8 @@ subprojects {
 
     dependencies {
         implementation(kotlin("stdlib"))
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.9.0")
 
         implementation("org.joml:joml:1.10.5")
     }
