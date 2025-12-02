@@ -8,5 +8,5 @@ dependencies {
 }
 
 application {
-    mainClass.set("MainKt")
+    mainClass.set("schwalbe.ventura.client.MainKt")
 }

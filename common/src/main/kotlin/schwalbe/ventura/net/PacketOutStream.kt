@@ -1,26 +1,33 @@
 
 package schwalbe.ventura.net
 
-import java.net.Socket
-import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.serializer
 import java.nio.ByteBuffer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import io.ktor.network.sockets.Socket
+import io.ktor.network.sockets.openWriteChannel
+import io.ktor.utils.io.ByteWriteChannel
+import io.ktor.utils.io.writeByteArray
 
-@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
-class PacketOutStream(val socket: Socket) {
+class PacketOutStream(outSocket: Socket, val scope: CoroutineScope) {
     
-    inline fun<reified T> send(packetType: PacketType, payload: T) {
-        val binaryPayload = Cbor.encodeToByteArray(serializer<T>(), payload)
-        this.sendRaw(packetType, binaryPayload)
-    }
+    private val channel: ByteWriteChannel
+        = outSocket.openWriteChannel(autoFlush = true)
 
-    fun sendRaw(packetType: PacketType, payload: ByteArray) {
-        val buffer = ByteBuffer.allocate(2 + 4 + payload.size)
-        buffer.putShort(packetType.ordinal.toShort())
-        buffer.putInt(payload.size)
-        buffer.put(payload)
-        socket.outputStream.write(buffer.array())
-        socket.outputStream.flush()
+    fun send(packet: Packet) {
+        val buffer = ByteBuffer.allocate(2 + 4 + packet.payload.size)
+        buffer.putShort(packet.type.ordinal.toShort())
+        buffer.putInt(packet.payload.size)
+        buffer.put(packet.payload)
+        buffer.flip()
+        val channel: ByteWriteChannel = this.channel
+        this.scope.launch {
+            try {
+                channel.writeByteArray(buffer.array())
+            } catch (e: Exception) {
+                println("Failed to send message: ${e.message}")
+            }
+        }
     }
 
 }
