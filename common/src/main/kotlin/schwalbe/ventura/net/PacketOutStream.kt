@@ -4,15 +4,11 @@ package schwalbe.ventura.net
 import java.nio.ByteBuffer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import io.ktor.network.sockets.Socket
-import io.ktor.network.sockets.openWriteChannel
-import io.ktor.utils.io.ByteWriteChannel
-import io.ktor.utils.io.writeByteArray
+import io.ktor.websocket.WebSocketSession
+import io.ktor.websocket.Frame
+import io.ktor.websocket.send
 
-class PacketOutStream(outSocket: Socket, val scope: CoroutineScope) {
-    
-    private val channel: ByteWriteChannel
-        = outSocket.openWriteChannel(autoFlush = true)
+class PacketOutStream(val socket: WebSocketSession, val scope: CoroutineScope) {
 
     fun send(packet: Packet) {
         val buffer = ByteBuffer.allocate(2 + 4 + packet.payload.size)
@@ -20,12 +16,12 @@ class PacketOutStream(outSocket: Socket, val scope: CoroutineScope) {
         buffer.putInt(packet.payload.size)
         buffer.put(packet.payload)
         buffer.flip()
-        val channel: ByteWriteChannel = this.channel
+        val socket: WebSocketSession = this.socket
         this.scope.launch {
             try {
-                channel.writeByteArray(buffer.array())
+                socket.send(Frame.Binary(true, buffer.array()))
             } catch (e: Exception) {
-                println("Failed to send message: ${e.message}")
+                e.printStackTrace()
             }
         }
     }

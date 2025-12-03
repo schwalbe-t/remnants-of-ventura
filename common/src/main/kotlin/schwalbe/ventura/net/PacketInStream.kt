@@ -3,15 +3,9 @@ package schwalbe.ventura.net
 
 import java.nio.ByteBuffer
 import java.io.ByteArrayOutputStream
-import io.ktor.network.sockets.Socket
-import io.ktor.network.sockets.openReadChannel
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.availableForRead
-import io.ktor.utils.io.readAvailable
-import io.ktor.utils.io.core.readBytes
-import kotlinx.io.copyTo
+import io.ktor.websocket.Frame
 
-class PacketInStream(inSocket: Socket, val maxPayloadSize: Int) {
+class PacketInStream(val maxPayloadSize: Int) {
     
     class InvalidPacketException(message: String) : Exception(message)
 
@@ -19,19 +13,20 @@ class PacketInStream(inSocket: Socket, val maxPayloadSize: Int) {
         private val packetTypes: Array<PacketType> = PacketType.values()
     }
 
-    private val channel: ByteReadChannel = inSocket.openReadChannel()
     private val buffer = ByteArrayOutputStream()
 
-    private fun tryReadBytes() {
-        this.channel.readAvailable(8) { b ->
-            var buff = b.readBytes()
-            this.buffer.write(buff)
-            buff.size
+    @Synchronized
+    fun handleBinaryFrame(frame: Frame) {
+        when (frame) {
+            is Frame.Binary -> {
+                this.buffer.write(frame.data)
+            }
+            else -> {}
         }
     }
 
+    @Synchronized
     fun tryRead(): Packet? {
-        this.tryReadBytes()
         val buffered: ByteArray
         buffered = this.buffer.toByteArray()
         val view = ByteBuffer.wrap(buffered)

@@ -27,8 +27,13 @@ subprojects {
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$serialVersion")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:$serialVersion")
 
-        implementation("io.ktor:ktor-network:$ktorVersion")
+        implementation("io.ktor:ktor-server-netty:$ktorVersion")
+        implementation("io.ktor:ktor-server-websockets:$ktorVersion")
+        implementation("io.ktor:ktor-client-core:$ktorVersion")
+        implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
+        implementation("io.ktor:ktor-client-websockets:$ktorVersion")
         implementation("io.ktor:ktor-network-tls:$ktorVersion")
+
 
         implementation("org.joml:joml:1.10.5")
     }
