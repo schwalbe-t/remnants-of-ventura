@@ -2,6 +2,7 @@
 package schwalbe.ventura.server
 
 import schwalbe.ventura.net.*
+import schwalbe.ventura.server.database.initDatabase
 import kotlinx.coroutines.*
 import io.ktor.server.engine.*
 import io.ktor.websocket.WebSocketSession
@@ -71,7 +72,6 @@ private fun Application.initModule() {
 }
 
 fun main() {
-    connectDatabase()
     initDatabase()
 
     val port: Int = getPort()
