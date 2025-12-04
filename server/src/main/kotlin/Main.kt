@@ -70,7 +70,10 @@ private fun Application.initModule() {
     }
 }
 
-fun main() {    
+fun main() {
+    connectDatabase()
+    initDatabase()
+
     val port: Int = getPort()
     val keyStoreFile = File(getKeyStorePath())
     val keyStorePass = getKeyStorePass().toCharArray()
