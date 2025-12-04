@@ -3,13 +3,18 @@ plugins {
     application
 }
 
+val exposedVersion = "0.51.1"
+
 dependencies {
     implementation(project(":common"))
 
-    implementation("org.jetbrains.exposed:exposed-core:0.51.1")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.51.1")
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
 
     implementation("org.postgresql:postgresql:42.7.3")
+
+    implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
 }
 
 application {

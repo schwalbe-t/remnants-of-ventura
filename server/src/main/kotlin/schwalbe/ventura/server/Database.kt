@@ -2,7 +2,9 @@
 package schwalbe.ventura.server.database
 
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 import java.util.UUID
 
 
@@ -35,57 +37,32 @@ private fun connect() {
         user = user,
         password = getDbPass()
     )
-    println("Connected to PostgreSQL database at $url as $user")
+    println("Connected to PostgreSQL database at URL '$url' as user '$user'")
 }
 
 
-object Accounts : Table("accounts") {
-    val username = varchar("username", 32)
-    val salt = binary("salt", 16)
-    val hash = binary("hash", 32)
+const val ACCOUNT_NAME_MAX_LEN: Int = 32
+const val ACCOUNT_SALT_MAX_LEN: Int = 16
+const val ACCOUNT_HASH_MAX_LEN: Int = 32
+
+object AccountsTable : Table("accounts") {
+    val username = varchar("username", ACCOUNT_NAME_MAX_LEN)
+    val salt = binary("salt", ACCOUNT_SALT_MAX_LEN)
+    val hash = binary("hash", ACCOUNT_HASH_MAX_LEN)
     override val primaryKey = PrimaryKey(username)
+}
+
+object SessionsTable: Table("sessions") {
+    val token = uuid("token")
+    val username = varchar("username", ACCOUNT_NAME_MAX_LEN)
+        .index(isUnique = false)
+    val expiration = datetime("expiration")
+    override val primaryKey = PrimaryKey(token)
 }
 
 private fun initTables() {
     transaction {
-        SchemaUtils.create(Accounts)
+        SchemaUtils.create(AccountsTable)
+        SchemaUtils.create(SessionsTable)
     }
 }
-
-
-data class AccountInfo(
-    val username: String,
-    val salt: ByteArray,
-    val hash: ByteArray
-)
-
-fun insertNewAccount(info: AccountInfo)
-    = transaction {
-        Accounts.insert {
-            it[Accounts.username] = info.username
-            it[Accounts.salt] = info.salt
-            it[Accounts.hash] = info.hash
-        }
-    }
-
-private fun ResultRow.toAccountInfo() = AccountInfo(
-    username = this[Accounts.username],
-    salt = this[Accounts.salt],
-    hash = this[Accounts.hash]
-)
-
-fun findAccountInfo(searchName: String): AccountInfo?
-    = transaction { Accounts
-        .selectAll()
-        .where({ Accounts.username eq searchName })
-        .singleOrNull()
-        ?.toAccountInfo()
-    }
-
-fun updateAccountPassword(searchName: String, salt: ByteArray, hash: ByteArray)
-    = transaction {
-        Accounts.update({ Accounts.username eq searchName }) {
-            it[Accounts.salt] = salt
-            it[Accounts.hash] = hash
-        }
-    }

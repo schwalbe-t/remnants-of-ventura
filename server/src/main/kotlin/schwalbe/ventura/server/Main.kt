@@ -3,6 +3,7 @@ package schwalbe.ventura.server
 
 import schwalbe.ventura.net.*
 import schwalbe.ventura.server.database.initDatabase
+import schwalbe.ventura.server.Account
 import kotlinx.coroutines.*
 import io.ktor.server.engine.*
 import io.ktor.websocket.WebSocketSession
@@ -73,6 +74,26 @@ private fun Application.initModule() {
 
 fun main() {
     initDatabase()
+
+    println(Account.create("schwalbe_t", "sussytopki"))
+    println(Account.hasMatchingPassword("schwalbe_t", "test"))
+    println(Account.hasMatchingPassword("schwalbe_t", "sussytopki"))
+    println(Account.hasMatchingPassword("schwalbe_t", "balls"))
+
+    val testSesh = Session.create("schwalbe_t")
+    println(testSesh)                                  // <random UUID>
+    if (testSesh != null) {
+        println(Session.getSessionUser(testSesh))      // "schwalbe_t"
+    } else {
+        println("<no session token>")                  // (doesn't run)
+    }
+    println(Session.getSessionUser(UUID.randomUUID())) // null
+    Session.deleteAllForUser("schwalbe_t")
+    if (testSesh != null) {
+        println(Session.getSessionUser(testSesh))      // null
+    } else {
+        println("<no session token>")                  // (doesn't run)
+    }
 
     val port: Int = getPort()
     val keyStoreFile = File(getKeyStorePath())
