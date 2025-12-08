@@ -9,6 +9,11 @@ allprojects {
 
     kotlin {
         jvmToolchain(21)
+
+        compilerOptions {
+            optIn.add("kotlinx.serialization.ExperimentalSerializationApi")
+            optIn.add("kotlin.uuid.ExperimentalUuidApi")
+        }
     }
 
 }

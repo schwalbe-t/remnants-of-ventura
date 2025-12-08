@@ -3,21 +3,13 @@ package schwalbe.ventura.server
 
 import schwalbe.ventura.net.*
 import schwalbe.ventura.server.database.initDatabase
-import schwalbe.ventura.server.Account
 import kotlinx.coroutines.*
-import io.ktor.server.engine.*
-import io.ktor.websocket.WebSocketSession
-import io.ktor.websocket.Frame
-import io.ktor.server.application.Application
-import io.ktor.server.application.install
-import io.ktor.server.netty.Netty
-import io.ktor.server.websocket.WebSockets
-import io.ktor.server.websocket.webSocket
-import io.ktor.server.routing.routing
-import java.util.concurrent.ConcurrentHashMap
-import java.security.KeyStore
-import java.util.UUID
-import java.io.File
+import kotlin.concurrent.thread
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
+import kotlinx.datetime.*
+
 
 const val DEFAULT_KEYSTORE_PATH: String = "dev-keystore.p12"
 const val DEFAULT_KEYSTORE_ALIAS: String = "ventura"
@@ -36,32 +28,54 @@ fun getKeyStorePass(): String = System.getenv("VENTURA_KEYSTORE_PASS")
 fun getPort(): Int = System.getenv("VENTURA_PORT")?.toInt()
     ?: DEFAULT_PORT
 
+private fun scheduled(interval: kotlin.time.Duration, f: () -> Unit) {
+    thread {
+        while (true) {
+            val startTime = Clock.System.now()
+            f()
+            val endTime = Clock.System.now()
+            val waitTime: Duration = interval - (endTime - startTime)
+            if (waitTime.isPositive()) {
+                Thread.sleep(waitTime.inWholeMilliseconds)
+            }
+        }
+    }
+}
+
+class TestWorld(id: Long) : World(id) {}
+
 fun main() {
     initDatabase()
 
+    val playerWriter = PlayerWriter()
+    val createBaseWorld = { id: Long -> TestWorld(id) }
+    val worlds = WorldRegistry(playerWriter, createBaseWorld)
+
     val port: Int = getPort()
+    val createPlayerData = { PlayerData(ArrayDeque()) }
     val server = Server(
         getKeyStorePath(),
         getKeyStoreAlias(),
         getKeyStorePass(),
-        port
+        port,
+        worlds,
+        createPlayerData
     )
     println("Listening on port $port")
 
-    // val handler = PacketHandler<Connection>()
-    // handler.onPacket<EchoPacket>(PacketType.UP_ECHO) { echo, conn ->
-    //     println("[${conn.id}] ${echo.content}")
-    //     conn.outPackets.send(Packet.serialize(PacketType.DOWN_ECHO, echo))
-    // }
+    CoroutineScope(Dispatchers.IO).launch {
+        playerWriter.writePlayers()
+    }
 
-    // while (true) {
-    //     for (conn in connections.values) {
-    //         try {
-    //             handler.handleAll(conn.inPackets, conn)
-    //         } catch (e: Exception) {
-    //             e.printStackTrace()
-    //         }
-    //     }
-    //     Thread.sleep(50)
-    // }
+    scheduled(interval = 50.milliseconds) {
+        worlds.updateAll()
+    }
+
+    scheduled(interval = 100.milliseconds) {
+        server.updateUnauthorized()
+    }
+
+    scheduled(interval = 10.minutes) {
+        Session.deleteAllExpired()
+    }
 }

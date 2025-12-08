@@ -3,6 +3,8 @@ package schwalbe.ventura.server
 
 import schwalbe.ventura.net.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.serializer
 import io.ktor.server.engine.*
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.Frame
@@ -14,7 +16,7 @@ import io.ktor.server.websocket.webSocket
 import io.ktor.server.routing.routing
 import java.util.concurrent.ConcurrentHashMap
 import java.security.KeyStore
-import java.util.UUID
+import kotlin.uuid.Uuid
 import java.io.File
 
 const val MAX_PACKET_PAYLOAD_SIZE: Int = 1024 * 64 // 64 Kib
@@ -23,17 +25,21 @@ class Server(
     keyStorePath: String,
     keyStoreAlias: String,
     keyStorePassword: String,
-    port: Int
+    port: Int,
+    val worlds: WorldRegistry,
+    val createPlayerData: () -> PlayerData
 ) {
 
+    companion object {}
+
     data class Connection(
-        val id: UUID,
+        val id: Uuid,
         val incoming: PacketInStream,
         val outgoing: PacketOutStream
     )
 
-    val connected = ConcurrentHashMap<UUID, Connection>()
-    val notInWorld = ConcurrentHashMap<UUID, Connection>()
+    val connected = ConcurrentHashMap<Uuid, Connection>()
+    val authorized = ConcurrentHashMap<Uuid, Player>()
 
     private fun initModule(app: Application) {
         app.install(WebSockets) {
@@ -46,16 +52,13 @@ class Server(
         val server: Server = this
         app.routing {
             webSocket("/") {
-                val id = UUID.randomUUID()
+                val id = Uuid.random()
                 val inPackets = PacketInStream(MAX_PACKET_PAYLOAD_SIZE)
                 val outPackets = PacketOutStream(this, sendScope)
                 val connection = Connection(id, inPackets, outPackets)
                 server.onConnect(connection)
                 for (frame in incoming) {
                     inPackets.handleBinaryFrame(frame)
-                    if (frame is Frame.Close) {
-                        break
-                    }
                 }
                 server.onDisconnect(connection)
             }
@@ -91,12 +94,115 @@ class Server(
 
     private fun onConnect(connection: Connection) {
         this.connected[connection.id] = connection
-        this.notInWorld[connection.id] = connection
     }
 
     private fun onDisconnect(connection: Connection) {
         this.connected.remove(connection.id)
-        this.notInWorld.remove(connection.id)
+        val player = this.authorized.remove(connection.id)
+        if (player == null) { return }
+        this.worlds.handlePlayerDisconnect(player)
+        Account.markOffline(player.username)
     }
-    
+
+    private val unauthorizedHandler = PacketHandler<Connection>()
+
+    init {
+        val h: PacketHandler<Connection> = this.unauthorizedHandler
+        h.onDecodeError = { c, error ->
+            c.outgoing.send(Packet.serialize(
+                PacketType.DOWN_GENERIC_ERROR, GenericErrorPacket(error)
+            ))
+        }
+        h.onPacket(PacketType.UP_CREATE_ACCOUNT, this::onAccountCreatePacket)
+        h.onPacket(PacketType.UP_CREATE_SESSION, this::onSessionCreatePacket)
+        h.onPacket(PacketType.UP_LOGIN_SESSION, this::onSessionLoginPacket)
+    }
+
+    fun updateUnauthorized() {
+        for (c in this.connected.values) {
+            if (this.authorized.containsKey(c.id)) { continue }
+            this.unauthorizedHandler.handleAll(c.incoming, c)
+        }
+    }
+}
+
+private fun Server.onAccountCreatePacket(
+    data: AccountCredPacket, conn: Server.Connection
+) {
+    // TODO!
+}
+
+private fun Server.onSessionCreatePacket(
+    data: AccountCredPacket, conn: Server.Connection
+) {
+    val valid: Boolean = Account.hasMatchingPassword(
+        data.username, data.password
+    )
+    if (!valid) {
+        conn.outgoing.send(Packet.serialize(
+            PacketType.DOWN_TAGGED_ERROR,
+            TaggedErrorPacket.INVALID_ACCOUNT_CREDS
+        ))
+        return
+    }
+    var token: Uuid?
+    do {
+        token = Session.create(data.username)
+    } while (token == null)
+    conn.outgoing.send(Packet.serialize(
+        PacketType.DOWN_CREATE_SESSION_SUCCESS,
+        SessionTokenPacket(token)
+    ))
+}
+
+private fun Server.decodePlayerData(username: String): PlayerData? {
+    val rawPlayerData: ByteArray? = Account.fetchPlayerData(username)
+    if (rawPlayerData == null) { return null }
+    val playerData: PlayerData
+    try {
+        playerData = Cbor.decodeFromByteArray(
+            serializer<PlayerData>(), rawPlayerData
+        )
+    } catch (_: Exception) {
+        return null
+    }
+    return playerData
+}
+
+private fun Server.onSessionLoginPacket(
+    data: SessionCredPacket, conn: Server.Connection
+) {
+    val expUser: String? = Session.getSessionUser(data.token)
+    if (expUser == null || expUser != data.username) {
+        conn.outgoing.send(Packet.serialize(
+            PacketType.DOWN_TAGGED_ERROR,
+            TaggedErrorPacket.INVALID_SESSION_CREDS
+        ))
+        return
+    }
+    if (!Account.tryMarkOnline(data.username)) {
+        conn.outgoing.send(Packet.serialize(
+            PacketType.DOWN_TAGGED_ERROR,
+            TaggedErrorPacket.ACCOUNT_ALREADY_ONLINE
+        ))
+        return
+    }
+    val playerData: PlayerData = this.decodePlayerData(data.username)
+        ?: this.createPlayerData()
+    var world: World? = null
+    while (playerData.worlds.size > 0) {
+        val found: World? = this.worlds.get(playerData.worlds.last().worldId)
+        if (found != null) {
+            world = found
+            break
+        }
+        playerData.worlds.removeLast()
+    }
+    if (world == null) {
+        world = this.worlds.baseWorld
+        playerData.worlds.add(world.createPlayerEntry())
+    }
+    val player = Player(data.username, playerData, conn)
+    world.transfer(player)
+    this.authorized[conn.id] = player
 }

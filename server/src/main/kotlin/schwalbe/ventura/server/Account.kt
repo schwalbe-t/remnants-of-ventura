@@ -6,7 +6,9 @@ import org.bouncycastle.crypto.generators.Argon2BytesGenerator
 import org.bouncycastle.crypto.params.Argon2Parameters
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import java.security.SecureRandom
 
 class Account {
@@ -35,7 +37,9 @@ private fun generatePasswordHash(password: String, salt: ByteArray): ByteArray {
     return hash
 }
 
-fun Account.Companion.create(username: String, password: String): Boolean {
+fun Account.Companion.create(
+    username: String, password: String, playerData: ByteArray
+): Boolean {
     val salt: ByteArray = generateAccountSalt()
     val hash: ByteArray = generatePasswordHash(password, salt)
     try {
@@ -43,6 +47,7 @@ fun Account.Companion.create(username: String, password: String): Boolean {
             it[AccountsTable.username] = username
             it[AccountsTable.salt] = salt
             it[AccountsTable.hash] = hash
+            it[AccountsTable.userdata] = ExposedBlob(playerData)
         } }
     } catch (e: ExposedSQLException) {
         return false
@@ -74,4 +79,42 @@ fun Account.Companion.hasMatchingPassword(
     reqHash.fill(0)
     gotHash.fill(0)
     return matches
+}
+
+fun Account.Companion.tryMarkOnline(username: String): Boolean {
+    val wasOnline: Boolean? = transaction { AccountsTable
+        .updateReturning(
+            returning = listOf(AccountsTable.isOnline),
+            where = { AccountsTable.username eq username }
+        ) {
+            it[AccountsTable.isOnline] = true
+        }
+        .firstOrNull()
+        ?.let { it[AccountsTable.isOnline] }
+    }
+    return !(wasOnline ?: true)
+}
+
+fun Account.Companion.markOffline(username: String) {
+    transaction {
+        AccountsTable.update({ AccountsTable.username eq username }) {
+            it[AccountsTable.isOnline] = false
+        }
+    }
+}
+
+fun Account.Companion.fetchPlayerData(username: String): ByteArray?
+    = transaction { AccountsTable
+        .select(AccountsTable.userdata)
+        .where { AccountsTable.username eq username }
+        .firstOrNull()
+        ?.let { it[AccountsTable.userdata].bytes }
+    }
+
+fun Account.Companion.writePlayerData(username: String, playerData: ByteArray) {
+    transaction {
+        AccountsTable.update({ AccountsTable.username eq username }) {
+            it[AccountsTable.userdata] = ExposedBlob(playerData)
+        }
+    }
 }

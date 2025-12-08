@@ -22,7 +22,6 @@ class Packet(val type: PacketType, val payload: ByteArray) {
          * @param T the type of the unserialized payload
          * @return the created packet
          */
-        @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
         inline fun<reified T> serialize(type: PacketType, payload: T): Packet {
             val bytes = Cbor.encodeToByteArray(serializer<T>(), payload)
             return Packet(type, bytes)

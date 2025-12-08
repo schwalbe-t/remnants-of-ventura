@@ -8,7 +8,8 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.*
 import kotlinx.datetime.*
-import java.util.UUID
+import kotlin.uuid.Uuid
+import kotlin.uuid.toJavaUuid
 
 class Session {
     companion object {}
@@ -16,14 +17,14 @@ class Session {
 
 val SESSION_EXPIRATION_DELAY = DateTimePeriod(days = 30)
 
-fun Session.Companion.create(username: String): UUID? {
-    val token = UUID.randomUUID()
+fun Session.Companion.create(username: String): Uuid? {
+    val token = Uuid.random()
     val expiration: LocalDateTime = Clock.System.now()
         .plus(SESSION_EXPIRATION_DELAY, TimeZone.UTC)
         .toLocalDateTime(TimeZone.UTC)
     try {
         transaction { SessionsTable.insert {
-            it[SessionsTable.token] = token
+            it[SessionsTable.token] = token.toJavaUuid()
             it[SessionsTable.username] = username
             it[SessionsTable.expiration] = expiration
         } }
@@ -33,13 +34,14 @@ fun Session.Companion.create(username: String): UUID? {
     return token
 }
 
-fun Session.Companion.getSessionUser(token: UUID): String? {
+fun Session.Companion.getSessionUser(token: Uuid): String? {
     val now: LocalDateTime = Clock.System.now()
         .toLocalDateTime(TimeZone.UTC)
+    val jToken = token.toJavaUuid()
     return transaction { SessionsTable
         .select(SessionsTable.username)
         .where {
-            (SessionsTable.token eq token) and
+            (SessionsTable.token eq jToken) and
             (SessionsTable.expiration greater now)
         }
         .firstOrNull()

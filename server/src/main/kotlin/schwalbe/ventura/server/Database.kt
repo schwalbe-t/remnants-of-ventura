@@ -5,7 +5,6 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
-import java.util.UUID
 
 
 fun initDatabase() {
@@ -49,6 +48,8 @@ object AccountsTable : Table("accounts") {
     val username = varchar("username", ACCOUNT_NAME_MAX_LEN)
     val salt = binary("salt", ACCOUNT_SALT_MAX_LEN)
     val hash = binary("hash", ACCOUNT_HASH_MAX_LEN)
+    val userdata = blob("userdata")
+    val isOnline = bool("is_online")
     override val primaryKey = PrimaryKey(username)
 }
 
