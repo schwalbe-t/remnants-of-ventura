@@ -58,11 +58,20 @@ suspend fun main() {
     var nOutPackets: PacketOutStream? = null
 
     val handler = PacketHandler<Unit>()
-        handler.onPacket<GenericErrorPacket>(PacketType.DOWN_GENERIC_ERROR) { d, _ ->
+    handler.onPacket<GenericErrorPacket>(PacketType.DOWN_GENERIC_ERROR) { d, _ ->
         println("[error] ${d.message}")
     }
     handler.onPacket<TaggedErrorPacket>(PacketType.DOWN_TAGGED_ERROR) { d, _ ->
         println("[error] ${d.name}")
+        when (d) {
+            TaggedErrorPacket.INVALID_ACCOUNT_PARAMS -> {
+                nOutPackets?.send(Packet.serialize(
+                    PacketType.UP_CREATE_SESSION,
+                    AccountCredPacket("schwalbe_t", "labubu")
+                ))
+            }
+            else -> {}
+        }
     }
     handler.onPacket<Unit>(PacketType.DOWN_CREATE_ACCOUNT_SUCCESS) { _, _ ->
         println("[success] Account creation")
@@ -99,8 +108,7 @@ suspend fun main() {
             }
 
             outPackets.send(Packet.serialize(
-                // PacketType.UP_CREATE_ACCOUNT,
-                PacketType.UP_CREATE_SESSION,
+                PacketType.UP_CREATE_ACCOUNT,
                 AccountCredPacket("schwalbe_t", "labubu")
             ))
             

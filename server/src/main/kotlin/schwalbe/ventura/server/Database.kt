@@ -40,6 +40,12 @@ private fun connect() {
 }
 
 
+object ServersTable : Table("servers") {
+    val id = uuid("id")
+    val expiration = datetime("expiration")
+    override val primaryKey = PrimaryKey(id)
+}
+
 const val ACCOUNT_NAME_MAX_LEN: Int = 32
 const val ACCOUNT_SALT_MAX_LEN: Int = 16
 const val ACCOUNT_HASH_MAX_LEN: Int = 32
@@ -50,7 +56,7 @@ object AccountsTable : Table("accounts") {
     val hash = binary("hash", ACCOUNT_HASH_MAX_LEN)
     val sessionCooldownUntil = datetime("session_cooldown_until")
     val userdata = blob("userdata")
-    val isOnline = bool("is_online")
+    val owningServer = uuid("owning_server").nullable()
     override val primaryKey = PrimaryKey(username)
 }
 
@@ -64,6 +70,7 @@ object SessionsTable: Table("sessions") {
 
 private fun initTables() {
     transaction {
+        SchemaUtils.create(ServersTable)
         SchemaUtils.create(AccountsTable)
         SchemaUtils.create(SessionsTable)
     }

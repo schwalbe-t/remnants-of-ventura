@@ -12,15 +12,15 @@ import kotlin.uuid.Uuid
 import kotlin.uuid.toJavaUuid
 
 class Session {
-    companion object {}
+    companion object {
+        val EXPIRATION_DELAY = DateTimePeriod(days = 30)
+    }
 }
-
-val SESSION_EXPIRATION_DELAY = DateTimePeriod(days = 30)
 
 fun Session.Companion.create(username: String): Uuid? {
     val token = Uuid.random()
     val expiration: LocalDateTime = Clock.System.now()
-        .plus(SESSION_EXPIRATION_DELAY, TimeZone.UTC)
+        .plus(Session.EXPIRATION_DELAY, TimeZone.UTC)
         .toLocalDateTime(TimeZone.UTC)
     try {
         transaction { SessionsTable.insert {

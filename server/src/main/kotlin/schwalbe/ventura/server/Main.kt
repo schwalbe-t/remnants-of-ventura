@@ -7,8 +7,10 @@ import kotlinx.coroutines.*
 import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.datetime.*
+import kotlin.system.exitProcess
 
 
 const val DEFAULT_KEYSTORE_PATH: String = "dev-keystore.p12"
@@ -62,6 +64,23 @@ fun main() {
         createPlayerData
     )
     println("Listening on port $port")
+    
+    ServerNetwork.registerServer()
+
+    scheduled(interval = ServerNetwork.SERVER_REPORT_INTERVAL) {
+        if (!ServerNetwork.reportServerOnline()) {
+            server.stop(
+                gracePeriodMillis = 5000,
+                timeoutMillis = 5000
+            )
+            exitProcess(1)
+        }
+    }
+
+    scheduled(interval = 10.minutes) {
+        Session.deleteAllExpired()
+        ServerNetwork.deleteAllExpired()
+    }
 
     CoroutineScope(Dispatchers.IO).launch {
         playerWriter.writePlayers()
@@ -73,9 +92,5 @@ fun main() {
 
     scheduled(interval = 100.milliseconds) {
         server.updateUnauthorized()
-    }
-
-    scheduled(interval = 10.minutes) {
-        Session.deleteAllExpired()
     }
 }

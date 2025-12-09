@@ -13,7 +13,9 @@ import kotlinx.datetime.*
 import java.security.SecureRandom
 
 class Account {
-    companion object {}
+    companion object {
+        val SESSION_CREATION_COOLDOWN = DateTimePeriod(minutes = 1)
+    }
 }
 
 private fun generateAccountSalt(): ByteArray {
@@ -51,7 +53,7 @@ fun Account.Companion.create(
             it[AccountsTable.hash] = hash
             it[AccountsTable.sessionCooldownUntil] = now
             it[AccountsTable.userdata] = ExposedBlob(playerData)
-            it[AccountsTable.isOnline] = false
+            it[AccountsTable.owningServer] = null
         } }
     } catch (e: ExposedSQLException) {
         return false
@@ -84,28 +86,6 @@ fun Account.Companion.hasMatchingPassword(
     return matches
 }
 
-fun Account.Companion.tryMarkOnline(username: String): Boolean {
-    val wasOnline: Boolean? = transaction { AccountsTable
-        .updateReturning(
-            returning = listOf(AccountsTable.isOnline),
-            where = { AccountsTable.username eq username }
-        ) {
-            it[AccountsTable.isOnline] = true
-        }
-        .firstOrNull()
-        ?.let { it[AccountsTable.isOnline] }
-    }
-    return !(wasOnline ?: true)
-}
-
-fun Account.Companion.markOffline(username: String) {
-    transaction {
-        AccountsTable.update({ AccountsTable.username eq username }) {
-            it[AccountsTable.isOnline] = false
-        }
-    }
-}
-
 fun Account.Companion.fetchPlayerData(username: String): ByteArray?
     = transaction { AccountsTable
         .select(AccountsTable.userdata)
@@ -122,8 +102,6 @@ fun Account.Companion.writePlayerData(username: String, playerData: ByteArray) {
     }
 }
 
-val SESSION_CREATION_COOLDOWN = DateTimePeriod(minutes = 1)
-
 fun Account.Companion.tryApplyLoginCooldown(username: String): Boolean {
     val now: LocalDateTime = Clock.System.now()
         .toLocalDateTime(TimeZone.UTC)
@@ -136,7 +114,7 @@ fun Account.Companion.tryApplyLoginCooldown(username: String): Boolean {
     }
     if (!mayLogin) { return false }
     val newCooldown: LocalDateTime = Clock.System.now()
-        .plus(SESSION_CREATION_COOLDOWN, TimeZone.UTC)
+        .plus(Account.SESSION_CREATION_COOLDOWN, TimeZone.UTC)
         .toLocalDateTime(TimeZone.UTC)
     transaction {
         AccountsTable.update({ AccountsTable.username eq username }) {

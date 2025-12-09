@@ -11,6 +11,7 @@ import io.ktor.websocket.Frame
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.webSocket
 import io.ktor.server.routing.routing
@@ -67,11 +68,15 @@ class Server(
         }
     }
 
+    private val netty: EmbeddedServer<
+        NettyApplicationEngine, NettyApplicationEngine.Configuration
+    >
+
     init {
         val keyStoreFile = File(keyStorePath)
         val keyStorePass = keyStorePassword.toCharArray()
         val server: Server = this
-        val netty = embeddedServer(
+        this.netty = embeddedServer(
             Netty,
             configure = {
                 sslConnector(
@@ -91,7 +96,7 @@ class Server(
             },
             module = { server.initModule(this) }
         )
-        netty.start()
+        this.netty.start()
     }
 
     private fun onConnect(connection: Connection) {
@@ -103,7 +108,7 @@ class Server(
         val player = this.authorized.remove(connection.id)
         if (player == null) { return }
         this.worlds.handlePlayerDisconnect(player)
-        Account.markOffline(player.username)
+        ServerNetwork.releaseAccount(player.username)
     }
 
     private val unauthorizedHandler = PacketHandler<Connection>()
@@ -125,6 +130,10 @@ class Server(
             if (this.authorized.containsKey(c.id)) { continue }
             this.unauthorizedHandler.handleAll(c.incoming, c)
         }
+    }
+
+    fun stop(gracePeriodMillis: Long, timeoutMillis: Long) {
+        this.netty.stop(gracePeriodMillis, timeoutMillis)
     }
 }
 
@@ -206,7 +215,7 @@ private fun Server.onSessionLoginPacket(
         ))
         return
     }
-    if (!Account.tryMarkOnline(data.username)) {
+    if (!ServerNetwork.tryAcquireAccount(data.username)) {
         conn.outgoing.send(Packet.serialize(
             PacketType.DOWN_TAGGED_ERROR,
             TaggedErrorPacket.ACCOUNT_ALREADY_ONLINE
@@ -231,4 +240,7 @@ private fun Server.onSessionLoginPacket(
     val player = Player(data.username, playerData, conn)
     world.transfer(player)
     this.authorized[conn.id] = player
+    conn.outgoing.send(Packet.serialize(
+        PacketType.DOWN_LOGIN_SESSION_SUCCESS, Unit
+    ))
 }
