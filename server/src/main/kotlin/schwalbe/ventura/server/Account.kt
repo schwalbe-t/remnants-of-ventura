@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
+import kotlinx.datetime.*
 import java.security.SecureRandom
 
 class Account {
@@ -42,17 +43,19 @@ fun Account.Companion.create(
 ): Boolean {
     val salt: ByteArray = generateAccountSalt()
     val hash: ByteArray = generatePasswordHash(password, salt)
+    val now: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.UTC)
     try {
         transaction { AccountsTable.insert {
             it[AccountsTable.username] = username
             it[AccountsTable.salt] = salt
             it[AccountsTable.hash] = hash
+            it[AccountsTable.sessionCooldownUntil] = now
             it[AccountsTable.userdata] = ExposedBlob(playerData)
+            it[AccountsTable.isOnline] = false
         } }
     } catch (e: ExposedSQLException) {
         return false
     }
-    hash.fill(0)
     return true
 }
 
@@ -117,4 +120,28 @@ fun Account.Companion.writePlayerData(username: String, playerData: ByteArray) {
             it[AccountsTable.userdata] = ExposedBlob(playerData)
         }
     }
+}
+
+val SESSION_CREATION_COOLDOWN = DateTimePeriod(minutes = 1)
+
+fun Account.Companion.tryApplyLoginCooldown(username: String): Boolean {
+    val now: LocalDateTime = Clock.System.now()
+        .toLocalDateTime(TimeZone.UTC)
+    val mayLogin: Boolean = transaction { AccountsTable
+        .select(AccountsTable.sessionCooldownUntil)
+        .where { AccountsTable.username eq username }
+        .firstOrNull()
+        ?.let { it[AccountsTable.sessionCooldownUntil] <= now }
+        ?: false
+    }
+    if (!mayLogin) { return false }
+    val newCooldown: LocalDateTime = Clock.System.now()
+        .plus(SESSION_CREATION_COOLDOWN, TimeZone.UTC)
+        .toLocalDateTime(TimeZone.UTC)
+    transaction {
+        AccountsTable.update({ AccountsTable.username eq username }) {
+            it[AccountsTable.sessionCooldownUntil] = newCooldown
+        }
+    }
+    return true
 }

@@ -1,14 +1,23 @@
 
 package schwalbe.ventura.server
 
+import schwalbe.ventura.net.*
 import java.util.concurrent.ConcurrentLinkedQueue
-import kotlinx.datetime.*
 
-abstract class World(val id: Long) {
+abstract class World(val registry: WorldRegistry) {
 
+    val id: Long = registry.allocateWorld()
     private val incoming = ConcurrentLinkedQueue<Player>()
-    private val players: MutableMap<String, Player> = mutableMapOf()
-    val creationTime: Instant = Clock.System.now()
+    protected val players: MutableMap<String, Player> = mutableMapOf()
+    protected val packetHandler = PacketHandler<Player>()
+
+    init {
+        this.packetHandler.onDecodeError = { player, error ->
+            player.connection.outgoing.send(Packet.serialize(
+                PacketType.DOWN_GENERIC_ERROR, GenericErrorPacket(error)
+            ))
+        }
+    }
 
     fun transfer(player: Player) {
         this.incoming.add(player)
@@ -18,7 +27,7 @@ abstract class World(val id: Long) {
         = PlayerData.WorldEntry(this.id)
 
     @Synchronized
-    private fun handleIncomingPlayers(registry: WorldRegistry) {
+    private fun handleIncomingPlayers() {
         while (true) {
             val player: Player? = this.incoming.poll()
             if (player == null) { break }
@@ -28,21 +37,24 @@ abstract class World(val id: Long) {
             if (addEntry) {
                 player.data.worlds.add(this.createPlayerEntry())
             }
-            registry.playerWriter.add(player)
+            this.registry.playerWriter.add(player)
         }
     }
 
     @Synchronized
-    private fun handlePlayerPackets(registry: WorldRegistry) {
-        
+    private fun handlePlayerPackets() {
+        for (player in this.players.values) {
+            this.packetHandler.handleAll(player.connection.incoming, player)
+        }
     }
 
-    open fun updateState(registry: WorldRegistry) {}
+    open fun updateState() {}
 
-    fun update(registry: WorldRegistry) {
-        this.handleIncomingPlayers(registry)
-        this.handlePlayerPackets(registry)
-        this.updateState(registry)
+    @Synchronized
+    fun update() {
+        this.handleIncomingPlayers()
+        this.handlePlayerPackets()
+        this.updateState()
     }
 
     fun handlePlayerDisconnect(player: Player) {

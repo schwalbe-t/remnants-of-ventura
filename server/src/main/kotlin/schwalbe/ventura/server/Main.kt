@@ -42,13 +42,13 @@ private fun scheduled(interval: kotlin.time.Duration, f: () -> Unit) {
     }
 }
 
-class TestWorld(id: Long) : World(id) {}
+class TestWorld(reg: WorldRegistry) : World(reg) {}
 
 fun main() {
     initDatabase()
 
     val playerWriter = PlayerWriter()
-    val createBaseWorld = { id: Long -> TestWorld(id) }
+    val createBaseWorld = { reg: WorldRegistry -> TestWorld(reg) }
     val worlds = WorldRegistry(playerWriter, createBaseWorld)
 
     val port: Int = getPort()

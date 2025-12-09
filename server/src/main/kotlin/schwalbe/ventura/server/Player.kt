@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PlayerData(
-    val worlds: ArrayDeque<PlayerData.WorldEntry>
+    val worlds: MutableList<PlayerData.WorldEntry>
 ) {
     
     companion object {}

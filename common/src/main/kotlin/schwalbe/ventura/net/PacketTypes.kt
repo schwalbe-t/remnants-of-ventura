@@ -27,6 +27,8 @@ enum class TaggedErrorPacket {
     INVALID_ACCOUNT_PARAMS,
     // invalid username/password
     INVALID_ACCOUNT_CREDS,
+    // client on session creation cooldown
+    SESSION_CREATION_COOLDOWN,
     // invalid username/token
     INVALID_SESSION_CREDS,
     // account already online

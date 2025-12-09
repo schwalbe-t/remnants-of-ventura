@@ -34,6 +34,7 @@ class Server(
 
     data class Connection(
         val id: Uuid,
+        val address: String,
         val incoming: PacketInStream,
         val outgoing: PacketOutStream
     )
@@ -53,9 +54,10 @@ class Server(
         app.routing {
             webSocket("/") {
                 val id = Uuid.random()
+                val address: String = call.request.local.remoteAddress
                 val inPackets = PacketInStream(MAX_PACKET_PAYLOAD_SIZE)
                 val outPackets = PacketOutStream(this, sendScope)
-                val connection = Connection(id, inPackets, outPackets)
+                val connection = Connection(id, address, inPackets, outPackets)
                 server.onConnect(connection)
                 for (frame in incoming) {
                     inPackets.handleBinaryFrame(frame)
@@ -129,7 +131,22 @@ class Server(
 private fun Server.onAccountCreatePacket(
     data: AccountCredPacket, conn: Server.Connection
 ) {
-    // TODO!
+    val playerData: ByteArray = Cbor.encodeToByteArray(
+        serializer<PlayerData>(), this.createPlayerData()
+    )
+    val didCreate: Boolean = Account.create(
+        data.username, data.password, playerData
+    )
+    if (!didCreate) {
+        conn.outgoing.send(Packet.serialize(
+            PacketType.DOWN_TAGGED_ERROR,
+            TaggedErrorPacket.INVALID_ACCOUNT_PARAMS
+        ))
+        return
+    }
+    conn.outgoing.send(Packet.serialize(
+        PacketType.DOWN_CREATE_ACCOUNT_SUCCESS, Unit
+    ))
 }
 
 private fun Server.onSessionCreatePacket(
@@ -142,6 +159,14 @@ private fun Server.onSessionCreatePacket(
         conn.outgoing.send(Packet.serialize(
             PacketType.DOWN_TAGGED_ERROR,
             TaggedErrorPacket.INVALID_ACCOUNT_CREDS
+        ))
+        return
+    }
+    val mayLogin: Boolean = Account.tryApplyLoginCooldown(data.username)
+    if (!mayLogin) {
+        conn.outgoing.send(Packet.serialize(
+            PacketType.DOWN_TAGGED_ERROR,
+            TaggedErrorPacket.SESSION_CREATION_COOLDOWN
         ))
         return
     }
@@ -163,7 +188,8 @@ private fun Server.decodePlayerData(username: String): PlayerData? {
         playerData = Cbor.decodeFromByteArray(
             serializer<PlayerData>(), rawPlayerData
         )
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        e.printStackTrace()
         return null
     }
     return playerData

@@ -6,7 +6,7 @@ import java.util.concurrent.Executors
 
 class WorldRegistry(
     val playerWriter: PlayerWriter,
-    baseWorldCreator: (Long) -> World
+    baseWorldCreator: (WorldRegistry) -> World
 ) {
 
     private val worlds: MutableMap<Long, World> = mutableMapOf()
@@ -14,17 +14,15 @@ class WorldRegistry(
 
     private val updatePool: ExecutorService
 
-    val baseWorldId: Long
     val baseWorld: World
-        get() = this.get(this.baseWorldId)!!
 
     init {
         val nproc: Int = Runtime.getRuntime().availableProcessors()
         updatePool = Executors.newFixedThreadPool(nproc)
-        baseWorldId = this.create(baseWorldCreator)
+        baseWorld = baseWorldCreator(this)
     }
 
-    private fun allocateWorld(): Long {
+    fun allocateWorld(): Long {
         synchronized(this) {
             val next: Long = this.nextId
             this.nextId += 1
@@ -32,13 +30,10 @@ class WorldRegistry(
         }
     }
 
-    fun create(creator: (Long) -> World): Long {
-        val id = this.allocateWorld()
-        val world = creator(id)
+    fun add(world: World) {
         synchronized(this) {
-            this.worlds[id] = world
+            this.worlds[world.id] = world
         }
-        return id
     }
 
     fun remove(worldId: Long) {
@@ -60,7 +55,7 @@ class WorldRegistry(
         }
         for (world in worlds) {
             this.updatePool.submit {
-                world.update(this)
+                world.update()
             }
         }
     }

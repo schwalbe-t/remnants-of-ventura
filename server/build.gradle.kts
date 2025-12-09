@@ -8,6 +8,7 @@ val exposedVersion = "0.51.1"
 dependencies {
     implementation(project(":common"))
 
+
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")

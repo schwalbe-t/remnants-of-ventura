@@ -48,6 +48,7 @@ object AccountsTable : Table("accounts") {
     val username = varchar("username", ACCOUNT_NAME_MAX_LEN)
     val salt = binary("salt", ACCOUNT_SALT_MAX_LEN)
     val hash = binary("hash", ACCOUNT_HASH_MAX_LEN)
+    val sessionCooldownUntil = datetime("session_cooldown_until")
     val userdata = blob("userdata")
     val isOnline = bool("is_online")
     override val primaryKey = PrimaryKey(username)

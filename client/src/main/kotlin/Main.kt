@@ -53,14 +53,34 @@ suspend fun main() {
     val socketScope = CoroutineScope(Dispatchers.IO)
     val client: HttpClient = createHttpClient()
 
-    val handler = PacketHandler<Unit>()
-    handler.onPacket<EchoPacket>(PacketType.DOWN_ECHO) { echo, _ ->
-        println("[server] ${echo.content}")
-    }
-
     val packetStreamSync = Object()
     var nInPackets: PacketInStream? = null
     var nOutPackets: PacketOutStream? = null
+
+    val handler = PacketHandler<Unit>()
+        handler.onPacket<GenericErrorPacket>(PacketType.DOWN_GENERIC_ERROR) { d, _ ->
+        println("[error] ${d.message}")
+    }
+    handler.onPacket<TaggedErrorPacket>(PacketType.DOWN_TAGGED_ERROR) { d, _ ->
+        println("[error] ${d.name}")
+    }
+    handler.onPacket<Unit>(PacketType.DOWN_CREATE_ACCOUNT_SUCCESS) { _, _ ->
+        println("[success] Account creation")
+        nOutPackets?.send(Packet.serialize(
+            PacketType.UP_CREATE_SESSION,
+            AccountCredPacket("schwalbe_t", "labubu")
+        ))
+    }
+    handler.onPacket<SessionTokenPacket>(PacketType.DOWN_CREATE_SESSION_SUCCESS) { d, _ ->
+        println("[success] Session creation")
+        nOutPackets?.send(Packet.serialize(
+            PacketType.UP_LOGIN_SESSION,
+            SessionCredPacket("schwalbe_t", d.token)
+        ))
+    }
+    handler.onPacket<Unit>(PacketType.DOWN_LOGIN_SESSION_SUCCESS) { _, _ ->
+        println("[success] Session login")
+    }
 
     socketScope.launch {
         client.webSocket(request = {
@@ -77,6 +97,12 @@ suspend fun main() {
                 nInPackets = inPackets
                 nOutPackets = outPackets
             }
+
+            outPackets.send(Packet.serialize(
+                // PacketType.UP_CREATE_ACCOUNT,
+                PacketType.UP_CREATE_SESSION,
+                AccountCredPacket("schwalbe_t", "labubu")
+            ))
             
             for (frame in incoming) {
                 inPackets.handleBinaryFrame(frame)
@@ -92,8 +118,6 @@ suspend fun main() {
         }
     }
 
-    var n: Int = 0
-
     while (true) {
         val inPackets: PacketInStream?
         val outPackets: PacketOutStream?
@@ -103,10 +127,6 @@ suspend fun main() {
         }
         if (inPackets != null && outPackets != null) {
             handler.handleAll(inPackets, Unit)
-            outPackets.send(Packet.serialize(
-                PacketType.UP_ECHO, EchoPacket("Hello, Ventura! ($n)")
-            ))
-            n += 1
         }
         Thread.sleep(1000)
     }
