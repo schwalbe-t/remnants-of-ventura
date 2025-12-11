@@ -101,31 +101,66 @@ import schwalbe.ventura.bigton.runtime.*
 fun main() {
     val program = BigtonProgram(
         functions = mapOf(
-            "add" to listOf(
-                BigtonInstr(BigtonInstrType.STORE_NEW_VARIABLE, "b"),
-                BigtonInstr(BigtonInstrType.STORE_NEW_VARIABLE, "a"),
-                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "a"),
-                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "b"),
+            "fib" to listOf(
+                // fun fib(n) {
+                BigtonInstr(BigtonInstrType.STORE_NEW_VARIABLE, "n"),
+                // if (n <= 1) {
+                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
+                BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonInt(1)),
+                BigtonInstr(BigtonInstrType.LESS_THAN_EQUAL),
+                BigtonInstr(BigtonInstrType.IF, Pair(listOf<BigtonInstr>(
+                    // return n
+                    BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
+                    BigtonInstr(BigtonInstrType.RETURN)
+                ), null)),
+                // return fib(n - 1) + fib(n - 2)
+                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
+                BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonInt(1)),
+                BigtonInstr(BigtonInstrType.SUBTRACT),
+                BigtonInstr(BigtonInstrType.CALL, "fib"),
+                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
+                BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonInt(2)),
+                BigtonInstr(BigtonInstrType.SUBTRACT),
+                BigtonInstr(BigtonInstrType.CALL, "fib"),
                 BigtonInstr(BigtonInstrType.ADD),
                 BigtonInstr(BigtonInstrType.RETURN)
             )
         ),
         global = listOf(
-            BigtonInstr(BigtonInstrType.LOAD_VALUE, 9L),
-            BigtonInstr(BigtonInstrType.LOAD_VALUE, 10L),
-            BigtonInstr(BigtonInstrType.CALL, "add"),
-            BigtonInstr(BigtonInstrType.CALL, "say")
+            // var n = 0
+            BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonInt(0)),
+            BigtonInstr(BigtonInstrType.STORE_NEW_VARIABLE, "n"),
+            // while (n < 20) {
+            BigtonInstr(BigtonInstrType.LOOP, listOf<BigtonInstr>(
+                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
+                BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonInt(20)),
+                BigtonInstr(BigtonInstrType.LESS_THAN),
+                BigtonInstr(BigtonInstrType.NOT),
+                BigtonInstr(BigtonInstrType.IF, Pair(listOf<BigtonInstr>(
+                    BigtonInstr(BigtonInstrType.BREAK),
+                ), null)),
+                // say(fib(n))
+                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
+                BigtonInstr(BigtonInstrType.CALL, "fib"),
+                BigtonInstr(BigtonInstrType.CALL, "say"),
+                // n = n + 1
+                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
+                BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonInt(1)),
+                BigtonInstr(BigtonInstrType.ADD),
+                BigtonInstr(BigtonInstrType.STORE_EXISTING_VARIABLE, "n")
+            ))
         )
     )
     val runtime = BigtonRuntime(
         program,
         modules = listOf(getStandardModule()),
         memorySize = 0,
-        tickInstructionLimit = 1000
-    )
+        tickInstructionLimit = 500_000
+    )   
     try {
         runtime.executeTick()
     } catch (e: BigtonException) {
         println(e.message)
     }
+    println(runtime.logs.joinToString("\n"))
 }

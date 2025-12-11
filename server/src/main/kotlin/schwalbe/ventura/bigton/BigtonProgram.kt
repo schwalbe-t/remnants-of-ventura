@@ -6,13 +6,26 @@ data class BigtonProgram(
     val global: List<BigtonInstr>
 )
 
+// BIGTON IR CALLING CONVENTIONS
+//
+// 1. Call arguments are pushed onto stack in normal order
+// 2. 'CALL' executed with function name
+// 3. Call arguments are poped from stack in reverse order
+//    ... (function body)
+// 4. If explicit return:
+//      5. Return value is pushed onto stack
+//      6. 'RETURN' is executed
+// 4. Else:
+//      5. (implicit) null is pushed onto stack 
+// 5. Return value is on stack at call site
+
 enum class BigtonInstrType {
 
     // arg: Int = source line
     // stack: ->
     SOURCE_LINE,
 
-    // arg: Long/String/Float/null = value
+    // arg: BigtonValue = value
     // stack: -> <arg>
     LOAD_VALUE,
     // arg: Int = num elements
@@ -56,6 +69,12 @@ enum class BigtonInstrType {
     // arg: null
     // stack: a, b -> (a <= b)
     LESS_THAN_EQUAL,
+    // arg: null
+    // stack: a, b -> (a > b)
+    GREATER_THAN,
+    // arg: null
+    // stack: a, b -> (a >= b)
+    GREATER_THAN_EQUAL,
     // arg: null
     // stack: a, b -> (a == b)
     EQUAL,
@@ -103,7 +122,7 @@ enum class BigtonInstrType {
     CONTINUE,
     // arg: null
     // stack: ->
-    BREAK
+    BREAK,
     // arg: String = name
     // stack: a, b, c, ... -> <return_value>
     CALL,
@@ -117,10 +136,9 @@ data class BigtonInstr(
     val type: BigtonInstrType,
     val arg: Any? = null
 ) {
-    inline fun<reified T> castArg(currentLine: Int): T {
-        if (this.arg is T) { return this.arg }
-        throw BigtonException(
+    inline fun<reified T> castArg(currentLine: Int): T
+        = this.arg as? T
+        ?: throw BigtonException(
             BigtonErrorType.INVALID_INSTR_ARG, currentLine
         )
-    }
 }

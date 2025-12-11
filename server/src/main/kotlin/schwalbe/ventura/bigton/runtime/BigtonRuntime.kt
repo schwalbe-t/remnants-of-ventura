@@ -11,12 +11,13 @@ class BigtonRuntime(
 ) {
 
     data class Function(
-        val instrCost: Long,
+        val cost: Long,
+        val argc: Int,
         val impl: (BigtonRuntime) -> Unit,
     )
 
     data class Module(
-        val builtinFunctions: Map<String, BuiltinFunction>
+        val builtinFunctions: Map<String, Function>
     )
 
     private enum class ScopeType {
@@ -29,14 +30,14 @@ class BigtonRuntime(
 
     private data class Scope(
         val type: ScopeType,
-        val body: List<BigtonRuntime>,
+        val body: List<BigtonInstr>,
         var current: Int = 0
     )
 
     private data class Call(
         val name: String,
         val fromLine: Int,
-        val variables: MutableMap<String, Any?> = mutableListOf()
+        val variables: MutableMap<String, BigtonValue> = mutableMapOf()
     )
 
 
@@ -50,7 +51,7 @@ class BigtonRuntime(
             }
         }
         for ((name, body) in program.functions) {
-            functions[name] = Function(0) { r ->
+            functions[name] = Function(cost = 0, argc = -1) { r ->
                 r.calls.add(Call(name, this.currentLine))
                 r.scopes.add(Scope(ScopeType.FUNCTION, body))
             }
@@ -58,24 +59,25 @@ class BigtonRuntime(
         this.functions = functions
     }
 
-    val log: MutableList<String> = mutableListOf()
+    val logs: MutableList<String> = mutableListOf()
 
-    private val memory: Array<Any?> = arrayOfNulls<Any?>(memorySize)
-    private val operands: MutableList<Any?> = mutableListOf()
+    private val memory: Array<BigtonValue>
+        = Array(memorySize) { BigtonNull }
+    private val operands: MutableList<BigtonValue> = mutableListOf()
     private val scopes: MutableList<Scope> = mutableListOf(
         Scope(ScopeType.GLOBAL, program.global)
     )
     private val calls: MutableList<Call> = mutableListOf()
-    private val globals: MutableMap<String, Any?> = mutableMapOf()
+    private val globals: MutableMap<String, BigtonValue> = mutableMapOf()
     private var currentFuncName: String = "<global>"
     private var currentLine: Int = 0
 
-    fun pushOperand(value: Any?) {
+    fun pushOperand(value: BigtonValue) {
         this.operands.add(value)
     }
 
-    fun popOperand(): Any? {
-        if (this.operands.size == 0) {
+    fun popOperand(): BigtonValue {
+        if (this.operands.size >= 1) {
             return this.operands.removeLast()
         }
         throw BigtonException(
@@ -83,16 +85,16 @@ class BigtonRuntime(
         )
     }
 
-    inline fun<reified T> castPopOperand(): T {
-        val v: Any? = this.popOperand()
+    inline fun<reified T> castPopOperand(err: BigtonErrorType): T {
+        val v: BigtonValue = this.popOperand()
         if (v is T) { return v }
-        throw BigtonException(
-            BigtonErrorType.INVALID_TYPE, this.currentLine
-        )
+        throw BigtonException(err, this.getCurrentLine())
     }
 
     fun addressPopOperand(): Int {
-        val address: Long = this.castPopOperand<Long>()
+        val address: Long = this.castPopOperand<BigtonInt>(
+            BigtonErrorType.OPERAND_NOT_INTEGER
+        ).v
         if (address < 0) {
             throw BigtonException(
                 BigtonErrorType.MEMORY_ADDRESS_NEGATIVE, this.currentLine
@@ -107,182 +109,165 @@ class BigtonRuntime(
 
     fun getCurrentLine(): Int = this.currentLine
 
-    private fun tryGetVarScopeWith(name: String): MutableMap<String, Any?> {
-        val locals: MutableMap<String, Any?>?
+    private fun findVarScopeWith(name: String)
+    : MutableMap<String, BigtonValue> {
+        val locals: MutableMap<String, BigtonValue>?
             = this.calls.lastOrNull()?.variables
-        if (locals == null) { return this.globals }
-        if (!locals.containsKey(name)) { return this.globals }
-        return locals
-    }
-
-    private fun forceVarScopeWith(name: String): MutableMap<String, Any?> {
-        val possible: MutableMap<String, Any?> = this.tryGetVarScopeWith(name)
-        if (possible.containsKey(name)) { return possible }
+        if (locals != null && locals.containsKey(name)) { return locals }
+        if (this.globals.containsKey(name)) { return this.globals }
         throw BigtonException(
             BigtonErrorType.MISSING_VARIABLE, this.currentLine
         )
     }
 
     private fun executeBinaryNumOp(
-        i: (Long, Long) -> Any?, f: (Double, Double) -> Any?
+        i: (Long, Long) -> BigtonValue, f: (Double, Double) -> BigtonValue
     ) {
-        val b: Any? = this.popOperand()
-        val a: Any? = this.popOperand()
-        if (a is Long && b is Long) {
-            this.pushOperand(i(a, b))
-        } else if (a is Double && b is Double) {
-            this.pushOperand(f(a, b))
-        } else {
-            throw BigtonException(
-                BigtonErrorType.INVALID_TYPE, this.currentLine
-            )
-        }
+        val b: BigtonValue = this.popOperand()
+        val a: BigtonValue = this.popOperand()
+        this.pushOperand(when {
+            a is BigtonInt && b is BigtonInt -> i(a.v, b.v)
+            a is BigtonFloat && b is BigtonFloat -> f(a.v, b.v)
+            else -> throw BigtonException(
+                BigtonErrorType.OPERANDS_NOT_NUMBERS, this.currentLine
+            ) 
+        })
     }
 
-    private fun valuesEqual(a: Any?, b: Any?): Boolean {
-        if (a == null && b == null) { return true }
-        if (a == null || b == null) { return false }
-        if (a is Long && b is Long) { return a == b }
-        if (a is Double && b is Double) { return a == b }
-        if (a is String && b is String) { return a == b }
-        if (a is List<Any?> && b is List<Any?>) {
-            if (a.size != b.size) { return false }
-            for (i in 0..a.size) {
-                if (!this.valuesEqual(a[i], b[i])) { return false }
-            }
-            return true
-        }
-        if (a is MutableMap<String, Any?> && b is MutalbeMap<String, Any?>) {
-            if (a.size != b.size) { return false }
-            if (a.keys.any { k -> !b.containsKey(k) }) { return false }
-            if (b.keys.any { k -> !a.containsKey(k) }) { return false }
-            for (k in a.keys) {
-                if (!this.valuesEqual(a[k], b[k])) { return false }
-            }
-            return true
-        }
-        throw BigtonException(
-            BigtonErrorType.INVALID_TYPE, this.currentLine
-        )
+    private fun valuesEqual(a: BigtonValue, b: BigtonValue): Boolean = when {
+        a is BigtonNull   && b is BigtonNull   -> true
+        a is BigtonInt    && b is BigtonInt    -> a.v == b.v
+        a is BigtonFloat  && b is BigtonFloat  -> a.v == b.v
+        a is BigtonString && b is BigtonString -> a.v == b.v
+        a is BigtonTuple  && b is BigtonTuple
+            -> a.elements.size == b.elements.size
+            && a.elements.indices
+                .all { i -> this.valuesEqual(a.elements[i], b.elements[i]) }
+        a is BigtonObject && b is BigtonObject
+            -> a.members.keys == b.members.keys
+            && a.members.keys
+                .all { k -> this.valuesEqual(a.members[k]!!, b.members[k]!!) }
+        else -> false
     }
 
-    private fun isTruthy(v: Any?): Boolean {
-        if (v == null) { return false }
-        if (v is Long) { return v != 0L }
-        if (v is Double) { return v != 0.0 && !v.isNaN() }
-        if (v is String) { return true }
-        if (v is List<String, Any?>) { return true }
-        if (v is MutableMap<String, Any?>) { return true }
-        return false
+    private fun isTruthy(x: BigtonValue): Boolean = when (x) {
+        is BigtonNull -> false
+        is BigtonInt -> x.v != 0L
+        is BigtonFloat -> x.v != 0.0 && !x.v.isNaN()
+        is BigtonString,
+        is BigtonTuple,
+        is BigtonObject -> true
     }
 
     fun executeTick() {
         var instructionLimit: Long = 0
         fetchExec@ while (true) {
+            if (instructionLimit > this.tickInstructionLimit) {
+                throw BigtonException(
+                    BigtonErrorType.EXCEEDED_INSTR_LIMIT, this.currentLine
+                )
+            }
             val scope: Scope = this.scopes.last()
             val instr: BigtonInstr? = scope.body.getOrNull(scope.current)
             if (instr == null) {
                 when (scope.type) {
-                    is ScopeType.GLOBAL -> {
+                    ScopeType.GLOBAL -> {
                         break@fetchExec
                     }
-                    is ScopeType.FUNCTION -> {
+                    ScopeType.FUNCTION -> {
                         this.scopes.removeLast()
                         this.calls.removeLast()
-                        this.pushOperand(null)
+                        this.pushOperand(BigtonNull)
                     }
-                    is ScopeType.LOOP -> {
+                    ScopeType.LOOP -> {
                         scope.current = 0
+                        instructionLimit += 1
                     }
-                    is ScopeType.IF -> {
+                    ScopeType.IF -> {
                         this.scopes.removeLast()
                     }
-                    is ScopeType.TICK -> {
+                    ScopeType.TICK -> {
                         scope.current = 0
                         break@fetchExec
                     }
                 }
                 continue@fetchExec
             }
-            if (instructionLimit > this.tickInstructionLimit) {
-                throw BigtonException(
-                    BigtonErrorType.EXCEEDED_INSTR_LIMIT, this.currentLine
-                )
-            }
             when (instr.type) {
-                is BigtonInstrType.SOURCE_LINE -> {
+                BigtonInstrType.SOURCE_LINE -> {
                     this.currentLine = instr.castArg<Int>(this.currentLine)
                 }
 
-                is BigtonInstrType.LOAD_VALUE -> {
-                    this.pushOperand(instr.arg)
+                BigtonInstrType.LOAD_VALUE -> {
+                    val value = instr.castArg<BigtonValue>(this.currentLine)
+                    this.pushOperand(value)
                 }
-                is BigtonInstrType.LOAD_TUPLE -> {
+                BigtonInstrType.LOAD_TUPLE -> {
                     val n = instr.castArg<Int>(this.currentLine)
-                    val tuple: List<Any?> = 0..n
+                    val tuple: List<BigtonValue> = (0..<n)
                         .map { _ -> this.popOperand() }
                         .toList()
                         .reversed()
-                    this.pushOperand(tuple)
+                    this.pushOperand(BigtonTuple(tuple))
                 }
-                is BigtonInstrType.LOAD_TUPLE_MEMBER -> {
+                BigtonInstrType.LOAD_TUPLE_MEMBER -> {
                     val i = instr.castArg<Int>(this.currentLine)
-                    val tuple = this.castPopOperand<List<Any?>>()
-                    if (i >= tuple.size) {
+                    val tuple = this.castPopOperand<BigtonTuple>(
+                        BigtonErrorType.OPERAND_NOT_TUPLE
+                    )
+                    if (i >= tuple.elements.size) {
                         throw BigtonException(
                             BigtonErrorType.TUPLE_INDEX_OOB, this.currentLine
                         )
                     }
-                    this.pushOperand(tuple[i])
+                    this.pushOperand(tuple.elements[i])
                 }
-                is BigtonInstrType.LOAD_OBJECT -> {
+                BigtonInstrType.LOAD_OBJECT -> {
                     val members = instr.castArg<List<String>>(this.currentLine)
-                    val obj: MutableMap<String, Any?> = members
+                    val obj: MutableMap<String, BigtonValue> = members
                         .asReversed()
-                        .map { m -> this.popOperand() }
-                        .toMutableMap()
-                    this.pushOperand(obj)
+                        .map { m -> Pair(m, this.popOperand()) }
+                        .toMap().toMutableMap()
+                    this.pushOperand(BigtonObject(obj))
                 }
-                is BigtonInstrType.LOAD_OBJECT_MEMBER -> {
+                BigtonInstrType.LOAD_OBJECT_MEMBER -> {
                     val member = instr.castArg<String>(this.currentLine)
-                    val obj = this.castPopOperand<MutableMap<String, Any?>>()
-                    val value: Any? = obj[member]
+                    val obj = this.castPopOperand<BigtonObject>(
+                        BigtonErrorType.OPERAND_NOT_OBJECT
+                    )
+                    val value: BigtonValue = obj.members[member]
+                        ?: throw BigtonException(
+                            BigtonErrorType.INVALID_OBJECT_MEMBER,
+                            this.currentLine
+                        )
                     this.pushOperand(value)
                 }
-                is BigtonInstrType.LOAD_VARIABLE -> {
+                BigtonInstrType.LOAD_VARIABLE -> {
                     val name: String = instr.castArg<String>(this.currentLine)
-                    val vars: Map<String, Any?> = this.forceVarScopeWith(name)
-                    this.pushOperand(vars[name])
+                    val vars: Map<String, BigtonValue>
+                        = this.findVarScopeWith(name)
+                    // enforced by 'findVarScopeName'
+                    val value: BigtonValue = vars[name]!!
+                    this.pushOperand(value)
                 }
-                is BigtonInstrType.LOAD_MEMORY -> {
+                BigtonInstrType.LOAD_MEMORY -> {
                     val address: Int = this.addressPopOperand()
                     this.pushOperand(this.memory[address])
                 }
 
-                is BigtonInstrType.ADD -> {
-                    val b: Any? = this.popOperand()
-                    val a: Any? = this.popOperand()
-                    if (a is Long && b is Long) {
-                        this.pushOperand(a + b)
-                    } else if (a is Double && b is Double) {
-                        this.pushOperand(a + b)
-                    } else if (a is String && b is String) {
-                        this.pushOperand(a + b)
-                    } else {
-                        throw BigtonException(
-                            BigtonErrorType.INVALID_TYPE, this.currentLine
-                        )
-                    }
-                }
-                is BigtonInstrType.SUBTRACT -> this.executeBinaryNumOp(
-                    i = { a, b -> a - b },
-                    f = { a, b -> a - b }
+                BigtonInstrType.ADD -> this.executeBinaryNumOp(
+                    i = { a, b -> BigtonInt(a + b) },
+                    f = { a, b -> BigtonFloat(a + b) }
                 )
-                is BigtonInstrType.MULTIPLY -> this.executeBinaryNumOp(
-                    i = { a, b -> a * b },
-                    f = { a, b -> a * b }
+                BigtonInstrType.SUBTRACT -> this.executeBinaryNumOp(
+                    i = { a, b -> BigtonInt(a - b) },
+                    f = { a, b -> BigtonFloat(a - b) }
                 )
-                is BigtonInstrType.DIVIDE -> this.executeBinaryNumOp(
+                BigtonInstrType.MULTIPLY -> this.executeBinaryNumOp(
+                    i = { a, b -> BigtonInt(a * b) },
+                    f = { a, b -> BigtonFloat(a * b) }
+                )
+                BigtonInstrType.DIVIDE -> this.executeBinaryNumOp(
                     i = { a, b -> 
                         if (b == 0L) {
                             throw BigtonException(
@@ -290,11 +275,11 @@ class BigtonRuntime(
                                 this.currentLine
                             )
                         }
-                        a / b
+                        BigtonInt(a / b)
                     },
-                    f = { a, b -> a / b }
+                    f = { a, b -> BigtonFloat(a / b) }
                 )
-                is BigtonInstrType.REMAINDER -> this.executeBinaryNumOp(
+                BigtonInstrType.REMAINDER -> this.executeBinaryNumOp(
                     i = { a, b -> 
                         if (b == 0L) {
                             throw BigtonException(
@@ -302,146 +287,159 @@ class BigtonRuntime(
                                 this.currentLine
                             )
                         }
-                        a % b
+                        BigtonInt(a % b)
                     },
-                    f = { a, b -> a % b }
+                    f = { a, b -> BigtonFloat(a % b) }
                 )
 
-                is BigtonInstrType.LESS_THAN -> this.executeBinaryNumOp(
-                    i = { a, b -> a < b },
-                    f = { a, b -> a < b }
+                BigtonInstrType.LESS_THAN -> this.executeBinaryNumOp(
+                    i = { a, b -> BigtonInt(if (a < b) { 1L } else { 0L }) },
+                    f = { a, b -> BigtonInt(if (a < b) { 1L } else { 0L }) }
                 )
-                is BigtonInstrType.LESS_THAN_EQUAL -> this.executeBinaryNumOp(
-                    i = { a, b -> a <= b },
-                    f = { a, b -> a <= b }
+                BigtonInstrType.LESS_THAN_EQUAL -> this.executeBinaryNumOp(
+                    i = { a, b -> BigtonInt(if (a <= b) { 1L } else { 0L }) },
+                    f = { a, b -> BigtonInt(if (a <= b) { 1L } else { 0L }) }
                 )
-                is BigtonInstrType.EQUAL -> {
-                    val b: Any? = this.popOperand()
-                    val a: Any? = this.popOperand()
-                    this.pushOperand(
-                        if (this.valuesEqual(a, b)) { 1L } else { 0L }
-                    )
+                BigtonInstrType.GREATER_THAN -> this.executeBinaryNumOp(
+                    i = { a, b -> BigtonInt(if (a > b) { 1L } else { 0L }) },
+                    f = { a, b -> BigtonInt(if (a > b) { 1L } else { 0L }) }
+                )
+                BigtonInstrType.GREATER_THAN_EQUAL -> this.executeBinaryNumOp(
+                    i = { a, b -> BigtonInt(if (a >= b) { 1L } else { 0L }) },
+                    f = { a, b -> BigtonInt(if (a >= b) { 1L } else { 0L }) }
+                )
+                BigtonInstrType.EQUAL -> {
+                    val b: BigtonValue = this.popOperand()
+                    val a: BigtonValue = this.popOperand()
+                    val r = if (this.valuesEqual(a, b)) { 1L } else { 0L }
+                    this.pushOperand(BigtonInt(r))
                 }
-                is BigtonInstrType.NOT_EQUAL -> {
-                    val b: Any? = this.popOperand()
-                    val a: Any? = this.popOperand()
-                    this.pushOperand(
-                        if (this.valuesEqual(a, b)) { 0L } else { 1L }
-                    )
+                BigtonInstrType.NOT_EQUAL -> {
+                    val b: BigtonValue = this.popOperand()
+                    val a: BigtonValue = this.popOperand()
+                    val r = if (this.valuesEqual(a, b)) { 0L } else { 1L }
+                    this.pushOperand(BigtonInt(r))
                 }
 
-                is BigtonInstrType.AND -> {
-                    val b: Long = this.castPopOperand<Long>()
-                    val a: Long = this.castPopOperand<Long>()
+                BigtonInstrType.AND -> {
+                    val b: BigtonValue = this.popOperand()
+                    val a: BigtonValue = this.popOperand()
                     this.pushOperand(if (!this.isTruthy(a)) { a } else { b })
                 }
-                is BigtonInstrType.OR -> {
-                    val b: Long = this.castPopOperand<Long>()
-                    val a: Long = this.castPopOperand<Long>()
+                BigtonInstrType.OR -> {
+                    val b: BigtonValue = this.popOperand()
+                    val a: BigtonValue = this.popOperand()
                     this.pushOperand(if (this.isTruthy(a)) { a } else { b })
                 }
-                is BigtonInstrType.NOT -> {
-                    val x: Long = this.castPopOperand<Long>()
-                    this.pushOperand(if (this.isTruthy(x)) { 0L } else { 1L })
+                BigtonInstrType.NOT -> {
+                    val x: BigtonValue = this.popOperand()
+                    val r: Long = if (this.isTruthy(x)) { 0L } else { 1L }
+                    this.pushOperand(BigtonInt(r))
                 }
 
-                is BigtonInstrType.STORE_EXISTING_VARIABLE -> {
+                BigtonInstrType.STORE_EXISTING_VARIABLE -> {
                     val name: String = instr.castArg<String>(this.currentLine)
-                    val vars: Map<String, Any?> = this.forceVarScopeWith(name)
-                    val value: Any? = this.popOperand()
-                    vars[name] = value
+                    val vars: MutableMap<String, BigtonValue>
+                        = this.findVarScopeWith(name)
+                    vars[name] = this.popOperand()
                 }
-                is BigtonInstrType.STORE_NEW_VARIABLE -> {
+                BigtonInstrType.STORE_NEW_VARIABLE -> {
                     val name: String = instr.castArg<String>(this.currentLine)
-                    val vars: Map<String, Any?> = this.locals.lastOrNull()
-                        ?.variables ?: this.globals
-                    val value: Any? = this.popOperand()
-                    vars[name] = value
+                    val vars: MutableMap<String, BigtonValue>
+                        = this.calls.lastOrNull()?.variables ?: this.globals
+                    vars[name] = this.popOperand()
                 }
-                is BigtonInstrType.STORE_MEMORY -> {
-                    val value: Any? = this.popOperand()
+                BigtonInstrType.STORE_MEMORY -> {
+                    val value: BigtonValue = this.popOperand()
                     val address: Int = this.addressPopOperand()
                     this.memory[address] = value
                 }
-                is BigtonInstrType.STORE_OBJECT_MEMBER -> {
+                BigtonInstrType.STORE_OBJECT_MEMBER -> {
                     val member = instr.castArg<String>(this.currentLine)
-                    val value = this.popOperand()
-                    val obj = this.castPopOperand<MutableMap<String, Any?>>()
-                    obj[member] = value
+                    val value: BigtonValue = this.popOperand()
+                    val obj: BigtonObject = this.castPopOperand<BigtonObject>(
+                        BigtonErrorType.OPERAND_NOT_OBJECT
+                    )
+                    if (!obj.members.containsKey(member)) {
+                        throw BigtonException(
+                            BigtonErrorType.INVALID_OBJECT_MEMBER,
+                            this.currentLine
+                        )
+                    }
+                    obj.members[member] = value
                 }
 
-                is BigtonInstrType.IF -> {
+                BigtonInstrType.IF -> {
                     val (if_body, else_body) = instr
                         .castArg<Pair<List<BigtonInstr>, List<BigtonInstr>?>>(
                             this.currentLine
                         )
-                    val cond = this.castPopOperand<Long>()
+                    val cond: BigtonValue = this.popOperand()
                     if (this.isTruthy(cond)) {
                         this.scopes.add(Scope(ScopeType.IF, if_body))
                     } else if (else_body != null) {
                         this.scopes.add(Scope(ScopeType.IF, else_body))
                     }
                 }
-                is BigtonInstrType.LOOP -> {
+                BigtonInstrType.LOOP -> {
                     val body = instr.castArg<List<BigtonInstr>>(
                         this.currentLine
                     )
                     this.scopes.add(Scope(ScopeType.LOOP, body))
                 }
-                is BigtonInstrType.TICK -> {
+                BigtonInstrType.TICK -> {
                     val body = instr.castArg<List<BigtonInstr>>(
                         this.currentLine
                     )
                     this.scopes.add(Scope(ScopeType.TICK, body))
                 }
-                is BigtonInstrType.CONTINUE -> {
+                BigtonInstrType.CONTINUE -> {
                     scope.current = 0
                 }
-                is BigtonInstrType.BREAK -> {
+                BigtonInstrType.BREAK -> {
                     removeScope@ while (true) {
                         val removed: Scope = this.scopes.last()
                         when (removed.type) {
-                            is ScopeType.IF -> {
+                            ScopeType.IF -> {
                                 this.scopes.removeLast()
                             }
-                            is ScopeType.LOOP,
-                            is ScopeType.TICK -> {
+                            ScopeType.LOOP,
+                            ScopeType.TICK -> {
                                 this.scopes.removeLast()
                                 break@removeScope
                             }
-                            is ScopeType.GLOBAL,
-                            is ScopeType.FUNCTION -> {
+                            ScopeType.GLOBAL,
+                            ScopeType.FUNCTION -> {
                                 break@removeScope
                             }
                         }
                     }
                 }
-                is BigtonInstrType.CALL -> {
+                BigtonInstrType.CALL -> {
                     val name = instr.castArg<String>(this.currentLine)
-                    val called: Function? = this.functions.getOrNull(name)
-                    if (called == null) {
-                        throw BigtonException(
+                    val called: Function = this.functions[name]
+                        ?: throw BigtonException(
                             BigtonErrorType.MISSING_FUNCTION, this.currentLine
                         )
-                    }
-                    instructionLimit += called.instrCost
+                    scope.current += 1
+                    instructionLimit += called.cost
                     called.impl(this)
                     continue@fetchExec
                 }
-                is BigtonInstrType.RETURN -> {
+                BigtonInstrType.RETURN -> {
                     removeScope@ while (true) {
                         val removed: Scope = this.scopes.last()
                         when (removed.type) {
-                            is ScopeType.IF,
-                            is ScopeType.LOOP,
-                            is ScopeType.TICK -> {
+                            ScopeType.IF,
+                            ScopeType.LOOP,
+                            ScopeType.TICK -> {
                                 this.scopes.removeLast()
                             }
-                            is ScopeType.FUNCTION -> {
+                            ScopeType.FUNCTION -> {
                                 this.scopes.removeLast()
                                 break@removeScope
                             }
-                            is ScopeType.GLOBAL -> {
+                            ScopeType.GLOBAL -> {
                                 break@removeScope
                             }
                         }

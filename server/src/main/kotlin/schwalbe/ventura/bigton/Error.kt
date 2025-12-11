@@ -18,9 +18,13 @@ enum class BigtonErrorType(val id: String, val message: String) {
     INT_DIVISION_BY_ZERO("RT002", "Attempted division of an integer by zero"),
     MEMORY_ADDRESS_NEGATIVE("RT003", "Accessed memory address is negative"),
     MEMORY_ADDRESS_TOO_LARGE("RT004", "Accessed memory address it too large"),
-    INVALID_TYPE("RT005", "Values of the given type unsupported by operation"),
-    BY_PROGRAM("RT006", "Error indicated by program"),
-    TUPLE_INDEX_OOB("RT007", "Tuple index too large"),
+    BY_PROGRAM("RT005", "Error indicated by program"),
+    TUPLE_INDEX_OOB("RT006", "Tuple index too large"),
+    INVALID_OBJECT_MEMBER("RT007", "Object does not contain the given member"),
+    OPERANDS_NOT_NUMBERS("RT008", "The operand(s) of this operation should be (but arent't) either both integers or both floats"),
+    OPERAND_NOT_INTEGER("RT009", "The operand of this operation should be (but isn't) an integer"),
+    OPERAND_NOT_TUPLE("RT010", "The operand of this operation should be (but isn't) a tuple"),
+    OPERAND_NOT_OBJECT("RT011", "The operand of this operation should be (but isn't) an object"),
 
     // [INTERNAL___] - Internal Runtime Error
     MISSING_OPERAND("INTERNAL001", "Missing operand from operand stack"),
