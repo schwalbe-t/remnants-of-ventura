@@ -15,16 +15,18 @@ enum class BigtonErrorType(val id: String, val message: String) {
 
     // [RT___] - Runtime Error
     EXCEEDED_INSTR_LIMIT("RT001", "Ran too many instructions during this tick"),
-    DIVISION_BY_ZERO("RT002", "Attempted division of an integer by zero"),
+    INT_DIVISION_BY_ZERO("RT002", "Attempted division of an integer by zero"),
     MEMORY_ADDRESS_NEGATIVE("RT003", "Accessed memory address is negative"),
     MEMORY_ADDRESS_TOO_LARGE("RT004", "Accessed memory address it too large"),
     INVALID_TYPE("RT005", "Values of the given type unsupported by operation"),
     BY_PROGRAM("RT006", "Error indicated by program"),
-    TUPLE_INDEX_OOB("RT007", "Tuple index too large")
+    TUPLE_INDEX_OOB("RT007", "Tuple index too large"),
 
     // [INTERNAL___] - Internal Runtime Error
     MISSING_OPERAND("INTERNAL001", "Missing operand from operand stack"),
-    INVALID_INSTR_ARG("INTERNAL002", "Instruction argument is invalid")
+    INVALID_INSTR_ARG("INTERNAL002", "Instruction argument is invalid"),
+    MISSING_VARIABLE("INTERNAL003", "Variable does not exist at runtime"),
+    MISSING_FUNCTION("INTERNAL004", "Function does not exist at runtime")
 
 }
 

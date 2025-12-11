@@ -16,13 +16,13 @@ enum class BigtonInstrType {
     // stack: -> <arg>
     LOAD_VALUE,
     // arg: Int = num elements
-    // stack: a, b, ... -> <tuple>
+    // stack: a, b, c, ... -> <tuple>
     LOAD_TUPLE,
     // arg: Int = tuple index
     // stack: tuple -> <member_value>
     LOAD_TUPLE_MEMBER,
-    // arg: List<String> = member names
-    // stack: a, b, ... -> <object>
+    // arg: List<String> = member names [a, b, c, ...]
+    // stack: a, b, c, ... -> <object>
     LOAD_OBJECT,
     // arg: String = member name
     // stack: object -> <member_value>
@@ -108,14 +108,14 @@ enum class BigtonInstrType {
     // stack: a, b, c, ... -> <return_value>
     CALL,
     // arg: null
-    // stack: return_value ->
+    // stack: return_value -> <return_value>
     RETURN
 
 }
 
 data class BigtonInstr(
     val type: BigtonInstrType,
-    val arg: Any?
+    val arg: Any? = null
 ) {
     inline fun<reified T> castArg(currentLine: Int): T {
         if (this.arg is T) { return this.arg }

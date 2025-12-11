@@ -5,10 +5,10 @@ import schwalbe.ventura.bigton.*
 
 fun getStandardModule() = BigtonRuntime.Module(
     mapOf(
-        "say" to BigtonRuntime.BuiltinFunction(1) { r ->
+        "say" to BigtonRuntime.Function(1) { r ->
             r.logs.add(r.popOperand().toString())
         }
-        "error" to BigtonRuntime.BuiltinFunction(0) { r ->
+        "error" to BigtonRuntime.Function(0) { r ->
             throw BigtonException(
                 BigtonErrorType.BY_PROGRAM, r.getCurrentLine()
             )

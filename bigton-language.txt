@@ -15,15 +15,26 @@
 
 # BIGTON Processor Language:
 
+# Static Analasys:
+# - Referenced variables exist in scope
+# - Assignment to assignable expressions
+# - Calling of functions that exist
+# - Usage of only supported features
+# - 'break', 'continue' only used in loops
+# - 'return' only used in functions
+
 # Basic Language:
 # - Global variables (number limited by processor type)
 # - Arithmetic
+# - Comparisons
+# - 'a or b', 'a and b', 'not a'
 # - Loops ('tick', 'loop', 'while', 'continue', 'break')
 # - Number Literals
 # - String Literals
 # - Unnamed Tuples
 # - Limit on number of total executed instructions every tick
 #   (depending on processor type)
+# - if/else = expression
 
 # 'var' is block-scoped (or global)
 var a = 0
@@ -37,6 +48,8 @@ while n > 0 {
     b = c
     n = n - 1
 }
+
+if not x { return }
 
 # stops executing below and instead runs every game tick
 tick {
