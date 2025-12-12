@@ -62,6 +62,9 @@ enum class BigtonInstrType {
     // arg: null
     // stack: a, b -> (a % b)
     REMAINDER,
+    // arg: null,
+    // stack: x -> (-x)
+    NEGATE,
 
     // arg: null
     // stack: a, b -> (a < b)
@@ -135,10 +138,8 @@ enum class BigtonInstrType {
 data class BigtonInstr(
     val type: BigtonInstrType,
     val arg: Any? = null
-) {
-    inline fun<reified T> castArg(currentLine: Int): T
-        = this.arg as? T
-        ?: throw BigtonException(
-            BigtonErrorType.INVALID_INSTR_ARG, currentLine
-        )
-}
+)
+
+inline fun<reified T> BigtonInstr.castArg(currentLine: Int): T
+    = this.arg as? T
+    ?: throw BigtonException(BigtonErrorType.INVALID_INSTR_ARG, currentLine)

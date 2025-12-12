@@ -14,6 +14,7 @@ enum class BigtonTokenType {
     BRACE_OPEN,
     BRACE_CLOSE,
     DOT,
+    COMMA,
     PLUS,
     MINUS,
     ASTERISK,
@@ -40,7 +41,9 @@ enum class BigtonTokenType {
     KEYWORD_OR,
     KEYWORD_NOT,
     KEYWORD_IF,
-    KEYWORD_ELSE
+    KEYWORD_ELSE,
+
+    END_OF_FILE
 
 }
 

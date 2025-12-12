@@ -291,6 +291,17 @@ class BigtonRuntime(
                     },
                     f = { a, b -> BigtonFloat(a % b) }
                 )
+                BigtonInstrType.NEGATE -> {
+                    val x: BigtonValue = this.popOperand()
+                    this.pushOperand(when (x) {
+                        is BigtonInt -> BigtonInt(-x.v)
+                        is BigtonFloat -> BigtonFloat(-x.v)
+                        else -> throw BigtonException(
+                            BigtonErrorType.OPERANDS_NOT_NUMBERS,
+                            this.currentLine
+                        ) 
+                    })
+                }
 
                 BigtonInstrType.LESS_THAN -> this.executeBinaryNumOp(
                     i = { a, b -> BigtonInt(if (a < b) { 1L } else { 0L }) },

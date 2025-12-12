@@ -9,11 +9,19 @@ enum class BigtonErrorType(val id: String, val message: String) {
     MULTIPLE_DOTS_IN_NUMERIC("TK003", "Multiple dots in numeric literal"),
 
     // [PA___] - Failed Parsing
-    UNEXPECTED_EOF("PA001", "Program code unexpectedly ended"),
-    UNEXPECTED_TOKEN("PA002", "Program code uses token at unexpected location"),
-
+    CALLING_EXPRESSION("PA001", "Call on a non-function expression attempted"),
+    INVALID_MEMBER_SYNTAX("PA002", "Accessed member must be (but isn't) either an integer (tuple) or identifier (object)"),
+    MISSING_EXPECTED_COMMA("PA003", "Expected a comma, but got something else"),
+    EMPTY_PARENTHESES("PA004", "Empty parentheses are not a valid expression"),
+    MISSING_EXPECTED_MEMBER_NAME("PA005", "Expected the member name or closing brace in object literal, but got something else"),
+    MISSING_EXPECTED_MEMBER_EQUALS("PA006", "Expected '=' after the member name in object literal, but got something else"),
+    MISSING_EXPECTED_UNARY_OR_VALUE("PA007", "Expected a unary operator (e.g. '-', 'not') or a value (e.g. '5', '\"test\"'), but got something else"),
+    
     // [SC___] - Failed Static Checks
     FEATURE_UNSUPPORTED("SC001", "Feature not supported by the processor"),
+
+    // [SC-INTERNAL___] - Internal Failed Static Checks
+    INVALID_AST_ARG("SC-INTERNAL001", "AST node argument is invalid"),
 
     // [RT___] - Runtime Error
     EXCEEDED_INSTR_LIMIT("RT001", "Ran too many instructions during this tick"),
@@ -28,11 +36,11 @@ enum class BigtonErrorType(val id: String, val message: String) {
     OPERAND_NOT_TUPLE("RT010", "The operand of this operation should be (but isn't) a tuple"),
     OPERAND_NOT_OBJECT("RT011", "The operand of this operation should be (but isn't) an object"),
 
-    // [INTERNAL___] - Internal Runtime Error
-    MISSING_OPERAND("INTERNAL001", "Missing operand from operand stack"),
-    INVALID_INSTR_ARG("INTERNAL002", "Instruction argument is invalid"),
-    MISSING_VARIABLE("INTERNAL003", "Variable does not exist at runtime"),
-    MISSING_FUNCTION("INTERNAL004", "Function does not exist at runtime")
+    // [RT-INTERNAL___] - Internal Runtime Error
+    MISSING_OPERAND("RT-INTERNAL001", "Missing operand from operand stack"),
+    INVALID_INSTR_ARG("RT-INTERNAL002", "Instruction argument is invalid"),
+    MISSING_VARIABLE("RT-INTERNAL003", "Variable does not exist at runtime"),
+    MISSING_FUNCTION("RT-INTERNAL004", "Function does not exist at runtime")
 
 }
 

@@ -167,6 +167,7 @@ fun tokenize(source: String): List<BigtonToken> {
             '{' -> advToken(BigtonTokenType.BRACE_OPEN,   "{")
             '}' -> advToken(BigtonTokenType.BRACE_CLOSE,  "}")
             '.' -> advToken(BigtonTokenType.DOT,          ".")
+            ',' -> advToken(BigtonTokenType.COMMA,        ",")
             '+' -> advToken(BigtonTokenType.PLUS,         "+")
             '-' -> advToken(BigtonTokenType.MINUS,        "-")
             '*' -> advToken(BigtonTokenType.ASTERISK,     "*")

@@ -101,26 +101,9 @@ import schwalbe.ventura.bigton.runtime.*
 
 fun main() {
     try {
-        // note: Kotlin triple string does not do escaping
-        val tokens: List<BigtonToken> = tokenize("""
-        
-# this prints 'test lol'
-say("test lol")
-
-# linear fibonacci
-var a = 0
-var b = 1
-var n = 30
-while n > 0 {
-    var c = a + b
-    a = b
-    b = c
-    n = n - 1
-}
-say(a)
-
-        """)
-        tokens.forEach { t -> println(t) }
+        val tokens: List<BigtonToken> = tokenize("{ age = 10 }")
+        val parser = BigtonParser(tokens)
+        println(parser.parseExpression())
     } catch (e: BigtonException) {
         println(e.message)
     }
