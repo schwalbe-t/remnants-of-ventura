@@ -101,9 +101,34 @@ import schwalbe.ventura.bigton.runtime.*
 
 fun main() {
     try {
-        val tokens: List<BigtonToken> = tokenize("{ age = 10 }")
+        val tokens: List<BigtonToken> = tokenize("""
+
+var n = 100
+while n >= 0 {
+    say(n)
+    n = n - 1
+}
+
+tick {
+    say("sussy baka")
+}
+
+fun add(a, b) {
+    return a + b
+}
+
+loop {
+    if n >= 100 { break }
+    if n % 3 == 0 and n % 5 == 0 { say("fizzbuzz") }
+    else if n % 3 == 0 { say("fizz") }
+    else if n % 5 == 0 { say("buzz") }
+    else { say(n) }
+    n = n + 1
+}
+
+        """)
         val parser = BigtonParser(tokens)
-        println(parser.parseExpression())
+        parser.parseStatementList().forEach { s -> println(s) }
     } catch (e: BigtonException) {
         println(e.message)
     }

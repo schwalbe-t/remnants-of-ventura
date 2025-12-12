@@ -3,6 +3,12 @@ package schwalbe.ventura.bigton.compilation
 
 import schwalbe.ventura.bigton.*
 
+data class BigtonAstFunction(
+    val name: String,
+    val argNames: List<String>,
+    val body: List<BigtonAst>
+)
+
 enum class BigtonAstType {
 
     // simple "value" expressions
@@ -44,12 +50,14 @@ enum class BigtonAstType {
     IF,             // [cond]       Pair<List<BigtonAst>, List<BigtonAst>?>
     LOOP,           //              List<BigtonAst>
     TICK,           //              List<BigtonAst>
+    WHILE,          // [cond]       List<BigtonAst>
     CONTINUE,
     BREAK,
     RETURN,         // [value]
+    VARIABLE,       // [value]      name: String
 
     // function decl
-    FUNCTION        //              Pair<String, List<String>>
+    FUNCTION        //              BigtonAstFunction
     
 }
 

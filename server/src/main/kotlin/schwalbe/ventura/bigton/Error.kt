@@ -16,7 +16,14 @@ enum class BigtonErrorType(val id: String, val message: String) {
     MISSING_EXPECTED_MEMBER_NAME("PA005", "Expected the member name or closing brace in object literal, but got something else"),
     MISSING_EXPECTED_MEMBER_EQUALS("PA006", "Expected '=' after the member name in object literal, but got something else"),
     MISSING_EXPECTED_UNARY_OR_VALUE("PA007", "Expected a unary operator (e.g. '-', 'not') or a value (e.g. '5', '\"test\"'), but got something else"),
-    
+    MISSING_EXPECTED_OPENING_BRACE("PA008", "Expected '{' at the start of the instruction list, but got something else"),
+    MISSING_EXPECTED_CLOSING_BRACE("PA009", "Expected '}' at the end of the instruction list, but got something else"),
+    MISSING_EXPECTED_VARIABLE_NAME("PA010", "Expected the variable name after 'var', but got something else"),
+    MISSING_EXPECTED_VAR_EQUALS("PA011", "Expected '=' after the variable name, but got something else"),
+    MISSING_EXPECTED_FUNCTION_NAME("PA012", "Expected the function name after 'fun', but got something else"),
+    MISSING_EXPECTED_FUNC_ARGS_OPEN("PA013", "Expected '(' after the function name, but got something else"),
+    MISSING_EXPECTED_ARGUMENT_NAME("PA014", "Expected a function argument name in the function argument list, but got something else"),
+
     // [SC___] - Failed Static Checks
     FEATURE_UNSUPPORTED("SC001", "Feature not supported by the processor"),
 
