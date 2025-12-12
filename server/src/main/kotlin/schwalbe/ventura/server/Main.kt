@@ -96,71 +96,32 @@ package schwalbe.ventura.server
 // }
 
 import schwalbe.ventura.bigton.*
+import schwalbe.ventura.bigton.compilation.*
 import schwalbe.ventura.bigton.runtime.*
 
 fun main() {
-    val program = BigtonProgram(
-        functions = mapOf(
-            "fib" to listOf(
-                // fun fib(n) {
-                BigtonInstr(BigtonInstrType.STORE_NEW_VARIABLE, "n"),
-                // if (n <= 1) {
-                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
-                BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonInt(1)),
-                BigtonInstr(BigtonInstrType.LESS_THAN_EQUAL),
-                BigtonInstr(BigtonInstrType.IF, Pair(listOf<BigtonInstr>(
-                    // return n
-                    BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
-                    BigtonInstr(BigtonInstrType.RETURN)
-                ), null)),
-                // return fib(n - 1) + fib(n - 2)
-                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
-                BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonInt(1)),
-                BigtonInstr(BigtonInstrType.SUBTRACT),
-                BigtonInstr(BigtonInstrType.CALL, "fib"),
-                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
-                BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonInt(2)),
-                BigtonInstr(BigtonInstrType.SUBTRACT),
-                BigtonInstr(BigtonInstrType.CALL, "fib"),
-                BigtonInstr(BigtonInstrType.ADD),
-                BigtonInstr(BigtonInstrType.RETURN)
-            )
-        ),
-        global = listOf(
-            // var n = 0
-            BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonInt(0)),
-            BigtonInstr(BigtonInstrType.STORE_NEW_VARIABLE, "n"),
-            // while (n < 20) {
-            BigtonInstr(BigtonInstrType.LOOP, listOf<BigtonInstr>(
-                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
-                BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonInt(20)),
-                BigtonInstr(BigtonInstrType.LESS_THAN),
-                BigtonInstr(BigtonInstrType.NOT),
-                BigtonInstr(BigtonInstrType.IF, Pair(listOf<BigtonInstr>(
-                    BigtonInstr(BigtonInstrType.BREAK),
-                ), null)),
-                // say(fib(n))
-                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
-                BigtonInstr(BigtonInstrType.CALL, "fib"),
-                BigtonInstr(BigtonInstrType.CALL, "say"),
-                // n = n + 1
-                BigtonInstr(BigtonInstrType.LOAD_VARIABLE, "n"),
-                BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonInt(1)),
-                BigtonInstr(BigtonInstrType.ADD),
-                BigtonInstr(BigtonInstrType.STORE_EXISTING_VARIABLE, "n")
-            ))
-        )
-    )
-    val runtime = BigtonRuntime(
-        program,
-        modules = listOf(getStandardModule()),
-        memorySize = 0,
-        tickInstructionLimit = 500_000
-    )   
     try {
-        runtime.executeTick()
+        // note: Kotlin triple string does not do escaping
+        val tokens: List<BigtonToken> = tokenize("""
+        
+# this prints 'test lol'
+say("test lol")
+
+# linear fibonacci
+var a = 0
+var b = 1
+var n = 30
+while n > 0 {
+    var c = a + b
+    a = b
+    b = c
+    n = n - 1
+}
+say(a)
+
+        """)
+        tokens.forEach { t -> println(t) }
     } catch (e: BigtonException) {
         println(e.message)
     }
-    println(runtime.logs.joinToString("\n"))
 }

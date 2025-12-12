@@ -4,7 +4,9 @@ package schwalbe.ventura.bigton
 enum class BigtonErrorType(val id: String, val message: String) {
 
     // [TK___] - Failed Tokenization
-    INVALID_TOKEN("TK001", "Program code uses unrecognized token"),
+    INVALID_TOKEN("TK001", "Program code uses an unrecognized token"),
+    UNCLOSED_STRING_LITERAL("TK002", "Unclosed string literal"),
+    MULTIPLE_DOTS_IN_NUMERIC("TK003", "Multiple dots in numeric literal"),
 
     // [PA___] - Failed Parsing
     UNEXPECTED_EOF("PA001", "Program code unexpectedly ended"),

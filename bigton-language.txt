@@ -79,5 +79,5 @@ fun add(a, b) {
 # - Custom types
 #     - Literals
 #     - Member accesses
-var cat = { name: "Bob", age: 5 }
+var cat = { name = "Bob", age = 5 }
 say(cat.name)
