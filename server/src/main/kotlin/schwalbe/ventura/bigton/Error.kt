@@ -42,6 +42,7 @@ enum class BigtonErrorType(val id: String, val message: String) {
     OPERAND_NOT_INTEGER("RT009", "The operand of this operation should be (but isn't) an integer"),
     OPERAND_NOT_TUPLE("RT010", "The operand of this operation should be (but isn't) a tuple"),
     OPERAND_NOT_OBJECT("RT011", "The operand of this operation should be (but isn't) an object"),
+    MAXIMUM_CALL_DEPTH("RT012", "Number of nested calls exceeded the maximum call depth of this processor"),
 
     // [RT-INTERNAL___] - Internal Runtime Error
     MISSING_OPERAND("RT-INTERNAL001", "Missing operand from operand stack"),

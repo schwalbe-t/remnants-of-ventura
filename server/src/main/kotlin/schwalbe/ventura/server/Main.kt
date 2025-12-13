@@ -96,39 +96,34 @@ package schwalbe.ventura.server
 // }
 
 import schwalbe.ventura.bigton.*
-import schwalbe.ventura.bigton.compilation.*
+import schwalbe.ventura.bigton.compilation.compileSource
 import schwalbe.ventura.bigton.runtime.*
 
 fun main() {
     try {
-        val tokens: List<BigtonToken> = tokenize("""
-
-var n = 100
-while n >= 0 {
+        val src: String = """
+        
+var n = 0
+while n < 100 {
     say(n)
-    n = n - 1
-}
-
-tick {
-    say("sussy baka")
-}
-
-fun add(a, b) {
-    return a + b
-}
-
-loop {
-    if n >= 100 { break }
-    if n % 3 == 0 and n % 5 == 0 { say("fizzbuzz") }
-    else if n % 3 == 0 { say("fizz") }
-    else if n % 5 == 0 { say("buzz") }
-    else { say(n) }
     n = n + 1
 }
 
-        """)
-        val parser = BigtonParser(tokens)
-        parser.parseStatementList().forEach { s -> println(s) }
+        """
+        val features: Set<BigtonFeature> = setOf(
+            BigtonFeature.CUSTOM_FUNCTIONS
+        )
+        val modules: List<BigtonRuntime.Module> = listOf(
+            getStandardModule()
+        )
+        val program: BigtonProgram = compileSource(src, features, modules)
+        val runtime = BigtonRuntime(
+            program, modules,
+            memorySize = 0, tickInstructionLimit = 1000, maxCallDepth = 128
+        )
+        for _ in 0..<100 {
+            runtime.executeTick()
+        }
     } catch (e: BigtonException) {
         println(e.message)
     }

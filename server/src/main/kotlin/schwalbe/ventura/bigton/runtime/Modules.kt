@@ -3,7 +3,7 @@ package schwalbe.ventura.bigton.runtime
 
 import schwalbe.ventura.bigton.*
 
-fun getStandardModule() = BigtonRuntime.Module(
+val bigtonStandardModule = BigtonRuntime.Module(
     mapOf(
         "say" to BigtonRuntime.Function(cost = 1, argc = 1) { r ->
             r.logs.add(r.popOperand().display())
@@ -33,13 +33,13 @@ fun getStandardModule() = BigtonRuntime.Module(
     )
 )
 
-fun getFloatModule() = BigtonRuntime.Module(
+val bigtonFloatModule = BigtonRuntime.Module(
     mapOf(
         // TODO! floating point math operations
     )
 )
 
-fun getMemoryModule() = BigtonRuntime.Module(
+val bigtonMemoryModule = BigtonRuntime.Module(
     mapOf(
         // TODO! 'ramSize'
     )

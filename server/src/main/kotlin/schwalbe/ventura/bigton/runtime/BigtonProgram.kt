@@ -1,5 +1,7 @@
 
-package schwalbe.ventura.bigton
+package schwalbe.ventura.bigton.runtime
+
+import schwalbe.ventura.bigton.*
 
 data class BigtonProgram(
     val functions: Map<String, List<BigtonInstr>>,

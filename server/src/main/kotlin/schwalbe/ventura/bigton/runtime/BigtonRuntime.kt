@@ -7,7 +7,8 @@ class BigtonRuntime(
     program: BigtonProgram,
     modules: List<BigtonRuntime.Module>,
     memorySize: Int,
-    val tickInstructionLimit: Long
+    val tickInstructionLimit: Long,
+    val maxCallDepth: Int
 ) {
 
     data class Function(
@@ -54,6 +55,11 @@ class BigtonRuntime(
             functions[name] = Function(cost = 0, argc = -1) { r ->
                 r.calls.add(Call(name, this.currentLine))
                 r.scopes.add(Scope(ScopeType.FUNCTION, body))
+                if (this.calls.size > this.maxCallDepth) {
+                    throw BigtonException(
+                        BigtonErrorType.MAXIMUM_CALL_DEPTH, this.currentLine
+                    )
+                }
             }
         }
         this.functions = functions
