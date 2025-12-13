@@ -102,28 +102,37 @@ import schwalbe.ventura.bigton.runtime.*
 fun main() {
     try {
         val src: String = """
-        
-var n = 0
-while n < 100 {
-    say(n)
-    n = n + 1
+
+fun fib(n) {
+    if n <= 1 { return n }
+    return fib(n - 1) + fib(n - 2)
 }
+
+say(fib(40))
 
         """
         val features: Set<BigtonFeature> = setOf(
+            BigtonFeature.FPU_MODULE,
+            BigtonFeature.OBJECTS,
             BigtonFeature.CUSTOM_FUNCTIONS
         )
         val modules: List<BigtonRuntime.Module> = listOf(
-            getStandardModule()
+            bigtonStandardModule
         )
         val program: BigtonProgram = compileSource(src, features, modules)
+        println(program.displayInstr())
         val runtime = BigtonRuntime(
             program, modules,
-            memorySize = 0, tickInstructionLimit = 1000, maxCallDepth = 128
+            memorySize = 0, tickInstructionLimit = Long.MAX_VALUE, maxCallDepth = 128
         )
-        for _ in 0..<100 {
-            runtime.executeTick()
-        }
+        val startTime = System.currentTimeMillis()
+        // for (tickIdx in 0..<100) {
+        //     runtime.executeTick()
+        // }
+        runtime.executeTick()
+        val endTime = System.currentTimeMillis()
+        println("Took ${endTime - startTime}ms")
+        println(runtime.logs.joinToString("\n"))
     } catch (e: BigtonException) {
         println(e.message)
     }

@@ -1,6 +1,7 @@
 
 package schwalbe.ventura.bigton.compilation
 
+import schwalbe.ventura.bigton.*
 import schwalbe.ventura.bigton.runtime.*
 
 fun compileSource(
@@ -10,5 +11,5 @@ fun compileSource(
 ): BigtonProgram {
     val tokens: List<BigtonToken> = tokenize(source)
     val ast: List<BigtonAst> = BigtonParser(tokens).parseStatementList()
-    return emitProgram(ast, features, modules)
+    return generateProgram(ast, features, modules)
 }

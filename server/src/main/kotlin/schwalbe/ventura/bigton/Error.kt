@@ -26,9 +26,18 @@ enum class BigtonErrorType(val id: String, val message: String) {
 
     // [SC___] - Failed Static Checks
     FEATURE_UNSUPPORTED("SC001", "Feature not supported by the processor"),
+    UNKNOWN_VARIABLE("SC002", "Program references a variable that is neither a global variable nor present in the current scope"),
+    UNKNOWN_FUNCTION("SC003", "Program references a function that is neither defined by the program nor provided by an installed module"),
+    ASSIGNMENT_TO_CONST("SC004", "Program attempted to assign a value to an expression that cannot be modified"),
+    RETURN_OUTSIDE_FUNCTION("SC005", "'return' statement used outside of a function body"),
+    LOOP_CONTROLS_OUTSIDE_LOOP("SC006", "'continue' or 'break' statement used outside of a loop body"),
+    FUNCTION_INSIDE_FUNCTION("SC007", "Program defines a function inside of another function"),
+    TOO_FEW_CALL_ARGS("SC008", "Program passes less arguments in a function call than the function requires"),
+    TOO_MANY_CALL_ARGS("SC009", "Program passes more arguments in a function call than the function requires"),
 
     // [SC-INTERNAL___] - Internal Failed Static Checks
     INVALID_AST_ARG("SC-INTERNAL001", "AST node argument is invalid"),
+    UNHANDLED_AST_TYPE("SC-INTERNAL002", "Code generation for used AST type not yet implemented"),
 
     // [RT___] - Runtime Error
     EXCEEDED_INSTR_LIMIT("RT001", "Ran too many instructions during this tick"),
@@ -45,10 +54,9 @@ enum class BigtonErrorType(val id: String, val message: String) {
     MAXIMUM_CALL_DEPTH("RT012", "Number of nested calls exceeded the maximum call depth of this processor"),
 
     // [RT-INTERNAL___] - Internal Runtime Error
-    MISSING_OPERAND("RT-INTERNAL001", "Missing operand from operand stack"),
-    INVALID_INSTR_ARG("RT-INTERNAL002", "Instruction argument is invalid"),
-    MISSING_VARIABLE("RT-INTERNAL003", "Variable does not exist at runtime"),
-    MISSING_FUNCTION("RT-INTERNAL004", "Function does not exist at runtime")
+    INVALID_INSTR_ARG("RT-INTERNAL001", "Instruction argument is invalid"),
+    MISSING_VARIABLE("RT-INTERNAL002", "Variable does not exist at runtime"),
+    MISSING_FUNCTION("RT-INTERNAL003", "Function does not exist at runtime")
 
 }
 

@@ -8,11 +8,21 @@ data class BigtonProgram(
     val global: List<BigtonInstr>
 )
 
+fun BigtonProgram.displayInstr(): String {
+    val functions: String = this.functions
+        .map { (name, body) -> "[$name] ${body.displayInstr()}" }
+        .joinToString("\n\n")
+    val global: String = this.global
+        .map { i -> i.displayInstr() }
+        .joinToString("\n")
+    return "$functions\n\n$global"
+}
+
 // BIGTON IR CALLING CONVENTIONS
 //
 // 1. Call arguments are pushed onto stack in normal order
 // 2. 'CALL' executed with function name
-// 3. Call arguments are poped from stack in reverse order
+// 3. Call arguments are popped from stack in reverse order
 //    ... (function body)
 // 4. If explicit return:
 //      5. Return value is pushed onto stack
@@ -26,6 +36,9 @@ enum class BigtonInstrType {
     // arg: Int = source line
     // stack: ->
     SOURCE_LINE,
+    // arg: null
+    // stack: value ->
+    DISCARD,
 
     // arg: BigtonValue = value
     // stack: -> <arg>
@@ -145,3 +158,78 @@ data class BigtonInstr(
 inline fun<reified T> BigtonInstr.castArg(currentLine: Int): T
     = this.arg as? T
     ?: throw BigtonException(BigtonErrorType.INVALID_INSTR_ARG, currentLine)
+
+fun BigtonInstr.displayInstr(): String = when (this.type) {
+    BigtonInstrType.SOURCE_LINE
+        -> "SOURCE_LINE ${this.castArg<Int>(-1)}"
+    BigtonInstrType.DISCARD -> "DISCARD"
+    BigtonInstrType.LOAD_VALUE -> {
+        val arg: Any? = this.arg
+        "LOAD_VALUE " + when (arg) {
+            is BigtonNull -> "null"
+            is BigtonInt -> arg.v
+            is BigtonFloat -> arg.v
+            is BigtonString -> "\"${arg.v}\""
+            else -> arg.toString()
+        }
+    }
+    BigtonInstrType.LOAD_TUPLE
+        -> "LOAD_TUPLE ${this.castArg<Int>(-1)}"
+    BigtonInstrType.LOAD_TUPLE_MEMBER
+        -> "LOAD_TUPLE_MEMBER ${this.castArg<Int>(-1)}"
+    BigtonInstrType.LOAD_OBJECT
+        -> "LOAD_OBJECT " + this.castArg<List<String>>(-1)
+            .map { m -> "\"$m\"" }.joinToString(", ")
+    BigtonInstrType.LOAD_OBJECT_MEMBER
+        -> "LOAD_OBJECT_MEMBER \"${this.castArg<String>(-1)}\""
+    BigtonInstrType.LOAD_VARIABLE
+        -> "LOAD_VARIABLE \"${this.castArg<String>(-1)}\""
+    BigtonInstrType.LOAD_MEMORY -> "LOAD_MEMORY"
+    BigtonInstrType.ADD -> "ADD"
+    BigtonInstrType.SUBTRACT -> "SUBTRACT"
+    BigtonInstrType.MULTIPLY -> "MULTIPLY"
+    BigtonInstrType.DIVIDE -> "DIVIDE"
+    BigtonInstrType.REMAINDER -> "REMAINDER"
+    BigtonInstrType.NEGATE -> "NEGATE"
+    BigtonInstrType.LESS_THAN -> "LESS_THAN"
+    BigtonInstrType.LESS_THAN_EQUAL -> "LESS_THAN_EQUAL"
+    BigtonInstrType.GREATER_THAN -> "GREATER_THAN"
+    BigtonInstrType.GREATER_THAN_EQUAL -> "GREATER_THAN_EQUAL"
+    BigtonInstrType.EQUAL -> "EQUAL"
+    BigtonInstrType.NOT_EQUAL -> "NOT_EQUAL"
+    BigtonInstrType.AND -> "AND"
+    BigtonInstrType.OR -> "OR"
+    BigtonInstrType.NOT -> "NOT"
+    BigtonInstrType.STORE_EXISTING_VARIABLE
+        -> "STORE_EXISTING_VARIABLE \"${this.castArg<String>(-1)}\""
+    BigtonInstrType.STORE_NEW_VARIABLE
+        -> "STORE_NEW_VARIABLE \"${this.castArg<String>(-1)}\""
+    BigtonInstrType.STORE_MEMORY -> "STORE_MEMORY"
+    BigtonInstrType.STORE_OBJECT_MEMBER
+        -> "STORE_OBJECT_MEMBER \"${this.castArg<String>(-1)}\""
+    BigtonInstrType.IF -> {
+        val (if_body, else_body)
+            = this.castArg<Pair<List<BigtonInstr>, List<BigtonInstr>?>>(-1)
+        "IF ${if_body.displayInstr()} ${else_body?.displayInstr() ?: ""}"
+    }
+    BigtonInstrType.LOOP
+        -> "LOOP ${this.castArg<List<BigtonInstr>>(-1).displayInstr()}"
+    BigtonInstrType.TICK
+        -> "TICK ${this.castArg<List<BigtonInstr>>(-1).displayInstr()}"
+    BigtonInstrType.CONTINUE -> "CONTINUE"
+    BigtonInstrType.BREAK -> "BREAK"
+    BigtonInstrType.CALL
+        -> "CALL \"${this.castArg<String>(-1)}\""
+    BigtonInstrType.RETURN -> "RETURN"
+}
+
+fun List<BigtonInstr>.displayInstr(): String {
+    val raw: String = this
+        .map { i -> i.displayInstr() }
+        .joinToString("\n")
+    val indented: String = raw
+        .split("\n")
+        .map { l -> "    $l" }
+        .joinToString("\n")
+    return "{\n$indented\n}"
+}

@@ -17,7 +17,7 @@ fun BigtonValue.display(): String = when (this) {
     is BigtonNull -> "null"
     is BigtonInt -> this.v.toString()
     is BigtonFloat -> this.v.toString()
-    is BigtonString -> this.v.toString()
+    is BigtonString -> "\"${this.v.toString()}\""
     is BigtonTuple -> {
         val inner: String = this.elements
             .map(BigtonValue::display)
@@ -27,7 +27,7 @@ fun BigtonValue.display(): String = when (this) {
     is BigtonObject -> if (this.members.isEmpty()) { "{}" }
     else {
         val inner: String = this.members
-            .map { (m, v) -> "${m}: ${v.display()}" }
+            .map { (m, v) -> "${m} = ${v.display()}" }
             .joinToString(", ")
         "{ $inner }"
     }

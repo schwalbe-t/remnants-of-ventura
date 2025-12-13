@@ -83,12 +83,7 @@ class BigtonRuntime(
     }
 
     fun popOperand(): BigtonValue {
-        if (this.operands.size >= 1) {
-            return this.operands.removeLast()
-        }
-        throw BigtonException(
-            BigtonErrorType.MISSING_OPERAND, this.currentLine
-        )
+        return this.operands.removeLast()
     }
 
     inline fun<reified T> castPopOperand(err: BigtonErrorType): T {
@@ -202,6 +197,9 @@ class BigtonRuntime(
             when (instr.type) {
                 BigtonInstrType.SOURCE_LINE -> {
                     this.currentLine = instr.castArg<Int>(this.currentLine)
+                }
+                BigtonInstrType.DISCARD -> {
+                    this.popOperand()
                 }
 
                 BigtonInstrType.LOAD_VALUE -> {
