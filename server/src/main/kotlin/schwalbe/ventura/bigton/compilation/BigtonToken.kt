@@ -23,6 +23,7 @@ enum class BigtonTokenType {
     LESS_THAN,
     GREATER_THAN,
     EQUALS,
+    AT,
 
     LESS_THAN_EQUAL,
     GREATER_THAN_EQUAL,

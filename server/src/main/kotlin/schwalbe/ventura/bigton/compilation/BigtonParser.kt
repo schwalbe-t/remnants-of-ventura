@@ -23,7 +23,7 @@ class BigtonParser(val tokens: List<BigtonToken>) {
 }
 
 val unaryBindingPower: Map<BigtonTokenType, Int> = mapOf(
-    BigtonTokenType.ASTERISK    to 6,
+    BigtonTokenType.AT          to 6,
     BigtonTokenType.MINUS       to 6,
 
     BigtonTokenType.KEYWORD_NOT to 2
@@ -140,7 +140,7 @@ fun BigtonParser.parseValue(): BigtonAst {
     this.advance()
     val operand: BigtonAst = this.parseExpression(currPower)
     val astType: BigtonAstType = when (op.type) {
-        BigtonTokenType.ASTERISK    -> BigtonAstType.DEREF
+        BigtonTokenType.AT          -> BigtonAstType.DEREF
         BigtonTokenType.MINUS       -> BigtonAstType.NEGATE
         BigtonTokenType.KEYWORD_NOT -> BigtonAstType.NOT
         else -> throw java.lang.UnsupportedOperationException(

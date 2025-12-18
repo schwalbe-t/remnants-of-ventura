@@ -162,20 +162,21 @@ fun tokenize(source: String): List<BigtonToken> {
         }
         if (isDouble) { continue }
         val isSingle: Boolean = when (current) {
-            '(' -> advToken(BigtonTokenType.PAREN_OPEN,   "(")
-            ')' -> advToken(BigtonTokenType.PAREN_CLOSE,  ")")
-            '{' -> advToken(BigtonTokenType.BRACE_OPEN,   "{")
-            '}' -> advToken(BigtonTokenType.BRACE_CLOSE,  "}")
-            '.' -> advToken(BigtonTokenType.DOT,          ".")
-            ',' -> advToken(BigtonTokenType.COMMA,        ",")
-            '+' -> advToken(BigtonTokenType.PLUS,         "+")
-            '-' -> advToken(BigtonTokenType.MINUS,        "-")
-            '*' -> advToken(BigtonTokenType.ASTERISK,     "*")
-            '/' -> advToken(BigtonTokenType.SLASH,        "/")
-            '%' -> advToken(BigtonTokenType.PERCENT,      "%")
-            '<' -> advToken(BigtonTokenType.LESS_THAN,    "<")
-            '>' -> advToken(BigtonTokenType.GREATER_THAN, ">")
-            '=' -> advToken(BigtonTokenType.EQUALS,       "=")
+            '(' -> advToken(BigtonTokenType.PAREN_OPEN,     "(")
+            ')' -> advToken(BigtonTokenType.PAREN_CLOSE,    ")")
+            '{' -> advToken(BigtonTokenType.BRACE_OPEN,     "{")
+            '}' -> advToken(BigtonTokenType.BRACE_CLOSE,    "}")
+            '.' -> advToken(BigtonTokenType.DOT,            ".")
+            ',' -> advToken(BigtonTokenType.COMMA,          ",")
+            '+' -> advToken(BigtonTokenType.PLUS,           "+")
+            '-' -> advToken(BigtonTokenType.MINUS,          "-")
+            '*' -> advToken(BigtonTokenType.ASTERISK,       "*")
+            '/' -> advToken(BigtonTokenType.SLASH,          "/")
+            '%' -> advToken(BigtonTokenType.PERCENT,        "%")
+            '<' -> advToken(BigtonTokenType.LESS_THAN,      "<")
+            '>' -> advToken(BigtonTokenType.GREATER_THAN,   ">")
+            '=' -> advToken(BigtonTokenType.EQUALS,         "=")
+            '@' -> advToken(BigtonTokenType.AT,             "@")
             '#' -> {
                 while (currentIdx < source.length) {
                     val c: Char = source[currentIdx]

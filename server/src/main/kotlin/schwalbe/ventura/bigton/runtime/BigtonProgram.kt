@@ -57,7 +57,10 @@ enum class BigtonInstrType {
     LOAD_OBJECT_MEMBER,
     // arg: String = variable name
     // stack: -> <var_value>
-    LOAD_VARIABLE,
+    LOAD_GLOBAL,
+    // arg: Int = relative local index
+    // stack: -> <var_value>
+    LOAD_LOCAL,
     // arg: null
     // stack: address -> <value_at_address>
     LOAD_MEMORY,
@@ -115,10 +118,13 @@ enum class BigtonInstrType {
 
     // arg: String = variable name
     // stack: value ->
-    STORE_EXISTING_VARIABLE,
-    // arg: String = variable name
+    STORE_GLOBAL,
+    // arg: null
     // stack: value ->
-    STORE_NEW_VARIABLE,
+    PUSH_LOCAL,
+    // arg: Int = relative local index
+    // stack: value ->
+    STORE_LOCAL,
     // arg: null
     // stack: address, value ->
     STORE_MEMORY,
@@ -182,8 +188,10 @@ fun BigtonInstr.displayInstr(): String = when (this.type) {
             .map { m -> "\"$m\"" }.joinToString(", ")
     BigtonInstrType.LOAD_OBJECT_MEMBER
         -> "LOAD_OBJECT_MEMBER \"${this.castArg<String>(-1)}\""
-    BigtonInstrType.LOAD_VARIABLE
-        -> "LOAD_VARIABLE \"${this.castArg<String>(-1)}\""
+    BigtonInstrType.LOAD_GLOBAL
+        -> "LOAD_GLOBAL \"${this.castArg<String>(-1)}\""
+    BigtonInstrType.LOAD_LOCAL
+        -> "LOAD_LOCAL ${this.castArg<Int>(-1)}"
     BigtonInstrType.LOAD_MEMORY -> "LOAD_MEMORY"
     BigtonInstrType.ADD -> "ADD"
     BigtonInstrType.SUBTRACT -> "SUBTRACT"
@@ -200,10 +208,11 @@ fun BigtonInstr.displayInstr(): String = when (this.type) {
     BigtonInstrType.AND -> "AND"
     BigtonInstrType.OR -> "OR"
     BigtonInstrType.NOT -> "NOT"
-    BigtonInstrType.STORE_EXISTING_VARIABLE
-        -> "STORE_EXISTING_VARIABLE \"${this.castArg<String>(-1)}\""
-    BigtonInstrType.STORE_NEW_VARIABLE
-        -> "STORE_NEW_VARIABLE \"${this.castArg<String>(-1)}\""
+    BigtonInstrType.STORE_GLOBAL
+        -> "STORE_GLOBAL \"${this.castArg<String>(-1)}\""
+    BigtonInstrType.PUSH_LOCAL -> "PUSH_LOCAL"
+    BigtonInstrType.STORE_LOCAL
+        -> "STORE_LOCAL ${this.castArg<Int>(-1)}"
     BigtonInstrType.STORE_MEMORY -> "STORE_MEMORY"
     BigtonInstrType.STORE_OBJECT_MEMBER
         -> "STORE_OBJECT_MEMBER \"${this.castArg<String>(-1)}\""

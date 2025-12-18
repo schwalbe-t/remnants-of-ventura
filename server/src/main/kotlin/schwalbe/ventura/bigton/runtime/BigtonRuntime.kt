@@ -32,13 +32,13 @@ class BigtonRuntime(
     private data class Scope(
         val type: ScopeType,
         val body: List<BigtonInstr>,
-        var current: Int = 0
+        var current: Int = 0,
+        var numLocals: Int = 0
     )
 
     private data class Call(
         val name: String,
-        val fromLine: Int,
-        val variables: MutableMap<String, BigtonValue> = mutableMapOf()
+        val fromLine: Int
     )
 
 
@@ -75,6 +75,7 @@ class BigtonRuntime(
     )
     private val calls: MutableList<Call> = mutableListOf()
     private val globals: MutableMap<String, BigtonValue> = mutableMapOf()
+    private val locals: MutableList<BigtonValue> = mutableListOf()
     private var currentFuncName: String = "<global>"
     private var currentLine: Int = 0
 
@@ -109,17 +110,6 @@ class BigtonRuntime(
     }
 
     fun getCurrentLine(): Int = this.currentLine
-
-    private fun findVarScopeWith(name: String)
-    : MutableMap<String, BigtonValue> {
-        val locals: MutableMap<String, BigtonValue>?
-            = this.calls.lastOrNull()?.variables
-        if (locals != null && locals.containsKey(name)) { return locals }
-        if (this.globals.containsKey(name)) { return this.globals }
-        throw BigtonException(
-            BigtonErrorType.MISSING_VARIABLE, this.currentLine
-        )
-    }
 
     private fun executeBinaryNumOp(
         i: (Long, Long) -> BigtonValue, f: (Double, Double) -> BigtonValue
@@ -160,6 +150,21 @@ class BigtonRuntime(
         is BigtonObject -> true
     }
 
+    private fun resetScope() {
+        val scope: Scope = this.scopes.last()
+        this.locals.subList(
+            fromIndex = this.locals.size - scope.numLocals,
+            toIndex = this.locals.size
+        ).clear()
+        scope.numLocals = 0
+        scope.current = 0
+    }
+
+    private fun popScope() {
+        this.resetScope()
+        this.scopes.removeLast()
+    }
+
     fun executeTick() {
         var instructionLimit: Long = 0
         fetchExec@ while (true) {
@@ -176,19 +181,19 @@ class BigtonRuntime(
                         break@fetchExec
                     }
                     ScopeType.FUNCTION -> {
-                        this.scopes.removeLast()
+                        this.popScope()
                         this.calls.removeLast()
                         this.pushOperand(BigtonNull)
                     }
                     ScopeType.LOOP -> {
-                        scope.current = 0
+                        this.resetScope()
                         instructionLimit += 1
                     }
                     ScopeType.IF -> {
-                        this.scopes.removeLast()
+                        this.popScope()
                     }
                     ScopeType.TICK -> {
-                        scope.current = 0
+                        this.resetScope()
                         break@fetchExec
                     }
                 }
@@ -246,12 +251,18 @@ class BigtonRuntime(
                         )
                     this.pushOperand(value)
                 }
-                BigtonInstrType.LOAD_VARIABLE -> {
+                BigtonInstrType.LOAD_GLOBAL -> {
                     val name: String = instr.castArg<String>(this.currentLine)
-                    val vars: Map<String, BigtonValue>
-                        = this.findVarScopeWith(name)
-                    // enforced by 'findVarScopeName'
-                    val value: BigtonValue = vars[name]!!
+                    val value: BigtonValue = this.globals[name]
+                        ?: throw BigtonException(
+                            BigtonErrorType.MISSING_GLOBAL, this.currentLine
+                        )
+                    this.pushOperand(value)
+                }
+                BigtonInstrType.LOAD_LOCAL -> {
+                    val relIdx: Int = instr.castArg<Int>(this.currentLine)
+                    val idx: Int = this.locals.size - 1 - relIdx
+                    val value: BigtonValue = this.locals[idx]
                     this.pushOperand(value)
                 }
                 BigtonInstrType.LOAD_MEMORY -> {
@@ -352,17 +363,18 @@ class BigtonRuntime(
                     this.pushOperand(BigtonInt(r))
                 }
 
-                BigtonInstrType.STORE_EXISTING_VARIABLE -> {
+                BigtonInstrType.STORE_GLOBAL -> {
                     val name: String = instr.castArg<String>(this.currentLine)
-                    val vars: MutableMap<String, BigtonValue>
-                        = this.findVarScopeWith(name)
-                    vars[name] = this.popOperand()
+                    this.globals[name] = this.popOperand()
                 }
-                BigtonInstrType.STORE_NEW_VARIABLE -> {
-                    val name: String = instr.castArg<String>(this.currentLine)
-                    val vars: MutableMap<String, BigtonValue>
-                        = this.calls.lastOrNull()?.variables ?: this.globals
-                    vars[name] = this.popOperand()
+                BigtonInstrType.PUSH_LOCAL -> {
+                    this.locals.add(this.popOperand())
+                    scope.numLocals += 1
+                }
+                BigtonInstrType.STORE_LOCAL -> {
+                    val relIdx: Int = instr.castArg<Int>(this.currentLine)
+                    val idx: Int = this.locals.size - 1 - relIdx
+                    this.locals[idx] = this.popOperand()
                 }
                 BigtonInstrType.STORE_MEMORY -> {
                     val value: BigtonValue = this.popOperand()
@@ -409,18 +421,18 @@ class BigtonRuntime(
                     this.scopes.add(Scope(ScopeType.TICK, body))
                 }
                 BigtonInstrType.CONTINUE -> {
-                    scope.current = 0
+                    this.resetScope()
                 }
                 BigtonInstrType.BREAK -> {
                     removeScope@ while (true) {
                         val removed: Scope = this.scopes.last()
                         when (removed.type) {
                             ScopeType.IF -> {
-                                this.scopes.removeLast()
+                                this.popScope()
                             }
                             ScopeType.LOOP,
                             ScopeType.TICK -> {
-                                this.scopes.removeLast()
+                                this.popScope()
                                 break@removeScope
                             }
                             ScopeType.GLOBAL,
@@ -448,10 +460,10 @@ class BigtonRuntime(
                             ScopeType.IF,
                             ScopeType.LOOP,
                             ScopeType.TICK -> {
-                                this.scopes.removeLast()
+                                this.popScope()
                             }
                             ScopeType.FUNCTION -> {
-                                this.scopes.removeLast()
+                                this.popScope()
                                 break@removeScope
                             }
                             ScopeType.GLOBAL -> {

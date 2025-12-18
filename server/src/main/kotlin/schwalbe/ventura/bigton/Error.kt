@@ -55,7 +55,7 @@ enum class BigtonErrorType(val id: String, val message: String) {
 
     // [RT-INTERNAL___] - Internal Runtime Error
     INVALID_INSTR_ARG("RT-INTERNAL001", "Instruction argument is invalid"),
-    MISSING_VARIABLE("RT-INTERNAL002", "Variable does not exist at runtime"),
+    MISSING_GLOBAL("RT-INTERNAL002", "Global variable does not exist at runtime"),
     MISSING_FUNCTION("RT-INTERNAL003", "Function does not exist at runtime")
 
 }

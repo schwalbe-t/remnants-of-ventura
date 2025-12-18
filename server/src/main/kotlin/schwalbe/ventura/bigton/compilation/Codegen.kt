@@ -63,27 +63,42 @@ private fun ProgramContext.findFunctionArgc(name: String): Int? {
     return null
 }
 
-private data class ScopeContext(
+// var a [0] (numLocals = 1)
+// a -> -numLocals + 0 -> -1
+
+// var b [1] (numLocals = 2)
+// a -> -numLocals + 0 -> -2
+// b -> -numLocals + 1 -> -1
+
+// var c [2] (numLocals = 3)
+// a -> -numLocals + 0 -> -3
+// b -> -numLocals + 1 -> -2
+// c -> -numLocals + 2 -> -1 
+
+private class ScopeContext(
+    val inGlobal: Boolean,
     val inFunction: Boolean,
     val inLoop: Boolean,
-    val vars: MutableSet<String>,
+    val locals: MutableMap<String, Int>,
+    var numLocals: Int,
     val program: ProgramContext
 )
 
 private fun ScopeContext.inChildScope(
     isLoop: Boolean = this.inLoop
 ) = ScopeContext(
+    inGlobal = false,
     inFunction = this.inFunction,
     inLoop = isLoop,
-    vars = this.vars.toMutableSet(),
+    locals = this.locals.toMutableMap(),
+    numLocals = this.numLocals,
     program = this.program
 )
 
-private fun ScopeContext.assertVariableExists(name: String) {
-    if (name in this.vars || name in this.program.symbols.globalVars) { return }
-    throw BigtonException(
-        BigtonErrorType.UNKNOWN_VARIABLE, this.program.line.current
-    )
+private fun ScopeContext.getLocalRelIndex(name: String): Int? {
+    val idx: Int? = this.locals[name]
+    if (idx == null) { return idx }
+    return this.numLocals - 1 - idx
 }
 
 private fun ScopeContext.assertInFunction() {
@@ -110,8 +125,16 @@ private fun generateExpression(
     instrs.add(when (ast.type) {
         BigtonAstType.IDENTIFIER -> {
             val name = ast.castArg<String>()
-            ctx.assertVariableExists(name)
-            BigtonInstr(BigtonInstrType.LOAD_VARIABLE, name)
+            val localIdx: Int? = ctx.getLocalRelIndex(name)
+            if (localIdx != null) {
+                BigtonInstr(BigtonInstrType.LOAD_LOCAL, localIdx)
+            } else if (name in ctx.program.symbols.globalVars) {
+                BigtonInstr(BigtonInstrType.LOAD_GLOBAL, name)
+            } else {
+                throw BigtonException(
+                    BigtonErrorType.UNKNOWN_VARIABLE, ast.line
+                )
+            }
         }
         BigtonAstType.NULL_LITERAL -> BigtonInstr(
             BigtonInstrType.LOAD_VALUE, BigtonNull
@@ -204,12 +227,18 @@ private fun generateStatement(
             val value: BigtonAst = ast.children[1]
             when (dest.type) {
                 BigtonAstType.IDENTIFIER -> {
-                    val name: String = dest.castArg<String>()
-                    ctx.assertVariableExists(name)
                     generateExpression(value, ctx, instrs)
-                    instrs.add(BigtonInstr(
-                        BigtonInstrType.STORE_EXISTING_VARIABLE, name
-                    ))
+                    val name: String = dest.castArg<String>()
+                    val localIdx: Int? = ctx.getLocalRelIndex(name)
+                    instrs.add(if (localIdx != null) {
+                        BigtonInstr(BigtonInstrType.STORE_LOCAL, localIdx)
+                    } else if (name in ctx.program.symbols.globalVars) {
+                        BigtonInstr(BigtonInstrType.STORE_GLOBAL, name)
+                    } else {
+                        throw BigtonException(
+                            BigtonErrorType.UNKNOWN_VARIABLE, ast.line
+                        )
+                    })
                 }
                 BigtonAstType.DEREF -> {
                     ctx.program.assertFeatureSupported(BigtonFeature.RAM_MODULE)
@@ -309,7 +338,14 @@ private fun generateStatement(
             val name: String = ast.castArg<String>()
             val value: BigtonAst = ast.children[0]
             generateExpression(value, ctx, instrs)
-            instrs.add(BigtonInstr(BigtonInstrType.STORE_NEW_VARIABLE, name))
+            instrs.add(if (ctx.inGlobal) {
+                BigtonInstr(BigtonInstrType.STORE_GLOBAL, name)
+            } else {
+                val idx: Int = ctx.numLocals
+                ctx.locals[name] = idx
+                ctx.numLocals += 1
+                BigtonInstr(BigtonInstrType.PUSH_LOCAL)
+            })
         }
         BigtonAstType.FUNCTION -> throw BigtonException(
             BigtonErrorType.FUNCTION_INSIDE_FUNCTION, ast.line
@@ -341,13 +377,17 @@ private fun generateFunction(
     // variables in the REVERSE order (since the last argument will have
     // been pushed onto the stack by the caller LAST and will therefore be
     // popped next)
-    for (argName in function.argNames.asReversed()) {
-        instrs.add(BigtonInstr(BigtonInstrType.STORE_NEW_VARIABLE, argName))
+    val params: MutableMap<String, Int> = mutableMapOf()
+    for ((i, n) in function.argNames.asReversed().withIndex()) {
+        instrs.add(BigtonInstr(BigtonInstrType.PUSH_LOCAL))
+        params[n] = i
     }
     val scope = ScopeContext(
+        inGlobal = false,
         inFunction = true,
         inLoop = false,
-        vars = function.argNames.toMutableSet(),
+        locals = params,
+        numLocals = function.argNames.size,
         program = ctx
     )
     function.body.forEach { n -> generateStatement(n, scope, instrs) }
@@ -360,14 +400,14 @@ private fun generateGlobal(
     val instrs = mutableListOf<BigtonInstr>()
     for (globalName in ctx.symbols.globalVars) {
         instrs.add(BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonNull))
-        instrs.add(BigtonInstr(
-            BigtonInstrType.STORE_NEW_VARIABLE, globalName
-        ))
+        instrs.add(BigtonInstr(BigtonInstrType.STORE_GLOBAL, globalName))
     }
     val scope = ScopeContext(
+        inGlobal = true,
         inFunction = false,
         inLoop = false,
-        vars = mutableSetOf(),
+        locals = mutableMapOf(),
+        numLocals = 0,
         program = ctx
     )
     ast.forEach { n -> generateStatement(n, scope, instrs) }
