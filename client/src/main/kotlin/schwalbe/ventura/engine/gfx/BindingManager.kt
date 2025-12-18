@@ -1,7 +1,7 @@
 
 package schwalbe.ventura.engine.gfx
 
-internal interface Bindable {
+interface Bindable {
 
     fun bind()
 

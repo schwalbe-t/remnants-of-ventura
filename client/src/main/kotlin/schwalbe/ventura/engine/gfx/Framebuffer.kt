@@ -2,6 +2,7 @@
 package schwalbe.ventura.engine.gfx
 
 import schwalbe.ventura.engine.UsageAfterDisposalException
+import schwalbe.ventura.engine.Disposable
 
 import org.lwjgl.opengl.GL33.*
 import org.joml.*
@@ -9,7 +10,7 @@ import org.joml.*
 interface ConstFramebuffer : Bindable {
 
     companion object {
-        val bound = BindingManager<ConstFrameBuffer>()
+        internal val bound = BindingManager<ConstFramebuffer>()
     }
 
     val width: Int
@@ -17,19 +18,19 @@ interface ConstFramebuffer : Bindable {
 
     fun clearColor(color: Vector4fc) {
         this.bind()
-        glClearColor(color.x(), color.y(), color.z(), color.a())
+        glClearColor(color.x(), color.y(), color.z(), color.w())
         glClear(GL_COLOR_BUFFER_BIT)
     }
 
     fun clearDepth(depth: Float) {
         this.bind()
-        glClearDepth(depth)
+        glClearDepth(depth.toDouble())
         glClear(GL_DEPTH_BUFFER_BIT)
     }
 
 }
 
-class Framebuffer : ConstFrameBuffer, Disposable {
+class Framebuffer : ConstFramebuffer, Disposable {
 
     var fboId: Int? = null
         private set
@@ -46,7 +47,7 @@ class Framebuffer : ConstFrameBuffer, Disposable {
     override var height: Int = 0
         private set
 
-    inline fun getFboId(): Int
+    fun getFboId(): Int
         = this.fboId ?: throw UsageAfterDisposalException()
 
     constructor() {
@@ -86,10 +87,14 @@ class Framebuffer : ConstFrameBuffer, Disposable {
         ConstFramebuffer.bound.invalidateAll()
         glBindFramebuffer(GL_FRAMEBUFFER, this.getFboId())
         glFramebufferTexture2D(
-            GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT_0, GL_TEXTURE_2D,
+            GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
             newColor?.getTexId() ?: 0,
             0
         )
+        val buff = if (newColor == null) { GL_NONE }
+            else { GL_COLOR_ATTACHMENT0 }
+        glDrawBuffer(buff)
+        glReadBuffer(buff)
         this.color = newColor
         this.computeProperties()
     }
