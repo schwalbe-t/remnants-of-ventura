@@ -1,6 +1,8 @@
 
 package schwalbe.ventura.bigton.compilation
 
+import schwalbe.ventura.bigton.BigtonSource
+
 enum class BigtonTokenType {
 
     IDENTIFIER,
@@ -51,5 +53,5 @@ enum class BigtonTokenType {
 data class BigtonToken(
     val type: BigtonTokenType,
     val content: String,
-    val line: Int
+    val source: BigtonSource
 )

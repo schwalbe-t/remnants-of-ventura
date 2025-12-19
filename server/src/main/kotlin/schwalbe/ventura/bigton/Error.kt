@@ -60,5 +60,10 @@ enum class BigtonErrorType(val id: String, val message: String) {
 
 }
 
-class BigtonException(val error: BigtonErrorType, val line: Int)
-    : Exception("[${error.id}] ${error.message} (line ${line + 1})")
+class BigtonException(val error: BigtonErrorType, val source: BigtonSource)
+    : Exception(
+        "[${error.id}] ${error.message} (line ${source.line + 1}"
+            + " in file \"${source.file}\")"
+    )
+
+data class BigtonSource(val line: Int, val file: String)

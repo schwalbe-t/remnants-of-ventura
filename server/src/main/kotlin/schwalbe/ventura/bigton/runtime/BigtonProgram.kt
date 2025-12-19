@@ -36,6 +36,9 @@ enum class BigtonInstrType {
     // arg: Int = source line
     // stack: ->
     SOURCE_LINE,
+    // arg: String = source file
+    // stack: ->
+    SOURCE_FILE,
     // arg: null
     // stack: value ->
     DISCARD,
@@ -161,13 +164,16 @@ data class BigtonInstr(
     val arg: Any? = null
 )
 
-inline fun<reified T> BigtonInstr.castArg(currentLine: Int): T
+inline fun<reified T> BigtonInstr.castArgNoSrc(): T
     = this.arg as? T
-    ?: throw BigtonException(BigtonErrorType.INVALID_INSTR_ARG, currentLine)
+    ?: throw BigtonException(
+        BigtonErrorType.INVALID_INSTR_ARG, BigtonSource(0, "<unknown>"))
 
 fun BigtonInstr.displayInstr(): String = when (this.type) {
     BigtonInstrType.SOURCE_LINE
-        -> "SOURCE_LINE ${this.castArg<Int>(-1)}"
+        -> "SOURCE_LINE ${this.castArgNoSrc<Int>()}"
+    BigtonInstrType.SOURCE_FILE
+        -> "SOURCE_FILE \"${this.castArgNoSrc<String>()}\""
     BigtonInstrType.DISCARD -> "DISCARD"
     BigtonInstrType.LOAD_VALUE -> {
         val arg: Any? = this.arg
@@ -180,18 +186,18 @@ fun BigtonInstr.displayInstr(): String = when (this.type) {
         }
     }
     BigtonInstrType.LOAD_TUPLE
-        -> "LOAD_TUPLE ${this.castArg<Int>(-1)}"
+        -> "LOAD_TUPLE ${this.castArgNoSrc<Int>()}"
     BigtonInstrType.LOAD_TUPLE_MEMBER
-        -> "LOAD_TUPLE_MEMBER ${this.castArg<Int>(-1)}"
+        -> "LOAD_TUPLE_MEMBER ${this.castArgNoSrc<Int>()}"
     BigtonInstrType.LOAD_OBJECT
-        -> "LOAD_OBJECT " + this.castArg<List<String>>(-1)
+        -> "LOAD_OBJECT " + this.castArgNoSrc<List<String>>()
             .map { m -> "\"$m\"" }.joinToString(", ")
     BigtonInstrType.LOAD_OBJECT_MEMBER
-        -> "LOAD_OBJECT_MEMBER \"${this.castArg<String>(-1)}\""
+        -> "LOAD_OBJECT_MEMBER \"${this.castArgNoSrc<String>()}\""
     BigtonInstrType.LOAD_GLOBAL
-        -> "LOAD_GLOBAL \"${this.castArg<String>(-1)}\""
+        -> "LOAD_GLOBAL \"${this.castArgNoSrc<String>()}\""
     BigtonInstrType.LOAD_LOCAL
-        -> "LOAD_LOCAL ${this.castArg<Int>(-1)}"
+        -> "LOAD_LOCAL ${this.castArgNoSrc<Int>()}"
     BigtonInstrType.LOAD_MEMORY -> "LOAD_MEMORY"
     BigtonInstrType.ADD -> "ADD"
     BigtonInstrType.SUBTRACT -> "SUBTRACT"
@@ -209,26 +215,26 @@ fun BigtonInstr.displayInstr(): String = when (this.type) {
     BigtonInstrType.OR -> "OR"
     BigtonInstrType.NOT -> "NOT"
     BigtonInstrType.STORE_GLOBAL
-        -> "STORE_GLOBAL \"${this.castArg<String>(-1)}\""
+        -> "STORE_GLOBAL \"${this.castArgNoSrc<String>()}\""
     BigtonInstrType.PUSH_LOCAL -> "PUSH_LOCAL"
     BigtonInstrType.STORE_LOCAL
-        -> "STORE_LOCAL ${this.castArg<Int>(-1)}"
+        -> "STORE_LOCAL ${this.castArgNoSrc<Int>()}"
     BigtonInstrType.STORE_MEMORY -> "STORE_MEMORY"
     BigtonInstrType.STORE_OBJECT_MEMBER
-        -> "STORE_OBJECT_MEMBER \"${this.castArg<String>(-1)}\""
+        -> "STORE_OBJECT_MEMBER \"${this.castArgNoSrc<String>()}\""
     BigtonInstrType.IF -> {
         val (if_body, else_body)
-            = this.castArg<Pair<List<BigtonInstr>, List<BigtonInstr>?>>(-1)
+            = this.castArgNoSrc<Pair<List<BigtonInstr>, List<BigtonInstr>?>>()
         "IF ${if_body.displayInstr()} ${else_body?.displayInstr() ?: ""}"
     }
     BigtonInstrType.LOOP
-        -> "LOOP ${this.castArg<List<BigtonInstr>>(-1).displayInstr()}"
+        -> "LOOP ${this.castArgNoSrc<List<BigtonInstr>>().displayInstr()}"
     BigtonInstrType.TICK
-        -> "TICK ${this.castArg<List<BigtonInstr>>(-1).displayInstr()}"
+        -> "TICK ${this.castArgNoSrc<List<BigtonInstr>>().displayInstr()}"
     BigtonInstrType.CONTINUE -> "CONTINUE"
     BigtonInstrType.BREAK -> "BREAK"
     BigtonInstrType.CALL
-        -> "CALL \"${this.castArg<String>(-1)}\""
+        -> "CALL \"${this.castArgNoSrc<String>()}\""
     BigtonInstrType.RETURN -> "RETURN"
 }
 

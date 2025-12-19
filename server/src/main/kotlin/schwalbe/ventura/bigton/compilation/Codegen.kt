@@ -26,18 +26,37 @@ private data class ProgramSymbols(
     val globalVars: Set<String>
 )
 
-private class LineCounter(var current: Int)
+private class SourceTracker(
+    var line: Int = 0,
+    var file: String = "<unknown>"
+)
 
-private fun LineCounter.setLine(
+private fun SourceTracker.reset() {
+    this.line = 0
+    this.file = "<unknown>"
+}
+
+private fun SourceTracker.setLine(
     newLine: Int, instrs: MutableList<BigtonInstr>
 ) {
-    if (newLine == this.current) { return }
-    this.current = newLine
+    if (newLine == this.line) { return }
+    this.line = newLine
     instrs.add(BigtonInstr(BigtonInstrType.SOURCE_LINE, newLine))
 }
 
+private fun SourceTracker.setFile(
+    newFile: String, instrs: MutableList<BigtonInstr>
+) {
+    if (newFile == this.file) { return }
+    this.file = newFile
+    instrs.add(BigtonInstr(BigtonInstrType.SOURCE_FILE, newFile))
+}
+
+private fun SourceTracker.toSource(): BigtonSource
+    = BigtonSource(this.line, this.file)
+
 private data class ProgramContext(
-    val line: LineCounter,
+    val currentSource: SourceTracker,
     val symbols: ProgramSymbols,
     val features: Set<BigtonFeature>,
     val modules: List<BigtonRuntime.Module>
@@ -46,7 +65,7 @@ private data class ProgramContext(
 private fun ProgramContext.assertFeatureSupported(feature: BigtonFeature) {
     if (feature in this.features) { return }
     throw BigtonException(
-        BigtonErrorType.FEATURE_UNSUPPORTED, this.line.current
+        BigtonErrorType.FEATURE_UNSUPPORTED, this.currentSource.toSource()
     )
 }
 
@@ -104,21 +123,24 @@ private fun ScopeContext.getLocalRelIndex(name: String): Int? {
 private fun ScopeContext.assertInFunction() {
     if (this.inFunction) { return }
     throw BigtonException(
-        BigtonErrorType.RETURN_OUTSIDE_FUNCTION, this.program.line.current
+        BigtonErrorType.RETURN_OUTSIDE_FUNCTION,
+        this.program.currentSource.toSource()
     )
 }
 
 private fun ScopeContext.assertInLoop() {
     if (this.inLoop) { return }
     throw BigtonException(
-        BigtonErrorType.LOOP_CONTROLS_OUTSIDE_LOOP, this.program.line.current
+        BigtonErrorType.LOOP_CONTROLS_OUTSIDE_LOOP,
+        this.program.currentSource.toSource()
     )
 }
 
 private fun generateExpression(
     ast: BigtonAst, ctx: ScopeContext, instrs: MutableList<BigtonInstr>
 ) {
-    ctx.program.line.setLine(ast.line, instrs)
+    ctx.program.currentSource.setLine(ast.source.line, instrs)
+    ctx.program.currentSource.setFile(ast.source.file, instrs)
     for (child in ast.children) {
         generateExpression(child, ctx, instrs)
     }
@@ -132,7 +154,7 @@ private fun generateExpression(
                 BigtonInstr(BigtonInstrType.LOAD_GLOBAL, name)
             } else {
                 throw BigtonException(
-                    BigtonErrorType.UNKNOWN_VARIABLE, ast.line
+                    BigtonErrorType.UNKNOWN_VARIABLE, ast.source
                 )
             }
         }
@@ -168,17 +190,17 @@ private fun generateExpression(
             val argc: Int? = ctx.program.findFunctionArgc(name)
             if (argc == null) {
                 throw BigtonException(
-                    BigtonErrorType.UNKNOWN_FUNCTION, ast.line
+                    BigtonErrorType.UNKNOWN_FUNCTION, ast.source
                 )
             }
             if (ast.children.size < argc) {
                 throw BigtonException(
-                    BigtonErrorType.TOO_FEW_CALL_ARGS, ast.line
+                    BigtonErrorType.TOO_FEW_CALL_ARGS, ast.source
                 )
             }
             if (ast.children.size > argc) {
                 throw BigtonException(
-                    BigtonErrorType.TOO_MANY_CALL_ARGS, ast.line
+                    BigtonErrorType.TOO_MANY_CALL_ARGS, ast.source
                 )
             }
             BigtonInstr(BigtonInstrType.CALL, name)
@@ -212,7 +234,7 @@ private fun generateExpression(
         BigtonAstType.AND -> BigtonInstr(BigtonInstrType.AND)
         BigtonAstType.OR -> BigtonInstr(BigtonInstrType.OR)
         else -> throw BigtonException(
-            BigtonErrorType.UNHANDLED_AST_TYPE, ast.line
+            BigtonErrorType.UNHANDLED_AST_TYPE, ast.source
         )
     })
 }
@@ -220,7 +242,8 @@ private fun generateExpression(
 private fun generateStatement(
     ast: BigtonAst, ctx: ScopeContext, instrs: MutableList<BigtonInstr>
 ) {
-    ctx.program.line.setLine(ast.line, instrs)
+    ctx.program.currentSource.setLine(ast.source.line, instrs)
+    ctx.program.currentSource.setFile(ast.source.file, instrs)
     when (ast.type) {
         BigtonAstType.ASSIGNMENT -> {
             val dest: BigtonAst = ast.children[0]
@@ -236,7 +259,7 @@ private fun generateStatement(
                         BigtonInstr(BigtonInstrType.STORE_GLOBAL, name)
                     } else {
                         throw BigtonException(
-                            BigtonErrorType.UNKNOWN_VARIABLE, ast.line
+                            BigtonErrorType.UNKNOWN_VARIABLE, ast.source
                         )
                     })
                 }
@@ -256,7 +279,7 @@ private fun generateStatement(
                     ))
                 }
                 else -> throw BigtonException(
-                    BigtonErrorType.ASSIGNMENT_TO_CONST, ast.line
+                    BigtonErrorType.ASSIGNMENT_TO_CONST, ast.source
                 )
             }
         }
@@ -348,7 +371,7 @@ private fun generateStatement(
             })
         }
         BigtonAstType.FUNCTION -> throw BigtonException(
-            BigtonErrorType.FUNCTION_INSIDE_FUNCTION, ast.line
+            BigtonErrorType.FUNCTION_INSIDE_FUNCTION, ast.source
         )
         else -> {
             generateExpression(ast, ctx, instrs)
@@ -369,6 +392,7 @@ private fun generateFunction(
     ast: BigtonAst, ctx: ProgramContext
 ): List<BigtonInstr> {
     ctx.assertFeatureSupported(BigtonFeature.CUSTOM_FUNCTIONS)
+    ctx.currentSource.reset()
     val function: BigtonAstFunction = ast.castArg<BigtonAstFunction>()
     val instrs = mutableListOf<BigtonInstr>()
     // When calling, we push the arguments in normal order onto the stack,
@@ -397,6 +421,7 @@ private fun generateFunction(
 private fun generateGlobal(
     ast: List<BigtonAst>, ctx: ProgramContext
 ): List<BigtonInstr> {
+    ctx.currentSource.reset()
     val instrs = mutableListOf<BigtonInstr>()
     for (globalName in ctx.symbols.globalVars) {
         instrs.add(BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonNull))
@@ -423,7 +448,9 @@ fun generateProgram(
     val globalVars: Set<String> = collectGlobalVars(ast)
     val globalAst: List<BigtonAst> = collectGlobalStatements(ast)
     val symbols = ProgramSymbols(functionAsts, globalVars)
-    val ctx = ProgramContext(LineCounter(0), symbols, features, modules)
+    val ctx = ProgramContext(
+        currentSource = SourceTracker(), symbols, features, modules
+    )
     val functionInstrs: Map<String, List<BigtonInstr>> = functionAsts
         .map { (name, ast) -> name to generateFunction(ast, ctx) }
         .toMap()

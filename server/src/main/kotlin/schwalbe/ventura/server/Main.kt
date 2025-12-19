@@ -102,11 +102,22 @@ import schwalbe.ventura.bigton.runtime.*
 fun main() {
     try {
 
-        val src: String = """
+        val arrayUtilsSrc: String = """
 
-# 'array' points to the length of the array,
-# followed by that number of elements
-fun arraysum(array) {
+fun createArray(location, length) {
+    @location = length
+    return location
+}
+
+fun fillArray(array, value) {
+    var i = 1
+    while i <= @array {
+        @(array + i) = value
+        i = i + 1
+    }
+}
+
+fun sumOfArray(array) {
     var s = 0
     var i = 1
     while i <= @array {
@@ -115,24 +126,21 @@ fun arraysum(array) {
     }
     return s
 }
+        
+        """
+        val mainSrc: String = """
 
-# 'array' points to the length of the array,
-# the following N memory locations are assigned 'value'
-fun arrayfill(array, value) {
-    var i = 1
-    while i <= @array {
-        @(array + i) = value
-        i = i + 1
-    }
-}
-
-var test = 50
-@test = 20
-arrayfill(test, 3)
-say(arraysum(test))
+var test = createArray(0, 10)
+fillArray(test, 3)
+@(test+1) = 6
+say(sumOfArray(test))
 
         """
 
+        val files = listOf(
+            BigtonSourceFile("array_utils", arrayUtilsSrc),
+            BigtonSourceFile("main", mainSrc)
+        )
         val features = setOf(
             BigtonFeature.RAM_MODULE,
             BigtonFeature.CUSTOM_FUNCTIONS
@@ -140,7 +148,7 @@ say(arraysum(test))
         val modules = listOf(
             bigtonStandardModule
         )
-        val program: BigtonProgram = compileSource(src, features, modules)
+        val program: BigtonProgram = compileSources(files, features, modules)
 
         println(program.displayInstr())
 
@@ -150,14 +158,21 @@ say(arraysum(test))
             tickInstructionLimit = Long.MAX_VALUE,
             maxCallDepth = 100
         )
-        val startTime: Long = System.currentTimeMillis()
-        runtime.executeTick()
-        val endTime: Long = System.currentTimeMillis()
-        println("Execution time: ${endTime - startTime}ms")
-
-        println(runtime.logs.joinToString("\n"))
+        try {
+            val startTime: Long = System.currentTimeMillis()
+            runtime.executeTick()
+            val endTime: Long = System.currentTimeMillis()
+            println("Execution time: ${endTime - startTime}ms")
+        } catch (e: BigtonException) {
+            println(e.message)
+            println("Stack trace (most recent call last):")
+            for (call in runtime.getStackTrace()) {
+                println("${call.name} called from \"${call.fromFile}\" line ${call.fromLine}")
+            }
+        }
+        println(runtime.getLogString())
 
     } catch (e: BigtonException) {
-        e.printStackTrace()
+        println(e.message)
     }
 }

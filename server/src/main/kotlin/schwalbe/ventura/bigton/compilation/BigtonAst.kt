@@ -63,11 +63,11 @@ enum class BigtonAstType {
 
 data class BigtonAst(
     val type: BigtonAstType,
-    val line: Int,
+    val source: BigtonSource,
     val arg: Any? = null,
     val children: List<BigtonAst> = emptyList()
 )
 
 inline fun<reified T> BigtonAst.castArg(): T
     = this.arg as? T
-    ?: throw BigtonException(BigtonErrorType.INVALID_AST_ARG, this.line)
+    ?: throw BigtonException(BigtonErrorType.INVALID_AST_ARG, this.source)

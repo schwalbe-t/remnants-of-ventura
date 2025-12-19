@@ -36,9 +36,10 @@ class BigtonRuntime(
         var numLocals: Int = 0
     )
 
-    private data class Call(
+    data class Call(
         val name: String,
-        val fromLine: Int
+        val fromLine: Int,
+        val fromFile: String
     )
 
 
@@ -53,11 +54,12 @@ class BigtonRuntime(
         }
         for ((name, body) in program.functions) {
             functions[name] = Function(cost = 0, argc = -1) { r ->
-                r.calls.add(Call(name, this.currentLine))
+                r.calls.add(Call(name, this.currentLine, this.currentFile))
                 r.scopes.add(Scope(ScopeType.FUNCTION, body))
                 if (this.calls.size > this.maxCallDepth) {
                     throw BigtonException(
-                        BigtonErrorType.MAXIMUM_CALL_DEPTH, this.currentLine
+                        BigtonErrorType.MAXIMUM_CALL_DEPTH,
+                        this.getCurrentSource()
                     )
                 }
             }
@@ -65,8 +67,7 @@ class BigtonRuntime(
         this.functions = functions
     }
 
-    val logs: MutableList<String> = mutableListOf()
-
+    private val logs: MutableList<String> = mutableListOf()
     private val memory: Array<BigtonValue>
         = Array(memorySize) { BigtonNull }
     private val operands: MutableList<BigtonValue> = mutableListOf()
@@ -78,6 +79,11 @@ class BigtonRuntime(
     private val locals: MutableList<BigtonValue> = mutableListOf()
     private var currentFuncName: String = "<global>"
     private var currentLine: Int = 0
+    private var currentFile: String = "<internal>"
+
+    fun logLine(line: String) {
+        this.logs.add(line)
+    }
 
     fun pushOperand(value: BigtonValue) {
         this.operands.add(value)
@@ -90,7 +96,7 @@ class BigtonRuntime(
     inline fun<reified T> castPopOperand(err: BigtonErrorType): T {
         val v: BigtonValue = this.popOperand()
         if (v is T) { return v }
-        throw BigtonException(err, this.getCurrentLine())
+        throw BigtonException(err, this.getCurrentSource())
     }
 
     fun addressPopOperand(): Int {
@@ -99,17 +105,24 @@ class BigtonRuntime(
         ).v
         if (address < 0) {
             throw BigtonException(
-                BigtonErrorType.MEMORY_ADDRESS_NEGATIVE, this.currentLine
+                BigtonErrorType.MEMORY_ADDRESS_NEGATIVE, this.getCurrentSource()
             )
         } else if (address >= this.memory.size) {
             throw BigtonException(
-                BigtonErrorType.MEMORY_ADDRESS_TOO_LARGE, this.currentLine
+                BigtonErrorType.MEMORY_ADDRESS_TOO_LARGE,
+                this.getCurrentSource()
             )
         }
         return address.toInt()
     }
 
     fun getCurrentLine(): Int = this.currentLine
+    fun getCurrentFile(): String = this.currentFile
+    fun getCurrentSource(): BigtonSource
+        = BigtonSource(this.currentLine, this.currentFile)
+
+    fun getStackTrace(): List<Call> = this.calls.toList()
+    fun getLogString(): String = this.logs.joinToString("\n")
 
     private fun executeBinaryNumOp(
         i: (Long, Long) -> BigtonValue, f: (Double, Double) -> BigtonValue
@@ -120,7 +133,7 @@ class BigtonRuntime(
             a is BigtonInt && b is BigtonInt -> i(a.v, b.v)
             a is BigtonFloat && b is BigtonFloat -> f(a.v, b.v)
             else -> throw BigtonException(
-                BigtonErrorType.OPERANDS_NOT_NUMBERS, this.currentLine
+                BigtonErrorType.OPERANDS_NOT_NUMBERS, this.getCurrentSource()
             ) 
         })
     }
@@ -165,12 +178,20 @@ class BigtonRuntime(
         this.scopes.removeLast()
     }
 
+    private inline fun<reified T> castInstrArg(instr: BigtonInstr): T
+        = instr.arg as? T
+        ?: throw BigtonException(
+            BigtonErrorType.INVALID_INSTR_ARG,
+            this.getCurrentSource()
+        )
+
     fun executeTick() {
         var instructionLimit: Long = 0
         fetchExec@ while (true) {
             if (instructionLimit > this.tickInstructionLimit) {
                 throw BigtonException(
-                    BigtonErrorType.EXCEEDED_INSTR_LIMIT, this.currentLine
+                    BigtonErrorType.EXCEEDED_INSTR_LIMIT,
+                    this.getCurrentSource()
                 )
             }
             val scope: Scope = this.scopes.last()
@@ -201,18 +222,21 @@ class BigtonRuntime(
             }
             when (instr.type) {
                 BigtonInstrType.SOURCE_LINE -> {
-                    this.currentLine = instr.castArg<Int>(this.currentLine)
+                    this.currentLine = this.castInstrArg<Int>(instr)
+                }
+                BigtonInstrType.SOURCE_FILE -> {
+                    this.currentFile = this.castInstrArg<String>(instr)
                 }
                 BigtonInstrType.DISCARD -> {
                     this.popOperand()
                 }
 
                 BigtonInstrType.LOAD_VALUE -> {
-                    val value = instr.castArg<BigtonValue>(this.currentLine)
+                    val value = this.castInstrArg<BigtonValue>(instr)
                     this.pushOperand(value)
                 }
                 BigtonInstrType.LOAD_TUPLE -> {
-                    val n = instr.castArg<Int>(this.currentLine)
+                    val n = this.castInstrArg<Int>(instr)
                     val tuple: List<BigtonValue> = (0..<n)
                         .map { _ -> this.popOperand() }
                         .toList()
@@ -220,19 +244,20 @@ class BigtonRuntime(
                     this.pushOperand(BigtonTuple(tuple))
                 }
                 BigtonInstrType.LOAD_TUPLE_MEMBER -> {
-                    val i = instr.castArg<Int>(this.currentLine)
+                    val i = this.castInstrArg<Int>(instr)
                     val tuple = this.castPopOperand<BigtonTuple>(
                         BigtonErrorType.OPERAND_NOT_TUPLE
                     )
                     if (i >= tuple.elements.size) {
                         throw BigtonException(
-                            BigtonErrorType.TUPLE_INDEX_OOB, this.currentLine
+                            BigtonErrorType.TUPLE_INDEX_OOB,
+                            this.getCurrentSource()
                         )
                     }
                     this.pushOperand(tuple.elements[i])
                 }
                 BigtonInstrType.LOAD_OBJECT -> {
-                    val members = instr.castArg<List<String>>(this.currentLine)
+                    val members = this.castInstrArg<List<String>>(instr)
                     val obj: MutableMap<String, BigtonValue> = members
                         .asReversed()
                         .map { m -> Pair(m, this.popOperand()) }
@@ -240,27 +265,28 @@ class BigtonRuntime(
                     this.pushOperand(BigtonObject(obj))
                 }
                 BigtonInstrType.LOAD_OBJECT_MEMBER -> {
-                    val member = instr.castArg<String>(this.currentLine)
+                    val member = this.castInstrArg<String>(instr)
                     val obj = this.castPopOperand<BigtonObject>(
                         BigtonErrorType.OPERAND_NOT_OBJECT
                     )
                     val value: BigtonValue = obj.members[member]
                         ?: throw BigtonException(
                             BigtonErrorType.INVALID_OBJECT_MEMBER,
-                            this.currentLine
+                            this.getCurrentSource()
                         )
                     this.pushOperand(value)
                 }
                 BigtonInstrType.LOAD_GLOBAL -> {
-                    val name: String = instr.castArg<String>(this.currentLine)
+                    val name: String = this.castInstrArg<String>(instr)
                     val value: BigtonValue = this.globals[name]
                         ?: throw BigtonException(
-                            BigtonErrorType.MISSING_GLOBAL, this.currentLine
+                            BigtonErrorType.MISSING_GLOBAL,
+                            this.getCurrentSource()
                         )
                     this.pushOperand(value)
                 }
                 BigtonInstrType.LOAD_LOCAL -> {
-                    val relIdx: Int = instr.castArg<Int>(this.currentLine)
+                    val relIdx: Int = this.castInstrArg<Int>(instr)
                     val idx: Int = this.locals.size - 1 - relIdx
                     val value: BigtonValue = this.locals[idx]
                     this.pushOperand(value)
@@ -287,7 +313,7 @@ class BigtonRuntime(
                         if (b == 0L) {
                             throw BigtonException(
                                 BigtonErrorType.INT_DIVISION_BY_ZERO,
-                                this.currentLine
+                                this.getCurrentSource()
                             )
                         }
                         BigtonInt(a / b)
@@ -299,7 +325,7 @@ class BigtonRuntime(
                         if (b == 0L) {
                             throw BigtonException(
                                 BigtonErrorType.INT_DIVISION_BY_ZERO,
-                                this.currentLine
+                                this.getCurrentSource()
                             )
                         }
                         BigtonInt(a % b)
@@ -313,7 +339,7 @@ class BigtonRuntime(
                         is BigtonFloat -> BigtonFloat(-x.v)
                         else -> throw BigtonException(
                             BigtonErrorType.OPERANDS_NOT_NUMBERS,
-                            this.currentLine
+                            this.getCurrentSource()
                         ) 
                     })
                 }
@@ -364,7 +390,7 @@ class BigtonRuntime(
                 }
 
                 BigtonInstrType.STORE_GLOBAL -> {
-                    val name: String = instr.castArg<String>(this.currentLine)
+                    val name: String = this.castInstrArg<String>(instr)
                     this.globals[name] = this.popOperand()
                 }
                 BigtonInstrType.PUSH_LOCAL -> {
@@ -372,7 +398,7 @@ class BigtonRuntime(
                     scope.numLocals += 1
                 }
                 BigtonInstrType.STORE_LOCAL -> {
-                    val relIdx: Int = instr.castArg<Int>(this.currentLine)
+                    val relIdx: Int = this.castInstrArg<Int>(instr)
                     val idx: Int = this.locals.size - 1 - relIdx
                     this.locals[idx] = this.popOperand()
                 }
@@ -382,7 +408,7 @@ class BigtonRuntime(
                     this.memory[address] = value
                 }
                 BigtonInstrType.STORE_OBJECT_MEMBER -> {
-                    val member = instr.castArg<String>(this.currentLine)
+                    val member = this.castInstrArg<String>(instr)
                     val value: BigtonValue = this.popOperand()
                     val obj: BigtonObject = this.castPopOperand<BigtonObject>(
                         BigtonErrorType.OPERAND_NOT_OBJECT
@@ -390,17 +416,16 @@ class BigtonRuntime(
                     if (!obj.members.containsKey(member)) {
                         throw BigtonException(
                             BigtonErrorType.INVALID_OBJECT_MEMBER,
-                            this.currentLine
+                            this.getCurrentSource()
                         )
                     }
                     obj.members[member] = value
                 }
 
                 BigtonInstrType.IF -> {
-                    val (if_body, else_body) = instr
-                        .castArg<Pair<List<BigtonInstr>, List<BigtonInstr>?>>(
-                            this.currentLine
-                        )
+                    val (if_body, else_body) = this.castInstrArg<
+                        Pair<List<BigtonInstr>, List<BigtonInstr>?>
+                    >(instr)
                     val cond: BigtonValue = this.popOperand()
                     if (this.isTruthy(cond)) {
                         this.scopes.add(Scope(ScopeType.IF, if_body))
@@ -409,15 +434,11 @@ class BigtonRuntime(
                     }
                 }
                 BigtonInstrType.LOOP -> {
-                    val body = instr.castArg<List<BigtonInstr>>(
-                        this.currentLine
-                    )
+                    val body = this.castInstrArg<List<BigtonInstr>>(instr)
                     this.scopes.add(Scope(ScopeType.LOOP, body))
                 }
                 BigtonInstrType.TICK -> {
-                    val body = instr.castArg<List<BigtonInstr>>(
-                        this.currentLine
-                    )
+                    val body = this.castInstrArg<List<BigtonInstr>>(instr)
                     this.scopes.add(Scope(ScopeType.TICK, body))
                 }
                 BigtonInstrType.CONTINUE -> {
@@ -443,10 +464,11 @@ class BigtonRuntime(
                     }
                 }
                 BigtonInstrType.CALL -> {
-                    val name = instr.castArg<String>(this.currentLine)
+                    val name = this.castInstrArg<String>(instr)
                     val called: Function = this.functions[name]
                         ?: throw BigtonException(
-                            BigtonErrorType.MISSING_FUNCTION, this.currentLine
+                            BigtonErrorType.MISSING_FUNCTION,
+                            this.getCurrentSource()
                         )
                     scope.current += 1
                     instructionLimit += called.cost

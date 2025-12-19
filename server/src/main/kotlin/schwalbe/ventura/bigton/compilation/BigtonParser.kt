@@ -9,7 +9,7 @@ class BigtonParser(val tokens: List<BigtonToken>) {
         = tokens.getOrNull(index)
         ?: BigtonToken(
             BigtonTokenType.END_OF_FILE, "",
-            tokens.lastOrNull()?.line ?: 0
+            tokens.lastOrNull()?.source ?: BigtonSource(0, "<unknown>")
         )
     
     var currIdx: Int = 0
@@ -68,7 +68,7 @@ fun BigtonParser.parseValue(): BigtonAst {
                 BigtonTokenType.NULL_LITERAL    -> BigtonAstType.NULL_LITERAL
                 else -> throw Exception("unreachable")
             }
-            return BigtonAst(astType, start.line, start.content)
+            return BigtonAst(astType, start.source, start.content)
         }
         BigtonTokenType.PAREN_OPEN -> {
             this.advance()
@@ -79,18 +79,19 @@ fun BigtonParser.parseValue(): BigtonAst {
                     this.advance()
                 } else if (this.curr.type != BigtonTokenType.PAREN_CLOSE) {
                     throw BigtonException(
-                        BigtonErrorType.MISSING_EXPECTED_COMMA, this.curr.line
+                        BigtonErrorType.MISSING_EXPECTED_COMMA,
+                        this.curr.source
                     )
                 }
             }
             this.advance()
             return when (elems.size) {
                 0 -> throw BigtonException(
-                    BigtonErrorType.EMPTY_PARENTHESES, start.line
+                    BigtonErrorType.EMPTY_PARENTHESES, start.source
                 )
                 1 -> elems[0]
                 else -> BigtonAst(
-                    BigtonAstType.TUPLE_LITERAL, start.line, null, elems
+                    BigtonAstType.TUPLE_LITERAL, start.source, null, elems
                 )
             }
         }
@@ -102,7 +103,7 @@ fun BigtonParser.parseValue(): BigtonAst {
                 if (this.curr.type != BigtonTokenType.IDENTIFIER) {
                     throw BigtonException(
                         BigtonErrorType.MISSING_EXPECTED_MEMBER_NAME,
-                        this.curr.line
+                        this.curr.source
                     )
                 }
                 memNames.add(this.curr.content)
@@ -110,7 +111,7 @@ fun BigtonParser.parseValue(): BigtonAst {
                 if (this.curr.type != BigtonTokenType.EQUALS) {
                     throw BigtonException(
                         BigtonErrorType.MISSING_EXPECTED_MEMBER_EQUALS,
-                        this.curr.line
+                        this.curr.source
                     )
                 }
                 this.advance()
@@ -119,13 +120,13 @@ fun BigtonParser.parseValue(): BigtonAst {
                     this.advance()
                 } else if (this.curr.type != BigtonTokenType.BRACE_CLOSE) {
                     throw BigtonException(
-                        BigtonErrorType.MISSING_EXPECTED_COMMA, this.curr.line
+                        BigtonErrorType.MISSING_EXPECTED_COMMA, this.curr.source
                     )
                 }
             }
             this.advance()
             return BigtonAst(
-                BigtonAstType.OBJECT_LITERAL, start.line, memNames, memVals
+                BigtonAstType.OBJECT_LITERAL, start.source, memNames, memVals
             )
         }
         else -> {}
@@ -134,7 +135,7 @@ fun BigtonParser.parseValue(): BigtonAst {
     val currPower: Int? = unaryBindingPower[op.type]
     if (currPower == null) {
         throw BigtonException(
-            BigtonErrorType.MISSING_EXPECTED_UNARY_OR_VALUE, op.line
+            BigtonErrorType.MISSING_EXPECTED_UNARY_OR_VALUE, op.source
         )
     }
     this.advance()
@@ -148,7 +149,7 @@ fun BigtonParser.parseValue(): BigtonAst {
                 + "power table, but not implemented here"
         )
     }
-    return BigtonAst(astType, op.line, null, listOf(operand))
+    return BigtonAst(astType, op.source, null, listOf(operand))
 }
 
 fun BigtonParser.parseExpression(parentPower: Int = 0): BigtonAst {
@@ -164,7 +165,7 @@ fun BigtonParser.parseExpression(parentPower: Int = 0): BigtonAst {
                 val called: String = when (acc.type) {
                     BigtonAstType.IDENTIFIER -> acc.castArg<String>()
                     else -> throw BigtonException(
-                        BigtonErrorType.CALLING_EXPRESSION, op.line
+                        BigtonErrorType.CALLING_EXPRESSION, op.source
                     )
                 }
                 val args = mutableListOf<BigtonAst>()
@@ -175,26 +176,26 @@ fun BigtonParser.parseExpression(parentPower: Int = 0): BigtonAst {
                     } else if (this.curr.type != BigtonTokenType.PAREN_CLOSE) {
                         throw BigtonException(
                             BigtonErrorType.MISSING_EXPECTED_COMMA,
-                            this.curr.line
+                            this.curr.source
                         )
                     }
                 }
                 this.advance()
-                acc = BigtonAst(BigtonAstType.CALL, op.line, called, args)
+                acc = BigtonAst(BigtonAstType.CALL, op.source, called, args)
                 continue
             }
             BigtonTokenType.DOT -> {
                 acc = when (this.curr.type) {
                     BigtonTokenType.INT_LITERAL -> BigtonAst(
-                        BigtonAstType.TUPLE_MEMBER, op.line,
+                        BigtonAstType.TUPLE_MEMBER, op.source,
                         this.curr.content.toInt(), listOf(acc)
                     )
                     BigtonTokenType.IDENTIFIER -> BigtonAst(
-                        BigtonAstType.OBJECT_MEMBER, op.line,
+                        BigtonAstType.OBJECT_MEMBER, op.source,
                         this.curr.content, listOf(acc)
                     )
                     else -> throw BigtonException(
-                        BigtonErrorType.INVALID_MEMBER_SYNTAX, this.curr.line
+                        BigtonErrorType.INVALID_MEMBER_SYNTAX, this.curr.source
                     )
                 }
                 this.advance()
@@ -224,7 +225,7 @@ fun BigtonParser.parseExpression(parentPower: Int = 0): BigtonAst {
                     + "power table, but not implemented here"
             )
         }
-        acc = BigtonAst(astType, op.line, null, listOf(lhs, rhs))
+        acc = BigtonAst(astType, op.source, null, listOf(lhs, rhs))
     }
 }
 
@@ -233,33 +234,35 @@ fun BigtonParser.parseStatement(): BigtonAst {
     when (start.type) {
         BigtonTokenType.KEYWORD_CONT -> {
             this.advance()
-            return BigtonAst(BigtonAstType.CONTINUE, start.line)
+            return BigtonAst(BigtonAstType.CONTINUE, start.source)
         }
         BigtonTokenType.KEYWORD_BREAK -> {
             this.advance()
-            return BigtonAst(BigtonAstType.BREAK, start.line)
+            return BigtonAst(BigtonAstType.BREAK, start.source)
         }
         BigtonTokenType.KEYWORD_RETURN -> {
             this.advance()
             val v: BigtonAst = this.parseExpression()
-            return BigtonAst(BigtonAstType.RETURN, start.line, null, listOf(v))
+            return BigtonAst(
+                BigtonAstType.RETURN, start.source, null, listOf(v)
+            )
         }
         BigtonTokenType.KEYWORD_LOOP -> {
             this.advance()
             val body: List<BigtonAst> = this.parseBracedStatementList()
-            return BigtonAst(BigtonAstType.LOOP, start.line, body)
+            return BigtonAst(BigtonAstType.LOOP, start.source, body)
         }
         BigtonTokenType.KEYWORD_TICK -> {
             this.advance()
             val body: List<BigtonAst> = this.parseBracedStatementList()
-            return BigtonAst(BigtonAstType.TICK, start.line, body)
+            return BigtonAst(BigtonAstType.TICK, start.source, body)
         }
         BigtonTokenType.KEYWORD_WHILE -> {
             this.advance()
             val cond: BigtonAst = this.parseExpression()
             val body: List<BigtonAst> = this.parseBracedStatementList()
             return BigtonAst(
-                BigtonAstType.WHILE, start.line, body, listOf(cond)
+                BigtonAstType.WHILE, start.source, body, listOf(cond)
             )
         }
         BigtonTokenType.KEYWORD_VAR -> {
@@ -267,20 +270,21 @@ fun BigtonParser.parseStatement(): BigtonAst {
             if (this.curr.type != BigtonTokenType.IDENTIFIER) {
                 throw BigtonException(
                     BigtonErrorType.MISSING_EXPECTED_VARIABLE_NAME,
-                    this.curr.line
+                    this.curr.source
                 )
             }
             val name: String = this.curr.content
             this.advance()
             if (this.curr.type != BigtonTokenType.EQUALS) {
                 throw BigtonException(
-                    BigtonErrorType.MISSING_EXPECTED_VAR_EQUALS, this.curr.line
+                    BigtonErrorType.MISSING_EXPECTED_VAR_EQUALS,
+                    this.curr.source
                 )
             }
             this.advance()
             val value: BigtonAst = this.parseExpression()
             return BigtonAst(
-                BigtonAstType.VARIABLE, start.line, name, listOf(value)
+                BigtonAstType.VARIABLE, start.source, name, listOf(value)
             )
         }
         BigtonTokenType.KEYWORD_IF -> {
@@ -301,7 +305,7 @@ fun BigtonParser.parseStatement(): BigtonAst {
             val branches: Pair<List<BigtonAst>, List<BigtonAst>?>
                 = Pair(if_body, else_body)
             return BigtonAst(
-                BigtonAstType.IF, start.line, branches, listOf(cond)
+                BigtonAstType.IF, start.source, branches, listOf(cond)
             )
         }
         BigtonTokenType.KEYWORD_FUN -> {
@@ -309,7 +313,7 @@ fun BigtonParser.parseStatement(): BigtonAst {
             if (this.curr.type != BigtonTokenType.IDENTIFIER) {
                 throw BigtonException(
                     BigtonErrorType.MISSING_EXPECTED_FUNCTION_NAME,
-                    this.curr.line
+                    this.curr.source
                 )
             }
             val name: String = this.curr.content
@@ -317,7 +321,7 @@ fun BigtonParser.parseStatement(): BigtonAst {
             if (this.curr.type != BigtonTokenType.PAREN_OPEN) {
                 throw BigtonException(
                     BigtonErrorType.MISSING_EXPECTED_FUNC_ARGS_OPEN,
-                    this.curr.line
+                    this.curr.source
                 )
             }
             this.advance()
@@ -326,7 +330,7 @@ fun BigtonParser.parseStatement(): BigtonAst {
                 if (this.curr.type != BigtonTokenType.IDENTIFIER) {
                     throw BigtonException(
                         BigtonErrorType.MISSING_EXPECTED_ARGUMENT_NAME,
-                        this.curr.line
+                        this.curr.source
                     )
                 }
                 argNames.add(this.curr.content)
@@ -336,14 +340,14 @@ fun BigtonParser.parseStatement(): BigtonAst {
                 } else if (this.curr.type != BigtonTokenType.PAREN_CLOSE) {
                     throw BigtonException(
                         BigtonErrorType.MISSING_EXPECTED_COMMA,
-                        this.curr.line
+                        this.curr.source
                     )
                 }
             }
             this.advance()
             val body: List<BigtonAst> = this.parseBracedStatementList()
             return BigtonAst(
-                BigtonAstType.FUNCTION, start.line,
+                BigtonAstType.FUNCTION, start.source,
                 BigtonAstFunction(name, argNames, body)
             )
         }
@@ -354,20 +358,22 @@ fun BigtonParser.parseStatement(): BigtonAst {
     val op: BigtonToken = this.curr
     this.advance()
     val rhs: BigtonAst = this.parseExpression()
-    return BigtonAst(BigtonAstType.ASSIGNMENT, op.line, null, listOf(lhs, rhs))
+    return BigtonAst(
+        BigtonAstType.ASSIGNMENT, op.source, null, listOf(lhs, rhs)
+    )
 }
 
 fun BigtonParser.parseBracedStatementList(): List<BigtonAst> {
     if (this.curr.type != BigtonTokenType.BRACE_OPEN) {
         throw BigtonException(
-            BigtonErrorType.MISSING_EXPECTED_OPENING_BRACE, this.curr.line
+            BigtonErrorType.MISSING_EXPECTED_OPENING_BRACE, this.curr.source
         )
     }
     this.advance()
     val statements: List<BigtonAst> = this.parseStatementList()
     if (this.curr.type != BigtonTokenType.BRACE_CLOSE) {
         throw BigtonException(
-            BigtonErrorType.MISSING_EXPECTED_CLOSING_BRACE, this.curr.line
+            BigtonErrorType.MISSING_EXPECTED_CLOSING_BRACE, this.curr.source
         )
     }
     this.advance()

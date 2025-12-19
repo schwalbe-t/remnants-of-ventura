@@ -21,17 +21,17 @@ private fun isAsciiAlphanumeric(ch: Char): Boolean
 // and opens a string literal when one writes '\"'
 private const val DOUBLE_QUOTES: Char = "\""[0]
 
-fun tokenize(source: String): List<BigtonToken> {
+fun tokenize(file: String, source: String): List<BigtonToken> {
     var currentIdx: Int = 0
     var currentLine: Int = 0
     val result = mutableListOf<BigtonToken>()
     fun advToken(type: BigtonTokenType, content: String): Boolean {
-        result.add(BigtonToken(type, content, currentLine))
+        result.add(BigtonToken(type, content, BigtonSource(currentLine, file)))
         currentIdx += content.length
         return true
     }
     fun addToken(type: BigtonTokenType, content: String): Boolean {
-        result.add(BigtonToken(type, content, currentLine))
+        result.add(BigtonToken(type, content, BigtonSource(currentLine, file)))
         return true
     }
     while (currentIdx < source.length) {
@@ -87,7 +87,7 @@ fun tokenize(source: String): List<BigtonToken> {
                     if (hadDot) {
                         throw BigtonException(
                             BigtonErrorType.MULTIPLE_DOTS_IN_NUMERIC,
-                            currentLine
+                            BigtonSource(currentLine, file)
                         )
                     }
                     hadDot = true
@@ -110,7 +110,8 @@ fun tokenize(source: String): List<BigtonToken> {
             while (true) {
                 if (currentIdx >= source.length) {
                     throw BigtonException(
-                        BigtonErrorType.UNCLOSED_STRING_LITERAL, currentLine
+                        BigtonErrorType.UNCLOSED_STRING_LITERAL,
+                        BigtonSource(currentLine, file)
                     )
                 }
                 val c: Char = source[currentIdx]
@@ -188,7 +189,9 @@ fun tokenize(source: String): List<BigtonToken> {
             else -> false
         }
         if (isSingle) { continue }
-        throw BigtonException(BigtonErrorType.INVALID_TOKEN, currentLine)
+        throw BigtonException(
+            BigtonErrorType.INVALID_TOKEN, BigtonSource(currentLine, file)
+        )
     }
     return result
 }

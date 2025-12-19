@@ -6,12 +6,12 @@ import schwalbe.ventura.bigton.*
 val bigtonStandardModule = BigtonRuntime.Module(
     mapOf(
         "say" to BigtonRuntime.Function(cost = 1, argc = 1) { r ->
-            r.logs.add(r.popOperand().display())
+            r.logLine(r.popOperand().display())
             r.pushOperand(BigtonNull)
         },
         "error" to BigtonRuntime.Function(cost = 0, argc = 0) { r ->
             throw BigtonException(
-                BigtonErrorType.BY_PROGRAM, r.getCurrentLine()
+                BigtonErrorType.BY_PROGRAM, r.getCurrentSource()
             )
         },
 
