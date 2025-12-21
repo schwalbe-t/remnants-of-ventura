@@ -167,7 +167,7 @@ say(sumOfArray(test))
             println(e.message)
             println("Stack trace (most recent call last):")
             for (call in runtime.getStackTrace()) {
-                println("${call.name} called from \"${call.fromFile}\" line ${call.fromLine}")
+                println("${call.name} called from '${call.fromFile}' line ${call.fromLine}")
             }
         }
         println(runtime.getLogString())

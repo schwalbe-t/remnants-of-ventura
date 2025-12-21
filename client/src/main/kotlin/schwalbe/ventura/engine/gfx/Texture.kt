@@ -3,9 +3,12 @@ package schwalbe.ventura.engine.gfx
 
 import schwalbe.ventura.engine.UsageAfterDisposalException
 import schwalbe.ventura.engine.Disposable
+import schwalbe.ventura.engine.Resource
 
 import org.lwjgl.opengl.GL33.*
 import java.nio.ByteBuffer
+import org.lwjgl.stb.STBImage.*
+import org.lwjgl.system.MemoryStack
 
 class Texture : Disposable {
     
@@ -74,4 +77,28 @@ class Texture : Disposable {
         Texture.bound.invalidate(this)
     }
 
+}
+
+fun Texture.Companion.loadImage(
+    path: String, filter: Texture.Filter
+) = Resource<Texture> {
+    val imageBuffer: ByteBuffer?
+    val width: Int
+    val height: Int
+    MemoryStack.stackPush().use { stack ->
+        val widthPtr = stack.mallocInt(1)
+        val heightPtr = stack.mallocInt(1)
+        val channelsPtr = stack.mallocInt(1)
+        stbi_set_flip_vertically_on_load(true)
+        imageBuffer = stbi_load(path, widthPtr, heightPtr, channelsPtr, 4)
+        width = widthPtr.get(0)
+        height = heightPtr.get(0)
+    }
+    check(imageBuffer != null) { "Failed to load image '$path'" }
+    return@Resource {
+        val format = Texture.Format.RGBA8
+        val texture = Texture(width, height, filter, format, imageBuffer)
+        stbi_image_free(imageBuffer)
+        texture
+    }
 }

@@ -17,7 +17,7 @@ fun BigtonValue.display(): String = when (this) {
     is BigtonNull -> "null"
     is BigtonInt -> this.v.toString()
     is BigtonFloat -> this.v.toString()
-    is BigtonString -> "\"${this.v.toString()}\""
+    is BigtonString -> "\"${this.v}\""
     is BigtonTuple -> {
         val inner: String = this.elements
             .map(BigtonValue::display)
