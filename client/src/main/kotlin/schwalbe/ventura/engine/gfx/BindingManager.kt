@@ -1,12 +1,6 @@
 
 package schwalbe.ventura.engine.gfx
 
-interface Bindable {
-
-    fun bind()
-
-}
-
 /**
  * Class responsible for managing various bindable types.
  * A "bindable" type is anything that needs to be "bound" before using it,
@@ -25,8 +19,10 @@ interface Bindable {
  * subsequent call to [bindLazy] by operation #2 will then NOT bind the shader
  * again, since the manager remembers that the same shader was already bound.
  */
-internal class BindingManager<T : Bindable> {
+internal class BindingManager<T>(bindImpl: (T) -> Unit) {
 
+    private val bind: (T) -> Unit = bindImpl
+    
     var last: T? = null
         private set
 
@@ -37,7 +33,7 @@ internal class BindingManager<T : Bindable> {
      */
     fun bindEager(thing: T) {
         this.last = thing
-        thing.bind()
+        this.bind(thing)
     }
 
     /**
@@ -53,7 +49,7 @@ internal class BindingManager<T : Bindable> {
         val last: T? = this.last
         if (last != null && thing == last) { return }
         this.last = thing
-        thing.bind()
+        this.bind(thing)
     }
 
     /** 
@@ -63,9 +59,9 @@ internal class BindingManager<T : Bindable> {
      * since even a call to [bindLazy] will need to re-bind the given `thing`.
      */
     fun invalidate(thing: T) {
-        val last: T? = this.last
-        if (last == null || last != thing) { return }
-        this.last == null
+        val last: T = this.last ?: return
+        if (last != thing) { return }
+        this.last = null
     }
 
     /**

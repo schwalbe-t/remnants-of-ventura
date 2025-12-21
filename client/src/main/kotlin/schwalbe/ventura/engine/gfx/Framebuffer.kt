@@ -7,14 +7,15 @@ import schwalbe.ventura.engine.Disposable
 import org.lwjgl.opengl.GL33.*
 import org.joml.*
 
-interface ConstFramebuffer : Bindable {
+abstract class ConstFramebuffer {
 
     companion object {
-        internal val bound = BindingManager<ConstFramebuffer>()
+        internal val bound
+            = BindingManager<ConstFramebuffer>(ConstFramebuffer::bind)
     }
 
-    val width: Int
-    val height: Int
+    abstract val width: Int
+    abstract val height: Int
 
     fun clearColor(color: Vector4fc) {
         this.bind()
@@ -27,6 +28,8 @@ interface ConstFramebuffer : Bindable {
         glClearDepth(depth.toDouble())
         glClear(GL_DEPTH_BUFFER_BIT)
     }
+    
+    protected abstract fun bind()
 
 }
 
@@ -120,12 +123,12 @@ class Framebuffer : ConstFramebuffer, Disposable {
     }
 
     override fun dispose() {
-        val oldId: Int? = this.fboId
-        if (oldId == null) { return }
+        val oldId: Int = this.fboId ?: return
         if (this.color != null) { this.attachColor(null) }
         if (this.depth != null) { this.attachDepth(null) }
         glDeleteFramebuffers(oldId)
         this.fboId = null
+        ConstFramebuffer.bound.invalidate(this)
     }
 
 }
