@@ -5,8 +5,8 @@ import schwalbe.ventura.engine.UsageAfterDisposalException
 import schwalbe.ventura.engine.Disposable
 import schwalbe.ventura.engine.Resource
 
-import org.lwjgl.opengl.GL33.*
 import java.nio.ByteBuffer
+import org.lwjgl.opengl.GL33.*
 import org.lwjgl.stb.STBImage.*
 import org.lwjgl.system.MemoryStack
 
@@ -79,6 +79,7 @@ class Texture : Disposable {
 
 }
 
+
 fun Texture.Companion.loadImage(
     path: String, filter: Texture.Filter
 ) = Resource<Texture> {
@@ -94,7 +95,7 @@ fun Texture.Companion.loadImage(
         width = widthPtr.get(0)
         height = heightPtr.get(0)
     }
-    check(imageBuffer != null) { "Failed to load image '$path'" }
+    require(imageBuffer != null) { "Image file '$path' could not be read" }
     return@Resource {
         val format = Texture.Format.RGBA8
         val texture = Texture(width, height, filter, format, imageBuffer)
