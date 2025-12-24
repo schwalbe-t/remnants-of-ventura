@@ -47,11 +47,11 @@ class Geometry : Disposable {
         val vboId: Int = glGenBuffers()
         this.vboId = vboId
         glBindBuffer(GL_ARRAY_BUFFER, vboId)
-        glBufferData(GL_ARRAY_BUFFER, vbo, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vbo, BufferWriteFreq.ONCE.glValue)
         val eboId: Int = glGenBuffers()
         this.eboId = eboId
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo, GL_STATIC_DRAW)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo, BufferWriteFreq.ONCE.glValue)
         val stride: Int = layout.sumOf(Attribute::numBytes)
         var byteOffset = 0L
         for ((attribI, attrib) in layout.withIndex()) {
