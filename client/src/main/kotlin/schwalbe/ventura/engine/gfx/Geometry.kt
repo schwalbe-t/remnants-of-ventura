@@ -76,7 +76,28 @@ class Geometry : Disposable {
         glBindVertexArray(vaoId)
     }
     
-    // TODO! fun render(...) { ... }
+    fun render(
+        shader: Shader, framebuffer: ConstFramebuffer,
+        instanceCount: Int = 1,
+        faceCulling: FaceCulling = FaceCulling.DISABLED,
+        depthTesting: DepthTesting = DepthTesting.ENABLED
+    ) {
+        FaceCulling.bound.bindLazy(faceCulling)
+        DepthTesting.bound.bindLazy(depthTesting)
+        Shader.bound.bindLazy(shader)
+        ConstFramebuffer.bound.bindLazy(framebuffer)
+        Geometry.bound.bindLazy(this)
+        if (instanceCount > 1) {
+            glDrawElementsInstanced(
+                GL_TRIANGLES, this.indexCount, GL_UNSIGNED_SHORT, 0,
+                instanceCount
+            )
+        } else if (instanceCount == 1) {
+            glDrawElements(
+                GL_TRIANGLES, this.indexCount, GL_UNSIGNED_SHORT, 0
+            )
+        }
+    }
     
     override fun dispose() {
         val oldVaoId: Int? = this.vaoId

@@ -119,6 +119,7 @@ class Shader : Disposable {
         = this.programId ?: throw UsageAfterDisposalException()
     
     private inline fun setNormal(name: String, setter: (Int) -> Unit) {
+        Shader.bound.invalidateUnless(this)
         val programId: Int = this.getProgramId()
         glUseProgram(programId)
         var loc: Int? = this.cachedUniforms[name]
@@ -134,111 +135,108 @@ class Shader : Disposable {
         setter(loc)
     }
     
-    private inline fun setBuffer(
-        name: String, setter: (Int, MemoryStack) -> Unit
+    /**
+     * Assigns an array value to the shader uniform specified by [name] by
+     * creating a buffer using [createBuffer]. The size passed to this buffer
+     * is the number of elements in [values] multiplied by the [valueSize].
+     * The buffer is then filled by executing [fillBuffer] for each element
+     * in [values], where the index is the index from [values] multiplied
+     * by the [valueSize] (meaning the offset in the target buffer).
+     * The buffer is then applied as the value for the uniform by executing the
+     * [useBuffer] function.
+     */
+    private inline fun <B, V> setBuffer(
+        name: String, values: Iterable<V>, valueSize: Int,
+        createBuffer: (MemoryStack, Int) -> B, 
+        fillBuffer: (V, Int, B) -> Unit,
+        useBuffer: (Int, B) -> Unit
     ) {
         this.setNormal(name) { loc ->
             MemoryStack.stackPush().use { stack ->
-                setter(loc, stack)
+                val b: B = createBuffer(stack, values.count() * valueSize)
+                values.withIndex()
+                    .forEach { (i, v) -> fillBuffer(v, i * 4, b) }
+                useBuffer(loc, b)
             }
         }
     }
     
-    operator fun set(name: String, v: Float)
+    fun setFloat(name: String, v: Float)
         = this.setNormal(name) { glUniform1f(it, v) }
-    operator fun set(name: String, v: Vector2fc)
+    fun setVec2(name: String, v: Vector2fc)
         = this.setNormal(name) { glUniform2f(it, v.x(), v.y()) }
-    operator fun set(name: String, v: Vector3fc)
+    fun setVec3(name: String, v: Vector3fc)
         = this.setNormal(name) { glUniform3f(it, v.x(), v.y(), v.z()) }
-    operator fun set(name: String, v: Vector4fc)
+    fun setVec4(name: String, v: Vector4fc)
         = this.setNormal(name) { glUniform4f(it, v.x(), v.y(), v.z(), v.w()) }
-    operator fun set(name: String, v: Iterable<Float>)
-        = this.setBuffer(name) { loc, stack ->
-            val b: FloatBuffer = stack.mallocFloat(v.count())
-            v.forEach(b::put)
-            b.flip()
-            glUniform1fv(loc, b)
-        }
-    operator fun set(name: String, v: Iterable<Vector2fc>)
-        = this.setBuffer(name) { loc, stack ->
-            val b: FloatBuffer = stack.mallocFloat(v.count() * 2)
-            v.withIndex().forEach { (i, v) -> v.get(i * 2, b) }
-            glUniform2fv(loc, b)
-        }
-    operator fun set(name: String, v: Iterable<Vector3fc>)
-        = this.setBuffer(name) { loc, stack ->
-            val b: FloatBuffer = stack.mallocFloat(v.count() * 3)
-            v.withIndex().forEach { (i, v) -> v.get(i * 3, b) }
-            glUniform3fv(loc, b)
-        }
-    operator fun set(name: String, v: Iterable<Vector4fc>)
-        = this.setBuffer(name) { loc, stack ->
-            val b: FloatBuffer = stack.mallocFloat(v.count() * 4)
-            v.withIndex().forEach { (i, v) -> v.get(i * 4, b) }
-            glUniform4fv(loc, b)
-        }
+    fun setFloatArr(name: String, v: Iterable<Float>) = this.setBuffer(
+        name, v, valueSize = 1, MemoryStack::mallocFloat,
+        fillBuffer = { v, i, b -> b.put(i, v) }, ::glUniform1fv
+    )
+    fun setVec2Arr(name: String, v: Iterable<Vector2fc>) = this.setBuffer(
+        name, v, valueSize = 2, MemoryStack::mallocFloat,
+        fillBuffer = Vector2fc::get, ::glUniform2fv
+    )
+    fun setVec3Arr(name: String, v: Iterable<Vector3fc>) = this.setBuffer(
+        name, v, valueSize = 3, MemoryStack::mallocFloat,
+        fillBuffer = Vector3fc::get, ::glUniform3fv
+    )
+    fun setVec4Arr(name: String, v: Iterable<Vector4fc>) = this.setBuffer(
+        name, v, valueSize = 4, MemoryStack::mallocFloat,
+        fillBuffer = Vector4fc::get, ::glUniform4fv
+    )
     
-    operator fun set(name: String, v: Int)
+    fun setInt(name: String, v: Int)
         = this.setNormal(name) { glUniform1i(it, v) }
-    operator fun set(name: String, v: Vector2ic)
+    fun setIvec2(name: String, v: Vector2ic)
         = this.setNormal(name) { glUniform2i(it, v.x(), v.y()) }
-    operator fun set(name: String, v: Vector3ic)
+    fun setIvec3(name: String, v: Vector3ic)
         = this.setNormal(name) { glUniform3i(it, v.x(), v.y(), v.z()) }
-    operator fun set(name: String, v: Vector4ic)
+    fun setIvec4(name: String, v: Vector4ic)
         = this.setNormal(name) { glUniform4i(it, v.x(), v.y(), v.z(), v.w()) }
-    operator fun set(name: String, v: Iterable<Int>)
-        = this.setBuffer(name) { loc, stack ->
-            // TODO!
-        }
-    operator fun set(name: String, v: Iterable<Vector2ic>)
-        = this.setBuffer(name) { loc, stack ->
-            // TODO!
-        }
-    operator fun set(name: String, v: Iterable<Vector3ic>)
-        = this.setBuffer(name) { loc, stack ->
-            // TODO!
-        }
-    operator fun set(name: String, v: Iterable<Vector4ic>)
-        = this.setBuffer(name) { loc, stack ->
-            // TODO!
-        }
+    fun setIntArr(name: String, v: Iterable<Int>) = this.setBuffer(
+        name, v, valueSize = 1, MemoryStack::mallocInt,
+        fillBuffer = { v, i, b -> b.put(i, v) }, ::glUniform1iv
+    )
+    fun setIvec2Arr(name: String, v: Iterable<Vector2ic>) = this.setBuffer(
+        name, v, valueSize = 2, MemoryStack::mallocInt,
+        fillBuffer = Vector2ic::get, ::glUniform2iv
+    )
+    fun setIvec3Arr(name: String, v: Iterable<Vector3ic>) = this.setBuffer(
+        name, v, valueSize = 3, MemoryStack::mallocInt,
+        fillBuffer = Vector3ic::get, ::glUniform3iv
+    )
+    fun setIvec4Arr(name: String, v: Iterable<Vector4ic>) = this.setBuffer(
+        name, v, valueSize = 4, MemoryStack::mallocInt,
+        fillBuffer = Vector4ic::get, ::glUniform4iv
+    )
         
-    operator fun set(name: String, v: Boolean)
+    fun setBool(name: String, v: Boolean)
         = this.setNormal(name) { glUniform1i(it, if (v) { 1 } else { 0 }) }
-    operator fun set(name: String, v: Iterable<Boolean>)
-        = this.setBuffer(name) { loc, stack ->
-            val b: IntBuffer = stack.mallocInt(v.count())
-            v.forEach { v -> b.put(if (v) { 1 } else { 0 }) }
-            b.flip()
-            glUniform1iv(loc, b)
-        }
+    fun setBoolArr(name: String, v: Iterable<Boolean>) = this.setBuffer(
+        name, v, valueSize = 1, MemoryStack::mallocInt,
+        fillBuffer = { v, i, b -> b.put(i, if (v) { 1 } else { 0 }) },
+        ::glUniform1iv
+    )
     
-    operator fun set(name: String, v: Matrix3fc)
-        = MemoryStack.stackPush().use { s ->
-            val buff = s.mallocFloat(3 * 3)
-            v.get(buff)
-            setNormal(name) { glUniformMatrix3fv(it, false, buff) }
-        }
-    operator fun set(name: String, v: Matrix4fc)
-        = MemoryStack.stackPush().use { s ->
-            val buff = s.mallocFloat(4 * 4)
-            v.get(buff)
-            setNormal(name) { glUniformMatrix4fv(it, false, buff) }
-        }
-    operator fun set(name: String, v: Iterable<Matrix3fc>)
-        = this.setBuffer(name) { loc, stack ->
-            // TODO!
-        }
-    operator fun set(name: String, v: Iterable<Matrix4fc>)
-        = this.setBuffer(name) { loc, stack ->
-            // TODO!
-        }
+    fun setMat3(name: String, v: Matrix3fc) = this.setMat3Arr(name, listOf(v))
+    fun setMat4(name: String, v: Matrix4fc) = this.setMat4Arr(name, listOf(v))
+    fun setMat3Arr(name: String, v: Iterable<Matrix3fc>) = this.setBuffer(
+        name, v, valueSize = 3 * 3, MemoryStack::mallocFloat,
+        fillBuffer = Matrix3fc::get,
+        useBuffer = { loc, b -> glUniformMatrix3fv(loc, false, b) }
+    )
+    fun setMat4Arr(name: String, v: Iterable<Matrix4fc>) = this.setBuffer(
+        name, v, valueSize = 4 * 4, MemoryStack::mallocFloat,
+        fillBuffer = Matrix4fc::get,
+        useBuffer = { loc, b -> glUniformMatrix4fv(loc, false, b) }
+    )
     
-    operator fun set(name: String, v: Texture) {
+    fun setSampler2D(name: String, v: Texture) {
         // TODO!
     }
     
-    operator fun set(name: String, v: UniformBuffer) {
+    fun setBuffer(name: String, v: UniformBuffer) {
         // TODO!
     }
     

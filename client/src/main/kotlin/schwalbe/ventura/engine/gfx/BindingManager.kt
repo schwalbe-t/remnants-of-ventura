@@ -63,6 +63,18 @@ internal class BindingManager<T>(bindImpl: (T) -> Unit) {
         if (last != thing) { return }
         this.last = null
     }
+    
+    /**
+     * Makes this manager forget about any instance other than the given `thing`
+     * being the last thing bound, if that is the case.
+     * This is useful when any binding other than `thing` has been invalidated,
+     * since even a call to [bindLazy] will need to re-bind any other instance.
+     */
+    fun invalidateUnless(thing: T) {
+        val last: T = this.last ?: return
+        if (last == thing) { return }
+        this.last = null
+    }
 
     /**
      * Makes this manager forget about any instance that was last bound.

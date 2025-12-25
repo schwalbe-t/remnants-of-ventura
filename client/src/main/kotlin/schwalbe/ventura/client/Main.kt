@@ -1,6 +1,7 @@
 
 package schwalbe.ventura.client
 
+/*
 import schwalbe.ventura.net.*
 import kotlinx.coroutines.*
 import io.ktor.websocket.Frame
@@ -53,7 +54,7 @@ suspend fun main() {
     val socketScope = CoroutineScope(Dispatchers.IO)
     val client: HttpClient = createHttpClient()
 
-    val packetStreamSync = Object()
+    val packetStreamSync = object {}
     var nInPackets: PacketInStream? = null
     var nOutPackets: PacketOutStream? = null
 
@@ -138,4 +139,79 @@ suspend fun main() {
         }
         Thread.sleep(1000)
     }
+}
+*/
+
+import schwalbe.ventura.engine.Window
+import schwalbe.ventura.engine.gfx.*
+import org.joml.Vector4f
+import java.nio.*
+
+fun main() {
+    val window = Window("Remnants of Ventura", 1280, 720)
+    
+    val shader = Shader(
+        """
+            #version 330 core
+            
+            layout(location = 0) in vec2 vPosition;
+            layout(location = 1) in vec3 vColor;
+            
+            out vec3 fColor;
+            
+            void main(void) {
+                gl_Position = vec4(vPosition, 0.0, 1.0);
+                fColor = vColor;
+            }
+        """.trimIndent(),
+        """
+            #version 330 core
+            
+            in vec3 fColor;
+            
+            out vec4 oColor;
+            
+            void main(void) {
+                oColor = vec4(fColor, 1.0);
+            }
+        """.trimIndent()
+    )
+    
+    val layout = listOf(
+        Geometry.Attribute(2, Geometry.Type.FLOAT),
+        Geometry.Attribute(3, Geometry.Type.FLOAT)
+    )
+    val vertices: FloatArray = floatArrayOf(
+         0.0f, +0.5f,   1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f,   0.0f, 1.0f, 0.0f,
+        +0.5f, -0.5f,   0.0f, 0.0f, 1.0f
+    )
+    val vertexBuffer: ByteBuffer = ByteBuffer
+        .allocateDirect(vertices.size * 4)
+        .order(ByteOrder.nativeOrder())
+    vertexBuffer.asFloatBuffer().put(vertices)
+    val elements: ShortArray = shortArrayOf(
+        0, 1, 2
+    )
+    val elementBuffer: ShortBuffer = ByteBuffer
+        .allocateDirect(elements.size * 2)
+        .order(ByteOrder.nativeOrder())
+        .asShortBuffer()
+        .put(elements)
+        .flip()
+    val geometry = Geometry(layout, vertexBuffer, elementBuffer)
+    
+    var remTime: Long = 10_000
+    while (!window.shouldClose()) {
+        window.beginFrame()
+        
+        window.framebuffer.clearColor(Vector4f(1f, 1f, 1f, 1f))
+        window.framebuffer.clearDepth(1f)
+        geometry.render(shader, window.framebuffer)
+        
+        window.endFrame()
+        remTime -= 100
+        Thread.sleep(100)
+    }
+    window.dispose()
 }
