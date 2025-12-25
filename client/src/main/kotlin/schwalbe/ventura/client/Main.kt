@@ -142,49 +142,32 @@ suspend fun main() {
 }
 */
 
-import schwalbe.ventura.engine.Window
+import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
 import org.joml.Vector4f
 import java.nio.*
+import kotlin.concurrent.thread
 
 fun main() {
-    val window = Window("Remnants of Ventura", 1280, 720)
+    val resLoader = ResourceLoader()
+    thread { resLoader.loadQueuedRawLoop() }
+    val shaderRes: Resource<Shader> = resLoader.submit(Shader.loadGlsl(
+        "shaders/test.vert.glsl", "shaders/test.frag.glsl"
+    ))
+    val testRes: Resource<Texture> = resLoader.submit(Texture.loadImage(
+        "res/test.png", Texture.Filter.LINEAR
+    ))
     
-    val shader = Shader(
-        """
-            #version 330 core
-            
-            layout(location = 0) in vec2 vPosition;
-            layout(location = 1) in vec3 vColor;
-            
-            out vec3 fColor;
-            
-            void main(void) {
-                gl_Position = vec4(vPosition, 0.0, 1.0);
-                fColor = vColor;
-            }
-        """.trimIndent(),
-        """
-            #version 330 core
-            
-            in vec3 fColor;
-            
-            out vec4 oColor;
-            
-            void main(void) {
-                oColor = vec4(fColor, 1.0);
-            }
-        """.trimIndent()
-    )
+    val window = Window("Remnants of Ventura")
     
     val layout = listOf(
         Geometry.Attribute(2, Geometry.Type.FLOAT),
-        Geometry.Attribute(3, Geometry.Type.FLOAT)
+        Geometry.Attribute(2, Geometry.Type.FLOAT)
     )
     val vertices: FloatArray = floatArrayOf(
-         0.0f, +0.5f,   1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f,   0.0f, 1.0f, 0.0f,
-        +0.5f, -0.5f,   0.0f, 0.0f, 1.0f
+         0.0f, +0.5f,   0.5f, 1.0f,
+        -0.5f, -0.5f,   0.0f, 0.0f,
+        +0.5f, -0.5f,   1.0f, 0.0f
     )
     val vertexBuffer: ByteBuffer = ByteBuffer
         .allocateDirect(vertices.size * 4)
@@ -201,16 +184,46 @@ fun main() {
         .flip()
     val geometry = Geometry(layout, vertexBuffer, elementBuffer)
     
-    var remTime: Long = 10_000
+    val instanceData: FloatArray = floatArrayOf(
+    //   <dx>   <dy>   -- padding --
+        -0.5f, -0.5f,   0.0f, 0.0f,
+        -0.5f, +0.5f,   0.0f, 0.0f,
+        +0.5f, -0.5f,   0.0f, 0.0f,
+        +0.5f, +0.5f,   0.0f, 0.0f
+    )
+    val instanceBuff: ByteBuffer = ByteBuffer
+        .allocateDirect(4 * 2 * 16)
+        .order(ByteOrder.nativeOrder())
+    instanceBuff.asFloatBuffer().put(instanceData)
+    val instances = UniformBuffer(BufferWriteFreq.ONCE).write(instanceBuff)
+    
+    var onFrame: () -> Unit = {}
+    
+    val testBuffData: ByteBuffer = ByteBuffer
+        .allocateDirect(1024 * 16 * 16)
+        .order(ByteOrder.nativeOrder())
+    val testBuff = UniformBuffer(BufferWriteFreq.ONCE).write(testBuffData)
+    
+    resLoader.submit(Resource.fromCallback {
+        val shader: Shader = shaderRes.loaded!!
+        val test: Texture = testRes.loaded!!
+        shader.setSampler2D("uTexture", test)
+        shader.setBuffer("uInstances", instances)
+        
+        onFrame = {
+            geometry.render(shader, window.framebuffer, instanceCount = 4)
+        }
+    })
+    
     while (!window.shouldClose()) {
         window.beginFrame()
+        resLoader.loadQueuedFully()
         
         window.framebuffer.clearColor(Vector4f(1f, 1f, 1f, 1f))
         window.framebuffer.clearDepth(1f)
-        geometry.render(shader, window.framebuffer)
+        onFrame()
         
         window.endFrame()
-        remTime -= 100
         Thread.sleep(100)
     }
     window.dispose()

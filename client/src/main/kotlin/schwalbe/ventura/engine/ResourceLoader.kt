@@ -45,7 +45,7 @@ class ResourceLoader {
     
     private var loadedRaw: MutableList<Resource<*>> = mutableListOf()
     
-    fun <T> queue(resource: Resource<T>): Resource<T> {
+    fun <T> submit(resource: Resource<T>): Resource<T> {
         this.lock.withLock {
             this.queued.add(resource)
             this.hasQueued.signal()

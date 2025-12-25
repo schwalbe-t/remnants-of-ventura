@@ -10,6 +10,7 @@ import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.IntBuffer
 import java.nio.FloatBuffer
+import java.nio.file.Paths
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryStack
 import org.joml.*
@@ -25,6 +26,9 @@ class UniformBuffer(val writeHint: BufferWriteFreq) : Disposable {
     var lastSize: Int? = null
         private set
         
+    fun getBufferId(): Int = this.bufferId
+        ?: throw UsageAfterDisposalException()
+        
     fun write(data: ByteBuffer): UniformBuffer {
         UniformBuffer.bound.bindLazy(this)
         val lastSize: Int? = this.lastSize
@@ -38,9 +42,7 @@ class UniformBuffer(val writeHint: BufferWriteFreq) : Disposable {
     }
 
     private fun bind() {
-        val id: Int = this.bufferId
-            ?: throw UsageAfterDisposalException()
-        glBindBuffer(GL_UNIFORM_BUFFER, id)
+        glBindBuffer(GL_UNIFORM_BUFFER, this.getBufferId())
     }
         
     override fun dispose() {
@@ -88,6 +90,21 @@ private fun linkShaderProgram(
     return programId
 }
 
+private class SlotManager<T> {
+    
+    data class Slot<T>(val index: Int, val value: T)
+    
+    private val slots: MutableMap<String, Slot<T>> = mutableMapOf()
+
+    fun allocate(name: String, value: T): Int
+        = this.slots
+        .getOrPut(name) { Slot(this.slots.count(), value) }
+        .index
+    
+    fun getAll(): Map<String, Slot<T>> = this.slots
+
+}
+
 class Shader : Disposable {
     
     companion object {
@@ -97,6 +114,8 @@ class Shader : Disposable {
     var programId: Int? = null
         private set
     private val cachedUniforms: MutableMap<String, Int> = mutableMapOf()
+    private val textures: SlotManager<Texture> = SlotManager()
+    private val buffers: SlotManager<UniformBuffer> = SlotManager()
         
     constructor(
         vertSrc: String, fragSrc: String,
@@ -118,20 +137,34 @@ class Shader : Disposable {
     fun getProgramId(): Int
         = this.programId ?: throw UsageAfterDisposalException()
     
-    private inline fun setNormal(name: String, setter: (Int) -> Unit) {
+    /**
+     * Partially binds the current shader program, invalidating any bound
+     * shaders apart from the shader the method is called on.
+     * Attempts to get the location of the given uniform (or uniform block,
+     * depending on what is passed as [locationGetter]).
+     * This method will cache the returned locations.
+     * Null is returned if the uniform doesn't exist in the shader. NULL DOES
+     * NOT INDICATE FAILURE AND MUST BE IGNORED.
+     */
+    private fun getUniformLocation(
+        name: String, locationGetter: (Int, String) -> Int
+    ): Int? {
         Shader.bound.invalidateUnless(this)
         val programId: Int = this.getProgramId()
         glUseProgram(programId)
         var loc: Int? = this.cachedUniforms[name]
         if (loc == null) {
-            loc = glGetUniformLocation(programId, name)
+            loc = locationGetter(programId, name)
             this.cachedUniforms[name] = loc
         }
-        if (loc == -1) {
-            // may also return -1 if the specified uniform exists in the
-            // shader source, but was optimized away during compilation
-            return
-        }
+        // may also return no index if the specified uniform exists in the
+        // shader source, but was optimized away during compilation
+        return if (loc != GL_INVALID_INDEX) { loc } else { null }
+    }
+        
+    private inline fun setNormal(name: String, setter: (Int) -> Unit) {
+        val loc: Int = this.getUniformLocation(name, ::glGetUniformLocation)
+            ?: return
         setter(loc)
     }
     
@@ -233,15 +266,32 @@ class Shader : Disposable {
     )
     
     fun setSampler2D(name: String, v: Texture) {
-        // TODO!
+        val loc: Int = this.getUniformLocation(name, ::glGetUniformLocation)
+            ?: return
+        val slot: Int = this.textures.allocate(name, v)
+        glActiveTexture(GL_TEXTURE0 + slot)
+        Texture.bound.bindEager(v)
+        glUniform1i(loc, slot)
     }
     
     fun setBuffer(name: String, v: UniformBuffer) {
-        // TODO!
+        val loc: Int = this.getUniformLocation(name, ::glGetUniformBlockIndex)
+            ?: return
+        val bufferId: Int = v.getBufferId()
+        val point: Int = this.buffers.allocate(name, v)
+        glBindBufferBase(GL_UNIFORM_BUFFER, point, bufferId)
+        glUniformBlockBinding(this.getProgramId(), loc, point)
     }
     
     private fun bind() {
         glUseProgram(this.getProgramId())
+        for ((slot, texture) in this.textures.getAll().values) {
+            glActiveTexture(GL_TEXTURE0 + slot)
+            Texture.bound.bindEager(texture)
+        }
+        for ((point, buffer) in this.buffers.getAll().values) {
+            glBindBufferBase(GL_UNIFORM_BUFFER, point, buffer.getBufferId())
+        }
     }
     
     override fun dispose() {
@@ -256,7 +306,7 @@ class Shader : Disposable {
 const val SHADER_VERSION_STRING: String = "#version 330 core"
 
 private fun processShaderLine(
-    line: String, path: String, bannedIncludes: MutableSet<String>
+    line: String, path: String, dir: String, bannedIncludes: MutableSet<String>
 ): String {
     if (line.startsWith("#pragma once")) {
         bannedIncludes.add(path)
@@ -266,9 +316,11 @@ private fun processShaderLine(
     if (!line.startsWith(inclStart)) { return line }
     val endIdx: Int = line.indexOf("\"", inclStart.length)
     if (endIdx == -1) { return line }
-    val inclPath: String = line.substring(inclStart.length, endIdx)
+    val inclRelPath: String = line.substring(inclStart.length, endIdx)
+    val inclPath: String = Paths.get(dir, inclRelPath).toString()
     val inclFile = File(inclPath)
     val inclAbsPath: String = inclFile.absolutePath
+    val inclAbsDir: String = inclFile.parentFile.absolutePath
     if (bannedIncludes.contains(inclAbsPath)) {
         return ""
     }
@@ -282,7 +334,7 @@ private fun processShaderLine(
         )
     }
     return inclContents.joinToString("\n") { l ->
-        processShaderLine(l, inclAbsPath, bannedIncludes)    
+        processShaderLine(l, inclAbsPath, inclAbsDir, bannedIncludes)    
     }
 }
 
@@ -295,9 +347,10 @@ private fun readExpandBaseShader(path: String): String {
         throw IllegalArgumentException("Shader file '$path' could not be read")
     }
     val absPath: String = file.absolutePath
+    val absDir: String = file.parentFile.absolutePath
     val bannedIncludes = mutableSetOf<String>()
     val processed: String = contents.joinToString("\n") {
-        l -> processShaderLine(l, absPath, bannedIncludes)
+        l -> processShaderLine(l, absPath, absDir, bannedIncludes)
     }
     return SHADER_VERSION_STRING + "\n" + processed
 }

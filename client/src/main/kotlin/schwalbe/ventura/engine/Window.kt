@@ -2,6 +2,7 @@
 package schwalbe.ventura.engine
 
 import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.glfw.GLFWVidMode
 import org.lwjgl.system.MemoryUtil.NULL
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.*
@@ -23,13 +24,6 @@ private class WindowFramebuffer(val window: Window) : ConstFramebuffer() {
 }
 
 class Window : Disposable {
-    
-    enum class Mode {
-        FULLSCREEN,
-        WINDOWED_BORDERLESS,
-        WINDOWED
-    }
-    
 
     private var windowId: Long? = null
     var width: Int = 0
@@ -37,14 +31,21 @@ class Window : Disposable {
     var height: Int = 0
         private set
         
-    constructor(name: String, startWidth: Int, startHeight: Int) {
+    constructor(name: String) {
         check(glfwInit()) { "Failed to initialize GLFW" }
+        val monitor: Long = glfwGetPrimaryMonitor()
+        val vidMode: GLFWVidMode = glfwGetVideoMode(monitor)
+            ?: throw IllegalStateException("Failed to get primary monitor")
         glfwDefaultWindowHints()
+        glfwWindowHint(GLFW_RED_BITS, vidMode.redBits());
+        glfwWindowHint(GLFW_GREEN_BITS, vidMode.greenBits());
+        glfwWindowHint(GLFW_BLUE_BITS, vidMode.blueBits());
+        glfwWindowHint(GLFW_REFRESH_RATE, vidMode.refreshRate());
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE)
         val windowId: Long = glfwCreateWindow(
-            startWidth, startHeight, name, NULL, NULL
+            vidMode.width(), vidMode.height(), name, monitor, NULL
         )
         this.windowId = windowId
         glfwMakeContextCurrent(windowId)
@@ -60,10 +61,6 @@ class Window : Disposable {
     
     fun getWindowId(): Long = this.windowId
         ?: throw UsageAfterDisposalException()
-    
-    fun setWindowMode(mode: Mode) {
-        // TODO!
-    }
     
     fun setVsyncEnabled(enabled: Boolean = true) {
         glfwSwapInterval(if (enabled) 1 else 0)
