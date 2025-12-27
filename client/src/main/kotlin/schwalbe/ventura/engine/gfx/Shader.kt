@@ -90,7 +90,7 @@ private fun linkShaderProgram(
     return programId
 }
 
-private class SlotManager<T> {
+class ShaderSlotManager<T> {
     
     data class Slot<T>(val index: Int, val value: T)
     
@@ -105,17 +105,173 @@ private class SlotManager<T> {
 
 }
 
-class Shader : Disposable {
+class Uniform<S : Uniforms<S>, T>(
+    val name: String,
+    val setter: (Shader<*, *>, T) -> Unit
+)
+
+interface Uniforms<S : Uniforms<S>> {
     
+    private fun <T> standardUniform(
+        name: String, setter: (Int, T) -> Unit
+    ) = Uniform<S, T>(name) { shader, value ->
+        val loc: Int = shader.getUniformLocation(name, ::glGetUniformLocation)
+            ?: return@Uniform
+        setter(loc, value)
+    }
+    
+    /**
+     * Assigns an array value to the shader uniform specified by [name] by
+     * creating a buffer using [createBuffer]. The size passed to this buffer
+     * is the number of elements in the values multiplied by the [valueSize].
+     * The buffer is then filled by executing [fillBuffer] for each element
+     * in the values, where the index is the index from the values multiplied
+     * by the [valueSize] (meaning the offset in the target buffer).
+     * The buffer is then applied as the value for the uniform by executing the
+     * [useBuffer] function.
+     */
+    private fun <B, V> bufferUniform(
+        name: String, valueSize: Int,
+        createBuffer: (MemoryStack, Int) -> B,
+        fillBuffer: (V, Int, B) -> Unit,
+        useBuffer: (Int, B) -> Unit
+    ) = standardUniform<Iterable<V>>(name) { loc, values ->
+        MemoryStack.stackPush().use { stack ->
+            val b: B = createBuffer(stack, values.count() * valueSize)
+            values.withIndex()
+                .forEach { (i, v) -> fillBuffer(v, i * 4, b) }
+            useBuffer(loc, b)
+        }
+    }
+    
+    fun float(name: String) = this.standardUniform<Float>(name, ::glUniform1f)
+    fun vec2(name: String) = this.standardUniform<Vector2fc>(name) { loc, v ->
+        glUniform2f(loc, v.x(), v.y())
+    }
+    fun vec3(name: String) = this.standardUniform<Vector3fc>(name) { loc, v ->
+        glUniform3f(loc, v.x(), v.y(), v.z())
+    }
+    fun vec4(name: String) = this.standardUniform<Vector4fc>(name) { loc, v ->
+        glUniform4f(loc, v.x(), v.y(), v.z(), v.w())
+    }
+    fun floatArr(name: String) = this.bufferUniform<FloatBuffer, Float>(
+        name, valueSize = 1, MemoryStack::mallocFloat,
+        fillBuffer = { v, i, b -> b.put(i, v) }, ::glUniform1fv
+    )
+    fun vec2Arr(name: String) = this.bufferUniform<FloatBuffer, Vector2fc>(
+        name, valueSize = 2, MemoryStack::mallocFloat,
+        fillBuffer = Vector2fc::get, ::glUniform2fv
+    )
+    fun vec3Arr(name: String) = this.bufferUniform<FloatBuffer, Vector3fc>(
+        name, valueSize = 3, MemoryStack::mallocFloat,
+        fillBuffer = Vector3fc::get, ::glUniform3fv
+    )
+    fun vec4Arr(name: String) = this.bufferUniform<FloatBuffer, Vector4fc>(
+        name, valueSize = 4, MemoryStack::mallocFloat,
+        fillBuffer = Vector4fc::get, ::glUniform4fv
+    )
+    
+    fun int(name: String) = this.standardUniform<Int>(name, ::glUniform1i)
+    fun ivec2(name: String) = this.standardUniform<Vector2ic>(name) { loc, v ->
+        glUniform2i(loc, v.x(), v.y())
+    }
+    fun ivec3(name: String) = this.standardUniform<Vector3ic>(name) { loc, v ->
+        glUniform3i(loc, v.x(), v.y(), v.z())
+    }
+    fun ivec4(name: String) = this.standardUniform<Vector4ic>(name) { loc, v ->
+        glUniform4i(loc, v.x(), v.y(), v.z(), v.w())
+    }
+    fun intArr(name: String) = this.bufferUniform<IntBuffer, Int>(
+        name, valueSize = 1, MemoryStack::mallocInt,
+        fillBuffer = { v, i, b -> b.put(i, v) }, ::glUniform1iv
+    )
+    fun ivec2Arr(name: String) = this.bufferUniform<IntBuffer, Vector2ic>(
+        name, valueSize = 2, MemoryStack::mallocInt,
+        fillBuffer = Vector2ic::get, ::glUniform2iv
+    )
+    fun ivec3Arr(name: String) = this.bufferUniform<IntBuffer, Vector3ic>(
+        name, valueSize = 3, MemoryStack::mallocInt,
+        fillBuffer = Vector3ic::get, ::glUniform3iv
+    )
+    fun ivec4Arr(name: String) = this.bufferUniform<IntBuffer, Vector4ic>(
+        name, valueSize = 4, MemoryStack::mallocInt,
+        fillBuffer = Vector4ic::get, ::glUniform4iv
+    )
+    
+    fun bool(name: String) = this.standardUniform<Boolean>(name) { loc, v ->
+        glUniform1i(loc, if (v) { 1 } else { 0 })
+    }
+    fun boolArr(name: String) = this.bufferUniform<IntBuffer, Boolean>(
+        name, valueSize = 1, MemoryStack::mallocInt,
+        fillBuffer = { v, i, b -> b.put(i, if (v) { 1 } else { 0 }) },
+        ::glUniform1iv
+    )
+    
+    fun mat3(name: String): Uniform<S, Matrix3fc> {
+        val underlying = mat3Arr(name)
+        val value: MutableList<Matrix3fc> = mutableListOf(Matrix3f())
+        return Uniform<S, Matrix3fc>(name) { shader, v ->
+            value[0] = v
+            underlying.setter(shader, value)
+        }
+    }
+    fun mat4(name: String): Uniform<S, Matrix4fc> {
+        val underlying = mat4Arr(name)
+        val value: MutableList<Matrix4fc> = mutableListOf(Matrix4f())
+        return Uniform<S, Matrix4fc>(name) { shader, v ->
+            value[0] = v
+            underlying.setter(shader, value)
+        }
+    }
+    fun mat3Arr(name: String) = this.bufferUniform<FloatBuffer, Matrix3fc>(
+        name, valueSize = 3 * 3, MemoryStack::mallocFloat,
+        fillBuffer = Matrix3fc::get,
+        useBuffer = { loc, b -> glUniformMatrix3fv(loc, false, b) }
+    )
+    fun mat4Arr(name: String) = this.bufferUniform<FloatBuffer, Matrix4fc>(
+        name, valueSize = 4 * 4, MemoryStack::mallocFloat,
+        fillBuffer = Matrix4fc::get,
+        useBuffer = { loc, b -> glUniformMatrix4fv(loc, false, b) }
+    )
+    
+    fun sampler2D(name: String) = Uniform<S, Texture>(name) { s, v ->
+        val loc: Int = s.getUniformLocation(name, ::glGetUniformLocation)
+            ?: return@Uniform
+        val slot: Int = s.textures.allocate(name, v)
+        glActiveTexture(GL_TEXTURE0 + slot)
+        Texture.bound.bindEager(v)
+        glUniform1i(loc, slot)
+    }
+    
+    fun block(name: String) = Uniform<S, UniformBuffer>(name) { s, v ->
+        val loc: Int = s.getUniformLocation(name, ::glGetUniformBlockIndex)
+            ?: return@Uniform
+        val bufferId: Int = v.getBufferId()
+        val point: Int = s.buffers.allocate(name, v)
+        glBindBufferBase(GL_UNIFORM_BUFFER, point, bufferId)
+        glUniformBlockBinding(s.getProgramId(), loc, point)
+    }
+
+}
+
+interface ShaderDef<S : ShaderDef<S>> : Uniforms<S> {
+    val path: String
+}
+
+interface VertShaderDef<S : ShaderDef<S>> : ShaderDef<S>
+interface FragShaderDef<S : ShaderDef<S>> : ShaderDef<S>
+
+class Shader<V : VertShaderDef<V>, F : FragShaderDef<F>> : Disposable {
+
     companion object {
-        internal val bound = BindingManager<Shader>(Shader::bind)
+        internal val bound = BindingManager<Shader<*, *>>(Shader<*, *>::bind)
     }
     
     var programId: Int? = null
         private set
     private val cachedUniforms: MutableMap<String, Int> = mutableMapOf()
-    private val textures: SlotManager<Texture> = SlotManager()
-    private val buffers: SlotManager<UniformBuffer> = SlotManager()
+    val textures: ShaderSlotManager<Texture> = ShaderSlotManager()
+    val buffers: ShaderSlotManager<UniformBuffer> = ShaderSlotManager()
         
     constructor(
         vertSrc: String, fragSrc: String,
@@ -146,7 +302,7 @@ class Shader : Disposable {
      * Null is returned if the uniform doesn't exist in the shader. NULL DOES
      * NOT INDICATE FAILURE AND MUST BE IGNORED.
      */
-    private fun getUniformLocation(
+    fun getUniformLocation(
         name: String, locationGetter: (Int, String) -> Int
     ): Int? {
         Shader.bound.invalidateUnless(this)
@@ -161,126 +317,15 @@ class Shader : Disposable {
         // shader source, but was optimized away during compilation
         return if (loc != GL_INVALID_INDEX) { loc } else { null }
     }
-        
-    private inline fun setNormal(name: String, setter: (Int) -> Unit) {
-        val loc: Int = this.getUniformLocation(name, ::glGetUniformLocation)
-            ?: return
-        setter(loc)
+    
+    @JvmName("setVert")
+    operator fun <T> set(uniform: Uniform<V, T>, value: T) {
+        uniform.setter(this, value)
     }
     
-    /**
-     * Assigns an array value to the shader uniform specified by [name] by
-     * creating a buffer using [createBuffer]. The size passed to this buffer
-     * is the number of elements in [values] multiplied by the [valueSize].
-     * The buffer is then filled by executing [fillBuffer] for each element
-     * in [values], where the index is the index from [values] multiplied
-     * by the [valueSize] (meaning the offset in the target buffer).
-     * The buffer is then applied as the value for the uniform by executing the
-     * [useBuffer] function.
-     */
-    private inline fun <B, V> setBuffer(
-        name: String, values: Iterable<V>, valueSize: Int,
-        createBuffer: (MemoryStack, Int) -> B, 
-        fillBuffer: (V, Int, B) -> Unit,
-        useBuffer: (Int, B) -> Unit
-    ) {
-        this.setNormal(name) { loc ->
-            MemoryStack.stackPush().use { stack ->
-                val b: B = createBuffer(stack, values.count() * valueSize)
-                values.withIndex()
-                    .forEach { (i, v) -> fillBuffer(v, i * 4, b) }
-                useBuffer(loc, b)
-            }
-        }
-    }
-    
-    fun setFloat(name: String, v: Float)
-        = this.setNormal(name) { glUniform1f(it, v) }
-    fun setVec2(name: String, v: Vector2fc)
-        = this.setNormal(name) { glUniform2f(it, v.x(), v.y()) }
-    fun setVec3(name: String, v: Vector3fc)
-        = this.setNormal(name) { glUniform3f(it, v.x(), v.y(), v.z()) }
-    fun setVec4(name: String, v: Vector4fc)
-        = this.setNormal(name) { glUniform4f(it, v.x(), v.y(), v.z(), v.w()) }
-    fun setFloatArr(name: String, v: Iterable<Float>) = this.setBuffer(
-        name, v, valueSize = 1, MemoryStack::mallocFloat,
-        fillBuffer = { v, i, b -> b.put(i, v) }, ::glUniform1fv
-    )
-    fun setVec2Arr(name: String, v: Iterable<Vector2fc>) = this.setBuffer(
-        name, v, valueSize = 2, MemoryStack::mallocFloat,
-        fillBuffer = Vector2fc::get, ::glUniform2fv
-    )
-    fun setVec3Arr(name: String, v: Iterable<Vector3fc>) = this.setBuffer(
-        name, v, valueSize = 3, MemoryStack::mallocFloat,
-        fillBuffer = Vector3fc::get, ::glUniform3fv
-    )
-    fun setVec4Arr(name: String, v: Iterable<Vector4fc>) = this.setBuffer(
-        name, v, valueSize = 4, MemoryStack::mallocFloat,
-        fillBuffer = Vector4fc::get, ::glUniform4fv
-    )
-    
-    fun setInt(name: String, v: Int)
-        = this.setNormal(name) { glUniform1i(it, v) }
-    fun setIvec2(name: String, v: Vector2ic)
-        = this.setNormal(name) { glUniform2i(it, v.x(), v.y()) }
-    fun setIvec3(name: String, v: Vector3ic)
-        = this.setNormal(name) { glUniform3i(it, v.x(), v.y(), v.z()) }
-    fun setIvec4(name: String, v: Vector4ic)
-        = this.setNormal(name) { glUniform4i(it, v.x(), v.y(), v.z(), v.w()) }
-    fun setIntArr(name: String, v: Iterable<Int>) = this.setBuffer(
-        name, v, valueSize = 1, MemoryStack::mallocInt,
-        fillBuffer = { v, i, b -> b.put(i, v) }, ::glUniform1iv
-    )
-    fun setIvec2Arr(name: String, v: Iterable<Vector2ic>) = this.setBuffer(
-        name, v, valueSize = 2, MemoryStack::mallocInt,
-        fillBuffer = Vector2ic::get, ::glUniform2iv
-    )
-    fun setIvec3Arr(name: String, v: Iterable<Vector3ic>) = this.setBuffer(
-        name, v, valueSize = 3, MemoryStack::mallocInt,
-        fillBuffer = Vector3ic::get, ::glUniform3iv
-    )
-    fun setIvec4Arr(name: String, v: Iterable<Vector4ic>) = this.setBuffer(
-        name, v, valueSize = 4, MemoryStack::mallocInt,
-        fillBuffer = Vector4ic::get, ::glUniform4iv
-    )
-        
-    fun setBool(name: String, v: Boolean)
-        = this.setNormal(name) { glUniform1i(it, if (v) { 1 } else { 0 }) }
-    fun setBoolArr(name: String, v: Iterable<Boolean>) = this.setBuffer(
-        name, v, valueSize = 1, MemoryStack::mallocInt,
-        fillBuffer = { v, i, b -> b.put(i, if (v) { 1 } else { 0 }) },
-        ::glUniform1iv
-    )
-    
-    fun setMat3(name: String, v: Matrix3fc) = this.setMat3Arr(name, listOf(v))
-    fun setMat4(name: String, v: Matrix4fc) = this.setMat4Arr(name, listOf(v))
-    fun setMat3Arr(name: String, v: Iterable<Matrix3fc>) = this.setBuffer(
-        name, v, valueSize = 3 * 3, MemoryStack::mallocFloat,
-        fillBuffer = Matrix3fc::get,
-        useBuffer = { loc, b -> glUniformMatrix3fv(loc, false, b) }
-    )
-    fun setMat4Arr(name: String, v: Iterable<Matrix4fc>) = this.setBuffer(
-        name, v, valueSize = 4 * 4, MemoryStack::mallocFloat,
-        fillBuffer = Matrix4fc::get,
-        useBuffer = { loc, b -> glUniformMatrix4fv(loc, false, b) }
-    )
-    
-    fun setSampler2D(name: String, v: Texture) {
-        val loc: Int = this.getUniformLocation(name, ::glGetUniformLocation)
-            ?: return
-        val slot: Int = this.textures.allocate(name, v)
-        glActiveTexture(GL_TEXTURE0 + slot)
-        Texture.bound.bindEager(v)
-        glUniform1i(loc, slot)
-    }
-    
-    fun setBuffer(name: String, v: UniformBuffer) {
-        val loc: Int = this.getUniformLocation(name, ::glGetUniformBlockIndex)
-            ?: return
-        val bufferId: Int = v.getBufferId()
-        val point: Int = this.buffers.allocate(name, v)
-        glBindBufferBase(GL_UNIFORM_BUFFER, point, bufferId)
-        glUniformBlockBinding(this.getProgramId(), loc, point)
+    @JvmName("setFrag")
+    operator fun <T> set(uniform: Uniform<F, T>, value: T) {
+        uniform.setter(this, value)
     }
     
     private fun bind() {
@@ -355,10 +400,10 @@ private fun readExpandBaseShader(path: String): String {
     return SHADER_VERSION_STRING + "\n" + processed
 }
 
-fun Shader.Companion.loadGlsl(
-    vertPath: String, fragPath: String
-) = Resource<Shader> {
-    val vertSrc: String = readExpandBaseShader(vertPath)
-    val fragSrc: String = readExpandBaseShader(fragPath)
-    return@Resource { Shader(vertSrc, fragSrc, vertPath, fragPath) }
+fun <V : VertShaderDef<V>, F : FragShaderDef<F>> Shader.Companion.loadGlsl(
+    vertDef: V, fragDef: F
+) = Resource<Shader<V, F>> {
+    val vertSrc: String = readExpandBaseShader(vertDef.path)
+    val fragSrc: String = readExpandBaseShader(fragDef.path)
+    return@Resource { Shader(vertSrc, fragSrc, vertDef.path, fragDef.path) }
 }

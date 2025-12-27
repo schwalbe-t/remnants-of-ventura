@@ -1,7 +1,11 @@
 
 package schwalbe.ventura.engine.ui
 
-class Padding : UiElement() {
+import schwalbe.ventura.engine.gfx.Texture
+import schwalbe.ventura.engine.gfx.Shader
+import org.joml.Vector2f
+
+class Padding : GpuUiElement() {
     
     var inside: UiElement? = null
         private set
@@ -30,11 +34,18 @@ class Padding : UiElement() {
    
     override fun render(context: UiElementContext) {
         val inside: UiElement = this.inside ?: return
-        // TODO! prepare 'this.result' texture and framebuffer
-        //       (possibly in superclass for all GPU rendered elements?)
+        val insideTex: Texture = inside.result ?: return
+        this.prepareTarget()
         val insideOffsetX: Float = this.paddingLeft(context)
         val insideOffsetY: Float = this.paddingTop(context)
-        // TODO! blit 'inside.result' onto 'this.result' at 'insideOffset(X/Y)'
+        val shader: Shader<PxPos, Blit> = blitShader()
+        shader[PxPos.bufferSizePx] = Vector2f(
+            this.target.width.toFloat(), this.target.height.toFloat()
+        )
+        shader[PxPos.destTopLeftPx] = Vector2f(insideOffsetX, insideOffsetY)
+        shader[PxPos.destSizePx] = Vector2f(inside.pxWidth, inside.pxHeight)
+        shader[Blit.texture] = insideTex
+        quad().render(shader, this.target)
     }
     
     fun withPadding(amount: UiSize): Padding {
@@ -78,13 +89,15 @@ class Padding : UiElement() {
     }
     
     /** NOTE: Returns 'this'! */
-    fun withoutContents(): UiElement {
+    fun withoutContents(): Padding {
         this.inside = null
+        this.invalidate()
         return this
     }
     
     fun setContents(inside: UiElement?) {
         this.inside = inside
+        this.invalidate()
     }
     
 }

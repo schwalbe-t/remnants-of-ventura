@@ -1,6 +1,7 @@
 
 package schwalbe.ventura.engine.ui
 
+import schwalbe.ventura.engine.Disposable
 import schwalbe.ventura.engine.gfx.Texture
 
 data class UiParentContext(
@@ -13,14 +14,20 @@ data class UiElementContext(
     val parent: UiParentContext
 )
 
-abstract class UiElement {
+abstract class UiElement : Disposable {
     
     private var isDirty: Boolean = true
     
     var width: UiSize = fpw
-        protected set
+        set(value) {
+            field = value
+            this.invalidate()
+        }
     var height: UiSize = fph
-        protected set
+        set(value) {
+            field = value
+            this.invalidate()
+        }
     
     var pxWidth: Float = 0f
         protected set
@@ -28,11 +35,11 @@ abstract class UiElement {
         protected set
         
     var result: Texture? = null
-        private set
+        protected set
     
-    protected abstract val children: List<UiElement>
+    abstract val children: List<UiElement>
     
-    abstract fun updateLayout(context: UiElementContext)
+    protected open fun updateLayout(context: UiElementContext) {}
     
     protected var parentContext: UiParentContext = UiParentContext(0f, 0f)
     
@@ -56,31 +63,25 @@ abstract class UiElement {
         this.isDirty = false
     }
     
-    abstract fun render(context: UiElementContext)
-    
-    fun setWidth(width: UiSize) {
-        this.width = width
-        this.invalidate()
-    }
-    
-    fun setHeight(height: UiSize) {
-        this.height = height
-        this.invalidate()
-    }
+    protected open fun render(context: UiElementContext) {}
     
     fun invalidate() {
         this.isDirty = true
     }
     
+    override fun dispose() {
+        this.result?.dispose()
+    }
+    
 }
 
 fun <E: UiElement> E.withWidth(width: UiSize): E {
-    this.setWidth(width)
+    this.width = width
     return this
 }
 
 fun <E: UiElement> E.withHeight(height: UiSize): E {
-    this.setHeight(height)
+    this.height = height
     return this
 }
 

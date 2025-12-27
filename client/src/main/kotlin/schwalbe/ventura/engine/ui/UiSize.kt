@@ -1,16 +1,6 @@
 
 package schwalbe.ventura.engine.ui
 
-import schwalbe.ventura.engine.ui.px as pxUnit
-import schwalbe.ventura.engine.ui.vw as vwUnit
-import schwalbe.ventura.engine.ui.vh as vhUnit
-import schwalbe.ventura.engine.ui.pw as pwUnit
-import schwalbe.ventura.engine.ui.ph as phUnit
-import schwalbe.ventura.engine.ui.vmin as vminUnit
-import schwalbe.ventura.engine.ui.vmax as vmaxUnit
-import schwalbe.ventura.engine.ui.pmin as pminUnit
-import schwalbe.ventura.engine.ui.pmax as pmaxUnit
-
 typealias UiSize = (ctx: UiElementContext) -> Float
 
 /** Size of a pixel */
@@ -20,27 +10,27 @@ val vw: UiSize = { ctx -> ctx.global.output.width / 100f }
 /** Relative to 1% of the height of the viewport */
 val vh: UiSize = { ctx -> ctx.global.output.height / 100f }
 /** Relative to 1% of the width of the parent element */
-val pw: UiSize = { ctx -> ctx.parentPxWidth / 100f }
+val pw: UiSize = { ctx -> ctx.parent.pxWidth / 100f }
 /** Relative to 1% of the height of the parent element */
-val ph: UiSize = { ctx -> ctx.parentPxHeight / 100f }
+val ph: UiSize = { ctx -> ctx.parent.pxHeight / 100f }
 
 /** The full width of the viewport */
 val fvw: UiSize = { ctx -> ctx.global.output.width.toFloat() }
 /** The full height of the viewport */
 val fvh: UiSize = { ctx -> ctx.global.output.height.toFloat() }
 /** The full width of the parent element */
-val fpw: UiSize = { ctx -> ctx.parentPxWidth }
+val fpw: UiSize = { ctx -> ctx.parent.pxWidth }
 /** The full height of the parent element */
-val fph: UiSize = { ctx -> ctx.parentPxHeight }
+val fph: UiSize = { ctx -> ctx.parent.pxHeight }
 
 /** Relative to 1% of viewport's smaller dimension */
-val vmin: UiSize = minOf(vwUnit, vhUnit)
+val vmin: UiSize = minOf(vw, vh)
 /** Relative to 1% of viewport's larger dimension */
-val vmax: UiSize = maxOf(vwUnit, vhUnit)
+val vmax: UiSize = maxOf(vw, vh)
 /** Relative to 1% of parent element's smaller dimension */
-val pmin: UiSize = minOf(pwUnit, phUnit)
+val pmin: UiSize = minOf(pw, ph)
 /** Relative to 1% of parent element's larger dimension */
-val pmax: UiSize = maxOf(pwUnit, phUnit)
+val pmax: UiSize = maxOf(pw, ph)
 
 inline operator fun Int.times(crossinline f: UiSize): UiSize
     = { ctx -> this * f(ctx) }
@@ -84,32 +74,32 @@ inline fun UiSize.clamp(
 ): UiSize
     = { ctx -> this(ctx).coerceIn(minVal(ctx), maxVal(ctx)) }
 
-val Int.px: UiSize      get() = this * pxUnit
-val Int.vw: UiSize      get() = this * vwUnit
-val Int.vh: UiSize      get() = this * vhUnit
-val Int.pw: UiSize      get() = this * pwUnit
-val Int.ph: UiSize      get() = this * phUnit
-val Int.vmin: UiSize    get() = this * vminUnit
-val Int.vmax: UiSize    get() = this * vmaxUnit
-val Int.pmin: UiSize    get() = this * pminUnit
-val Int.pmax: UiSize    get() = this * pmaxUnit
+val Int.px: UiSize      get() = this * schwalbe.ventura.engine.ui.px
+val Int.vw: UiSize      get() = this * schwalbe.ventura.engine.ui.vw
+val Int.vh: UiSize      get() = this * schwalbe.ventura.engine.ui.vh
+val Int.pw: UiSize      get() = this * schwalbe.ventura.engine.ui.pw
+val Int.ph: UiSize      get() = this * schwalbe.ventura.engine.ui.ph
+val Int.vmin: UiSize    get() = this * schwalbe.ventura.engine.ui.vmin
+val Int.vmax: UiSize    get() = this * schwalbe.ventura.engine.ui.vmax
+val Int.pmin: UiSize    get() = this * schwalbe.ventura.engine.ui.pmin
+val Int.pmax: UiSize    get() = this * schwalbe.ventura.engine.ui.pmax
 
-val Float.px: UiSize    get() = this * pxUnit
-val Float.vw: UiSize    get() = this * vwUnit
-val Float.vh: UiSize    get() = this * vhUnit
-val Float.pw: UiSize    get() = this * pwUnit
-val Float.ph: UiSize    get() = this * phUnit
-val Float.vmin: UiSize  get() = this * vminUnit
-val Float.vmax: UiSize  get() = this * vmaxUnit
-val Float.pmin: UiSize  get() = this * pminUnit
-val Float.pmax: UiSize  get() = this * pmaxUnit
+val Float.px: UiSize    get() = this * schwalbe.ventura.engine.ui.px
+val Float.vw: UiSize    get() = this * schwalbe.ventura.engine.ui.vw
+val Float.vh: UiSize    get() = this * schwalbe.ventura.engine.ui.vh
+val Float.pw: UiSize    get() = this * schwalbe.ventura.engine.ui.pw
+val Float.ph: UiSize    get() = this * schwalbe.ventura.engine.ui.ph
+val Float.vmin: UiSize  get() = this * schwalbe.ventura.engine.ui.vmin
+val Float.vmax: UiSize  get() = this * schwalbe.ventura.engine.ui.vmax
+val Float.pmin: UiSize  get() = this * schwalbe.ventura.engine.ui.pmin
+val Float.pmax: UiSize  get() = this * schwalbe.ventura.engine.ui.pmax
 
-val Double.px: UiSize   get() = this * pxUnit
-val Double.vw: UiSize   get() = this * vwUnit
-val Double.vh: UiSize   get() = this * vhUnit
-val Double.pw: UiSize   get() = this * pwUnit
-val Double.ph: UiSize   get() = this * phUnit
-val Double.vmin: UiSize get() = this * vminUnit
-val Double.vmax: UiSize get() = this * vmaxUnit
-val Double.pmin: UiSize get() = this * pminUnit
-val Double.pmax: UiSize get() = this * pmaxUnit
+val Double.px: UiSize   get() = this * schwalbe.ventura.engine.ui.px
+val Double.vw: UiSize   get() = this * schwalbe.ventura.engine.ui.vw
+val Double.vh: UiSize   get() = this * schwalbe.ventura.engine.ui.vh
+val Double.pw: UiSize   get() = this * schwalbe.ventura.engine.ui.pw
+val Double.ph: UiSize   get() = this * schwalbe.ventura.engine.ui.ph
+val Double.vmin: UiSize get() = this * schwalbe.ventura.engine.ui.vmin
+val Double.vmax: UiSize get() = this * schwalbe.ventura.engine.ui.vmax
+val Double.pmin: UiSize get() = this * schwalbe.ventura.engine.ui.pmin
+val Double.pmax: UiSize get() = this * schwalbe.ventura.engine.ui.pmax

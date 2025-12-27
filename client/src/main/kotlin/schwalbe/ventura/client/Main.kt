@@ -144,6 +144,7 @@ suspend fun main() {
 
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
+import schwalbe.ventura.engine.ui.*
 import org.joml.Vector4f
 import java.nio.*
 import kotlin.concurrent.thread
@@ -151,67 +152,23 @@ import kotlin.concurrent.thread
 fun main() {
     val resLoader = ResourceLoader()
     thread { resLoader.loadQueuedRawLoop() }
-    val shaderRes: Resource<Shader> = resLoader.submit(Shader.loadGlsl(
-        "shaders/test.vert.glsl", "shaders/test.frag.glsl"
-    ))
-    val testRes: Resource<Texture> = resLoader.submit(Texture.loadImage(
-        "res/test.png", Texture.Filter.LINEAR
-    ))
+    
+    loadUiResources(resLoader)
     
     val window = Window("Remnants of Ventura")
-    
-    val layout = listOf(
-        Geometry.Attribute(2, Geometry.Type.FLOAT),
-        Geometry.Attribute(2, Geometry.Type.FLOAT)
+    val ui = UiContext(
+        output = window.framebuffer,
+        defaultFontFamily = "Jetbrains Mono",
+        defaultFontSize = 16.px
     )
-    val vertices: FloatArray = floatArrayOf(
-         0.0f, +0.5f,   0.5f, 1.0f,
-        -0.5f, -0.5f,   0.0f, 0.0f,
-        +0.5f, -0.5f,   1.0f, 0.0f
-    )
-    val vertexBuffer: ByteBuffer = ByteBuffer
-        .allocateDirect(vertices.size * 4)
-        .order(ByteOrder.nativeOrder())
-    vertexBuffer.asFloatBuffer().put(vertices)
-    val elements: ShortArray = shortArrayOf(
-        0, 1, 2
-    )
-    val elementBuffer: ShortBuffer = ByteBuffer
-        .allocateDirect(elements.size * 2)
-        .order(ByteOrder.nativeOrder())
-        .asShortBuffer()
-        .put(elements)
-        .flip()
-    val geometry = Geometry(layout, vertexBuffer, elementBuffer)
-    
-    val instanceData: FloatArray = floatArrayOf(
-    //   <dx>   <dy>   -- padding --
-        -0.5f, -0.5f,   0.0f, 0.0f,
-        -0.5f, +0.5f,   0.0f, 0.0f,
-        +0.5f, -0.5f,   0.0f, 0.0f,
-        +0.5f, +0.5f,   0.0f, 0.0f
-    )
-    val instanceBuff: ByteBuffer = ByteBuffer
-        .allocateDirect(4 * 2 * 16)
-        .order(ByteOrder.nativeOrder())
-    instanceBuff.asFloatBuffer().put(instanceData)
-    val instances = UniformBuffer(BufferWriteFreq.ONCE).write(instanceBuff)
     
     var onFrame: () -> Unit = {}
     
-    val testBuffData: ByteBuffer = ByteBuffer
-        .allocateDirect(1024 * 16 * 16)
-        .order(ByteOrder.nativeOrder())
-    val testBuff = UniformBuffer(BufferWriteFreq.ONCE).write(testBuffData)
-    
     resLoader.submit(Resource.fromCallback {
-        val shader: Shader = shaderRes.loaded!!
-        val test: Texture = testRes.loaded!!
-        shader.setSampler2D("uTexture", test)
-        shader.setBuffer("uInstances", instances)
-        
+        ui.add(FlatBackground().withRgbColor(255, 0, 0))
         onFrame = {
-            geometry.render(shader, window.framebuffer, instanceCount = 4)
+            ui.update()
+            ui.render()
         }
     })
     

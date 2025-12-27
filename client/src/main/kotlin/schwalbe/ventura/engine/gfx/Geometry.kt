@@ -7,6 +7,7 @@ import schwalbe.ventura.engine.UsageAfterDisposalException
 import org.lwjgl.opengl.GL33.*
 import java.nio.ByteBuffer
 import java.nio.ShortBuffer
+import java.nio.ByteOrder
 
 class Geometry : Disposable {
     
@@ -38,7 +39,7 @@ class Geometry : Disposable {
         private set
     var indexCount: Int
         private set
-    
+        
     constructor(layout: List<Attribute>, vbo: ByteBuffer, ebo: ShortBuffer) {
         this.indexCount = ebo.remaining()
         val vaoId: Int = glGenVertexArrays()
@@ -77,7 +78,7 @@ class Geometry : Disposable {
     }
     
     fun render(
-        shader: Shader, framebuffer: ConstFramebuffer,
+        shader: Shader<*, *>, framebuffer: ConstFramebuffer,
         instanceCount: Int = 1,
         faceCulling: FaceCulling = FaceCulling.DISABLED,
         depthTesting: DepthTesting = DepthTesting.ENABLED
@@ -119,4 +120,35 @@ class Geometry : Disposable {
         Geometry.bound.invalidate(this)
     }
     
+}
+
+fun Geometry.Companion.byte(n: Int)
+    = Geometry.Attribute(n, Geometry.Type.BYTE)
+fun Geometry.Companion.ubyte(n: Int)
+    = Geometry.Attribute(n, Geometry.Type.UBYTE)
+fun Geometry.Companion.short(n: Int)
+    = Geometry.Attribute(n, Geometry.Type.SHORT)
+fun Geometry.Companion.ushort(n: Int)
+    = Geometry.Attribute(n, Geometry.Type.USHORT)
+fun Geometry.Companion.int(n: Int)
+    = Geometry.Attribute(n, Geometry.Type.INT)
+fun Geometry.Companion.uint(n: Int)
+    = Geometry.Attribute(n, Geometry.Type.UINT)
+fun Geometry.Companion.float(n: Int)
+    = Geometry.Attribute(n, Geometry.Type.FLOAT)
+
+fun Geometry.Companion.fromFloatArray(
+    layout: List<Geometry.Attribute>, vbo: FloatArray, ebo: ShortArray
+): Geometry {
+    val vertexBuffer: ByteBuffer = ByteBuffer
+        .allocateDirect(vbo.size * 4)
+        .order(ByteOrder.nativeOrder())
+    vertexBuffer.asFloatBuffer().put(vbo)
+    val elementBuffer: ShortBuffer = ByteBuffer
+        .allocateDirect(ebo.size * 2)
+        .order(ByteOrder.nativeOrder())
+        .asShortBuffer()
+        .put(ebo)
+        .flip()
+    return Geometry(layout, vertexBuffer, elementBuffer)
 }

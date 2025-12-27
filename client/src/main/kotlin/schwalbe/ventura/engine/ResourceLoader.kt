@@ -16,6 +16,8 @@ class Resource<T>(private val loadChain: () -> () -> T) {
     val isLoaded: Boolean
         get() = this.loaded != null
         
+    operator fun invoke(): T
+        = this.loaded ?: throw IllegalStateException("Resource not yet loaded")
     
     fun loadRaw() {
         check(this.loadFully == null) { "Raw resource already loaded" }
@@ -52,6 +54,9 @@ class ResourceLoader {
         }
         return resource
     }
+    
+    fun submitAll(vararg resources: Resource<*>)
+        = resources.forEach { this.submit(it) }
     
     fun loadQueuedRawLoop() {
         while (true) {

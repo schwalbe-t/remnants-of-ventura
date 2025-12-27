@@ -13,8 +13,6 @@ class Text : UiElement() {
     
     override val children: List<UiElement> = listOf()
     
-    override fun updateLayout(context: UiElementContext) {}
-    
     override fun render(context: UiElementContext) {
         val fontFamily: String = this.fontFamily
             ?: context.global.defaultFontFamily
