@@ -165,7 +165,25 @@ fun main() {
     var onFrame: () -> Unit = {}
     
     resLoader.submit(Resource.fromCallback {
-        ui.add(FlatBackground().withRgbColor(255, 0, 0))
+        
+        ui.add(
+            FlatBackground().withRgbColor(255, 0, 0),
+            layer = 0
+        )
+        ui.add(
+            Stack().withContents(
+                FlatBackground().withRgbColor(0, 0, 255)
+                    .inside(Padding().withPadding(10.vmin)),
+                FlatBackground().withRgbColor(0, 255, 0)
+                    .inside(Padding().withPadding(30.vmin))
+            ),
+            layer = 1
+        )
+        ui.add(
+            Image().withImage(testImage2()).withSize(500.px, 500.px),
+            layer = 2
+        )
+        
         onFrame = {
             ui.update()
             ui.render()
@@ -176,12 +194,12 @@ fun main() {
         window.beginFrame()
         resLoader.loadQueuedFully()
         
-        window.framebuffer.clearColor(Vector4f(1f, 1f, 1f, 1f))
+        window.framebuffer.clearColor(Vector4f(1f, 0f, 1f, 1f))
         window.framebuffer.clearDepth(1f)
         onFrame()
         
         window.endFrame()
-        Thread.sleep(100)
+        Thread.sleep(15)
     }
     window.dispose()
 }

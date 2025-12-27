@@ -3,11 +3,12 @@ package schwalbe.ventura.engine.ui
 
 import schwalbe.ventura.engine.gfx.Texture
 import schwalbe.ventura.engine.gfx.Shader
-import org.joml.Vector2f
+import org.joml.*
+import kotlin.math.roundToInt
 
-class Padding : GpuUiElement() {
+class Padding : GpuUiElement(), UiContainer {
     
-    var inside: UiElement? = null
+    override var inside: UiElement? = null
         private set
         
     var paddingTop: UiSize = 0.px
@@ -27,8 +28,8 @@ class Padding : GpuUiElement() {
         val paddingHoriz: UiSize = this.paddingLeft + this.paddingRight
         val paddingVert: UiSize = this.paddingTop + this.paddingBottom
         this.parentContext = UiParentContext(
-            pxWidth = this.pxWidth - paddingHoriz(context),
-            pxHeight = this.pxHeight - paddingVert(context)
+            pxWidth = (this.pxWidth - paddingHoriz(context)).roundToInt(),
+            pxHeight = (this.pxHeight - paddingVert(context)).roundToInt()
         )
     }
    
@@ -43,7 +44,9 @@ class Padding : GpuUiElement() {
             this.target.width.toFloat(), this.target.height.toFloat()
         )
         shader[PxPos.destTopLeftPx] = Vector2f(insideOffsetX, insideOffsetY)
-        shader[PxPos.destSizePx] = Vector2f(inside.pxWidth, inside.pxHeight)
+        shader[PxPos.destSizePx] = Vector2f(
+            inside.pxWidth.toFloat(), inside.pxHeight.toFloat()
+        )
         shader[Blit.texture] = insideTex
         quad().render(shader, this.target)
     }
@@ -53,6 +56,15 @@ class Padding : GpuUiElement() {
         this.paddingBottom = amount
         this.paddingLeft = amount
         this.paddingRight = amount
+        this.invalidate()
+        return this
+    }
+    
+    fun withPadding(horizontal: UiSize, vertical: UiSize): Padding {
+        this.paddingTop = vertical
+        this.paddingBottom = vertical
+        this.paddingLeft = horizontal
+        this.paddingRight = horizontal
         this.invalidate()
         return this
     }
@@ -81,21 +93,19 @@ class Padding : GpuUiElement() {
         return this
     }
     
-    /** NOTE: Returns 'inside'! */
-    fun <E : UiElement> withContents(inside: E): E {
+    fun withContents(inside: UiElement?): Padding {
         this.inside = inside
         this.invalidate()
-        return inside
+        return this
     }
     
-    /** NOTE: Returns 'this'! */
     fun withoutContents(): Padding {
         this.inside = null
         this.invalidate()
         return this
     }
     
-    fun setContents(inside: UiElement?) {
+    override fun setContents(inside: UiElement?) {
         this.inside = inside
         this.invalidate()
     }

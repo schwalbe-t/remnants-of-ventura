@@ -17,10 +17,6 @@ import org.joml.*
 
 class UniformBuffer(val writeHint: BufferWriteFreq) : Disposable {
     
-    companion object {
-        internal val bound = BindingManager<UniformBuffer>(UniformBuffer::bind)
-    }
-    
     var bufferId: Int? = glGenBuffers()
         private set
     var lastSize: Int? = null
@@ -30,7 +26,7 @@ class UniformBuffer(val writeHint: BufferWriteFreq) : Disposable {
         ?: throw UsageAfterDisposalException()
         
     fun write(data: ByteBuffer): UniformBuffer {
-        UniformBuffer.bound.bindLazy(this)
+        this.bind()
         val lastSize: Int? = this.lastSize
         if (lastSize == null || data.remaining() > lastSize) {
             this.lastSize = data.remaining()
@@ -41,7 +37,7 @@ class UniformBuffer(val writeHint: BufferWriteFreq) : Disposable {
         return this
     }
 
-    private fun bind() {
+    internal fun bind() {
         glBindBuffer(GL_UNIFORM_BUFFER, this.getBufferId())
     }
         
@@ -90,16 +86,19 @@ private fun linkShaderProgram(
     return programId
 }
 
-class ShaderSlotManager<T> {
+class ShaderSlotManager<T>(val firstSlot: Int) {
     
     data class Slot<T>(val index: Int, val value: T)
     
     private val slots: MutableMap<String, Slot<T>> = mutableMapOf()
 
-    fun allocate(name: String, value: T): Int
-        = this.slots
-        .getOrPut(name) { Slot(this.slots.count(), value) }
-        .index
+    fun allocate(name: String, value: T): Int {
+        val existing: Slot<T>? = this.slots[name]
+        val newIndex: Int = existing?.index
+            ?: (this.firstSlot + this.slots.count())
+        this.slots[name] = Slot(newIndex, value)
+        return newIndex
+    }
     
     fun getAll(): Map<String, Slot<T>> = this.slots
 
@@ -238,8 +237,6 @@ interface Uniforms<S : Uniforms<S>> {
         val loc: Int = s.getUniformLocation(name, ::glGetUniformLocation)
             ?: return@Uniform
         val slot: Int = s.textures.allocate(name, v)
-        glActiveTexture(GL_TEXTURE0 + slot)
-        Texture.bound.bindEager(v)
         glUniform1i(loc, slot)
     }
     
@@ -262,17 +259,18 @@ interface VertShaderDef<S : ShaderDef<S>> : ShaderDef<S>
 interface FragShaderDef<S : ShaderDef<S>> : ShaderDef<S>
 
 class Shader<V : VertShaderDef<V>, F : FragShaderDef<F>> : Disposable {
-
-    companion object {
-        internal val bound = BindingManager<Shader<*, *>>(Shader<*, *>::bind)
-    }
+    
+    companion object
+    
     
     var programId: Int? = null
         private set
     private val cachedUniforms: MutableMap<String, Int> = mutableMapOf()
-    val textures: ShaderSlotManager<Texture> = ShaderSlotManager()
-    val buffers: ShaderSlotManager<UniformBuffer> = ShaderSlotManager()
-        
+    val textures: ShaderSlotManager<Texture>
+        = ShaderSlotManager(firstSlot = 1) // slot 0 reserved
+    val buffers: ShaderSlotManager<UniformBuffer>
+        = ShaderSlotManager(firstSlot = 0)
+
     constructor(
         vertSrc: String, fragSrc: String,
         vertPath: String = "<unknown>", fragPath: String = "<unknown>"
@@ -305,7 +303,6 @@ class Shader<V : VertShaderDef<V>, F : FragShaderDef<F>> : Disposable {
     fun getUniformLocation(
         name: String, locationGetter: (Int, String) -> Int
     ): Int? {
-        Shader.bound.invalidateUnless(this)
         val programId: Int = this.getProgramId()
         glUseProgram(programId)
         var loc: Int? = this.cachedUniforms[name]
@@ -318,21 +315,21 @@ class Shader<V : VertShaderDef<V>, F : FragShaderDef<F>> : Disposable {
         return if (loc != GL_INVALID_INDEX) { loc } else { null }
     }
     
-    @JvmName("setVert")
+    @JvmName("setVertUniform")
     operator fun <T> set(uniform: Uniform<V, T>, value: T) {
         uniform.setter(this, value)
     }
     
-    @JvmName("setFrag")
+    @JvmName("setFragUniform")
     operator fun <T> set(uniform: Uniform<F, T>, value: T) {
         uniform.setter(this, value)
     }
     
-    private fun bind() {
+    internal fun bind() {
         glUseProgram(this.getProgramId())
         for ((slot, texture) in this.textures.getAll().values) {
             glActiveTexture(GL_TEXTURE0 + slot)
-            Texture.bound.bindEager(texture)
+            glBindTexture(GL_TEXTURE_2D, texture.getTexId())
         }
         for ((point, buffer) in this.buffers.getAll().values) {
             glBindBufferBase(GL_UNIFORM_BUFFER, point, buffer.getBufferId())

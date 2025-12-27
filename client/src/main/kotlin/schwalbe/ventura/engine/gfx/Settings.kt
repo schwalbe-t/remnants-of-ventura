@@ -3,18 +3,14 @@ package schwalbe.ventura.engine.gfx
 
 import org.lwjgl.opengl.GL33.*
 
-enum class DepthTesting(val glApply: () -> Unit) {
+enum class DepthTesting(internal val glApply: () -> Unit) {
     
     DISABLED({ glDisable(GL_DEPTH_TEST) }),
     ENABLED({ glEnable(GL_DEPTH_TEST) });
     
-    companion object {
-        internal val bound = BindingManager<DepthTesting> { d -> d.glApply() }
-    }
-    
 }
 
-enum class FaceCulling(val glApply: () -> Unit) {
+enum class FaceCulling(internal val glApply: () -> Unit) {
     
     DISABLED({ glDisable(GL_CULL_FACE) }),
     BACK({
@@ -29,9 +25,5 @@ enum class FaceCulling(val glApply: () -> Unit) {
         glEnable(GL_CULL_FACE)
         glCullFace(GL_FRONT_AND_BACK)
     });
-    
-    companion object {
-        internal val bound = BindingManager<FaceCulling> { d -> d.glApply() }
-    }
     
 }

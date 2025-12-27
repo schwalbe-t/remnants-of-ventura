@@ -9,11 +9,6 @@ import org.joml.*
 
 abstract class ConstFramebuffer {
 
-    companion object {
-        internal val bound
-            = BindingManager<ConstFramebuffer>(ConstFramebuffer::bind)
-    }
-
     abstract val width: Int
     abstract val height: Int
 
@@ -29,7 +24,7 @@ abstract class ConstFramebuffer {
         glClear(GL_DEPTH_BUFFER_BIT)
     }
     
-    protected abstract fun bind()
+    internal abstract fun bind()
 
 }
 
@@ -55,7 +50,6 @@ class Framebuffer : ConstFramebuffer, Disposable {
 
     constructor() {
         this.fboId = glGenFramebuffers()
-        ConstFramebuffer.bound.invalidateAll()
         glBindFramebuffer(GL_FRAMEBUFFER, this.getFboId())
         glDrawBuffer(GL_NONE)
         glReadBuffer(GL_NONE)
@@ -87,7 +81,6 @@ class Framebuffer : ConstFramebuffer, Disposable {
     }
 
     fun attachColor(newColor: Texture?) {
-        ConstFramebuffer.bound.invalidateAll()
         glBindFramebuffer(GL_FRAMEBUFFER, this.getFboId())
         glFramebufferTexture2D(
             GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -103,7 +96,6 @@ class Framebuffer : ConstFramebuffer, Disposable {
     }
 
     fun attachDepth(newDepth: Texture?) {
-        ConstFramebuffer.bound.invalidateAll()
         glBindFramebuffer(GL_FRAMEBUFFER, this.getFboId())
         glFramebufferTexture2D(
             GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
@@ -128,7 +120,6 @@ class Framebuffer : ConstFramebuffer, Disposable {
         if (this.depth != null) { this.attachDepth(null) }
         glDeleteFramebuffers(oldId)
         this.fboId = null
-        ConstFramebuffer.bound.invalidate(this)
     }
 
 }

@@ -18,10 +18,8 @@ class UiContext(
     private val elements: MutableList<BaseElement> = mutableListOf()
     
     fun add(element: UiElement, layer: Int = 0) {
-        val index: Int = this.elements
-            .binarySearch { it.layer.compareTo(layer) }
-        val insertAt: Int = if (index >= 0) { index } else { -index - 1 }
-        this.elements.add(insertAt, BaseElement(element, layer))
+        this.elements.add(BaseElement(element, layer))
+        this.elements.sortBy(BaseElement::layer)
     }
     
     fun remove(element: UiElement) {
@@ -31,7 +29,7 @@ class UiContext(
     private var lastOutputWidth: Int = 0
     private var lastOutputHeight: Int = 0
     private var childContext: UiElementContext
-        = UiElementContext(this, UiParentContext(0f, 0f))
+        = UiElementContext(this, UiParentContext(0, 0))
     
     fun update() {
         val outputSizeChanged: Boolean = this.output.width != this.lastOutputWidth
@@ -40,8 +38,7 @@ class UiContext(
             this.lastOutputWidth = this.output.width
             this.lastOutputHeight = this.output.height
             val parentContext = UiParentContext(
-                this.output.width.toFloat(),
-                this.output.height.toFloat()
+                this.output.width, this.output.height
             )
             this.childContext = UiElementContext(this, parentContext)
             this.elements.forEach { it.element.invalidate() }
@@ -60,7 +57,7 @@ class UiContext(
         for (e in this.elements) {
             val texture: Texture = e.element.result ?: continue
             shader[PxPos.destSizePx] = Vector2f(
-                texture.width.toFloat(), texture.height.toFloat()
+                e.element.pxWidth.toFloat(), e.element.pxHeight.toFloat()
             )
             shader[Blit.texture] = texture
             quad().render(

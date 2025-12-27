@@ -19,9 +19,9 @@ val fvw: UiSize = { ctx -> ctx.global.output.width.toFloat() }
 /** The full height of the viewport */
 val fvh: UiSize = { ctx -> ctx.global.output.height.toFloat() }
 /** The full width of the parent element */
-val fpw: UiSize = { ctx -> ctx.parent.pxWidth }
+val fpw: UiSize = { ctx -> ctx.parent.pxWidth.toFloat() }
 /** The full height of the parent element */
-val fph: UiSize = { ctx -> ctx.parent.pxHeight }
+val fph: UiSize = { ctx -> ctx.parent.pxHeight.toFloat() }
 
 /** Relative to 1% of viewport's smaller dimension */
 val vmin: UiSize = minOf(vw, vh)
@@ -45,6 +45,12 @@ operator fun UiSize.times(scalar: Float): UiSize
     = { ctx -> this(ctx) * scalar }
 operator fun UiSize.times(scalar: Double): UiSize
     = { ctx -> this(ctx) * scalar.toFloat() }
+operator fun UiSize.div(scalar: Int): UiSize
+    = { ctx -> this(ctx) / scalar }
+operator fun UiSize.div(scalar: Float): UiSize
+    = { ctx -> this(ctx) / scalar }
+operator fun UiSize.div(scalar: Double): UiSize
+    = { ctx -> this(ctx) / scalar.toFloat() }
 
 inline operator fun UiSize.plus(crossinline f: UiSize): UiSize
     = { ctx -> this(ctx) + f(ctx) }

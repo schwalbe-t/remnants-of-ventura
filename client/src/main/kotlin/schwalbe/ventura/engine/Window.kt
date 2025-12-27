@@ -37,15 +37,18 @@ class Window : Disposable {
         val vidMode: GLFWVidMode = glfwGetVideoMode(monitor)
             ?: throw IllegalStateException("Failed to get primary monitor")
         glfwDefaultWindowHints()
-        glfwWindowHint(GLFW_RED_BITS, vidMode.redBits());
-        glfwWindowHint(GLFW_GREEN_BITS, vidMode.greenBits());
-        glfwWindowHint(GLFW_BLUE_BITS, vidMode.blueBits());
-        glfwWindowHint(GLFW_REFRESH_RATE, vidMode.refreshRate());
+        // glfwWindowHint(GLFW_RED_BITS, vidMode.redBits());
+        // glfwWindowHint(GLFW_GREEN_BITS, vidMode.greenBits());
+        // glfwWindowHint(GLFW_BLUE_BITS, vidMode.blueBits());
+        // glfwWindowHint(GLFW_REFRESH_RATE, vidMode.refreshRate());
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE)
+        // val windowId: Long = glfwCreateWindow(
+        //     vidMode.width(), vidMode.height(), name, monitor, NULL
+        // )
         val windowId: Long = glfwCreateWindow(
-            vidMode.width(), vidMode.height(), name, monitor, NULL
+            vidMode.width(), vidMode.height(), name, NULL, NULL
         )
         this.windowId = windowId
         glfwMakeContextCurrent(windowId)
@@ -54,8 +57,9 @@ class Window : Disposable {
     
     private fun initGraphics() {
         GL.createCapabilities()
-        DepthTesting.bound.bindEager(DepthTesting.ENABLED)
-        FaceCulling.bound.bindEager(FaceCulling.DISABLED)
+        DepthTesting.ENABLED.glApply()
+        FaceCulling.DISABLED.glApply()
+        glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     }
     
@@ -79,7 +83,6 @@ class Window : Disposable {
             val newWidth: Int = widthPtr.get(0)
             val newHeight: Int = heightPtr.get(0)
             if (newWidth == this.width && newHeight == this.height) { return }
-            ConstFramebuffer.bound.invalidate(this.framebuffer)
             this.width = newWidth
             this.height = newHeight
         }

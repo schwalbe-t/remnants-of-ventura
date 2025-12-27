@@ -3,10 +3,11 @@ package schwalbe.ventura.engine.ui
 
 import schwalbe.ventura.engine.Disposable
 import schwalbe.ventura.engine.gfx.Texture
+import kotlin.math.roundToInt
 
 data class UiParentContext(
-    val pxWidth: Float,
-    val pxHeight: Float
+    val pxWidth: Int,
+    val pxHeight: Int
 )
 
 data class UiElementContext(
@@ -29,9 +30,9 @@ abstract class UiElement : Disposable {
             this.invalidate()
         }
     
-    var pxWidth: Float = 0f
+    var pxWidth: Int = 0
         protected set
-    var pxHeight: Float = 0f
+    var pxHeight: Int = 0
         protected set
         
     var result: Texture? = null
@@ -41,15 +42,13 @@ abstract class UiElement : Disposable {
     
     protected open fun updateLayout(context: UiElementContext) {}
     
-    protected var parentContext: UiParentContext = UiParentContext(0f, 0f)
+    protected var parentContext: UiParentContext = UiParentContext(0, 0)
     
     fun update(context: UiElementContext) {
         if (this.isDirty) {
-            this.pxWidth = this.width(context)
-            this.pxHeight = this.height(context)
-            this.parentContext = UiParentContext(
-                this.pxWidth, this.pxHeight
-            )
+            this.pxWidth = this.width(context).roundToInt()
+            this.pxHeight = this.height(context).roundToInt()
+            this.parentContext = UiParentContext(this.pxWidth, this.pxHeight)
             this.updateLayout(context)
             this.children.forEach(UiElement::invalidate)
         }
@@ -81,6 +80,12 @@ fun <E: UiElement> E.withWidth(width: UiSize): E {
 }
 
 fun <E: UiElement> E.withHeight(height: UiSize): E {
+    this.height = height
+    return this
+}
+
+fun <E: UiElement> E.withSize(width: UiSize, height: UiSize): E {
+    this.width = width
     this.height = height
     return this
 }

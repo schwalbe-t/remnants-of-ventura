@@ -3,28 +3,32 @@ package schwalbe.ventura.engine.ui
 
 import schwalbe.ventura.engine.gfx.Framebuffer
 import schwalbe.ventura.engine.gfx.Texture
+import org.joml.*
 import kotlin.math.roundToInt
 
 abstract class GpuUiElement : UiElement() {
     
+    companion object {
+        private val clearColor: Vector4fc = Vector4f(0f, 0f, 0f, 0f)
+    }
+    
     protected val target = Framebuffer()
     
     protected fun prepareTarget() {
-        val resultWidth: Int = this.pxWidth.roundToInt()
-        val resultHeight: Int = this.pxHeight.roundToInt()
         val oldResult: Texture? = this.result
         val makeNewTex: Boolean = oldResult == null
-            || oldResult.width != resultWidth
-            || oldResult.height != resultHeight
+            || oldResult.width != this.pxWidth
+            || oldResult.height != this.pxHeight
         if (makeNewTex) {
-            val oldTexture: Texture? = this.result
+            this.target.attachColor(null)
+            this.result?.dispose()
             this.result = Texture(
-                resultWidth, resultHeight,
-                Texture.Filter.LINEAR, Texture.Format.RGBA8
+                this.pxWidth, this.pxHeight,
+                Texture.Filter.NEAREST, Texture.Format.RGBA8
             )
             this.target.attachColor(this.result)
-            oldTexture?.dispose()
         }
+        this.target.clearColor(GpuUiElement.clearColor)
     }
     
     override fun dispose() {

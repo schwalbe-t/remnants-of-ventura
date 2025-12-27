@@ -26,9 +26,7 @@ class Geometry : Disposable {
             get() = this.numComps * this.compType.numBytes
     }
     
-    companion object {
-        internal val bound = BindingManager<Geometry>(Geometry::bind)
-    }
+    companion object
     
     
     var vaoId: Int? = null
@@ -72,7 +70,7 @@ class Geometry : Disposable {
         }
     }
     
-    private fun bind() {
+    internal fun bind() {
         val vaoId: Int = this.vaoId ?: throw UsageAfterDisposalException()
         glBindVertexArray(vaoId)
     }
@@ -83,11 +81,11 @@ class Geometry : Disposable {
         faceCulling: FaceCulling = FaceCulling.DISABLED,
         depthTesting: DepthTesting = DepthTesting.ENABLED
     ) {
-        FaceCulling.bound.bindLazy(faceCulling)
-        DepthTesting.bound.bindLazy(depthTesting)
-        Shader.bound.bindLazy(shader)
-        ConstFramebuffer.bound.bindLazy(framebuffer)
-        Geometry.bound.bindLazy(this)
+        faceCulling.glApply()
+        depthTesting.glApply()
+        framebuffer.bind()
+        shader.bind()
+        this.bind()
         if (instanceCount > 1) {
             glDrawElementsInstanced(
                 GL_TRIANGLES, this.indexCount, GL_UNSIGNED_SHORT, 0,
@@ -117,7 +115,6 @@ class Geometry : Disposable {
             this.eboId = null
         }
         this.indexCount = 0
-        Geometry.bound.invalidate(this)
     }
     
 }

@@ -34,9 +34,8 @@ class Texture : Disposable {
         NEAREST(GL_NEAREST)
     }
     
-    companion object {
-        internal val bound = BindingManager<Texture>(Texture::bind)
-    }
+    companion object
+    
     
     var texId: Int? = null
         private set
@@ -53,7 +52,7 @@ class Texture : Disposable {
         this.texId = id
         this.width = width
         this.height = height
-        Texture.bound.bindEager(this)
+        this.bind()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter.glValue)
@@ -67,14 +66,14 @@ class Texture : Disposable {
     fun getTexId(): Int
         = this.texId ?: throw UsageAfterDisposalException()
 
-    private fun bind() {
+    internal fun bind() {
+        glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, this.getTexId())
     }
 
     override fun dispose() {
         val oldId: Int = this.texId ?: return
         glDeleteTextures(oldId)
-        Texture.bound.invalidate(this)
     }
 
 }
