@@ -9,6 +9,9 @@ import java.nio.ByteBuffer
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.stb.STBImage.*
 import org.lwjgl.system.MemoryStack
+import java.awt.image.BufferedImage
+import java.awt.image.DataBufferInt
+import java.nio.ByteOrder
 
 class Texture : Disposable {
     
@@ -101,4 +104,27 @@ fun Texture.Companion.loadImage(
         stbi_image_free(imageBuffer)
         texture
     }
+}
+
+fun Texture.Companion.fromBufferedImage(
+    image: BufferedImage, filter: Texture.Filter
+): Texture {
+    val pixels: IntArray = (image.raster.dataBuffer as DataBufferInt).data
+    val buffer: ByteBuffer = ByteBuffer
+        .allocateDirect(image.width * image.height * 4)
+        .order(ByteOrder.nativeOrder())
+    for (argb in pixels) {
+        val a: Int = (argb shr 24) and 0xFF
+        val r: Int = (argb shr 16) and 0xFF
+        val g: Int = (argb shr  8) and 0xFF
+        val b: Int =          argb and 0xFF
+        buffer.put(r.toByte())
+        buffer.put(g.toByte())
+        buffer.put(b.toByte())
+        buffer.put(a.toByte())
+    }
+    buffer.flip()
+    return Texture(
+        image.width, image.height, filter, Texture.Format.RGBA8, buffer
+    )
 }

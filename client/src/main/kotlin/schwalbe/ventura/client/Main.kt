@@ -155,33 +155,29 @@ fun main() {
     
     loadUiResources(resLoader)
     
-    val window = Window("Remnants of Ventura")
-    val ui = UiContext(
-        output = window.framebuffer,
-        defaultFontFamily = "Jetbrains Mono",
-        defaultFontSize = 16.px
-    )
+    val window = Window("Remnants of Ventura", fullscreen = false)
+    val ui = UiContext(output = window.framebuffer)
     
     var onFrame: () -> Unit = {}
     
+    val jetbrainsMono: Resource<Font> = Font.loadTtf(
+        "res/fonts/JetBrainsMono-BoldItalic.ttf"
+    )
+    resLoader.submit(jetbrainsMono)
+    
     resLoader.submit(Resource.fromCallback {
         
+        ui.defaultFont = jetbrainsMono()
         ui.add(
-            FlatBackground().withRgbColor(255, 0, 0),
-            layer = 0
+            Image().withImage(testImage2()).withSize(fpw, fph),
+            layer = -1
         )
-        ui.add(
-            Stack().withContents(
-                FlatBackground().withRgbColor(0, 0, 255)
-                    .inside(Padding().withPadding(10.vmin)),
-                FlatBackground().withRgbColor(0, 255, 0)
-                    .inside(Padding().withPadding(30.vmin))
-            ),
-            layer = 1
-        )
-        ui.add(
-            Image().withImage(testImage2()).withSize(500.px, 500.px),
-            layer = 2
+        ui.add(Text()
+            .withText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc at tristique lacus, vel tincidunt orci. Pellentesque vitae velit neque. Proin dictum faucibus quam, at mollis risus suscipit ac. Sed posuere ultrices tellus et eleifend. Sed quam eros, aliquet eu pretium ac, elementum porttitor augue. Vestibulum egestas neque ligula, eget fringilla neque tincidunt quis. Sed rhoncus sit amet urna a tempor. Donec ipsum nulla, efficitur sit amet viverra et, fermentum et eros. Nam a quam est. Suspendisse convallis vitae nisl ut sollicitudin. Proin mauris odio, hendrerit vel turpis in, ornare viverra tellus. Fusce placerat nunc et massa aliquet, condimentum rhoncus ex luctus. Fusce pharetra gravida ultrices. Ut egestas sed augue a faucibus. Curabitur vitae turpis tempor, sagittis tellus non, facilisis enim. Curabitur quis rutrum urna, in venenatis ligula.\n\nMeow meow meow")
+            .withSize(16.px)
+            .withAlignment(Text.Alignment.LEFT)
+            .withColor(0, 255, 0)
+            .inside(Padding().withPadding(16.px)),
         )
         
         onFrame = {
@@ -202,4 +198,5 @@ fun main() {
         Thread.sleep(15)
     }
     window.dispose()
+    resLoader.submit(ResourceLoader.stop)
 }

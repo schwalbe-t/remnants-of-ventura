@@ -9,8 +9,8 @@ import schwalbe.ventura.engine.gfx.Texture
 
 class UiContext(
     val output: ConstFramebuffer,
-    val defaultFontFamily: String,
-    val defaultFontSize: UiSize
+    var defaultFont: Font = Font.default,
+    var defaultFontSize: UiSize = 16.px
 ) {
     
     private data class BaseElement(val element: UiElement, val layer: Int)

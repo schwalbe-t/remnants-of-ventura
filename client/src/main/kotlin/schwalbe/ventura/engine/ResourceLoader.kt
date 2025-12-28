@@ -38,7 +38,15 @@ class Resource<T>(private val loadChain: () -> () -> T) {
 fun Resource.Companion.fromCallback(f: () -> Unit): Resource<Unit>
     = Resource { f }
 
+
 class ResourceLoader {
+    
+    class StopException : RuntimeException()
+    
+    companion object {
+        val stop: Resource<Unit> = Resource { throw StopException() }
+    }
+    
     
     private val lock = ReentrantLock()
     
@@ -68,7 +76,11 @@ class ResourceLoader {
                 queued = this.queued
                 this.queued = mutableListOf<Resource<*>>()
             }
-            queued.forEach(Resource<*>::loadRaw)
+            try {
+                queued.forEach(Resource<*>::loadRaw)
+            } catch (s: StopException) {
+                break
+            }
             this.lock.withLock {
                 this.loadedRaw.addAll(queued)
             }

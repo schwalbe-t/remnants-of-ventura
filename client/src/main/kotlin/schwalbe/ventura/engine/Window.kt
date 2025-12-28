@@ -31,24 +31,24 @@ class Window : Disposable {
     var height: Int = 0
         private set
         
-    constructor(name: String) {
+    constructor(name: String, fullscreen: Boolean = true) {
         check(glfwInit()) { "Failed to initialize GLFW" }
         val monitor: Long = glfwGetPrimaryMonitor()
         val vidMode: GLFWVidMode = glfwGetVideoMode(monitor)
             ?: throw IllegalStateException("Failed to get primary monitor")
         glfwDefaultWindowHints()
-        // glfwWindowHint(GLFW_RED_BITS, vidMode.redBits());
-        // glfwWindowHint(GLFW_GREEN_BITS, vidMode.greenBits());
-        // glfwWindowHint(GLFW_BLUE_BITS, vidMode.blueBits());
-        // glfwWindowHint(GLFW_REFRESH_RATE, vidMode.refreshRate());
+        if (fullscreen) {
+            glfwWindowHint(GLFW_RED_BITS, vidMode.redBits());
+            glfwWindowHint(GLFW_GREEN_BITS, vidMode.greenBits());
+            glfwWindowHint(GLFW_BLUE_BITS, vidMode.blueBits());
+            glfwWindowHint(GLFW_REFRESH_RATE, vidMode.refreshRate());
+        }
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE)
-        // val windowId: Long = glfwCreateWindow(
-        //     vidMode.width(), vidMode.height(), name, monitor, NULL
-        // )
         val windowId: Long = glfwCreateWindow(
-            vidMode.width(), vidMode.height(), name, NULL, NULL
+            vidMode.width(), vidMode.height(), name,
+            if (fullscreen) { monitor } else { NULL }, NULL
         )
         this.windowId = windowId
         glfwMakeContextCurrent(windowId)
@@ -60,7 +60,7 @@ class Window : Disposable {
         DepthTesting.ENABLED.glApply()
         FaceCulling.DISABLED.glApply()
         glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
     }
     
     fun getWindowId(): Long = this.windowId
