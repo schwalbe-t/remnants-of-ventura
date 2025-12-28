@@ -10,18 +10,18 @@ val vw: UiSize = { ctx -> ctx.global.output.width / 100f }
 /** Relative to 1% of the height of the viewport */
 val vh: UiSize = { ctx -> ctx.global.output.height / 100f }
 /** Relative to 1% of the width of the parent element */
-val pw: UiSize = { ctx -> ctx.parent.pxWidth / 100f }
+val pw: UiSize = { ctx -> ctx.parentPxWidth / 100f }
 /** Relative to 1% of the height of the parent element */
-val ph: UiSize = { ctx -> ctx.parent.pxHeight / 100f }
+val ph: UiSize = { ctx -> ctx.parentPxHeight / 100f }
 
 /** The full width of the viewport */
 val fvw: UiSize = { ctx -> ctx.global.output.width.toFloat() }
 /** The full height of the viewport */
 val fvh: UiSize = { ctx -> ctx.global.output.height.toFloat() }
 /** The full width of the parent element */
-val fpw: UiSize = { ctx -> ctx.parent.pxWidth.toFloat() }
+val fpw: UiSize = { ctx -> ctx.parentPxWidth.toFloat() }
 /** The full height of the parent element */
-val fph: UiSize = { ctx -> ctx.parent.pxHeight.toFloat() }
+val fph: UiSize = { ctx -> ctx.parentPxHeight.toFloat() }
 
 /** Relative to 1% of viewport's smaller dimension */
 val vmin: UiSize = minOf(vw, vh)

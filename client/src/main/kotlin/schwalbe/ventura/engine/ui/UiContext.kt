@@ -1,19 +1,36 @@
 
 package schwalbe.ventura.engine.ui
 
-import org.joml.Vector2f
 import schwalbe.ventura.engine.gfx.ConstFramebuffer
 import schwalbe.ventura.engine.gfx.DepthTesting
 import schwalbe.ventura.engine.gfx.Shader
 import schwalbe.ventura.engine.gfx.Texture
+import org.joml.*
 
 class UiContext(
     val output: ConstFramebuffer,
-    var defaultFont: Font = Font.default,
-    var defaultFontSize: UiSize = 16.px
+    defaultFont: Font = Font.default,
+    defaultFontSize: UiSize = 16.px,
+    defaultFontColor: Vector4fc = Vector4f(0f, 0f, 0f, 1f)
 ) {
     
     private data class BaseElement(val element: UiElement, val layer: Int)
+    
+    var defaultFont: Font = defaultFont
+        set(value) {
+            field = value
+            this.elements.forEach { it.element.invalidate() }
+        }
+    var defaultFontSize: UiSize = defaultFontSize
+        set(value) {
+            field = value
+            this.elements.forEach { it.element.invalidate() }
+        }
+    var defaultFontColor: Vector4fc = Vector4f(defaultFontColor)
+        set(value) {
+            field = Vector4f(value)
+            this.elements.forEach { it.element.invalidate() }
+        }
     
     private val elements: MutableList<BaseElement> = mutableListOf()
     
@@ -28,8 +45,6 @@ class UiContext(
     
     private var lastOutputWidth: Int = 0
     private var lastOutputHeight: Int = 0
-    private var childContext: UiElementContext
-        = UiElementContext(this, UiParentContext(0, 0))
     
     fun update() {
         val outputSizeChanged: Boolean = this.output.width != this.lastOutputWidth
@@ -37,14 +52,13 @@ class UiContext(
         if (outputSizeChanged) {
             this.lastOutputWidth = this.output.width
             this.lastOutputHeight = this.output.height
-            val parentContext = UiParentContext(
-                this.output.width, this.output.height
-            )
-            this.childContext = UiElementContext(this, parentContext)
             this.elements.forEach { it.element.invalidate() }
         }
+        val childContext = UiElementContext(
+            this, this.output.width, this.output.height
+        )
         for (e in this.elements) {
-            e.element.update(this.childContext)
+            e.element.update(childContext)
         }
     }
     

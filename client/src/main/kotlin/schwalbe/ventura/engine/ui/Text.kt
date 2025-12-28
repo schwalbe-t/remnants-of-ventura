@@ -97,11 +97,10 @@ class Text : UiElement(), Colored {
         private set
     var alignment: Alignment = Alignment.LEFT
         private set
-    private val actualColor: Vector4f = Vector4f(1f, 1f, 1f, 1f)
-    override var color: Vector4fc
-        get() = this.actualColor
+    override var color: Vector4fc? = null
         set(value) {
-            this.actualColor.set(value)
+            field = if (value == null) { null }
+                else { Vector4f(value) }
             this.invalidate()
         }
     
@@ -149,7 +148,7 @@ class Text : UiElement(), Colored {
     override fun render(context: UiElementContext) {
         val (awtFont, lines, image, g) = this.renderState ?: return
         g.font = awtFont
-        val c: Vector4fc = this.actualColor
+        val c: Vector4fc = this.color ?: context.global.defaultFontColor
         g.color = Color(c.x(), c.y(), c.z(), c.w())
         var y = 0f
         for (line in lines) {
@@ -193,4 +192,11 @@ class Text : UiElement(), Colored {
         return this
     }
     
+    fun alignLeft(): Text = this.withAlignment(Alignment.LEFT)
+    fun alignCenter(): Text = this.withAlignment(Alignment.CENTER)
+    fun alignRight(): Text = this.withAlignment(Alignment.RIGHT)
+    
 }
+
+fun text(value: String, size: UiSize? = null): Text
+    = Text().withText(value).withSize(size)

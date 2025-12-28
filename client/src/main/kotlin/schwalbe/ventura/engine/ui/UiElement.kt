@@ -5,14 +5,9 @@ import schwalbe.ventura.engine.Disposable
 import schwalbe.ventura.engine.gfx.Texture
 import kotlin.math.roundToInt
 
-data class UiParentContext(
-    val pxWidth: Int,
-    val pxHeight: Int
-)
-
 data class UiElementContext(
     val global: UiContext,
-    val parent: UiParentContext
+    val parentPxWidth: Int, val parentPxHeight: Int
 )
 
 abstract class UiElement : Disposable {
@@ -42,20 +37,23 @@ abstract class UiElement : Disposable {
     
     protected open fun updateLayout(context: UiElementContext) {}
     
-    protected var parentContext: UiParentContext = UiParentContext(0, 0)
+    protected open fun updateChildren(context: UiElementContext) {
+        val childContext = UiElementContext(
+            context.global, this.pxWidth, this.pxHeight
+        )
+        for (child in this.children) {
+            child.update(childContext)
+        }
+    }
     
     fun update(context: UiElementContext) {
         if (this.isDirty) {
             this.pxWidth = this.width(context).roundToInt()
             this.pxHeight = this.height(context).roundToInt()
-            this.parentContext = UiParentContext(this.pxWidth, this.pxHeight)
             this.updateLayout(context)
             this.children.forEach(UiElement::invalidate)
         }
-        val childContext = UiElementContext(context.global, this.parentContext)
-        for (child in this.children) {
-            child.update(childContext)
-        }
+        this.updateChildren(context)
         if (this.isDirty) {
             this.render(context)
         }
@@ -70,6 +68,11 @@ abstract class UiElement : Disposable {
     
     override fun dispose() {
         this.result?.dispose()
+    }
+    
+    fun disposeTree() {
+        this.dispose()
+        this.children.forEach(UiElement::disposeTree)
     }
     
 }

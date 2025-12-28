@@ -6,9 +6,9 @@ import schwalbe.ventura.engine.gfx.Shader
 import org.joml.*
 import kotlin.math.roundToInt
 
-class Padding : GpuUiElement(), UiContainer {
+class Padding : GpuUiElement() {
     
-    override var inside: UiElement? = null
+    var inside: UiElement? = null
         private set
         
     var paddingTop: UiSize = 0.px
@@ -23,14 +23,16 @@ class Padding : GpuUiElement(), UiContainer {
     override val children: List<UiElement>
         get() = listOfNotNull(this.inside)
     
-    override fun updateLayout(context: UiElementContext) {
+    override fun updateChildren(context: UiElementContext) {
         val inside: UiElement = this.inside ?: return
         val paddingHoriz: UiSize = this.paddingLeft + this.paddingRight
         val paddingVert: UiSize = this.paddingTop + this.paddingBottom
-        this.parentContext = UiParentContext(
-            pxWidth = (this.pxWidth - paddingHoriz(context)).roundToInt(),
-            pxHeight = (this.pxHeight - paddingVert(context)).roundToInt()
+        val childContext = UiElementContext(
+            context.global,
+            parentPxWidth = (this.pxWidth - paddingHoriz(context)).roundToInt(),
+            parentPxHeight = (this.pxHeight - paddingVert(context)).roundToInt()
         )
+        inside.update(childContext)
     }
    
     override fun render(context: UiElementContext) {
@@ -69,26 +71,13 @@ class Padding : GpuUiElement(), UiContainer {
         return this
     }
     
-    fun withPaddingTop(amount: UiSize): Padding {
-        this.paddingTop = amount
-        this.invalidate()
-        return this
-    }
-    
-    fun withPaddingBottom(amount: UiSize): Padding {
-        this.paddingBottom = amount
-        this.invalidate()
-        return this
-    }
-    
-    fun withPaddingLeft(amount: UiSize): Padding {
-        this.paddingLeft = amount
-        this.invalidate()
-        return this
-    }
-    
-    fun withPaddingRight(amount: UiSize): Padding {
-        this.paddingRight = amount
+    fun withPadding(
+        top: UiSize, bottom: UiSize, left: UiSize, right: UiSize
+    ): Padding {
+        this.paddingTop = top
+        this.paddingBottom = bottom
+        this.paddingLeft = left
+        this.paddingRight = right
         this.invalidate()
         return this
     }
@@ -105,9 +94,16 @@ class Padding : GpuUiElement(), UiContainer {
         return this
     }
     
-    override fun setContents(inside: UiElement?) {
-        this.inside = inside
-        this.invalidate()
-    }
-    
 }
+
+fun UiElement.pad(amount: UiSize): Padding
+    = Padding().withPadding(amount).withContents(this)
+    
+fun UiElement.pad(horizontal: UiSize, vertical: UiSize): Padding
+    = Padding().withPadding(horizontal, vertical).withContents(this)
+    
+fun UiElement.pad(
+    top: UiSize = 0.px, bottom: UiSize = 0.px,
+    left: UiSize = 0.px, right: UiSize = 0.px
+): Padding
+    = Padding().withPadding(top, bottom, left, right).withContents(this)

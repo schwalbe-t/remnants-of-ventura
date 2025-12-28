@@ -161,25 +161,32 @@ fun main() {
     var onFrame: () -> Unit = {}
     
     val jetbrainsMono: Resource<Font> = Font.loadTtf(
-        "res/fonts/JetBrainsMono-BoldItalic.ttf"
+        "res/fonts/JetBrainsMono-Italic.ttf"
     )
     resLoader.submit(jetbrainsMono)
     
     resLoader.submit(Resource.fromCallback {
         
         ui.defaultFont = jetbrainsMono()
+        ui.defaultFontSize = 16.px
+        ui.defaultFontColor = Vector4f(1f, 1f, 1f, 1f)
         ui.add(
             Image().withImage(testImage2()).withSize(fpw, fph),
             layer = -1
         )
-        ui.add(Text()
-            .withText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc at tristique lacus, vel tincidunt orci. Pellentesque vitae velit neque. Proin dictum faucibus quam, at mollis risus suscipit ac. Sed posuere ultrices tellus et eleifend. Sed quam eros, aliquet eu pretium ac, elementum porttitor augue. Vestibulum egestas neque ligula, eget fringilla neque tincidunt quis. Sed rhoncus sit amet urna a tempor. Donec ipsum nulla, efficitur sit amet viverra et, fermentum et eros. Nam a quam est. Suspendisse convallis vitae nisl ut sollicitudin. Proin mauris odio, hendrerit vel turpis in, ornare viverra tellus. Fusce placerat nunc et massa aliquet, condimentum rhoncus ex luctus. Fusce pharetra gravida ultrices. Ut egestas sed augue a faucibus. Curabitur vitae turpis tempor, sagittis tellus non, facilisis enim. Curabitur quis rutrum urna, in venenatis ligula.\n\nMeow meow meow")
-            .withSize(16.px)
-            .withAlignment(Text.Alignment.LEFT)
-            .withColor(0, 255, 0)
-            .inside(Padding().withPadding(16.px)),
+        val copypasta = "Crazy? I Was Crazy Once. They Locked Me In A Room. A Rubber Room. A Rubber Room With Rats. And Rats Make Me Crazy. "
+            .repeat(40)
+        ui.add(Axis.column(30.px)
+            .add(text("Hello, world!", fph))
+            .add(text("sussy baka", fph))
+            .add(text("meow meow meow", fph))
+            .add(fph - (30.px * 3), Axis.row(50.pw)
+                .add(text(copypasta))
+                .add(text(copypasta).alignRight())
+                .map { it.pad(10.px) }
+            )
+            .pad(10.px)
         )
-        
         onFrame = {
             ui.update()
             ui.render()
@@ -190,7 +197,7 @@ fun main() {
         window.beginFrame()
         resLoader.loadQueuedFully()
         
-        window.framebuffer.clearColor(Vector4f(1f, 0f, 1f, 1f))
+        window.framebuffer.clearColor(Vector4f(0f, 0f, 0f, 1f))
         window.framebuffer.clearDepth(1f)
         onFrame()
         

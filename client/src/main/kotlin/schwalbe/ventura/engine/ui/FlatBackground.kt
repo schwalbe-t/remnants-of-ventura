@@ -6,11 +6,15 @@ import org.joml.*
 
 class FlatBackground : GpuUiElement(), Colored {
     
-    private val actualColor: Vector4f = Vector4f(1f, 1f, 1f, 1f)
-    override var color: Vector4fc
-        get() = this.actualColor
+    companion object {
+        val defaultColor: Vector4fc = Vector4f(0f, 0f, 0f, 1f)
+    }
+    
+    
+    override var color: Vector4fc? = null
         set(value) {
-            this.actualColor.set(value)
+            field = if (value == null) { null }
+                else { Vector4f(value) }
             this.invalidate()
         }
     
@@ -19,7 +23,7 @@ class FlatBackground : GpuUiElement(), Colored {
     override fun render(context: UiElementContext) {
         this.prepareTarget()
         val shader: Shader<FullBuffer, FlatBg> = flatBgShader()
-        shader[FlatBg.color] = this.actualColor
+        shader[FlatBg.color] = this.color ?: FlatBackground.defaultColor
         quad().render(shader, this.target)
     }
     

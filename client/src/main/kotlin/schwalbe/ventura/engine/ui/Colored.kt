@@ -5,11 +5,11 @@ import org.joml.*
 
 interface Colored {
     
-    var color: Vector4fc
+    var color: Vector4fc?
     
 }
 
-fun <E : Colored> E.withColor(color: Vector4fc) : E {
+fun <E : Colored> E.withColor(color: Vector4fc?) : E {
     this.color = color
     return this
 }
