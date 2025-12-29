@@ -22,7 +22,7 @@ class Stack : GpuUiElement() {
         for (e in this.inside) {
             val eTex: Texture = e.result ?: continue
             shader[PxPos.destSizePx] = Vector2f(
-                eTex.width.toFloat(), eTex.height.toFloat()
+                e.pxWidth.toFloat(), e.pxHeight.toFloat()
             )
             shader[Blit.texture] = eTex
             quad().render(shader, this.target)

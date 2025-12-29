@@ -47,3 +47,11 @@ object BlurBg : FragShaderDef<BlurBg> {
     val kernelRadius = int("uKernelRadius")
     val kernelWeights = sampler2D("uKernelWeights")
 }
+
+object RoundedBlit : FragShaderDef<RoundedBlit> {
+    override val path =  "shaders/ui/rounded_blit.frag.glsl"
+    
+    val texture = sampler2D("uTexture")
+    val destSizePx = vec2("uDestSizePx")
+    val borderRadius = float("uBorderRadius")
+}

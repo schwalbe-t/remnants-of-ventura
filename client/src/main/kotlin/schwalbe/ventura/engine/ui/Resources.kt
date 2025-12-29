@@ -28,10 +28,13 @@ val gaussianDistribShader: Resource<Shader<FullBuffer, GaussianDistrib>>
     = Shader.loadGlsl(FullBuffer, GaussianDistrib)
 val blurBgShader: Resource<Shader<FullBuffer, BlurBg>>
     = Shader.loadGlsl(FullBuffer, BlurBg)
+val roundedBlitShader: Resource<Shader<FullBuffer, RoundedBlit>>
+    = Shader.loadGlsl(FullBuffer, RoundedBlit)
     
 fun loadUiResources(loader: ResourceLoader): Unit = loader.submitAll(
     quad,
     blitShader,
     flatBgShader,
-    gaussianDistribShader, blurBgShader
+    gaussianDistribShader, blurBgShader,
+    roundedBlitShader
 )
