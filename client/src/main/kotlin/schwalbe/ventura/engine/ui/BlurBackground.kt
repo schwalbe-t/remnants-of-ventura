@@ -58,7 +58,6 @@ class BlurBackground : GpuUiElement() {
             context.absPxX.toFloat(), context.absPxY.toFloat()
         )
         shader[BlurBg.kernelRadius] = this.radius
-        println(this.radius)
         shader[BlurBg.kernelWeights] = kernelWeights
         quad().render(shader, this.target)
     }
