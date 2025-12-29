@@ -13,13 +13,27 @@ import java.awt.image.BufferedImage
 import java.awt.image.DataBufferInt
 import java.nio.ByteOrder
 
-class Texture : Disposable {
+class Texture(
+    val width: Int, val height: Int,
+    val filter: Filter, val format: Format,
+    data: ByteBuffer? = null
+) : Disposable {
     
     enum class Format(val glFmt: Int, val glIFmt: Int, val glChType: Int) {
         R8      (GL_RED,    GL_R8,      GL_UNSIGNED_BYTE),
         RG8     (GL_RG,     GL_RG8,     GL_UNSIGNED_BYTE),
         RGB8    (GL_RGB,    GL_RGB8,    GL_UNSIGNED_BYTE),
         RGBA8   (GL_RGBA,   GL_RGBA8,   GL_UNSIGNED_BYTE),
+        
+        R16     (GL_RED,    GL_R16,     GL_UNSIGNED_SHORT),
+        RG16    (GL_RG,     GL_RG16,    GL_UNSIGNED_SHORT),
+        RGB16   (GL_RGB,    GL_RGB16,   GL_UNSIGNED_SHORT),
+        RGBA16  (GL_RGBA,   GL_RGBA16,  GL_UNSIGNED_SHORT),
+        
+        R16F    (GL_RED,    GL_R16F,    GL_HALF_FLOAT),
+        RG16F   (GL_RG,     GL_RG16F,   GL_HALF_FLOAT),
+        RGB16F  (GL_RGB,    GL_RGB16F,  GL_HALF_FLOAT),
+        RGBA16F (GL_RGBA,   GL_RGBA16F, GL_HALF_FLOAT),
         
         DEPTH16(
             GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16,   GL_UNSIGNED_SHORT
@@ -43,18 +57,10 @@ class Texture : Disposable {
     var texId: Int? = null
         private set
 
-    val width: Int
-    val height: Int
-
-    constructor(
-        width: Int, height: Int, filter: Filter,
-        format: Format, data: ByteBuffer? = null
-    ) {
+    init {
         require(width >= 1 && height >= 1)
         val id: Int = glGenTextures()
         this.texId = id
-        this.width = width
-        this.height = height
         this.bind()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)

@@ -28,3 +28,22 @@ object FlatBg : FragShaderDef<FlatBg> {
     
     val color = vec4("uColor")
 }
+
+object GaussianDistrib : FragShaderDef<GaussianDistrib> {
+    override val path = "shaders/ui/gaussian_distrib.frag.glsl"
+    
+    val sigma = float("uSigma")
+    val kernelRadius = int("uKernelRadius")
+}
+
+object BlurBg : FragShaderDef<BlurBg> {
+    override val path = "shaders/ui/blur_bg.frag.glsl"
+    
+    val background = sampler2D("uBackground")
+    val backgroundSizePx = vec2("uBackgroundSizePx")
+    val bufferSizePx = vec2("uBufferSizePx")
+    val absOffsetPx = vec2("uAbsOffsetPx")
+    
+    val kernelRadius = int("uKernelRadius")
+    val kernelWeights = sampler2D("uKernelWeights")
+}

@@ -7,7 +7,8 @@ import kotlin.math.roundToInt
 
 data class UiElementContext(
     val global: UiContext,
-    val parentPxWidth: Int, val parentPxHeight: Int
+    val parentPxWidth: Int, val parentPxHeight: Int,
+    val absPxX: Int, val absPxY: Int
 )
 
 abstract class UiElement : Disposable {
@@ -39,7 +40,9 @@ abstract class UiElement : Disposable {
     
     protected open fun updateChildren(context: UiElementContext) {
         val childContext = UiElementContext(
-            context.global, this.pxWidth, this.pxHeight
+            context.global,
+            this.pxWidth, this.pxHeight,
+            context.absPxX, context.absPxY
         )
         for (child in this.children) {
             child.update(childContext)

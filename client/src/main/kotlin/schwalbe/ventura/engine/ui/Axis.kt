@@ -20,7 +20,6 @@ open class Axis(
     
     private data class Entry(
         val elem: UiElement, val size: UiSize,
-        var dirOffset: Int = 0,
         var elemCtx: UiElementContext? = null
     )
     
@@ -34,11 +33,12 @@ open class Axis(
         var offset = 0
         for (entry in this.inside) {
             val size: Int = entry.size(context).roundToInt()
-            entry.dirOffset = offset
+            val innerWidth: Int = dirX * size + orthoX * this.pxWidth
+            val innerHeight: Int = dirY * size + orthoY * this.pxHeight
+            val innerPxX: Int = context.absPxX + dirX * offset
+            val innerPxY: Int = context.absPxY + dirY * offset
             entry.elemCtx = UiElementContext(
-                context.global,
-                dirX * size + orthoX * this.pxWidth,
-                dirY * size + orthoY * this.pxHeight
+                context.global, innerWidth, innerHeight, innerPxX, innerPxY
             )
             offset += size
         }
@@ -59,9 +59,11 @@ open class Axis(
         )
         for (entry in this.inside) {
             val elemTex: Texture = entry.elem.result ?: continue
+            val elemCtx: UiElementContext = entry.elemCtx ?: continue
+            val relPxX: Int = elemCtx.absPxX - context.absPxX
+            val relPxY: Int = elemCtx.absPxY - context.absPxY
             shader[PxPos.destTopLeftPx] = Vector2f(
-                (dirX * entry.dirOffset).toFloat(),
-                (dirY * entry.dirOffset).toFloat()
+                relPxX.toFloat(), relPxY.toFloat()
             )
             shader[PxPos.destSizePx] = Vector2f(
                 entry.elem.pxWidth.toFloat(), entry.elem.pxHeight.toFloat()

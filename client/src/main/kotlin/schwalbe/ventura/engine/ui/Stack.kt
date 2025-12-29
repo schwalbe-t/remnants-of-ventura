@@ -29,21 +29,18 @@ class Stack : GpuUiElement() {
         }
     }
     
-    fun withContents(vararg inside: UiElement): Stack {
-        this.inside = inside.toMutableList()
+    fun add(element: UiElement): Stack {
+        this.inside.add(element)
         this.invalidate()
         return this
     }
     
-    fun withoutContents(): Stack {
-        this.inside = mutableListOf()
+    fun map(f: (UiElement) -> UiElement): Stack {
+        this.inside = this.inside
+            .map(f)
+            .toMutableList()
         this.invalidate()
         return this
-    }
-
-    fun setContents(inside: Iterable<UiElement>) {
-        this.inside = inside.toMutableList()
-        this.invalidate()
     }
 
 }

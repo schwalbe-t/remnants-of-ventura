@@ -145,7 +145,7 @@ suspend fun main() {
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.ui.*
-import org.joml.Vector4f
+import org.joml.*
 import java.nio.*
 import kotlin.concurrent.thread
 
@@ -156,38 +156,45 @@ fun main() {
     loadUiResources(resLoader)
     
     val window = Window("Remnants of Ventura", fullscreen = false)
-    val ui = UiContext(output = window.framebuffer)
+    
+    val out = Framebuffer()
+    out.attachColor(
+        Texture(16, 16, Texture.Filter.NEAREST, Texture.Format.RGBA8)
+    )
+    out.attachDepth(
+        Texture(16, 16, Texture.Filter.NEAREST, Texture.Format.DEPTH24)
+    )
+    
+    val ui = UiContext(out)
     
     var onFrame: () -> Unit = {}
     
     val jetbrainsMono: Resource<Font> = Font.loadTtf(
         "res/fonts/JetBrainsMono-Italic.ttf"
     )
-    resLoader.submit(jetbrainsMono)
+    val testImage: Resource<Texture> = Texture.loadImage(
+        "res/test2.png", Texture.Filter.LINEAR
+    )
+    resLoader.submitAll(jetbrainsMono, testImage)
     
     resLoader.submit(Resource.fromCallback {
         
         ui.defaultFont = jetbrainsMono()
         ui.defaultFontSize = 16.px
         ui.defaultFontColor = Vector4f(1f, 1f, 1f, 1f)
-        ui.add(
-            Image().withImage(testImage2()).withSize(fpw, fph),
-            layer = -1
-        )
         val copypasta = "Crazy? I Was Crazy Once. They Locked Me In A Room. A Rubber Room. A Rubber Room With Rats. And Rats Make Me Crazy. "
             .repeat(40)
-        ui.add(Axis.column(30.px)
-            .add(text("Hello, world!", fph))
-            .add(text("sussy baka", fph))
-            .add(text("meow meow meow", fph))
-            .add(fph - (30.px * 3), Axis.row(50.pw)
-                .add(text(copypasta))
-                .add(text(copypasta).alignRight())
-                .map { it.pad(10.px) }
+        ui.add(Axis.column()
+            .add(80.vh, Space())
+            .add(20.vh, Stack()
+                .add(BlurBackground().withRadius(20))
+                .add(text(copypasta, 16.px)
+                    .pad(horizontal = 20.vw, vertical = 2.5.vh)
+                )
             )
-            .pad(10.px)
         )
         onFrame = {
+            blitTexture(testImage(), out)
             ui.update()
             ui.render()
         }
@@ -197,9 +204,13 @@ fun main() {
         window.beginFrame()
         resLoader.loadQueuedFully()
         
-        window.framebuffer.clearColor(Vector4f(0f, 0f, 0f, 1f))
-        window.framebuffer.clearDepth(1f)
+        out.resize(window.framebuffer.width, window.framebuffer.height)
+        
+        out.clearColor(Vector4f(0f, 0f, 0f, 1f))
+        out.clearDepth(1f)
         onFrame()
+        
+        blitTexture(out.color, window.framebuffer)
         
         window.endFrame()
         Thread.sleep(15)

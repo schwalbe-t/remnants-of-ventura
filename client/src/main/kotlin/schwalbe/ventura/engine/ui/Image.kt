@@ -3,7 +3,7 @@ package schwalbe.ventura.engine.ui
 
 import schwalbe.ventura.engine.gfx.Texture
 
-class Image : UiElement() {    
+class Image : UiElement() {
     
     val imageWidth: UiSize = { this.result?.width?.toFloat() ?: 0f }
     val imageHeight: UiSize = { this.result?.height?.toFloat() ?: 0f }

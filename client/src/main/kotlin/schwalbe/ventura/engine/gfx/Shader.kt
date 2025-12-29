@@ -4,7 +4,6 @@ package schwalbe.ventura.engine.gfx
 import schwalbe.ventura.engine.Disposable
 import schwalbe.ventura.engine.UsageAfterDisposalException
 import schwalbe.ventura.engine.Resource
-
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -14,40 +13,6 @@ import java.nio.file.Paths
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryStack
 import org.joml.*
-
-class UniformBuffer(val writeHint: BufferWriteFreq) : Disposable {
-    
-    var bufferId: Int? = glGenBuffers()
-        private set
-    var lastSize: Int? = null
-        private set
-        
-    fun getBufferId(): Int = this.bufferId
-        ?: throw UsageAfterDisposalException()
-        
-    fun write(data: ByteBuffer): UniformBuffer {
-        this.bind()
-        val lastSize: Int? = this.lastSize
-        if (lastSize == null || data.remaining() > lastSize) {
-            this.lastSize = data.remaining()
-            glBufferData(GL_UNIFORM_BUFFER, data, this.writeHint.glValue)
-        } else {
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, data)
-        }
-        return this
-    }
-
-    internal fun bind() {
-        glBindBuffer(GL_UNIFORM_BUFFER, this.getBufferId())
-    }
-        
-    override fun dispose() {
-        val id: Int = this.bufferId ?: return
-        glDeleteBuffers(id)
-        this.bufferId = null
-    }
-    
-}
 
 private fun withCompiledShader(
     src: String, path: String, glType: Int, dispType: String,

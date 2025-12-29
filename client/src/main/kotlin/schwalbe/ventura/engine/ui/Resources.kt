@@ -24,17 +24,14 @@ val blitShader: Resource<Shader<PxPos, Blit>>
     = Shader.loadGlsl(PxPos, Blit)
 val flatBgShader: Resource<Shader<FullBuffer, FlatBg>>
     = Shader.loadGlsl(FullBuffer, FlatBg)
-
-val testShader: Resource<Shader<PxPos, FlatBg>>
-    = Shader.loadGlsl(PxPos, FlatBg)
-    
-val testImage = Texture.loadImage("res/test.png", Texture.Filter.LINEAR)
-val testImage2 = Texture.loadImage("res/test2.png", Texture.Filter.LINEAR)
+val gaussianDistribShader: Resource<Shader<FullBuffer, GaussianDistrib>>
+    = Shader.loadGlsl(FullBuffer, GaussianDistrib)
+val blurBgShader: Resource<Shader<FullBuffer, BlurBg>>
+    = Shader.loadGlsl(FullBuffer, BlurBg)
     
 fun loadUiResources(loader: ResourceLoader): Unit = loader.submitAll(
     quad,
     blitShader,
     flatBgShader,
-    
-    testShader, testImage, testImage2
+    gaussianDistribShader, blurBgShader
 )

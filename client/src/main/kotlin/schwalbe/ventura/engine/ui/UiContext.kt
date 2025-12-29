@@ -1,14 +1,14 @@
 
 package schwalbe.ventura.engine.ui
 
-import schwalbe.ventura.engine.gfx.ConstFramebuffer
+import schwalbe.ventura.engine.gfx.Framebuffer
 import schwalbe.ventura.engine.gfx.DepthTesting
 import schwalbe.ventura.engine.gfx.Shader
 import schwalbe.ventura.engine.gfx.Texture
 import org.joml.*
 
 class UiContext(
-    val output: ConstFramebuffer,
+    val output: Framebuffer,
     defaultFont: Font = Font.default,
     defaultFontSize: UiSize = 16.px,
     defaultFontColor: Vector4fc = Vector4f(0f, 0f, 0f, 1f)
@@ -55,7 +55,9 @@ class UiContext(
             this.elements.forEach { it.element.invalidate() }
         }
         val childContext = UiElementContext(
-            this, this.output.width, this.output.height
+            this,
+            this.output.width, this.output.height,
+            0, 0
         )
         for (e in this.elements) {
             e.element.update(childContext)

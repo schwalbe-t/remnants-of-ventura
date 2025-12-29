@@ -25,12 +25,16 @@ class Padding : GpuUiElement() {
     
     override fun updateChildren(context: UiElementContext) {
         val inside: UiElement = this.inside ?: return
-        val paddingHoriz: UiSize = this.paddingLeft + this.paddingRight
-        val paddingVert: UiSize = this.paddingTop + this.paddingBottom
+        val left: Float = this.paddingLeft(context)
+        val right: Float = this.paddingRight(context)
+        val top: Float = this.paddingTop(context)
+        val bottom: Float = this.paddingBottom(context)
+        val innerWidth: Int = this.pxWidth - (left + right).roundToInt()
+        val innerHeight: Int = this.pxHeight - (top + bottom).roundToInt()
+        val innerPxX: Int = context.absPxX + left.roundToInt()
+        var innerPxY: Int = context.absPxY + top.roundToInt()
         val childContext = UiElementContext(
-            context.global,
-            parentPxWidth = (this.pxWidth - paddingHoriz(context)).roundToInt(),
-            parentPxHeight = (this.pxHeight - paddingVert(context)).roundToInt()
+            context.global, innerWidth, innerHeight, innerPxX, innerPxY
         )
         inside.update(childContext)
     }
@@ -39,18 +43,13 @@ class Padding : GpuUiElement() {
         val inside: UiElement = this.inside ?: return
         val insideTex: Texture = inside.result ?: return
         this.prepareTarget()
-        val insideOffsetX: Float = this.paddingLeft(context)
-        val insideOffsetY: Float = this.paddingTop(context)
-        val shader: Shader<PxPos, Blit> = blitShader()
-        shader[PxPos.bufferSizePx] = Vector2f(
-            this.target.width.toFloat(), this.target.height.toFloat()
+        val insideOffsetX: Int = this.paddingLeft(context).roundToInt()
+        val insideOffsetY: Int = this.paddingTop(context).roundToInt()
+        blitTexture(
+            insideTex, this.target,
+            insideOffsetX, insideOffsetY,
+            inside.pxWidth, inside.pxHeight
         )
-        shader[PxPos.destTopLeftPx] = Vector2f(insideOffsetX, insideOffsetY)
-        shader[PxPos.destSizePx] = Vector2f(
-            inside.pxWidth.toFloat(), inside.pxHeight.toFloat()
-        )
-        shader[Blit.texture] = insideTex
-        quad().render(shader, this.target)
     }
     
     fun withPadding(amount: UiSize): Padding {

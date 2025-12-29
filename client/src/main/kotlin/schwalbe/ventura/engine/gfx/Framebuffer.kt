@@ -80,7 +80,7 @@ class Framebuffer : ConstFramebuffer, Disposable {
         this.assertMatchingDimensions(base, this.depth)
     }
 
-    fun attachColor(newColor: Texture?) {
+    fun attachColor(newColor: Texture?): Framebuffer {
         glBindFramebuffer(GL_FRAMEBUFFER, this.getFboId())
         glFramebufferTexture2D(
             GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -93,9 +93,10 @@ class Framebuffer : ConstFramebuffer, Disposable {
         glReadBuffer(buff)
         this.color = newColor
         this.computeProperties()
+        return this
     }
 
-    fun attachDepth(newDepth: Texture?) {
+    fun attachDepth(newDepth: Texture?): Framebuffer {
         glBindFramebuffer(GL_FRAMEBUFFER, this.getFboId())
         glFramebufferTexture2D(
             GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
@@ -104,6 +105,28 @@ class Framebuffer : ConstFramebuffer, Disposable {
         )
         this.depth = newDepth
         this.computeProperties()
+        return this
+    }
+    
+    fun resize(newWidth: Int, newHeight: Int) {
+        val resize: Boolean = this.width != newWidth || this.height != newHeight
+        if (!resize) { return }
+        val oldColor: Texture? = this.color
+        val oldDepth: Texture? = this.depth
+        this.attachColor(null)
+        this.attachDepth(null)
+        if (oldColor != null) {
+            this.attachColor(Texture(
+                newWidth, newHeight, oldColor.filter, oldColor.format
+            ))
+            oldColor.dispose()
+        }
+        if (oldDepth != null) {
+            this.attachDepth(Texture(
+                newWidth, newHeight, oldDepth.filter, oldDepth.format
+            ))
+            oldDepth.dispose()
+        }
     }
 
     override fun bind() {
