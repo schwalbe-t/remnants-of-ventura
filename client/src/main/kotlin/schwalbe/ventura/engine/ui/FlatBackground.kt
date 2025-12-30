@@ -4,6 +4,7 @@ package schwalbe.ventura.engine.ui
 import schwalbe.ventura.engine.gfx.Shader
 import schwalbe.ventura.engine.input.Mouse
 import org.joml.*
+import schwalbe.ventura.engine.input.isInsideArea
 
 class FlatBackground : GpuUiElement(), Colored {
     
@@ -31,13 +32,13 @@ class FlatBackground : GpuUiElement(), Colored {
     override val children: List<UiElement> = listOf()
     
     override fun captureInput(context: UiElementContext) {
-        val nowHovering: Boolean = context.absPxX <= Mouse.position.x()
-            && context.absPxY <= Mouse.position.y()
-            && Mouse.position.x() < context.absPxX + this.pxWidth
-            && Mouse.position.y() < context.absPxY + this.pxHeight
+        val nowHovering: Boolean = Mouse.isInsideArea(
+            context.visibleAbsLeft, context.visibleAbsTop,
+            context.visibleAbsRight, context.visibleAbsBottom
+        )
         if (nowHovering == this.hovering) { return }
         this.hovering = nowHovering
-        context.global.invalidate()
+        this.invalidate()
     }
     
     override fun render(context: UiElementContext) {

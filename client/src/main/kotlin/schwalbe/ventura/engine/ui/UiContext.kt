@@ -47,9 +47,9 @@ class UiContext(
     
     fun captureInput() {
         val childContext = UiElementContext(
-            this,
-            this.output.width, this.output.height,
-            0, 0
+            this, null,
+            0, 0, this.output.width, this.output.height,
+            0, 0, this.output.width, this.output.height
         )
         this.elements.forEach { it.element.captureInput(childContext) }
     }
@@ -66,9 +66,9 @@ class UiContext(
             this.invalidate()
         }
         val childContext = UiElementContext(
-            this,
-            this.output.width, this.output.height,
-            0, 0
+            this, null,
+            0, 0, this.output.width, this.output.height,
+            0, 0, this.output.width, this.output.height
         )
         for (e in this.elements) {
             e.element.update(childContext)

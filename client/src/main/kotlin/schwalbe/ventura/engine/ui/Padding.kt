@@ -27,16 +27,14 @@ class Padding : GpuUiElement() {
         context: UiElementContext, f: (UiElement, UiElementContext) -> Unit
     ) {
         val inside: UiElement = this.inside ?: return
-        val left: Float = this.paddingLeft(context)
-        val right: Float = this.paddingRight(context)
-        val top: Float = this.paddingTop(context)
-        val bottom: Float = this.paddingBottom(context)
-        val innerWidth: Int = this.pxWidth - (left + right).roundToInt()
-        val innerHeight: Int = this.pxHeight - (top + bottom).roundToInt()
-        val innerPxX: Int = context.absPxX + left.roundToInt()
-        var innerPxY: Int = context.absPxY + top.roundToInt()
-        val childContext = UiElementContext(
-            context.global, innerWidth, innerHeight, innerPxX, innerPxY
+        val left: Int = this.paddingLeft(context).roundToInt()
+        val right: Int = this.paddingRight(context).roundToInt()
+        val top: Int = this.paddingTop(context).roundToInt()
+        val bottom: Int = this.paddingBottom(context).roundToInt()
+        val innerWidth: Int = this.pxWidth - (left + right)
+        val innerHeight: Int = this.pxHeight - (top + bottom)
+        val childContext = context.childContext(
+            this, left, top, innerWidth, innerHeight
         )
         f(inside, childContext)
     }

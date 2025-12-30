@@ -182,20 +182,22 @@ fun main() {
         
         ui.defaultFont = jetbrainsMono()
         ui.defaultFontSize = 16.px
-        ui.defaultFontColor = Vector4f(1f, 1f, 1f, 1f)
+        ui.defaultFontColor = Vector4f(0.9f, 0.9f, 0.9f, 1f)
         val copypasta = "Crazy? I Was Crazy Once. They Locked Me In A Room. A Rubber Room. A Rubber Room With Rats. And Rats Make Me Crazy. "
             .repeat(40)
         ui.add(Axis.column()
-            // .add(80.vh, FlatBackground().withColor(0, 0, 0)
-            //     .pad(50.px)
-            //     .wrapBorderRadius(50.px)
-            //     .pad(10.vmin)
-            // )
             .add(80.vh, Stack()
-                .add(FlatBackground().withColor(0, 0, 0).withHoverColor(100, 100, 100))
-                .add(text(copypasta, 16.px)
-                    .pad(20.px)
+                .add(FlatBackground()
+                    .withColor(13, 16, 22)
                 )
+                .add(
+                    Scroll().withContents(
+                        text(copypasta, 16.px).withWidth(width = 150.pw)
+                    ).pad(20.px)
+                )
+                .add(ClickArea().withHandler {
+                    println("Hello, world!")
+                })
                 .wrapBorderRadius(20.px)
                 .pad(5.vmin)
             )

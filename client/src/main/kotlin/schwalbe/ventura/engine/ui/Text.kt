@@ -62,7 +62,7 @@ class Text : UiElement(), Colored {
             while (lineBreaks.position < chars.endIndex) {
                 val line: TextLayout = lineBreaks.nextLayout(widthLimit)
                 lines.add(line)
-                maxWidth = maxOf(maxWidth, line.advance)
+                maxWidth = maxOf(maxWidth, line.bounds.width.toFloat())
                 maxHeight += line.ascent + line.descent + line.leading
             }
             return SplitLines(
@@ -121,8 +121,12 @@ class Text : UiElement(), Colored {
             .map { p -> Text.splitLines(p, awtFont, widthLimit) }
             .toList()
         val lines: List<TextLayout> = paragraphs.flatMap(SplitLines::lines)
-        this.pxWidth = paragraphs.maxOf { p -> p.maxWidth }
-        this.pxHeight = paragraphs.sumOf { p -> p.maxHeight }
+        this.pxWidth = maxOf(
+            this.pxWidth, paragraphs.maxOf { p -> p.maxWidth }
+        )
+        this.pxHeight = maxOf(
+            this.pxHeight, paragraphs.sumOf { p -> p.maxHeight }
+        )
         val image: BufferedImage
         val g: Graphics2D
         val oldState: RenderState? = this.renderState

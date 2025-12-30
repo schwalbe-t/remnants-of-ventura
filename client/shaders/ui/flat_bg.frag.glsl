@@ -7,4 +7,5 @@ out vec4 oColor;
 
 void main() {
     oColor = uColor;
+    oColor.rgb *= uColor.a;
 }

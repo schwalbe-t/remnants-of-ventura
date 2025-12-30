@@ -33,12 +33,12 @@ open class Axis(
         var offset = 0
         for (entry in this.inside) {
             val size: Int = entry.size(context).roundToInt()
+            val innerRelPxX: Int = dirX * offset
+            val innerRelPXY: Int = dirY * offset
             val innerWidth: Int = dirX * size + orthoX * this.pxWidth
             val innerHeight: Int = dirY * size + orthoY * this.pxHeight
-            val innerPxX: Int = context.absPxX + dirX * offset
-            val innerPxY: Int = context.absPxY + dirY * offset
-            entry.elemCtx = UiElementContext(
-                context.global, innerWidth, innerHeight, innerPxX, innerPxY
+            entry.elemCtx = context.childContext(
+                this, innerRelPxX, innerRelPXY, innerWidth, innerHeight
             )
             offset += size
         }

@@ -51,7 +51,11 @@ operator fun UiSize.div(scalar: Float): UiSize
     = { ctx -> this(ctx) / scalar }
 operator fun UiSize.div(scalar: Double): UiSize
     = { ctx -> this(ctx) / scalar.toFloat() }
-
+    
+operator fun UiSize.unaryPlus(): UiSize
+    = { ctx -> this(ctx) }
+operator fun UiSize.unaryMinus(): UiSize
+    = { ctx -> -this(ctx) }
 inline operator fun UiSize.plus(crossinline f: UiSize): UiSize
     = { ctx -> this(ctx) + f(ctx) }
 inline operator fun UiSize.minus(crossinline f: UiSize): UiSize
