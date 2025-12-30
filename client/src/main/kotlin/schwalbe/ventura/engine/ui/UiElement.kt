@@ -36,18 +36,24 @@ abstract class UiElement : Disposable {
     
     abstract val children: List<UiElement>
     
-    protected open fun updateLayout(context: UiElementContext) {}
-    
-    protected open fun updateChildren(context: UiElementContext) {
+    protected open fun updateChildren(
+        context: UiElementContext, f: (UiElement, UiElementContext) -> Unit
+    ) {
         val childContext = UiElementContext(
             context.global,
             this.pxWidth, this.pxHeight,
             context.absPxX, context.absPxY
         )
         for (child in this.children) {
-            child.update(childContext)
+            f(child, childContext)
         }
     }
+    
+    open fun captureInput(context: UiElementContext) {
+        this.updateChildren(context, UiElement::captureInput)
+    }
+    
+    protected open fun updateLayout(context: UiElementContext) {}
     
     fun update(context: UiElementContext) {
         if (this.isDirty) {
@@ -56,7 +62,7 @@ abstract class UiElement : Disposable {
             this.updateLayout(context)
             this.children.forEach(UiElement::invalidate)
         }
-        this.updateChildren(context)
+        this.updateChildren(context, UiElement::update)
         if (this.isDirty) {
             this.render(context)
         }

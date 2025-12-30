@@ -5,10 +5,12 @@ import schwalbe.ventura.engine.gfx.Framebuffer
 import schwalbe.ventura.engine.gfx.DepthTesting
 import schwalbe.ventura.engine.gfx.Shader
 import schwalbe.ventura.engine.gfx.Texture
+import schwalbe.ventura.engine.input.InputEventQueue
 import org.joml.*
 
 class UiContext(
     val output: Framebuffer,
+    val input: InputEventQueue,
     defaultFont: Font = Font.default,
     defaultFontSize: UiSize = 16.px,
     defaultFontColor: Vector4fc = Vector4f(0f, 0f, 0f, 1f)
@@ -19,17 +21,17 @@ class UiContext(
     var defaultFont: Font = defaultFont
         set(value) {
             field = value
-            this.elements.forEach { it.element.invalidate() }
+            this.invalidate()
         }
     var defaultFontSize: UiSize = defaultFontSize
         set(value) {
             field = value
-            this.elements.forEach { it.element.invalidate() }
+            this.invalidate()
         }
     var defaultFontColor: Vector4fc = Vector4f(defaultFontColor)
         set(value) {
             field = Vector4f(value)
-            this.elements.forEach { it.element.invalidate() }
+            this.invalidate()
         }
     
     private val elements: MutableList<BaseElement> = mutableListOf()
@@ -43,6 +45,15 @@ class UiContext(
         this.elements.removeIf { it.element === element }
     }
     
+    fun captureInput() {
+        val childContext = UiElementContext(
+            this,
+            this.output.width, this.output.height,
+            0, 0
+        )
+        this.elements.forEach { it.element.captureInput(childContext) }
+    }
+    
     private var lastOutputWidth: Int = 0
     private var lastOutputHeight: Int = 0
     
@@ -52,7 +63,7 @@ class UiContext(
         if (outputSizeChanged) {
             this.lastOutputWidth = this.output.width
             this.lastOutputHeight = this.output.height
-            this.elements.forEach { it.element.invalidate() }
+            this.invalidate()
         }
         val childContext = UiElementContext(
             this,
@@ -62,9 +73,10 @@ class UiContext(
         for (e in this.elements) {
             e.element.update(childContext)
         }
+        this.render()
     }
     
-    fun render() {
+    private fun render() {
         val shader: Shader<PxPos, Blit> = blitShader()
         shader[PxPos.bufferSizePx] = Vector2f(
             this.output.width.toFloat(), this.output.height.toFloat()
@@ -80,6 +92,10 @@ class UiContext(
                 shader, this.output, depthTesting = DepthTesting.DISABLED
             )
         }
+    }
+    
+    fun invalidate() {
+        this.elements.forEach { it.element.invalidate() }
     }
 
 }

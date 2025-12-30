@@ -1,15 +1,18 @@
 
 package schwalbe.ventura.engine
 
+import schwalbe.ventura.engine.gfx.ConstFramebuffer
+import schwalbe.ventura.engine.gfx.DepthTesting
+import schwalbe.ventura.engine.gfx.FaceCulling
+import schwalbe.ventura.engine.input.InputEventQueue
+import schwalbe.ventura.engine.input.Keyboard
+import schwalbe.ventura.engine.input.Mouse
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWVidMode
 import org.lwjgl.system.MemoryUtil.NULL
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryStack
-import schwalbe.ventura.engine.gfx.ConstFramebuffer
-import schwalbe.ventura.engine.gfx.DepthTesting
-import schwalbe.ventura.engine.gfx.FaceCulling
 
 private class WindowFramebuffer(val window: Window) : ConstFramebuffer() {    
     override val width: Int
@@ -31,6 +34,8 @@ class Window : Disposable {
     var height: Int = 0
         private set
         
+    val inputEvents: InputEventQueue
+
     constructor(name: String, fullscreen: Boolean = true) {
         check(glfwInit()) { "Failed to initialize GLFW" }
         val monitor: Long = glfwGetPrimaryMonitor()
@@ -53,6 +58,7 @@ class Window : Disposable {
         this.windowId = windowId
         glfwMakeContextCurrent(windowId)
         this.initGraphics()
+        this.inputEvents = InputEventQueue(windowId)
     }
     
     private fun initGraphics() {
@@ -86,6 +92,14 @@ class Window : Disposable {
             this.width = newWidth
             this.height = newHeight
         }
+    }
+    
+    fun flushInputEvents() {
+        this.inputEvents.all().forEach {
+            Keyboard.handleEvent(it)
+            Mouse.handleEvent(it)
+        }
+        this.inputEvents.clear()
     }
     
     fun endFrame() {

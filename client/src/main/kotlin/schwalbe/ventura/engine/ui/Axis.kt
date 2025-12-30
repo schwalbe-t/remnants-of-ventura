@@ -44,10 +44,12 @@ open class Axis(
         }
     }
         
-    override fun updateChildren(context: UiElementContext) {
+    override fun updateChildren(
+        context: UiElementContext, f: (UiElement, UiElementContext) -> Unit
+    ) {
         for (entry in this.inside) {
             val childContext: UiElementContext = entry.elemCtx ?: continue
-            entry.elem.update(childContext)
+            f(entry.elem, childContext)
         }
     }
         

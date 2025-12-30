@@ -23,7 +23,9 @@ class Padding : GpuUiElement() {
     override val children: List<UiElement>
         get() = listOfNotNull(this.inside)
     
-    override fun updateChildren(context: UiElementContext) {
+    override fun updateChildren(
+        context: UiElementContext, f: (UiElement, UiElementContext) -> Unit
+    ) {
         val inside: UiElement = this.inside ?: return
         val left: Float = this.paddingLeft(context)
         val right: Float = this.paddingRight(context)
@@ -36,7 +38,7 @@ class Padding : GpuUiElement() {
         val childContext = UiElementContext(
             context.global, innerWidth, innerHeight, innerPxX, innerPxY
         )
-        inside.update(childContext)
+        f(inside, childContext)
     }
    
     override fun render(context: UiElementContext) {

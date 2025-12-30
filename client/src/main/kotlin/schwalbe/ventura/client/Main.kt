@@ -145,6 +145,7 @@ suspend fun main() {
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.ui.*
+import schwalbe.ventura.engine.input.*
 import org.joml.*
 import java.nio.*
 import kotlin.concurrent.thread
@@ -165,7 +166,7 @@ fun main() {
         Texture(16, 16, Texture.Filter.NEAREST, Texture.Format.DEPTH24)
     )
     
-    val ui = UiContext(out)
+    val ui = UiContext(out, window.inputEvents)
     
     var onFrame: () -> Unit = {}
     
@@ -191,7 +192,7 @@ fun main() {
             //     .pad(10.vmin)
             // )
             .add(80.vh, Stack()
-                .add(FlatBackground().withColor(0, 0, 0))
+                .add(FlatBackground().withColor(0, 0, 0).withHoverColor(100, 100, 100))
                 .add(text(copypasta, 16.px)
                     .pad(20.px)
                 )
@@ -207,8 +208,6 @@ fun main() {
         )
         onFrame = {
             blitTexture(testImage(), out)
-            ui.update()
-            ui.render()
         }
     })
     
@@ -220,7 +219,11 @@ fun main() {
         
         out.clearColor(Vector4f(0f, 0f, 0f, 1f))
         out.clearDepth(1f)
+        
+        ui.captureInput()
+        window.flushInputEvents()
         onFrame()
+        ui.update()
         
         blitTexture(out.color, window.framebuffer)
         
