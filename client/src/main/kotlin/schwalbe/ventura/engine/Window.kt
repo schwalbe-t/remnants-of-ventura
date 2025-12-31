@@ -95,7 +95,7 @@ class Window : Disposable {
     }
     
     fun flushInputEvents() {
-        this.inputEvents.all().forEach {
+        this.inputEvents.remaining().forEach {
             Keyboard.handleEvent(it)
             Mouse.handleEvent(it)
         }

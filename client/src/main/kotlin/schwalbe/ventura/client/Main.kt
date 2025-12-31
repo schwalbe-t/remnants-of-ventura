@@ -171,7 +171,7 @@ fun main() {
     var onFrame: () -> Unit = {}
     
     val jetbrainsMono: Resource<Font> = Font.loadTtf(
-        "res/fonts/JetBrainsMono-Italic.ttf"
+        "res/fonts/JetBrainsMono-Medium.ttf"
     )
     val testImage: Resource<Texture> = Texture.loadImage(
         "res/test2.png", Texture.Filter.LINEAR
@@ -190,23 +190,17 @@ fun main() {
                 .add(FlatBackground()
                     .withColor(13, 16, 22)
                 )
-                .add(
-                    Scroll().withContents(
-                        text(copypasta, 16.px).withWidth(width = 150.pw)
-                    ).pad(20.px)
+                .add(TextInput()
+                    .withMultilineInput(true)
+                    .withContent(text("", 16.px).withColor(166, 36, 159))
+                    // .withDisplayedValue { "●".repeat(it.size) }
+                    .wrapScrolling()
+                    .pad(20.px)
                 )
-                .add(ClickArea().withHandler {
-                    println("Hello, world!")
-                })
                 .wrapBorderRadius(20.px)
                 .pad(5.vmin)
             )
-            .add(20.vh, Stack()
-                .add(BlurBackground().withRadius(20))
-                .add(text(copypasta, 16.px)
-                    .pad(horizontal = 20.vw, vertical = 2.5.vh)
-                )
-            )
+            .add(20.vh, BlurBackground().withRadius(20))
         )
         onFrame = {
             blitTexture(testImage(), out)

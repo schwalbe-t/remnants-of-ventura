@@ -16,8 +16,8 @@ data class UiElementContext(
 fun UiElementContext.childContext(
     parent: UiElement?, relPxX: Int, relPxY: Int, width: Int, height: Int
 ): UiElementContext {
-    val absPxLeft: Int = this.absPxX + relPxX
-    val absPxTop: Int = this.absPxY + relPxY
+    val absPxLeft: Int = this.absPxX + maxOf(relPxX, 0)
+    val absPxTop: Int = this.absPxY + maxOf(relPxY, 0)
     val absPxRight: Int = absPxLeft + width
     val absPxBottom: Int = absPxTop + height
     return UiElementContext(
@@ -77,8 +77,8 @@ abstract class UiElement : Disposable {
     
     fun update(context: UiElementContext) {
         if (this.isDirty) {
-            this.pxWidth = this.width(context).roundToInt()
-            this.pxHeight = this.height(context).roundToInt()
+            this.pxWidth = maxOf(this.width(context).roundToInt(), 1)
+            this.pxHeight = maxOf(this.height(context).roundToInt(), 1)
             this.updateLayout(context)
             this.children.forEach(UiElement::invalidate)
         }

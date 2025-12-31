@@ -81,13 +81,13 @@ class Padding : GpuUiElement() {
         return this
     }
     
-    fun withContents(inside: UiElement?): Padding {
+    fun withContent(inside: UiElement?): Padding {
         this.inside = inside
         this.invalidate()
         return this
     }
     
-    fun withoutContents(): Padding {
+    fun withoutContent(): Padding {
         this.inside = null
         this.invalidate()
         return this
@@ -96,13 +96,13 @@ class Padding : GpuUiElement() {
 }
 
 fun UiElement.pad(amount: UiSize): Padding
-    = Padding().withPadding(amount).withContents(this)
+    = Padding().withPadding(amount).withContent(this)
     
 fun UiElement.pad(horizontal: UiSize, vertical: UiSize): Padding
-    = Padding().withPadding(horizontal, vertical).withContents(this)
+    = Padding().withPadding(horizontal, vertical).withContent(this)
     
 fun UiElement.pad(
     top: UiSize = 0.px, bottom: UiSize = 0.px,
     left: UiSize = 0.px, right: UiSize = 0.px
 ): Padding
-    = Padding().withPadding(top, bottom, left, right).withContents(this)
+    = Padding().withPadding(top, bottom, left, right).withContent(this)

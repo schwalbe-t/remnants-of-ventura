@@ -41,12 +41,12 @@ class BorderRadius : GpuUiElement() {
         return this
     }
     
-    fun withContents(inside: UiElement?): BorderRadius {
+    fun withContent(inside: UiElement?): BorderRadius {
         this.inside = inside
         return this
     }
     
-    fun withoutContents(): BorderRadius {
+    fun withoutContent(): BorderRadius {
         this.inside = null
         return this
     }
@@ -54,4 +54,4 @@ class BorderRadius : GpuUiElement() {
 }
 
 fun UiElement.wrapBorderRadius(amount: UiSize): BorderRadius
-    = BorderRadius().withRadius(amount).withContents(this)
+    = BorderRadius().withRadius(amount).withContent(this)

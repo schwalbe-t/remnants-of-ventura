@@ -12,6 +12,7 @@ import java.awt.RenderingHints
 import java.awt.font.FontRenderContext
 import java.awt.font.LineBreakMeasurer
 import java.awt.font.TextAttribute
+import java.awt.font.TextHitInfo
 import java.awt.font.TextLayout
 import java.awt.image.BufferedImage
 import java.text.AttributedCharacterIterator
@@ -48,11 +49,11 @@ class Text : UiElement(), Colored {
             = this.configureGraphics2D(this.baseImage.createGraphics())
         private val baseFrc: FontRenderContext
             = this.baseGraphics.fontRenderContext
-            
+
         private fun splitLines(
             paragraph: String, awtFont: AwtFont, widthLimit: Float
         ): SplitLines {
-            val text = AttributedString(paragraph.ifEmpty { " " })
+            val text = AttributedString(paragraph.ifEmpty { " " }) 
             text.addAttribute(TextAttribute.FONT, awtFont)
             val chars: AttributedCharacterIterator = text.iterator
             val lineBreaks = LineBreakMeasurer(chars, Text.baseFrc)
@@ -62,7 +63,11 @@ class Text : UiElement(), Colored {
             while (lineBreaks.position < chars.endIndex) {
                 val line: TextLayout = lineBreaks.nextLayout(widthLimit)
                 lines.add(line)
-                maxWidth = maxOf(maxWidth, line.bounds.width.toFloat())
+                val width: Float = maxOf(
+                    line.bounds.width.toFloat(),
+                    minOf(line.advance, widthLimit)
+                )
+                maxWidth = maxOf(maxWidth, width)
                 maxHeight += line.ascent + line.descent + line.leading
             }
             return SplitLines(
@@ -86,26 +91,55 @@ class Text : UiElement(), Colored {
     )
     
     
+    private var renderIsDirty: Boolean = true
+    
     var value: String = ""
-        private set
+        set(value) {
+            field = value
+            this.invalidateRender()
+        }
 
     var font: Font? = null
-        private set
+        set(value) {
+            field = value
+            this.invalidateRender()
+        }
     var fontSize: UiSize? = null
-        private set
+        set(value) {
+            field = value
+            this.invalidateRender()
+        }
     var wrapText: Boolean = true
-        private set
+        set(value) {
+            if (field != value) { this.invalidateRender() }
+            field = value
+        }
     var alignment: Alignment = Alignment.LEFT
-        private set
+        set(value) {
+            if (field != value) { this.invalidateRender() }
+            field = value
+        }
+    var lineHeight: Float = 1f
+        set(value) {
+            field = value
+            this.invalidateRender()
+        }
     override var color: Vector4fc? = null
         set(value) {
             field = if (value == null) { null }
                 else { Vector4f(value) }
-            this.invalidate()
+            this.invalidateRender()
         }
     
     override val children: List<UiElement> = listOf()
     
+    private fun invalidateRender() {
+        this.renderIsDirty = true
+        this.invalidate()
+    }
+    
+    private var lastPxWidth: Int = -1
+    private var lastPxHeight: Int = -1
     private var renderState: RenderState? = null
     
     override fun updateLayout(context: UiElementContext) {
@@ -127,6 +161,12 @@ class Text : UiElement(), Colored {
         this.pxHeight = maxOf(
             this.pxHeight, paragraphs.sumOf { p -> p.maxHeight }
         )
+        this.renderIsDirty = this.renderIsDirty
+            || this.lastPxWidth != this.pxWidth
+            || this.lastPxHeight != this.pxHeight
+        if (!this.renderIsDirty) { return }
+        this.lastPxWidth = this.pxWidth
+        this.lastPxHeight = this.pxHeight
         val image: BufferedImage
         val g: Graphics2D
         val oldState: RenderState? = this.renderState
@@ -149,50 +189,84 @@ class Text : UiElement(), Colored {
         this.renderState = RenderState(awtFont, lines, image, g)
     }
     
+    fun charIdxOfPos(relPos: Vector2fc, lineIdx: Int): Int? {
+        val line: TextLayout = this.renderState?.lines?.getOrNull(lineIdx)
+            ?: return null
+        val x: Float = relPos.x().coerceIn(0f, line.advance)
+        val hit = line.hitTestChar(x, 0f)
+        return hit.insertionIndex
+    }
+    
+    fun posOfCharIdx(lineCharIdx: Int, lineIdx: Int): Vector2f? {
+        val lines: List<TextLayout> = this.renderState?.lines ?: return null
+        var caretY = 0f
+        for ((lineI, line) in lines.withIndex()) {
+            if (lineI != lineIdx) {
+                val rawHeight: Float = line.ascent + line.descent + line.leading
+                caretY += this.lineHeight * rawHeight
+                continue
+            }
+            val charIdx: Int = lineCharIdx.coerceIn(0, line.characterCount)
+            val caret = line.getCaretInfo(TextHitInfo.leading(charIdx))
+            return Vector2f(caret[0], caretY)
+        }
+        return Vector2f(0f, 0f)
+    }
+    
+    fun lineHeightPx(): Float {
+        val lines: List<TextLayout> = this.renderState?.lines ?: return 0f
+        val ll = lines.first()
+        val rawHeight: Float = ll.ascent + ll.descent + ll.leading
+        return rawHeight * this.lineHeight
+    }
+    
     override fun render(context: UiElementContext) {
+        if (!this.renderIsDirty) { return }
         val (awtFont, lines, image, g) = this.renderState ?: return
         g.font = awtFont
         val c: Vector4fc = this.color ?: context.global.defaultFontColor
         g.color = Color(c.x(), c.y(), c.z(), c.w())
-        var y = 0f
+        var offsetY = 0f
         for (line in lines) {
-            y += line.ascent
             val x: Float = this.alignment
                 .xPosOf(image.width.toFloat(), line.advance)
+            val y: Float = offsetY + line.ascent
             line.draw(g, x, y)
-            y += line.descent + line.leading
+            val rawHeight: Float = line.ascent + line.descent + line.leading
+            offsetY += rawHeight * this.lineHeight
         }
         this.result?.dispose()
         this.result = Texture.fromBufferedImage(image, Texture.Filter.LINEAR)
+        this.renderIsDirty = false
     }
     
     fun withText(text: String): Text {
         this.value = text
-        this.invalidate()
         return this
     }
     
     fun withFont(font: Font?): Text {
         this.font = font
-        this.invalidate()
         return this
     }
     
     fun withSize(size: UiSize?): Text {
         this.fontSize = size
-        this.invalidate()
         return this
     }
     
     fun withWrapping(enabled: Boolean = true): Text {
         this.wrapText = enabled
-        this.invalidate()
         return this
     }
     
     fun withAlignment(alignment: Alignment): Text {
         this.alignment = alignment
-        this.invalidate()
+        return this
+    }
+
+    fun withLineHeight(lineHeight: Float): Text {
+        this.lineHeight = lineHeight
         return this
     }
     

@@ -4,14 +4,8 @@ package schwalbe.ventura.engine.ui
 import schwalbe.ventura.engine.gfx.Texture
 import schwalbe.ventura.engine.gfx.Shader
 import schwalbe.ventura.engine.gfx.ConstFramebuffer
-import schwalbe.ventura.engine.input.Mouse
-import schwalbe.ventura.engine.input.MouseScroll
-import schwalbe.ventura.engine.input.isInsideArea
+import schwalbe.ventura.engine.input.*
 import org.joml.*
-import schwalbe.ventura.engine.input.InputEventQueue
-import schwalbe.ventura.engine.input.MButton
-import schwalbe.ventura.engine.input.MButtonDown
-import schwalbe.ventura.engine.input.MButtonUp
 import kotlin.math.roundToInt
 
 private data class Rectangle(
@@ -31,6 +25,8 @@ private class ScrollBar(
         val trackColor: Vector4fc = Vector4f(0f, 0f, 0f, 0f)
         val thumbColor: Vector4fc = Vector4f(0.5f, 0.5f, 0.5f, 0.5f)
         val thumbHoverColor: Vector4fc = Vector4f(0.75f, 0.75f, 0.75f, 0.5f)
+        
+        val defaultWidth: UiSize = 1.vmin
     }
     
     
@@ -73,13 +69,13 @@ private class ScrollBar(
         val relMouseY: Int = Mouse.position.y().roundToInt() - baseY
         val anchor: Pair<Int, Int>? = this.anchorPos
         if (anchor == null && this.thumbHover) {
-            for (e in inputEvents.allOfType<MButtonDown>()) {
+            for (e in inputEvents.remainingOfType<MButtonDown>()) {
                 if (e.button != MButton.LEFT) { continue }
                 this.anchorPos = Pair(relMouseX, relMouseY)
                 inputEvents.remove(e)
             }
         } else if (anchor != null) {
-            for (e in inputEvents.allOfType<MButtonUp>()) {
+            for (e in inputEvents.remainingOfType<MButtonUp>()) {
                 if (e.button != MButton.LEFT) { continue }
                 this.anchorPos = null
                 inputEvents.remove(e)
@@ -129,7 +125,7 @@ class Scroll : GpuUiElement() {
             field = value
         }
     
-    var scrollBarWidth: UiSize = 1.vmin
+    var scrollBarWidth: UiSize = ScrollBar.defaultWidth
         set(value) {
             field = value
             this.invalidate()
@@ -164,7 +160,7 @@ class Scroll : GpuUiElement() {
             && inside.pxHeight > this.pxHeight
         this.vBarWidth = if (this.shouldShowVertBar) { bw } else { 0 }
         this.shouldShowHorizBar = this.showHorizBar
-            && inside.pxWidth > this.pxWidth - this.vBarWidth
+            && inside.pxWidth > this.pxWidth
         this.hBarHeight = if (this.shouldShowHorizBar) { bw } else { 0 }
         // bar positions and dimensions
         val showHoriz: Boolean = this.shouldShowHorizBar
@@ -205,8 +201,14 @@ class Scroll : GpuUiElement() {
     }
         
     override fun captureInput(context: UiElementContext) {
-        val inside: UiElement = this.inside ?: return
+        this.scrollOffsetX += this.horizBar?.updateThumb(
+            context.absPxX, context.absPxY, 1, 0, this, context.global.input
+        ) ?: 0f
+        this.scrollOffsetY += this.vertBar?.updateThumb(
+            context.absPxX, context.absPxY, 0, 1, this, context.global.input
+        ) ?: 0f
         this.updateChildren(context, UiElement::captureInput)
+        val inside: UiElement = this.inside ?: return
         val rawAbsRight: Int = context.absPxX + this.pxWidth - this.vBarWidth
         val rawAbsBottom: Int = context.absPxY + this.pxHeight - this.hBarHeight
         val isInside: Boolean = Mouse.isInsideArea(
@@ -216,19 +218,17 @@ class Scroll : GpuUiElement() {
         )
         if (isInside) {
             val lineHeight: Float = context.global.defaultFontSize(context)
-            for (e in context.global.input.allOfType<MouseScroll>()) {
-                this.scrollOffsetX -= e.offset.x() * lineHeight
-                this.scrollOffsetY -= e.offset.y() * lineHeight
+            for (e in context.global.input.remainingOfType<MouseScroll>()) {
+                if (this.shouldShowHorizBar) {
+                    this.scrollOffsetX -= e.offset.x() * lineHeight
+                }
+                if (this.shouldShowVertBar) {
+                    this.scrollOffsetY -= e.offset.y() * lineHeight
+                }
                 context.global.input.remove(e)
                 this.invalidate()
             }
         }
-        this.scrollOffsetX += this.horizBar?.updateThumb(
-            context.absPxX, context.absPxY, 1, 0, this, context.global.input
-        ) ?: 0f
-        this.scrollOffsetY += this.vertBar?.updateThumb(
-            context.absPxX, context.absPxY, 0, 1, this, context.global.input
-        ) ?: 0f
         this.limitScrollOffsets()
     }
     
@@ -261,16 +261,50 @@ class Scroll : GpuUiElement() {
         this.vertBar?.render(this.target)
     }
     
-    fun withContents(inside: UiElement?): Scroll {
+    fun requestVisible(relPosX: Int, relPosY: Int, padding: Int = 0) {
+        val outerX: Int = relPosX - this.scrollOffsetX.roundToInt()
+        val outerY: Int = relPosY - this.scrollOffsetY.roundToInt()
+        val deltaLeft = 0 - (outerX - padding)
+        val deltaTop = 0 - (outerY - padding)
+        val deltaRight = (outerX + padding) - (this.pxWidth - this.vBarWidth)
+        val deltaBottom = (outerY + padding) - (this.pxHeight - this.hBarHeight)
+        if (deltaLeft > 0) { this.scrollOffsetX -= deltaLeft }
+        if (deltaRight > 0) { this.scrollOffsetX += deltaRight }
+        if (deltaTop > 0) { this.scrollOffsetY -= deltaTop }
+        if (deltaBottom > 0) { this.scrollOffsetY += deltaBottom }
+        this.limitScrollOffsets()
+    }
+    
+    fun withBarsEnabled(horiz: Boolean = true, vert: Boolean = true): Scroll {
+        this.showHorizBar = horiz
+        this.showVertBar = vert
+        return this
+    }
+    
+    fun withBarWidth(width: UiSize = ScrollBar.defaultWidth): Scroll {
+        this.scrollBarWidth = width
+        return this
+    }
+    
+    fun withContent(inside: UiElement?): Scroll {
         this.inside = inside
         this.invalidate()
         return this
     }
     
-    fun withoutContents(): Scroll {
+    fun withoutContent(): Scroll {
         this.inside = null
         this.invalidate()
         return this
     }
     
 }
+
+fun UiElement.wrapScrolling(
+    horiz: Boolean = true, vert: Boolean = true,
+    barWidth: UiSize = ScrollBar.defaultWidth
+): Scroll
+    = Scroll()
+        .withBarsEnabled(horiz, vert)
+        .withBarWidth(barWidth)
+        .withContent(this)

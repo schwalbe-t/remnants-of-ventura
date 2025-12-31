@@ -14,7 +14,7 @@ class ClickArea : UiElement() {
     
     override fun captureInput(context: UiElementContext){
         val pressed: Boolean = context.global.input
-            .allOfType<MButtonUp>()
+            .remainingOfType<MButtonUp>()
             .any { e -> e.button == MButton.LEFT && Mouse.isInsideArea(
                 context.visibleAbsLeft, context.visibleAbsTop,
                 context.visibleAbsRight, context.visibleAbsBottom

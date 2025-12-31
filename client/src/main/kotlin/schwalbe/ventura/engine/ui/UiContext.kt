@@ -33,6 +33,14 @@ class UiContext(
             field = Vector4f(value)
             this.invalidate()
         }
+        
+    var currentlyInFocus: Focusable? = null
+        set(value) {
+            if (field !== value) {
+                field?.onFocusLost()
+            }
+            field = value
+        }
     
     private val elements: MutableList<BaseElement> = mutableListOf()
     
