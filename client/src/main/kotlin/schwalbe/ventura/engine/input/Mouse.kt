@@ -1,8 +1,18 @@
 
 package schwalbe.ventura.engine.input
 
+import org.lwjgl.glfw.GLFW.*
 import org.joml.Vector2f
 import org.joml.Vector2fc
+
+enum class Cursor(val glfwCursorConst: Int) {
+    ARROW       (GLFW_ARROW_CURSOR),
+    IBEAM       (GLFW_IBEAM_CURSOR),
+    CROSSHAIR   (GLFW_CROSSHAIR_CURSOR),
+    HAND        (GLFW_HAND_CURSOR),
+    HRESIZE     (GLFW_HRESIZE_CURSOR),
+    VRESIZE     (GLFW_VRESIZE_CURSOR);
+}
 
 object Mouse {
     
@@ -11,6 +21,8 @@ object Mouse {
     
     private val actualPosition = Vector2f(0f, 0f)
     val position: Vector2fc = this.actualPosition
+    
+    var cursor: Cursor = Cursor.ARROW
     
     fun handleEvent(e: InputEvent) { when(e) {
         is MButtonDown -> this.buttonsDown.add(e.button)

@@ -171,7 +171,7 @@ fun main() {
     var onFrame: () -> Unit = {}
     
     val jetbrainsMono: Resource<Font> = Font.loadTtf(
-        "res/fonts/JetBrainsMono-Medium.ttf"
+        "res/fonts/JetBrainsMonoNL-SemiBold.ttf"
     )
     val testImage: Resource<Texture> = Texture.loadImage(
         "res/test2.png", Texture.Filter.LINEAR
@@ -185,6 +185,14 @@ fun main() {
         ui.defaultFontColor = Vector4f(0.9f, 0.9f, 0.9f, 1f)
         val copypasta = "Crazy? I Was Crazy Once. They Locked Me In A Room. A Rubber Room. A Rubber Room With Rats. And Rats Make Me Crazy. "
             .repeat(40)
+        val codeSettings = CodeEditingSettings(
+            paired = listOf(
+                "()",
+                "{}",
+                "\"\""
+            ),
+            autoIndent = true
+        )
         ui.add(Axis.column()
             .add(80.vh, Stack()
                 .add(FlatBackground()
@@ -192,8 +200,28 @@ fun main() {
                 )
                 .add(TextInput()
                     .withMultilineInput(true)
-                    .withContent(text("", 16.px).withColor(166, 36, 159))
-                    // .withDisplayedValue { "●".repeat(it.size) }
+                    .withContent(text("", 16.px).withColor(186, 184, 178))
+                    // .withDisplayedText { value -> "●".repeat(value.length) }
+                    .withDisplayedSpans { text: String ->
+                        var spans: MutableList<Span> = mutableListOf()
+                        val keyword = "sigma"
+                        val keywordColor = Vector4f(0f, 255f, 0f, 255f)
+                            .div(255f)
+                        var i = 0
+                        while (i < text.length) {
+                            var next = text.indexOf(keyword, i)
+                            if (next == -1) {
+                                spans.add(Span(text.substring(i)))
+                                break
+                            }
+                            spans.add(Span(text.substring(i, next)))
+                            spans.add(Span(keyword, keywordColor))
+                            i = next + keyword.length
+                        }
+                        spans
+                    }
+                    .withCodeTypedHandler(codeSettings)
+                    .withCodeDeletedHandler(codeSettings)
                     .wrapScrolling()
                     .pad(20.px)
                 )

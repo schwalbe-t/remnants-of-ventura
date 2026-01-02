@@ -22,7 +22,7 @@ fun UiElementContext.childContext(
     val absPxBottom: Int = absPxTop + height
     return UiElementContext(
         this.global, parent,
-        absPxLeft, absPxTop, width, height,
+        this.absPxX + relPxX, this.absPxY + relPxY, width, height,
         this.closestVisibleX(absPxLeft), this.closestVisibleY(absPxTop),
         this.closestVisibleX(absPxRight), this.closestVisibleY(absPxBottom)
     )

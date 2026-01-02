@@ -4,21 +4,45 @@ package schwalbe.ventura.engine.ui
 import schwalbe.ventura.engine.gfx.Texture
 import schwalbe.ventura.engine.gfx.fromBufferedImage
 import org.joml.*
-import java.awt.Color
+import java.awt.*
 import java.awt.Font as AwtFont
-import java.awt.Graphics2D
-import java.awt.Rectangle
-import java.awt.RenderingHints
-import java.awt.font.FontRenderContext
-import java.awt.font.LineBreakMeasurer
-import java.awt.font.TextAttribute
-import java.awt.font.TextHitInfo
-import java.awt.font.TextLayout
+import java.awt.font.*
+import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 import java.text.AttributedCharacterIterator
 import java.text.AttributedString
 import kotlin.math.ceil
 import kotlin.math.roundToInt
+
+data class Span(
+    val text: String, 
+    val color: Vector4fc? = null,
+    val font: Font? = null
+)
+
+fun Span.derive(newText: String): Span
+    = Span(newText, this.color, this.font)
+
+fun Iterable<Span>.splitLines(): List<List<Span>> {
+    val allLines: MutableList<MutableList<Span>> = mutableListOf()
+    var currentLine: MutableList<Span> = mutableListOf()
+    allLines.add(currentLine)
+    for (span in this) {
+        var i = 0
+        while (true) {
+            val nl = span.text.indexOf('\n', i)
+            if (nl == -1) {
+                currentLine.add(span.derive(span.text.substring(i)))
+                break
+            }
+            currentLine.add(span.derive(span.text.substring(i, nl)))
+            currentLine = mutableListOf()
+            allLines.add(currentLine)
+            i = nl + 1
+        }
+    }
+    return allLines
+}
 
 class Text : UiElement(), Colored {
     
@@ -50,25 +74,51 @@ class Text : UiElement(), Colored {
         private val baseFrc: FontRenderContext
             = this.baseGraphics.fontRenderContext
 
-        private fun splitLines(
-            paragraph: String, awtFont: AwtFont, widthLimit: Float
+        private fun wrapText(
+            paragraph: List<Span>,
+            widthLimit: Float, fontSize: Float, lineHeightPx: Float,
+            defaultFont: Font,
+            defaultColor: Vector4fc
         ): SplitLines {
-            val text = AttributedString(paragraph.ifEmpty { " " }) 
-            text.addAttribute(TextAttribute.FONT, awtFont)
+            val text = AttributedString(paragraph
+                .joinToString("", transform = Span::text)
+                .ifEmpty { " " }
+            )
+            var spanOffset = 0
+            for (span in paragraph) {
+                if (span.text.isEmpty()) { continue }  
+                val start: Int = spanOffset
+                spanOffset += span.text.length
+                val end: Int = spanOffset
+                val font: Font = span.font ?: defaultFont
+                val color: Vector4fc = span.color ?: defaultColor
+                text.addAttribute(
+                    TextAttribute.FONT,
+                    font.baseFont.deriveFont(fontSize),
+                    start, end
+                )
+                text.addAttribute(
+                    TextAttribute.FOREGROUND,
+                    color,
+                    start, end
+                )
+            }
             val chars: AttributedCharacterIterator = text.iterator
             val lineBreaks = LineBreakMeasurer(chars, Text.baseFrc)
-            val lines = mutableListOf<TextLayout>()
+            val lines = mutableListOf<Line>()
             var maxWidth = 0f
             var maxHeight = 0f
             while (lineBreaks.position < chars.endIndex) {
-                val line: TextLayout = lineBreaks.nextLayout(widthLimit)
-                lines.add(line)
+                val start: Int = lineBreaks.position
+                val layout: TextLayout = lineBreaks.nextLayout(widthLimit)
+                val end: Int = lineBreaks.position
+                lines.add(Line(text, start, end, layout))
                 val width: Float = maxOf(
-                    line.bounds.width.toFloat(),
-                    minOf(line.advance, widthLimit)
+                    layout.bounds.width.toFloat(),
+                    minOf(layout.advance, widthLimit)
                 )
                 maxWidth = maxOf(maxWidth, width)
-                maxHeight += line.ascent + line.descent + line.leading
+                maxHeight += lineHeightPx
             }
             return SplitLines(
                 lines, ceil(maxWidth).toInt(), ceil(maxHeight).toInt()
@@ -78,14 +128,19 @@ class Text : UiElement(), Colored {
     }
     
     private data class SplitLines(
-        val lines: List<TextLayout>,
+        val lines: List<Line>,
         val maxWidth: Int,
         val maxHeight: Int
     )
     
+    private data class Line(
+        val text: AttributedString,
+        val start: Int, val end: Int,
+        val layout: TextLayout
+    )
+    
     private data class RenderState(
-        val awtFont: AwtFont,
-        val lines: List<TextLayout>,
+        val lines: List<Line>,
         val image: BufferedImage,
         val g: Graphics2D
     )
@@ -93,7 +148,7 @@ class Text : UiElement(), Colored {
     
     private var renderIsDirty: Boolean = true
     
-    var value: String = ""
+    var content: List<Span> = listOf()
         set(value) {
             field = value
             this.invalidateRender()
@@ -141,20 +196,31 @@ class Text : UiElement(), Colored {
     private var lastPxWidth: Int = -1
     private var lastPxHeight: Int = -1
     private var renderState: RenderState? = null
+    var lineHeightPx: Float = 0f
+        private set
     
     override fun updateLayout(context: UiElementContext) {
-        val font: Font = this.font
-            ?: context.global.defaultFont
         val fontSize: UiSize = this.fontSize
             ?: context.global.defaultFontSize
         val fontSizePx: Float = fontSize(context)
+        val defaultFont: Font = this.font
+            ?: context.global.defaultFont
+        val defaultColor: Vector4fc = this.color
+            ?: context.global.defaultFontColor
+        val fm: FontMetrics = Text.baseGraphics.getFontMetrics(
+            defaultFont.baseFont.deriveFont(fontSizePx)
+        )
+        val rawFontHeight: Int = fm.ascent + fm.descent + fm.leading
+        this.lineHeightPx = rawFontHeight.toFloat() * this.lineHeight
         val widthLimit: Float = if (!this.wrapText) { Float.POSITIVE_INFINITY }
             else { this.pxWidth.toFloat() }
-        val awtFont: AwtFont = font.baseFont.deriveFont(fontSizePx)
-        val paragraphs: List<SplitLines> = this.value.split("\n")
-            .map { p -> Text.splitLines(p, awtFont, widthLimit) }
+        val paragraphs: List<SplitLines> = this.content.splitLines()
+            .map { p -> Text.wrapText(
+                p, widthLimit, fontSizePx, this.lineHeightPx,
+                defaultFont, defaultColor
+            ) }
             .toList()
-        val lines: List<TextLayout> = paragraphs.flatMap(SplitLines::lines)
+        val lines: List<Line> = paragraphs.flatMap(SplitLines::lines)
         this.pxWidth = maxOf(
             this.pxWidth, paragraphs.maxOf { p -> p.maxWidth }
         )
@@ -186,54 +252,70 @@ class Text : UiElement(), Colored {
             g.translate(0, image.height)
             g.scale(1.0, -1.0)
         }
-        this.renderState = RenderState(awtFont, lines, image, g)
+        this.renderState = RenderState(lines, image, g)
     }
     
-    fun charIdxOfPos(relPos: Vector2fc, lineIdx: Int): Int? {
-        val line: TextLayout = this.renderState?.lines?.getOrNull(lineIdx)
+    fun charIdxOfPos(relPosX: Float, lineIdx: Int): Int? {
+        val line: TextLayout = this.renderState?.lines
+            ?.getOrNull(lineIdx)?.layout
             ?: return null
-        val x: Float = relPos.x().coerceIn(0f, line.advance)
+        val x: Float = relPosX.coerceIn(0f, line.advance)
         val hit = line.hitTestChar(x, 0f)
         return hit.insertionIndex
     }
     
     fun posOfCharIdx(lineCharIdx: Int, lineIdx: Int): Vector2f? {
-        val lines: List<TextLayout> = this.renderState?.lines ?: return null
+        val lines: List<Line> = this.renderState?.lines ?: return null
         var caretY = 0f
         for ((lineI, line) in lines.withIndex()) {
+            val ll: TextLayout = line.layout
             if (lineI != lineIdx) {
-                val rawHeight: Float = line.ascent + line.descent + line.leading
-                caretY += this.lineHeight * rawHeight
+                caretY += this.lineHeightPx
                 continue
             }
-            val charIdx: Int = lineCharIdx.coerceIn(0, line.characterCount)
-            val caret = line.getCaretInfo(TextHitInfo.leading(charIdx))
+            val charIdx: Int = lineCharIdx.coerceIn(0, ll.characterCount)
+            val caret = ll.getCaretInfo(TextHitInfo.leading(charIdx))
             return Vector2f(caret[0], caretY)
         }
         return Vector2f(0f, 0f)
     }
     
-    fun lineHeightPx(): Float {
-        val lines: List<TextLayout> = this.renderState?.lines ?: return 0f
-        val ll = lines.first()
-        val rawHeight: Float = ll.ascent + ll.descent + ll.leading
-        return rawHeight * this.lineHeight
-    }
-    
     override fun render(context: UiElementContext) {
         if (!this.renderIsDirty) { return }
-        val (awtFont, lines, image, g) = this.renderState ?: return
-        g.font = awtFont
-        val c: Vector4fc = this.color ?: context.global.defaultFontColor
-        g.color = Color(c.x(), c.y(), c.z(), c.w())
-        var offsetY = 0f
+        val (lines, image, g) = this.renderState ?: return
+        var y = 0f
         for (line in lines) {
-            val x: Float = this.alignment
-                .xPosOf(image.width.toFloat(), line.advance)
-            val y: Float = offsetY + line.ascent
-            line.draw(g, x, y)
-            val rawHeight: Float = line.ascent + line.descent + line.leading
-            offsetY += rawHeight * this.lineHeight
+            val ll: TextLayout = line.layout
+            var chars: AttributedCharacterIterator = line.text.iterator
+            chars.index = line.start
+            while (chars.index < line.end) {
+                val runLimit: Int = minOf(
+                    chars.getRunLimit(TextAttribute.FOREGROUND),
+                    line.end
+                )
+                val color = chars
+                    .getAttribute(TextAttribute.FOREGROUND) as? Vector4fc
+                if (color != null) {
+                    g.color = Color(color.x(), color.y(), color.z(), color.w())
+                }
+                val x: Float = this.alignment
+                    .xPosOf(image.width.toFloat(), ll.advance)
+                val startX: Float = x + ll.getCaretInfo(
+                    TextHitInfo.leading(chars.index - line.start)
+                )[0]
+                val endX: Float = x + ll.getCaretInfo(
+                    TextHitInfo.leading(runLimit - line.start)
+                )[0]
+                val oldClip: Shape? = g.clip
+                g.clip = Rectangle2D.Float(
+                    startX, y,
+                    endX - startX, lineHeightPx
+                )
+                ll.draw(g, x, y + ll.ascent)
+                g.clip = oldClip
+                chars.index = runLimit
+            }
+            y += this.lineHeightPx
         }
         this.result?.dispose()
         this.result = Texture.fromBufferedImage(image, Texture.Filter.LINEAR)
@@ -241,7 +323,12 @@ class Text : UiElement(), Colored {
     }
     
     fun withText(text: String): Text {
-        this.value = text
+        this.content = listOf(Span(text))
+        return this
+    }
+    
+    fun withText(content: List<Span>): Text {
+        this.content = content
         return this
     }
     

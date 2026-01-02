@@ -7,6 +7,7 @@ import schwalbe.ventura.engine.gfx.FaceCulling
 import schwalbe.ventura.engine.input.InputEventQueue
 import schwalbe.ventura.engine.input.Keyboard
 import schwalbe.ventura.engine.input.Mouse
+import schwalbe.ventura.engine.input.Cursor
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWVidMode
 import org.lwjgl.system.MemoryUtil.NULL
@@ -82,6 +83,7 @@ class Window : Disposable {
     
     fun beginFrame() {
         glfwPollEvents()
+        Mouse.cursor = Cursor.ARROW
         MemoryStack.stackPush().use { stack ->
             val widthPtr = stack.mallocInt(1)
             val heightPtr = stack.mallocInt(1)
@@ -102,8 +104,19 @@ class Window : Disposable {
         this.inputEvents.clear()
     }
     
+    private var prevCursor: Cursor = Cursor.ARROW
+    private val cursors: MutableMap<Int, Long> = mutableMapOf()
+    
     fun endFrame() {
-        glfwSwapBuffers(this.getWindowId())
+        val windowId: Long = this.getWindowId()
+        if (Mouse.cursor != this.prevCursor) {
+            val cursorConst: Int = Mouse.cursor.glfwCursorConst
+            val cursorId: Long = this.cursors
+                .getOrPut(cursorConst) { glfwCreateStandardCursor(cursorConst) }
+            glfwSetCursor(windowId, cursorId)
+            this.prevCursor = Mouse.cursor
+        }
+        glfwSwapBuffers(windowId)
     }
     
     override fun dispose() {

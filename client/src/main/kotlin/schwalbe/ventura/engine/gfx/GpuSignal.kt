@@ -39,9 +39,9 @@ class GpuSignal : Disposable {
             is AlreadyReceived  -> return true
         }
         val signaled: Boolean = when (glClientWaitSync(fenceId, 0, 0)) {
-            GL_CONDITION_SATISFIED -> true
-            GL_ALREADY_SIGNALED -> true
-            else -> false
+            GL_CONDITION_SATISFIED  -> true
+            GL_ALREADY_SIGNALED     -> true
+            else                    -> false
         }
         if (!signaled) { return false }
         glDeleteSync(state.fenceId)
