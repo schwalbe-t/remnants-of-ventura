@@ -42,6 +42,20 @@ class TextInput : GpuUiElement(), Focusable {
         const val CARET_BLINK_DELTA_MS = 750
     }
     
+    data class Modification(
+        val oldCaretPos: Int,
+        val oldSelection: IntRange?,
+        val edits: List<Edit>,
+        val newCaretPos: Int,
+        val newSelection: IntRange?
+    ) {
+        data class Edit(
+            val isDeletion: Boolean,
+            val atOffset: Int,
+            val text: List<Int>
+        )
+    }
+
     class Caret {
         
         var posChanged: Boolean = true
@@ -210,11 +224,9 @@ class TextInput : GpuUiElement(), Focusable {
             this.invalidate()
         }
         
-    var onTypedText: (Int) -> Unit
-        = { c -> this.writeText(c) }
+    var onTypedText: (Int) -> Unit = { c -> this.writeText(c) }
         
-    var onDeletedText: (Int) -> Unit
-        = { c -> this.deleteLeft(1) }
+    var onDeletedText: (Int) -> Unit = { c -> this.deleteLeft(1) }
         
     var tabLength: Int = 4
         
@@ -254,9 +266,18 @@ class TextInput : GpuUiElement(), Focusable {
         this.invalidate()
     }
     
+    private val edits: MutableList<Modification.Edit> = mutableListOf()
+    
     private fun clearSelection() {
         val selection: IntRange = this.selection ?: return
-        this.actualValue.subList(selection.first, selection.last).clear()
+        val deleted: MutableList<Int> = this.actualValue
+            .subList(selection.first, selection.last)
+        this.edits.add(Modification.Edit(
+            isDeletion = true,
+            atOffset = selection.first,
+            text = deleted.toList()
+        ))
+        deleted.clear()
         this.selection = null
         this.caret?.moveToOffset(this.actualValue, selection.first)
         this.updateDisplayedValue()
@@ -291,6 +312,11 @@ class TextInput : GpuUiElement(), Focusable {
     fun writeText(cp: Int) {
         val caret: Caret = this.caret ?: return
         this.actualValue.add(caret.offset, cp)
+        this.edits.add(Modification.Edit(
+            isDeletion = false,
+            atOffset = caret.offset,
+            text = listOf(cp)
+        ))
         caret.moveRight(this.actualValue)
     }
     
@@ -303,10 +329,47 @@ class TextInput : GpuUiElement(), Focusable {
     fun deleteLeft(n: Int) {
         val caret: Caret = this.caret ?: return
         val numRemoved: Int = minOf(n, caret.offset)
+        this.edits.add(Modification.Edit(
+            isDeletion = true,
+            atOffset = caret.offset - numRemoved,
+            text = this.actualValue
+                .subList(caret.offset - numRemoved, caret.offset)
+                .toList()
+        ))
         for (i in 1..numRemoved) {
             caret.moveLeft(this.actualValue)
             this.actualValue.removeAt(caret.offset)
         }
+    }
+    
+    fun applyMod(mod: Modification) {
+        for (edit in mod.edits) {
+            if (edit.isDeletion) {
+                this.actualValue
+                    .subList(edit.atOffset, edit.atOffset + edit.text.size)
+                    .clear()
+            } else {
+                this.actualValue.addAll(edit.atOffset, edit.text)
+            }
+        }
+        this.caret?.moveToOffset(this.actualValue, mod.newCaretPos)
+        this.selection = mod.newSelection
+        this.updateDisplayedValue()
+    }
+    
+    fun undoMod(mod: Modification) {
+        for (edit in mod.edits.reversed()) {
+            if (edit.isDeletion) {
+                this.actualValue.addAll(edit.atOffset, edit.text)
+            } else {
+                this.actualValue
+                    .subList(edit.atOffset, edit.atOffset + edit.text.size)
+                    .clear()
+            }
+        }
+        this.caret?.moveToOffset(this.actualValue, mod.oldCaretPos)
+        this.selection = mod.oldSelection
+        this.updateDisplayedValue()
     }
     
     private fun moveCaretToCursor(context: UiElementContext) {
@@ -324,6 +387,9 @@ class TextInput : GpuUiElement(), Focusable {
         )
         caret.updateOffset(this.actualValue)
     }
+    
+    private val history: MutableList<Modification> = mutableListOf()
+    private val undoHistory: MutableList<Modification> = mutableListOf()
     
     override fun captureInput(context: UiElementContext) {
         val mouseInside: Boolean = Mouse.isInsideArea(
@@ -355,13 +421,16 @@ class TextInput : GpuUiElement(), Focusable {
                     .updatedSelection(oldOffset, this.selection)
             }
             for (e in context.global.input.remaining()) {
+                val oldCaretPos: Int = caret.offset
+                val oldSelection: IntRange? = this.selection
+                this.edits.clear()
                 when (e) {
                     is MButtonDown -> {
                         if (e.button != MButton.LEFT) { continue }
                         if (Key.LEFT_SHIFT.isPressed) { continue }
                         this.moveCaretToCursor(context)
                         this.selection = null
-                        continue // do not remove event
+                        continue // do not remove event, don't record mod
                     }
                     is CharTyped -> {
                         this.clearSelection()
@@ -399,9 +468,10 @@ class TextInput : GpuUiElement(), Focusable {
                                 val next: Int? = this.actualValue
                                     .getOrNull(caret.offset)
                                 if (next != SPACE) {
-                                    this.actualValue.add(caret.offset, SPACE)
+                                    this.writeText(SPACE)
+                                } else {
+                                    caret.moveRight(this.actualValue)
                                 }
-                                caret.moveRight(this.actualValue)
                             }
                             this.updateDisplayedValue()
                         }
@@ -475,11 +545,34 @@ class TextInput : GpuUiElement(), Focusable {
                             if (!Key.LEFT_CONTROL.isPressed) { continue }
                             this.pasteClipboard()
                         }
+                        Key.Z -> {
+                            if (!Key.LEFT_CONTROL.isPressed) { continue }
+                            if (Key.LEFT_SHIFT.isPressed) {
+                                val mod: Modification = this.undoHistory
+                                    .removeLastOrNull() ?: continue
+                                this.history.add(mod)
+                                this.applyMod(mod)
+                            } else {
+                                val mod: Modification = this.history
+                                    .removeLastOrNull() ?: continue
+                                this.undoHistory.add(mod)
+                                this.undoMod(mod)
+                            }
+                            continue
+                        }
                         else -> continue
                     }
                     else -> continue
                 }
                 context.global.input.remove(e)
+                if (edits.isNotEmpty()) {
+                    this.history.add(Modification(
+                        oldCaretPos, oldSelection,
+                        this.edits.toList(),
+                        caret.offset, this.selection
+                    ))
+                    this.undoHistory.clear()
+                }
             }
             caret.updateBlinkState()
             if (caret.changedBlinkState || caret.posChanged) {
