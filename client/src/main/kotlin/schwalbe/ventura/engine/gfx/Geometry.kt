@@ -7,7 +7,38 @@ import schwalbe.ventura.engine.UsageAfterDisposalException
 import org.lwjgl.opengl.GL33.*
 import java.nio.ByteBuffer
 import java.nio.ShortBuffer
+import java.nio.IntBuffer
 import java.nio.ByteOrder
+
+private fun configureVertexArrayObject(layout: List<Geometry.Attribute>) {
+    val stride: Int = layout.sumOf(Geometry.Attribute::numBytes)
+    var byteOffset = 0L
+    for ((attribI, attrib) in layout.withIndex()) {
+        glEnableVertexAttribArray(attribI)
+        if (attrib.compType.isInt) {
+            glVertexAttribIPointer(
+                attribI, attrib.numComps, attrib.compType.glType, stride,
+                byteOffset
+            )
+        } else {
+            glVertexAttribPointer(
+                attribI, attrib.numComps, attrib.compType.glType, false,
+                stride, byteOffset
+            )
+        }
+        byteOffset += attrib.numBytes
+    }
+}
+
+private fun createBindGeometryBuffers(): Triple<Int, Int, Int> {
+    val vaoId: Int = glGenVertexArrays()
+    glBindVertexArray(vaoId)
+    val vboId: Int = glGenBuffers()
+    glBindBuffer(GL_ARRAY_BUFFER, vboId)
+    val eboId: Int = glGenBuffers()
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId)
+    return Triple(vaoId, vboId, eboId)
+}
 
 class Geometry : Disposable {
     
@@ -29,45 +60,38 @@ class Geometry : Disposable {
     companion object
     
     
+    var indexCount: Int
+        private set
     var vaoId: Int? = null
         private set
     var vboId: Int? = null
         private set
     var eboId: Int? = null
         private set
-    var indexCount: Int
-        private set
-        
+    val indexType: Int
+    
     constructor(layout: List<Attribute>, vbo: ByteBuffer, ebo: ShortBuffer) {
         this.indexCount = ebo.remaining()
-        val vaoId: Int = glGenVertexArrays()
-        this.vaoId = vaoId
-        glBindVertexArray(vaoId)
-        val vboId: Int = glGenBuffers()
-        this.vboId = vboId
-        glBindBuffer(GL_ARRAY_BUFFER, vboId)
+        val (vaoId, vboId, eboId) = createBindGeometryBuffers()
         glBufferData(GL_ARRAY_BUFFER, vbo, BufferWriteFreq.ONCE.glValue)
-        val eboId: Int = glGenBuffers()
-        this.eboId = eboId
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId)
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo, BufferWriteFreq.ONCE.glValue)
-        val stride: Int = layout.sumOf(Attribute::numBytes)
-        var byteOffset = 0L
-        for ((attribI, attrib) in layout.withIndex()) {
-            glEnableVertexAttribArray(attribI)
-            if (attrib.compType.isInt) {
-                glVertexAttribIPointer(
-                    attribI, attrib.numComps, attrib.compType.glType, stride,
-                    byteOffset
-                )
-            } else {
-                glVertexAttribPointer(
-                    attribI, attrib.numComps, attrib.compType.glType, false,
-                    stride, byteOffset
-                )
-            }
-            byteOffset += attrib.numBytes
-        }
+        configureVertexArrayObject(layout)
+        this.vaoId = vaoId
+        this.vboId = vboId
+        this.eboId = eboId
+        this.indexType = GL_UNSIGNED_SHORT
+    }
+    
+    constructor(layout: List<Attribute>, vbo: ByteBuffer, ebo: IntBuffer) {
+        this.indexCount = ebo.remaining()
+        val (vaoId, vboId, eboId) = createBindGeometryBuffers()
+        glBufferData(GL_ARRAY_BUFFER, vbo, BufferWriteFreq.ONCE.glValue)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo, BufferWriteFreq.ONCE.glValue)
+        configureVertexArrayObject(layout)
+        this.vaoId = vaoId
+        this.vboId = vboId
+        this.eboId = eboId
+        this.indexType = GL_UNSIGNED_INT
     }
     
     internal fun bind() {
@@ -88,12 +112,12 @@ class Geometry : Disposable {
         this.bind()
         if (instanceCount > 1) {
             glDrawElementsInstanced(
-                GL_TRIANGLES, this.indexCount, GL_UNSIGNED_SHORT, 0,
+                GL_TRIANGLES, this.indexCount, this.indexType, 0,
                 instanceCount
             )
         } else if (instanceCount == 1) {
             glDrawElements(
-                GL_TRIANGLES, this.indexCount, GL_UNSIGNED_SHORT, 0
+                GL_TRIANGLES, this.indexCount, this.indexType, 0
             )
         }
     }
