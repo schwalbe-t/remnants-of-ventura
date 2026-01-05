@@ -10,11 +10,19 @@ import java.nio.ShortBuffer
 import java.nio.IntBuffer
 import java.nio.ByteOrder
 
+fun Iterable<Geometry.Attribute>.computeStride(): Int
+    = this.sumOf(Geometry.Attribute::numBytes)
+
 private fun configureVertexArrayObject(layout: List<Geometry.Attribute>) {
-    val stride: Int = layout.sumOf(Geometry.Attribute::numBytes)
+    val stride: Int = layout.computeStride()
     var byteOffset = 0L
     for ((attribI, attrib) in layout.withIndex()) {
         glEnableVertexAttribArray(attribI)
+        val compSize: Int = attrib.compType.numBytes
+        check(byteOffset % compSize == 0L) {
+            "Attribute [$attribI] needs a vertex offset that is a multiple of" +
+                " $compSize byte(s), but has an offset of $byteOffset byte(s)"
+        }
         if (attrib.compType.isInt) {
             glVertexAttribIPointer(
                 attribI, attrib.numComps, attrib.compType.glType, stride,

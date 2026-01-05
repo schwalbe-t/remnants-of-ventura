@@ -88,10 +88,25 @@ class Texture(
 }
 
 
+fun Texture.Companion.loadBytes(
+    data: ByteBuffer, filter: Texture.Filter, path: String = "<unknown>"
+): Texture = MemoryStack.stackPush().use { stack ->
+    val w = stack.mallocInt(1)
+    val h = stack.mallocInt(1)
+    val ch = stack.mallocInt(1)
+    stbi_set_flip_vertically_on_load(true)
+    val decoded: ByteBuffer? = stbi_load_from_memory(data, w, h, ch, 4)
+    require(decoded != null) { "Image file from '$path' could not be decoded" }
+    val format = Texture.Format.RGBA8
+    val texture = Texture(w[0], h[0], filter, format, decoded)
+    stbi_image_free(decoded)
+    return texture
+}
+
 fun Texture.Companion.loadImage(
     path: String, filter: Texture.Filter
 ) = Resource<Texture> {
-    val imageBuffer: ByteBuffer?
+    val decoded: ByteBuffer?
     val width: Int
     val height: Int
     MemoryStack.stackPush().use { stack ->
@@ -99,15 +114,15 @@ fun Texture.Companion.loadImage(
         val heightPtr = stack.mallocInt(1)
         val channelsPtr = stack.mallocInt(1)
         stbi_set_flip_vertically_on_load(true)
-        imageBuffer = stbi_load(path, widthPtr, heightPtr, channelsPtr, 4)
+        decoded = stbi_load(path, widthPtr, heightPtr, channelsPtr, 4)
         width = widthPtr.get(0)
         height = heightPtr.get(0)
     }
-    require(imageBuffer != null) { "Image file '$path' could not be read" }
+    require(decoded != null) { "Image file '$path' could not be read" }
     return@Resource {
         val format = Texture.Format.RGBA8
-        val texture = Texture(width, height, filter, format, imageBuffer)
-        stbi_image_free(imageBuffer)
+        val texture = Texture(width, height, filter, format, decoded)
+        stbi_image_free(decoded)
         texture
     }
 }
