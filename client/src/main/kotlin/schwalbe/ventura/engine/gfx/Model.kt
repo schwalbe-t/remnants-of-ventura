@@ -68,9 +68,24 @@ class Model(
         faceCulling: FaceCulling = FaceCulling.DISABLED,
         depthTesting: DepthTesting = DepthTesting.ENABLED
     ) {
-        this.forEachNode {
-            for (mesh in it.meshes) {
-                // TODO!
+        this.forEachNode { node ->
+            for (meshI in node.meshes) {
+                val mesh: Mesh = this.meshes[meshI]
+                if (localTransform != null) {
+                    shader[localTransform] =
+                        if (!mesh.bones.isEmpty()) { Matrix4f() }
+                        else { node.localTransform }
+                }
+                if (texture != null) {
+                    shader[texture] = mesh.texture
+                }
+                if (jointTransforms != null) {
+                    shader[jointTransforms] = mesh.bones.map { Matrix4f() }
+                }
+                mesh.geometry.render(
+                    shader, framebuffer, instanceCount,
+                    faceCulling, depthTesting
+                )
             }
         }
     }
@@ -113,7 +128,7 @@ private fun walkNode(
 ): Model.Node {
     val name: String = node.mName().dataString()
     val localTransform: Matrix4f = toJomlMatrix4(node.mTransformation())
-    parentTransform.mul(localTransform, localTransform)
+    // parentTransform.mul(localTransform, localTransform)
     val meshes: List<Int> = node.mMeshes().collect()
     val children: List<Model.Node> = node.mChildren().map(AINode::create)
         .map { walkNode(it, localTransform, sceneInfo) }
@@ -140,8 +155,6 @@ private fun createRawMeshGeometry(
 ): RawGeometry {
     val stride: Int = sceneInfo.layout.computeStride()
     val numVertices: Int = mesh.mNumVertices()
-    val numFaces: Int = mesh.mNumFaces()
-    val numIndices: Int = numFaces * 3
     val normals: AIVector3D.Buffer? = mesh.mNormals()
     check(normals != null) {
         "Mesh '${mesh.mName().dataString()}' in '${sceneInfo.path}'" +
@@ -158,41 +171,53 @@ private fun createRawMeshGeometry(
         .allocateDirect(numVertices * stride)
         .order(ByteOrder.nativeOrder())
     for (vertexI in 0..<numVertices) {
-        for (prop in sceneInfo.properties) {
-            when (prop) {
-                Model.Property.POSITION -> {
-                    val pos: AIVector3D = mesh.mVertices()[vertexI]
-                    vertexBuffer.putFloat(pos.x())
-                    vertexBuffer.putFloat(pos.y())
-                    vertexBuffer.putFloat(pos.z())
-                }
-                Model.Property.NORMAL -> {
-                    val norm: AIVector3D = normals[vertexI]
-                    vertexBuffer.putFloat(norm.x())
-                    vertexBuffer.putFloat(norm.y())
-                    vertexBuffer.putFloat(norm.z())
-                }
-                Model.Property.UV -> {
-                    val uv: AIVector3D = texCoords[vertexI]
-                    vertexBuffer.putFloat(uv.x())
-                    vertexBuffer.putFloat(uv.y())
-                }
-                Model.Property.BONE_IDS_BYTE -> {
-                    // TODO!
-                    throw NotImplementedError()
-                }
-                Model.Property.BONE_IDS_SHORT -> {
-                    // TODO!
-                    throw NotImplementedError()
-                }
-                Model.Property.BONE_WEIGHTS -> {
-                    // TODO!
-                    throw NotImplementedError()
+        val boneWeights: List<Pair<Int, Float>> = bones
+            .withIndex()
+            .map { (boneI, bone) -> boneI to (bone.weights[vertexI] ?: 0f) }
+            .filter { (boneI, weight) -> weight > 0f }
+            .sortedBy { (boneI, weight) -> weight }
+            .run {
+                this.subList(maxOf(this.size - 4, 0), this.size) +
+                    List(maxOf(4 - this.size, 0)) { Pair(0, 0f) }
+            }
+        for (prop in sceneInfo.properties) { when (prop) {
+            Model.Property.POSITION -> {
+                val pos: AIVector3D = mesh.mVertices()[vertexI]
+                vertexBuffer.putFloat(pos.x())
+                vertexBuffer.putFloat(pos.y())
+                vertexBuffer.putFloat(pos.z())
+            }
+            Model.Property.NORMAL -> {
+                val norm: AIVector3D = normals[vertexI]
+                vertexBuffer.putFloat(norm.x())
+                vertexBuffer.putFloat(norm.y())
+                vertexBuffer.putFloat(norm.z())
+            }
+            Model.Property.UV -> {
+                val uv: AIVector3D = texCoords[vertexI]
+                vertexBuffer.putFloat(uv.x())
+                vertexBuffer.putFloat(uv.y())
+            }
+            Model.Property.BONE_IDS_BYTE -> {
+                for ((boneI, _) in boneWeights) {
+                    vertexBuffer.put(boneI.toByte())
                 }
             }
-        }
+            Model.Property.BONE_IDS_SHORT -> {
+                for ((boneI, _) in boneWeights) {
+                    vertexBuffer.putShort(boneI.toShort())
+                }
+            }
+            Model.Property.BONE_WEIGHTS -> {
+                for ((_, weight) in boneWeights) {
+                    vertexBuffer.putFloat(weight)
+                }
+            }
+        } }
     }
     vertexBuffer.flip()
+    val numFaces: Int = mesh.mNumFaces()
+    val numIndices: Int = numFaces * 3
     val faces: AIFace.Buffer = mesh.mFaces()
     val indexBuffer = ByteBuffer
         .allocateDirect(numIndices * sceneInfo.indexType.numBytes)

@@ -150,13 +150,27 @@ import org.joml.*
 import java.nio.*
 import kotlin.concurrent.thread
 
+object TestModelVert : VertShaderDef<TestModelVert> {
+    override val path = "shaders/test.vert.glsl"
+    
+    val localTransform = mat4("uLocalTransform")
+    val modelTransform = mat4("uModelTransform")
+    val viewProjection = mat4("uViewProjection")
+}
+
+object TestModelFrag : FragShaderDef<TestModelFrag> {
+    override val path = "shaders/test.frag.glsl"
+    
+    val texture = sampler2D("uTexture")
+}
+
 fun main() {
     val resLoader = ResourceLoader()
     thread { resLoader.loadQueuedRawLoop() }
     
     loadUiResources(resLoader)
     
-    val window = Window("Remnants of Ventura", fullscreen = false)
+    val window = Window("Remnants of Ventura", fullscreen = true)
     
     val out = Framebuffer()
     out.attachColor(
@@ -183,10 +197,14 @@ fun main() {
         listOf(
             Model.Property.POSITION,
             Model.Property.NORMAL,
-            Model.Property.UV
+            Model.Property.UV,
+            Model.Property.BONE_IDS_BYTE,
+            Model.Property.BONE_WEIGHTS
         )
     )
-    resLoader.submitAll(testModel)
+    val testModelShader: Resource<Shader<TestModelVert, TestModelFrag>>
+        = Shader.loadGlsl(TestModelVert, TestModelFrag)
+    resLoader.submitAll(testModel, testModelShader)
     
     resLoader.submit(Resource.fromCallback {
         
@@ -242,6 +260,27 @@ fun main() {
         // )
         onFrame = {
             // blitTexture(testImage(), out)
+            val shader: Shader<TestModelVert, TestModelFrag> = testModelShader()
+            shader[TestModelVert.modelTransform] = Matrix4f()
+                .rotateY(
+                    (System.currentTimeMillis() % 100000).toFloat()
+                        / 1000f * 2f * Math.PI.toFloat() / 4f
+                )
+            shader[TestModelVert.viewProjection] = Matrix4f()
+                .setPerspective(
+                    Math.PI.toFloat() / 2f,
+                    out.width.toFloat() / out.height.toFloat(),
+                    0.1f, 100f
+                )
+                .lookAt(
+                    +3.0f,  +3.0f,  +3.0f,
+                     0.0f,  +1.0f,   0.0f,
+                     0.0f,   1.0f,   0.0f
+                )
+            testModel().render(
+                shader, out,
+                TestModelVert.localTransform, TestModelFrag.texture
+            )
         }
     })
     
@@ -251,7 +290,7 @@ fun main() {
         
         out.resize(window.framebuffer.width, window.framebuffer.height)
         
-        out.clearColor(Vector4f(0f, 0f, 0f, 1f))
+        out.clearColor(Vector4f(0.5f, 0.5f, 0.5f, 1f))
         out.clearDepth(1f)
         
         ui.captureInput()
