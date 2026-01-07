@@ -164,6 +164,14 @@ object TestModelFrag : FragShaderDef<TestModelFrag> {
     val texture = sampler2D("uTexture")
 }
 
+object TestModelAnim : Model.Animations<TestModelAnim>() {
+    val floss = anim("floss")
+    val idle = anim("idle")
+    val ride = anim("ride")
+    val swim = anim("swim")
+    val walk = anim("walk")
+}
+
 fun main() {
     val resLoader = ResourceLoader()
     thread { resLoader.loadQueuedRawLoop() }
@@ -192,7 +200,7 @@ fun main() {
     // )
     // resLoader.submitAll(jetbrainsMono, testImage)
     
-    val testModel: Resource<Model> = Model.loadFile(
+    val testModel: Resource<Model<TestModelAnim>> = Model.loadFile(
         "res/test.glb",
         listOf(
             Model.Property.POSITION,
@@ -200,7 +208,8 @@ fun main() {
             Model.Property.UV,
             Model.Property.BONE_IDS_BYTE,
             Model.Property.BONE_WEIGHTS
-        )
+        ),
+        TestModelAnim
     )
     val testModelShader: Resource<Shader<TestModelVert, TestModelFrag>>
         = Shader.loadGlsl(TestModelVert, TestModelFrag)

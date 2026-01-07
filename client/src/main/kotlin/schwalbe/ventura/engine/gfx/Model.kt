@@ -13,7 +13,7 @@ import java.nio.*
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class Model(
+class Model<A : Model.Animations<A>>(
     val rootNode: Node?,
     val nodes: Map<String, Node>,
     val meshes: List<Mesh>
@@ -49,6 +49,18 @@ class Model(
         val meshes: List<Int>,
         val children: List<Node>
     )
+    
+    abstract class Animations<A : Animations<A>> {
+        
+        val byName: MutableMap<String, Animation<A>> = mutableMapOf()
+        
+        fun anim(name: String): Animation<A> {
+            val a = Animation<A>(name)
+            this.byName[name] = a
+            return a
+        }
+        
+    }
     
     companion object
 
@@ -92,6 +104,10 @@ class Model(
 
 }
 
+object StaticAnim : Model.Animations<StaticAnim>()
+typealias StaticModel = Model<StaticAnim>
+
+
 private fun <T> PointerBuffer?.map(create: (Long) -> T): List<T> =
     if (this == null) { listOf() }
     else { (0..<this.capacity()).map { i -> create(this.get(i)) } }
@@ -105,12 +121,18 @@ private fun IntBuffer?.collect(): List<Int> {
     return out
 }
 
-private fun toJomlMatrix4(m: AIMatrix4x4): Matrix4f = Matrix4f(
+private fun toJomlMatrix4(m: AIMatrix4x4) = Matrix4f(
     m.a1(), m.b1(), m.c1(), m.d1(),
     m.a2(), m.b2(), m.c2(), m.d2(),
     m.a3(), m.b3(), m.c3(), m.d3(),
     m.a4(), m.b4(), m.c4(), m.d4()
 )
+
+private fun toJomlVector3(v: AIVector3D)
+    = Vector3f(v.x(), v.y(), v.z())
+    
+private fun toJomlQuaternion(q: AIQuaternion)
+    = Quaternionf(q.x(), q.y(), q.z(), q.w())
 
 private data class SceneInfo(
     val path: String,
@@ -128,7 +150,7 @@ private fun walkNode(
 ): Model.Node {
     val name: String = node.mName().dataString()
     val localTransform: Matrix4f = toJomlMatrix4(node.mTransformation())
-    // parentTransform.mul(localTransform, localTransform)
+    parentTransform.mul(localTransform, localTransform)
     val meshes: List<Int> = node.mMeshes().collect()
     val children: List<Model.Node> = node.mChildren().map(AINode::create)
         .map { walkNode(it, localTransform, sceneInfo) }
@@ -340,18 +362,47 @@ private fun completeRawMesh(mesh: RawMesh, sceneInfo: SceneInfo): Model.Mesh {
     return Model.Mesh(geometry, texture, mesh.bones)
 }
 
+private fun loadAnimation(anim: AIAnimation, dest: Animation<*>) {
+    var ticksPerSecond: Double = anim.mTicksPerSecond()
+    if (ticksPerSecond == 0.0) { ticksPerSecond = 1.0 }
+    val lengthS: Float = (anim.mDuration() / ticksPerSecond).toFloat()
+    val channels: MutableMap<String, Animation.Channel> = mutableMapOf()
+    for (channel in anim.mChannels().map(AINodeAnim::create)) {
+        val nodeName: String = channel.mNodeName().dataString()
+        channel.mPositionKeys()
+        val position = channel.mPositionKeys()?.map {
+            Animation.Frame<Vector3fc>(
+                it.mTime().toFloat(), toJomlVector3(it.mValue())
+            )
+        } ?: listOf()
+        val rotation = channel.mRotationKeys()?.map {
+            Animation.Frame<Quaternionfc>(
+                it.mTime().toFloat(), toJomlQuaternion(it.mValue())
+            )
+        } ?: listOf()
+        val scale = channel.mScalingKeys()?.map {
+            Animation.Frame<Vector3fc>(
+                it.mTime().toFloat(), toJomlVector3(it.mValue())
+            )
+        } ?: listOf()
+        channels[nodeName] = Animation.Channel(position, rotation, scale)
+    }
+    dest.load(lengthS, channels)
+}
+
 private const val ASSIMP_FLAGS: Int =
     aiProcess_Triangulate or 
     aiProcess_JoinIdenticalVertices or
     aiProcess_LimitBoneWeights or
     aiProcess_ValidateDataStructure or
     aiProcess_GenNormals
-    
-fun Model.Companion.loadFile(
+
+fun <A : Model.Animations<A>> Model.Companion.loadFile(
     path: String, properties: List<Model.Property>,
+    animations: A,
     textureFilter: Texture.Filter = Texture.Filter.NEAREST,
     indexType: Model.IndexType = Model.IndexType.SHORT
-): Resource<Model> = Resource {
+): Resource<Model<A>> = Resource {
     val scene: AIScene? = aiImportFile(path, ASSIMP_FLAGS)
     check(scene != null) {
         val error: String = aiGetErrorString() ?: "<unknown error>"
@@ -372,6 +423,11 @@ fun Model.Companion.loadFile(
         else { walkNode(rawRootNode, Matrix4f(), sceneInfo) }
     val rawMeshes: List<RawMesh> = scene.mMeshes()
         .map { createRawMesh(AIMesh.create(it), sceneInfo) }
+    for (animation in scene.mAnimations().map(AIAnimation::create)) {
+        val name: String = animation.mName().dataString()
+        val dest: Animation<A> = animations.byName[name] ?: continue
+        loadAnimation(animation, dest)
+    }
     return@Resource {
         val meshes: List<Model.Mesh> = rawMeshes
             .map { completeRawMesh(it, sceneInfo) }
@@ -379,3 +435,10 @@ fun Model.Companion.loadFile(
         Model(rootNode, sceneInfo.nodesByName, meshes)
     }
 }
+
+fun Model.Companion.loadFile(
+    path: String, properties: List<Model.Property>,
+    textureFilter: Texture.Filter = Texture.Filter.NEAREST,
+    indexType: Model.IndexType = Model.IndexType.SHORT
+): Resource<StaticModel>
+    = Model.loadFile(path, properties, StaticAnim, textureFilter, indexType)
