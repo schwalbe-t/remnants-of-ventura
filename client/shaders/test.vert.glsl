@@ -14,11 +14,12 @@ out vec3 fNormal;
 out vec2 fTexCoords;
 
 void main(void) {
-    mat4 skinTransform
-        = (uJointTransforms[vBoneIds[0]] * vBoneWeights[0])
-        + (uJointTransforms[vBoneIds[1]] * vBoneWeights[1])
-        + (uJointTransforms[vBoneIds[2]] * vBoneWeights[2])
-        + (uJointTransforms[vBoneIds[3]] * vBoneWeights[3]);
+    // mat4 skinTransform
+    //     = (uJointTransforms[vBoneIds[0]] * vBoneWeights[0])
+    //     + (uJointTransforms[vBoneIds[1]] * vBoneWeights[1])
+    //     + (uJointTransforms[vBoneIds[2]] * vBoneWeights[2])
+    //     + (uJointTransforms[vBoneIds[3]] * vBoneWeights[3]);
+    mat4 skinTransform = mat4(1.0);
     gl_Position
         = uViewProjection
         * uModelTransform

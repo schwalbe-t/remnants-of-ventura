@@ -156,6 +156,7 @@ object TestModelVert : VertShaderDef<TestModelVert> {
     val localTransform = mat4("uLocalTransform")
     val modelTransform = mat4("uModelTransform")
     val viewProjection = mat4("uViewProjection")
+    val jointTransforms = mat4Arr("uJointTransforms", 64)
 }
 
 object TestModelFrag : FragShaderDef<TestModelFrag> {
@@ -288,7 +289,8 @@ fun main() {
                 )
             testModel().render(
                 shader, out,
-                TestModelVert.localTransform, TestModelFrag.texture
+                TestModelVert.localTransform, TestModelFrag.texture,
+                TestModelVert.jointTransforms
             )
         }
     })

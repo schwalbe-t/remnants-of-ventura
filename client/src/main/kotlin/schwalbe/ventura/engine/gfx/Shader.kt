@@ -69,10 +69,16 @@ class ShaderSlotManager<T>(val firstSlot: Int) {
 
 }
 
-class Uniform<S : Uniforms<S>, T>(
+open class Uniform<S : Uniforms<S>, T>(
     val name: String,
     val setter: (Shader<*, *>, T) -> Unit
 )
+
+class ArrayUniform<S : Uniforms<S>, T>(
+    name: String,
+    val maxSize: Int,
+    setter: (Shader<*, *>, Iterable<T>) -> Unit
+) : Uniform<S, Iterable<T>>(name, setter)
 
 interface Uniforms<S : Uniforms<S>> {
     
@@ -82,6 +88,18 @@ interface Uniforms<S : Uniforms<S>> {
         val loc: Int = shader.getUniformLocation(name, ::glGetUniformLocation)
             ?: return@Uniform
         setter(loc, value)
+    }
+    
+    private fun <T> arrayUniform(
+        name: String, maxCount: Int, setter: (Int, Iterable<T>) -> Unit
+    ) = ArrayUniform<S, T>(name, maxCount) { shader, values ->
+        require(values.count() <= maxCount) {
+            "Array uniform '$name' has capacity $maxCount, but was assigned" +
+                " ${values.count()} value(s)"
+        }
+        val loc: Int = shader.getUniformLocation(name, ::glGetUniformLocation)
+            ?: return@ArrayUniform
+        setter(loc, values)
     }
     
     /**
@@ -95,11 +113,11 @@ interface Uniforms<S : Uniforms<S>> {
      * [useBuffer] function.
      */
     private fun <B, V> bufferUniform(
-        name: String, valueSize: Int,
+        name: String, maxCount: Int, valueSize: Int,
         createBuffer: (MemoryStack, Int) -> B,
         fillBuffer: (V, Int, B) -> Unit,
         useBuffer: (Int, B) -> Unit
-    ) = standardUniform<Iterable<V>>(name) { loc, values ->
+    ) = arrayUniform<V>(name, maxCount) { loc, values ->
         MemoryStack.stackPush().use { stack ->
             val b: B = createBuffer(stack, values.count() * valueSize)
             values.withIndex()
@@ -118,20 +136,20 @@ interface Uniforms<S : Uniforms<S>> {
     fun vec4(name: String) = this.standardUniform<Vector4fc>(name) { loc, v ->
         glUniform4f(loc, v.x(), v.y(), v.z(), v.w())
     }
-    fun floatArr(name: String) = this.bufferUniform<FloatBuffer, Float>(
-        name, valueSize = 1, MemoryStack::mallocFloat,
+    fun floatArr(name: String, maxCount: Int) = this.bufferUniform<FloatBuffer, Float>(
+        name, maxCount, valueSize = 1, MemoryStack::mallocFloat,
         fillBuffer = { v, i, b -> b.put(i, v) }, ::glUniform1fv
     )
-    fun vec2Arr(name: String) = this.bufferUniform<FloatBuffer, Vector2fc>(
-        name, valueSize = 2, MemoryStack::mallocFloat,
+    fun vec2Arr(name: String, maxCount: Int) = this.bufferUniform<FloatBuffer, Vector2fc>(
+        name, maxCount, valueSize = 2, MemoryStack::mallocFloat,
         fillBuffer = Vector2fc::get, ::glUniform2fv
     )
-    fun vec3Arr(name: String) = this.bufferUniform<FloatBuffer, Vector3fc>(
-        name, valueSize = 3, MemoryStack::mallocFloat,
+    fun vec3Arr(name: String, maxCount: Int) = this.bufferUniform<FloatBuffer, Vector3fc>(
+        name, maxCount, valueSize = 3, MemoryStack::mallocFloat,
         fillBuffer = Vector3fc::get, ::glUniform3fv
     )
-    fun vec4Arr(name: String) = this.bufferUniform<FloatBuffer, Vector4fc>(
-        name, valueSize = 4, MemoryStack::mallocFloat,
+    fun vec4Arr(name: String, maxCount: Int) = this.bufferUniform<FloatBuffer, Vector4fc>(
+        name, maxCount, valueSize = 4, MemoryStack::mallocFloat,
         fillBuffer = Vector4fc::get, ::glUniform4fv
     )
     
@@ -145,34 +163,34 @@ interface Uniforms<S : Uniforms<S>> {
     fun ivec4(name: String) = this.standardUniform<Vector4ic>(name) { loc, v ->
         glUniform4i(loc, v.x(), v.y(), v.z(), v.w())
     }
-    fun intArr(name: String) = this.bufferUniform<IntBuffer, Int>(
-        name, valueSize = 1, MemoryStack::mallocInt,
+    fun intArr(name: String, maxCount: Int) = this.bufferUniform<IntBuffer, Int>(
+        name, maxCount, valueSize = 1, MemoryStack::mallocInt,
         fillBuffer = { v, i, b -> b.put(i, v) }, ::glUniform1iv
     )
-    fun ivec2Arr(name: String) = this.bufferUniform<IntBuffer, Vector2ic>(
-        name, valueSize = 2, MemoryStack::mallocInt,
+    fun ivec2Arr(name: String, maxCount: Int) = this.bufferUniform<IntBuffer, Vector2ic>(
+        name, maxCount, valueSize = 2, MemoryStack::mallocInt,
         fillBuffer = Vector2ic::get, ::glUniform2iv
     )
-    fun ivec3Arr(name: String) = this.bufferUniform<IntBuffer, Vector3ic>(
-        name, valueSize = 3, MemoryStack::mallocInt,
+    fun ivec3Arr(name: String, maxCount: Int) = this.bufferUniform<IntBuffer, Vector3ic>(
+        name, maxCount, valueSize = 3, MemoryStack::mallocInt,
         fillBuffer = Vector3ic::get, ::glUniform3iv
     )
-    fun ivec4Arr(name: String) = this.bufferUniform<IntBuffer, Vector4ic>(
-        name, valueSize = 4, MemoryStack::mallocInt,
+    fun ivec4Arr(name: String, maxCount: Int) = this.bufferUniform<IntBuffer, Vector4ic>(
+        name, maxCount, valueSize = 4, MemoryStack::mallocInt,
         fillBuffer = Vector4ic::get, ::glUniform4iv
     )
     
     fun bool(name: String) = this.standardUniform<Boolean>(name) { loc, v ->
         glUniform1i(loc, if (v) { 1 } else { 0 })
     }
-    fun boolArr(name: String) = this.bufferUniform<IntBuffer, Boolean>(
-        name, valueSize = 1, MemoryStack::mallocInt,
+    fun boolArr(name: String, maxCount: Int) = this.bufferUniform<IntBuffer, Boolean>(
+        name, maxCount, valueSize = 1, MemoryStack::mallocInt,
         fillBuffer = { v, i, b -> b.put(i, if (v) { 1 } else { 0 }) },
         ::glUniform1iv
     )
     
     fun mat3(name: String): Uniform<S, Matrix3fc> {
-        val underlying = mat3Arr(name)
+        val underlying = mat3Arr(name, 1)
         val value: MutableList<Matrix3fc> = mutableListOf(Matrix3f())
         return Uniform<S, Matrix3fc>(name) { shader, v ->
             value[0] = v
@@ -180,20 +198,20 @@ interface Uniforms<S : Uniforms<S>> {
         }
     }
     fun mat4(name: String): Uniform<S, Matrix4fc> {
-        val underlying = mat4Arr(name)
+        val underlying = mat4Arr(name, 1)
         val value: MutableList<Matrix4fc> = mutableListOf(Matrix4f())
         return Uniform<S, Matrix4fc>(name) { shader, v ->
             value[0] = v
             underlying.setter(shader, value)
         }
     }
-    fun mat3Arr(name: String) = this.bufferUniform<FloatBuffer, Matrix3fc>(
-        name, valueSize = 3 * 3, MemoryStack::mallocFloat,
+    fun mat3Arr(name: String, maxCount: Int) = this.bufferUniform<FloatBuffer, Matrix3fc>(
+        name, maxCount, valueSize = 3 * 3, MemoryStack::mallocFloat,
         fillBuffer = Matrix3fc::get,
         useBuffer = { loc, b -> glUniformMatrix3fv(loc, false, b) }
     )
-    fun mat4Arr(name: String) = this.bufferUniform<FloatBuffer, Matrix4fc>(
-        name, valueSize = 4 * 4, MemoryStack::mallocFloat,
+    fun mat4Arr(name: String, maxCount: Int) = this.bufferUniform<FloatBuffer, Matrix4fc>(
+        name, maxCount, valueSize = 4 * 4, MemoryStack::mallocFloat,
         fillBuffer = Matrix4fc::get,
         useBuffer = { loc, b -> glUniformMatrix4fv(loc, false, b) }
     )
