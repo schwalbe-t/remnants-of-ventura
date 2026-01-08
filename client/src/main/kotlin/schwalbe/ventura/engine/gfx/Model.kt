@@ -202,6 +202,13 @@ private fun createRawMeshGeometry(
                 this.subList(maxOf(this.size - 4, 0), this.size) +
                     List(maxOf(4 - this.size, 0)) { Pair(0, 0f) }
             }
+        val weightSum: Float = boneWeights
+            .sumOf { (_, weight) -> weight.toDouble() }.toFloat()
+        check(weightSum > 0.0) {
+            "Sum of weights for vertex [$vertexI] in mesh" +
+                " '${mesh.mName().dataString()}' in model '${sceneInfo.path}'" +
+                " is not greater than 0"
+        }
         for (prop in sceneInfo.properties) { when (prop) {
             Model.Property.POSITION -> {
                 val pos: AIVector3D = mesh.mVertices()[vertexI]
@@ -232,7 +239,7 @@ private fun createRawMeshGeometry(
             }
             Model.Property.BONE_WEIGHTS -> {
                 for ((_, weight) in boneWeights) {
-                    vertexBuffer.putFloat(weight)
+                    vertexBuffer.putFloat(weight / weightSum)
                 }
             }
         } }

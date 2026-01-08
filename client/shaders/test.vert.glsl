@@ -14,22 +14,26 @@ out vec3 fNormal;
 out vec2 fTexCoords;
 
 void main(void) {
-    // mat4 skinTransform
-    //     = (uJointTransforms[vBoneIds[0]] * vBoneWeights[0])
-    //     + (uJointTransforms[vBoneIds[1]] * vBoneWeights[1])
-    //     + (uJointTransforms[vBoneIds[2]] * vBoneWeights[2])
-    //     + (uJointTransforms[vBoneIds[3]] * vBoneWeights[3]);
-    mat4 skinTransform = mat4(1.0);
+    vec4 posHomo = vec4(vPosition, 1.0);
+    // vec4 posSkinned
+    //     = (uJointTransforms[vBoneIds[0]] * posHomo) * vBoneWeights[0]
+    //     + (uJointTransforms[vBoneIds[1]] * posHomo) * vBoneWeights[1]
+    //     + (uJointTransforms[vBoneIds[2]] * posHomo) * vBoneWeights[2]
+    //     + (uJointTransforms[vBoneIds[3]] * posHomo) * vBoneWeights[3];
+    vec4 posSkinned = uJointTransforms[0] * posHomo;
     gl_Position
         = uViewProjection
         * uModelTransform
         * uLocalTransform
-        * skinTransform
-        * vec4(vPosition, 1.0);
+        * posSkinned;
     fTexCoords = vTexCoords;
+    vec3 normalSkinned
+        = (mat3(uJointTransforms[vBoneIds[0]]) * vNormal) * vBoneWeights[0]
+        + (mat3(uJointTransforms[vBoneIds[1]]) * vNormal) * vBoneWeights[1]
+        + (mat3(uJointTransforms[vBoneIds[2]]) * vNormal) * vBoneWeights[2]
+        + (mat3(uJointTransforms[vBoneIds[3]]) * vNormal) * vBoneWeights[3];
     fNormal
         = mat3(uModelTransform)
         * mat3(uLocalTransform)
-        * mat3(skinTransform)
-        * vNormal;
+        * normalSkinned;
 }
