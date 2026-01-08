@@ -76,7 +76,7 @@ open class Uniform<S : Uniforms<S>, T>(
 
 class ArrayUniform<S : Uniforms<S>, T>(
     name: String,
-    val maxSize: Int,
+    val maxCount: Int,
     setter: (Shader<*, *>, Iterable<T>) -> Unit
 ) : Uniform<S, Iterable<T>>(name, setter)
 
