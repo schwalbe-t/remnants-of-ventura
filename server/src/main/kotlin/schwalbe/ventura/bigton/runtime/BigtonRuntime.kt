@@ -8,7 +8,8 @@ class BigtonRuntime(
     modules: List<BigtonRuntime.Module>,
     memorySize: Int,
     val tickInstructionLimit: Long,
-    val maxCallDepth: Int
+    val maxCallDepth: Int,
+    val maxTupleSize: Int
 ) {
 
     data class Function(
@@ -122,6 +123,20 @@ class BigtonRuntime(
         = BigtonSource(this.currentLine, this.currentFile)
 
     fun getStackTrace(): List<Call> = this.calls.toList()
+    fun logStackTrace(error: BigtonException? = null) {
+        if (!this.calls.isEmpty()) {
+            this.logs.add("Stack trace (most recent call last):")
+        }
+        for (call in this.calls) {
+            this.logs.add(" - '${call.name}' called from line ${call.fromLine} in '${call.fromFile}'")
+        }
+        if (error != null) {
+            val src: BigtonSource = error.source
+            val err: BigtonErrorType = error.error
+            this.logs.add("Error on line ${src.line} in file '${src.file}':")
+            this.logs.add("${err.message} (${err.id})")
+        }
+    }
     fun getLogString(): String = this.logs.joinToString("\n")
 
     private fun executeBinaryNumOp(
@@ -177,6 +192,12 @@ class BigtonRuntime(
         this.resetScope()
         this.scopes.removeLast()
     }
+    
+    private fun popCall() {
+        val call: Call = this.calls.removeLast()
+        this.currentLine = call.fromLine
+        this.currentFile = call.fromFile
+    }
 
     private inline fun<reified T> castInstrArg(instr: BigtonInstr): T
         = instr.arg as? T
@@ -203,7 +224,7 @@ class BigtonRuntime(
                     }
                     ScopeType.FUNCTION -> {
                         this.popScope()
-                        this.calls.removeLast()
+                        this.popCall()
                         this.pushOperand(BigtonNull)
                     }
                     ScopeType.LOOP -> {
@@ -237,11 +258,21 @@ class BigtonRuntime(
                 }
                 BigtonInstrType.LOAD_TUPLE -> {
                     val n = this.castInstrArg<Int>(instr)
-                    val tuple: List<BigtonValue> = (0..<n)
+                    val values: List<BigtonValue> = (0..<n)
                         .map { _ -> this.popOperand() }
                         .toList()
                         .reversed()
-                    this.pushOperand(BigtonTuple(tuple))
+                    val flatLen: Int = values.sumOf { when (it) {
+                        is BigtonTuple -> it.flatLen
+                        else -> 1
+                    } }
+                    if (flatLen > this.maxTupleSize) {
+                        throw BigtonException(
+                            BigtonErrorType.TUPLE_TOO_BIG,
+                            this.getCurrentSource()
+                        )
+                    }
+                    this.pushOperand(BigtonTuple(values, flatLen))
                 }
                 BigtonInstrType.LOAD_TUPLE_MEMBER -> {
                     val i = this.castInstrArg<Int>(instr)
@@ -494,7 +525,7 @@ class BigtonRuntime(
                         }
                     }
                     if (this.calls.size >= 1) {
-                        this.calls.removeLast()
+                        this.popCall()
                     }
                 }
             }

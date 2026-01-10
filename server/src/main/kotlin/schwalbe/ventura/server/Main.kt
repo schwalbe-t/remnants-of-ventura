@@ -102,43 +102,23 @@ import schwalbe.ventura.bigton.runtime.*
 fun main() {
     try {
 
-        val arrayUtilsSrc: String = """
-
-fun createArray(location, length) {
-    @location = length
-    return location
-}
-
-fun fillArray(array, value) {
-    var i = 1
-    while i <= @array {
-        @(array + i) = value
-        i = i + 1
-    }
-}
-
-fun sumOfArray(array) {
-    var s = 0
-    var i = 1
-    while i <= @array {
-        s = s + @(array + i)
-        i = i + 1
-    }
-    return s
-}
+        val utilsSrc = """
         
+        fun range(i, max) {
+            if i >= max { return null }
+            return (i, range(i + 1, max))
+        }
+
         """
-        val mainSrc: String = """
-
-var test = createArray(0, 10)
-fillArray(test, 3)
-@(test+1) = 6
-say(sumOfArray(test))
-
+        val mainSrc = """
+        
+        print(range(0, 4))
+        print(range(0, 8))
+        
         """
 
         val files = listOf(
-            BigtonSourceFile("array_utils", arrayUtilsSrc),
+            BigtonSourceFile("utils", utilsSrc),
             BigtonSourceFile("main", mainSrc)
         )
         val features = setOf(
@@ -150,13 +130,14 @@ say(sumOfArray(test))
         )
         val program: BigtonProgram = compileSources(files, features, modules)
 
-        println(program.displayInstr())
+        // println(program.displayInstr())
 
         val runtime = BigtonRuntime(
             program, modules,
             memorySize = 100,
             tickInstructionLimit = Long.MAX_VALUE,
-            maxCallDepth = 100
+            maxCallDepth = 100,
+            maxTupleSize = 8
         )
         try {
             val startTime: Long = System.currentTimeMillis()
@@ -164,11 +145,7 @@ say(sumOfArray(test))
             val endTime: Long = System.currentTimeMillis()
             println("Execution time: ${endTime - startTime}ms")
         } catch (e: BigtonException) {
-            println(e.message)
-            println("Stack trace (most recent call last):")
-            for (call in runtime.getStackTrace()) {
-                println("${call.name} called from '${call.fromFile}' line ${call.fromLine}")
-            }
+            runtime.logStackTrace(e)
         }
         println(runtime.getLogString())
 

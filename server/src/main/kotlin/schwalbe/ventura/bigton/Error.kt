@@ -52,7 +52,8 @@ enum class BigtonErrorType(val id: String, val message: String) {
     OPERAND_NOT_TUPLE("RT010", "The operand of this operation should be (but isn't) a tuple"),
     OPERAND_NOT_OBJECT("RT011", "The operand of this operation should be (but isn't) an object"),
     MAXIMUM_CALL_DEPTH("RT012", "Number of nested calls exceeded the maximum call depth of this processor"),
-
+    TUPLE_TOO_BIG("RT013", "Number of values contained by a created tuple exceeded the maximum allowed by the processor"),
+    
     // [RT-INTERNAL___] - Internal Runtime Error
     INVALID_INSTR_ARG("RT-INTERNAL001", "Instruction argument is invalid"),
     MISSING_GLOBAL("RT-INTERNAL002", "Global variable does not exist at runtime"),
@@ -62,7 +63,7 @@ enum class BigtonErrorType(val id: String, val message: String) {
 
 class BigtonException(val error: BigtonErrorType, val source: BigtonSource)
     : Exception(
-        "[${error.id}] ${error.message} (line ${source.line + 1}"
+        "[${error.id}] ${error.message} (line ${source.line}"
             + " in file '${source.file}')"
     )
 

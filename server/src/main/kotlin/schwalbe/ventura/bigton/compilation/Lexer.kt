@@ -73,6 +73,7 @@ fun tokenize(file: String, source: String): List<BigtonToken> {
                 "not"      -> addToken(BigtonTokenType.KEYWORD_NOT,    content)
                 "if"       -> addToken(BigtonTokenType.KEYWORD_IF,     content)
                 "else"     -> addToken(BigtonTokenType.KEYWORD_ELSE,   content)
+                "null"     -> addToken(BigtonTokenType.NULL_LITERAL,   content)
                 else       -> addToken(BigtonTokenType.IDENTIFIER,     content)
             }
             continue

@@ -27,12 +27,12 @@ private data class ProgramSymbols(
 )
 
 private class SourceTracker(
-    var line: Int = 0,
+    var line: Int = -1,
     var file: String = "<unknown>"
 )
 
 private fun SourceTracker.reset() {
-    this.line = 0
+    this.line = -1
     this.file = "<unknown>"
 }
 
@@ -41,7 +41,7 @@ private fun SourceTracker.setLine(
 ) {
     if (newLine == this.line) { return }
     this.line = newLine
-    instrs.add(BigtonInstr(BigtonInstrType.SOURCE_LINE, newLine))
+    instrs.add(BigtonInstr(BigtonInstrType.SOURCE_LINE, newLine + 1))
 }
 
 private fun SourceTracker.setFile(
