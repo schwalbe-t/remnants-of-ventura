@@ -120,8 +120,9 @@ interface Uniforms<S : Uniforms<S>> {
     ) = arrayUniform<V>(name, maxCount) { loc, values ->
         MemoryStack.stackPush().use { stack ->
             val b: B = createBuffer(stack, values.count() * valueSize)
-            values.withIndex()
-                .forEach { (i, v) -> fillBuffer(v, i * 4, b) }
+            for ((i, v) in values.withIndex()) {
+                fillBuffer(v, i * valueSize, b)
+            }
             useBuffer(loc, b)
         }
     }

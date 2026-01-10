@@ -13,10 +13,11 @@ import java.nio.*
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class Model<A : Model.Animations<A>>(
+class Model<A : Animations<A>>(
     val rootNode: Node?,
     val nodes: Map<String, Node>,
-    val meshes: List<Mesh>
+    val meshes: List<Mesh>,
+    val animations: Map<String, Animation<A>>
 ) {
     
     enum class IndexType(val numBytes: Int) {
@@ -39,28 +40,18 @@ class Model<A : Model.Animations<A>>(
     )
     
     data class Mesh(
+        val name: String,
         val geometry: Geometry,
         val texture: Texture,
         val bones: List<Bone>
     )
     
     data class Node(
+        val name: String,
         val localTransform: Matrix4fc,
         val meshes: List<Int>,
         val children: List<Node>
     )
-    
-    abstract class Animations<A : Animations<A>> {
-        
-        val byName: MutableMap<String, Animation<A>> = mutableMapOf()
-        
-        fun anim(name: String): Animation<A> {
-            val a = Animation<A>(name)
-            this.byName[name] = a
-            return a
-        }
-        
-    }
     
     companion object
 
@@ -75,14 +66,21 @@ class Model<A : Model.Animations<A>>(
         shader: Shader<V, F>, framebuffer: ConstFramebuffer,
         localTransform: Uniform<V, Matrix4fc>? = null,
         texture: Uniform<F, Texture>? = null,
-        jointTransforms: Uniform<V, Iterable<Matrix4fc>>? = null,
+        jointTransforms: ArrayUniform<V, Matrix4fc>? = null,
+        animState: AnimState<A>? = null,
         instanceCount: Int = 1,
         faceCulling: FaceCulling = FaceCulling.DISABLED,
-        depthTesting: DepthTesting = DepthTesting.ENABLED
+        depthTesting: DepthTesting = DepthTesting.ENABLED,
+        renderedMeshes: Collection<String>? = null
     ) {
+        val nodeTransforms: Map<String, Matrix4fc>
+            = animState?.computeJointTransforms(this) ?: mapOf()
         this.forEachNode { node ->
             for (meshI in node.meshes) {
                 val mesh: Mesh = this.meshes[meshI]
+                if (renderedMeshes != null && mesh.name !in renderedMeshes) {
+                    continue
+                }
                 if (localTransform != null) {
                     shader[localTransform] =
                         if (!mesh.bones.isEmpty()) { Matrix4f() }
@@ -92,7 +90,11 @@ class Model<A : Model.Animations<A>>(
                     shader[texture] = mesh.texture
                 }
                 if (jointTransforms != null) {
-                    shader[jointTransforms] = mesh.bones.map { Matrix4f() }
+                    shader[jointTransforms] = mesh.bones.map { bone ->
+                        val n: Matrix4fc = nodeTransforms[bone.name]
+                            ?: return@map Matrix4f()
+                        return@map n.mul(bone.inverseBind, Matrix4f())
+                    }
                 }
                 mesh.geometry.render(
                     shader, framebuffer, instanceCount,
@@ -101,10 +103,12 @@ class Model<A : Model.Animations<A>>(
             }
         }
     }
+    
+    
 
 }
 
-object StaticAnim : Model.Animations<StaticAnim>()
+object StaticAnim : Animations<StaticAnim>
 typealias StaticModel = Model<StaticAnim>
 
 
@@ -154,7 +158,7 @@ private fun walkNode(
     val meshes: List<Int> = node.mMeshes().collect()
     val children: List<Model.Node> = node.mChildren().map(AINode::create)
         .map { walkNode(it, localTransform, sceneInfo) }
-    val node = Model.Node(localTransform, meshes, children)
+    val node = Model.Node(name, localTransform, meshes, children)
     check(sceneInfo.nodesByName.put(name, node) == null) {
         "Duplicate node name '$name' in '${sceneInfo.path}'"
     }
@@ -193,15 +197,13 @@ private fun createRawMeshGeometry(
         .allocateDirect(numVertices * stride)
         .order(ByteOrder.nativeOrder())
     for (vertexI in 0..<numVertices) {
-        val boneWeights: List<Pair<Int, Float>> = bones
+        val boneWeights: List<Pair<Int, Float>> = bones.asSequence()
             .withIndex()
             .map { (boneI, bone) -> boneI to (bone.weights[vertexI] ?: 0f) }
             .filter { (boneI, weight) -> weight > 0f }
-            .sortedBy { (boneI, weight) -> weight }
-            .run {
-                this.subList(maxOf(this.size - 4, 0), this.size) +
-                    List(maxOf(4 - this.size, 0)) { Pair(0, 0f) }
-            }
+            .sortedByDescending { (boneI, weight) -> weight }
+            .plus(List(4) { 0 to 0f })
+            .take(4).toList()
         val weightSum: Float = boneWeights
             .sumOf { (_, weight) -> weight.toDouble() }.toFloat()
         check(weightSum > 0.0) {
@@ -334,23 +336,25 @@ private fun loadMeshTexture(mesh: AIMesh, sceneInfo: SceneInfo): ByteBuffer {
 }
 
 private data class RawMesh(
+    val name: String,
     val geometry: RawGeometry,
     val texture: ByteBuffer,
     val bones: List<Model.Bone>
 )
 
 private fun createRawMesh(mesh: AIMesh, sceneInfo: SceneInfo): RawMesh {
+    val name: String = mesh.mName().dataString()
     val rawBones: List<AIBone> = mesh.mBones().map(AIBone::create)
     val bones: List<BoneInfo> = rawBones.map {
-        val name: String = it.mName().dataString()
+        val boneName: String = it.mName().dataString()
         val inverseBind: Matrix4fc = toJomlMatrix4(it.mOffsetMatrix())
         val weights: Map<Int, Float> = it.mWeights()
             .associateBy(AIVertexWeight::mVertexId, AIVertexWeight::mWeight)
-        BoneInfo(Model.Bone(name, inverseBind), weights)
+        BoneInfo(Model.Bone(boneName, inverseBind), weights)
     }
     val geometry: RawGeometry = createRawMeshGeometry(mesh, bones, sceneInfo)
     val texture: ByteBuffer = loadMeshTexture(mesh, sceneInfo)
-    return RawMesh(geometry, texture, bones.map(BoneInfo::bone))
+    return RawMesh(name, geometry, texture, bones.map(BoneInfo::bone))
 }
 
 private fun completeRawMesh(mesh: RawMesh, sceneInfo: SceneInfo): Model.Mesh {
@@ -366,35 +370,42 @@ private fun completeRawMesh(mesh: RawMesh, sceneInfo: SceneInfo): Model.Mesh {
     }
     val texture = Texture
         .loadBytes(mesh.texture, sceneInfo.textureFilter, sceneInfo.path)
-    return Model.Mesh(geometry, texture, mesh.bones)
+    return Model.Mesh(mesh.name, geometry, texture, mesh.bones)
 }
 
-private fun loadAnimation(anim: AIAnimation, dest: Animation<*>) {
+private fun <A : Animations<A>> loadAnimation(
+    anim: AIAnimation
+): Animation<A> {
+    val name: String = anim.mName().dataString()
     var ticksPerSecond: Double = anim.mTicksPerSecond()
     if (ticksPerSecond == 0.0) { ticksPerSecond = 1.0 }
+    val secondsPerTick: Double = 1.0 / ticksPerSecond
     val lengthS: Float = (anim.mDuration() / ticksPerSecond).toFloat()
     val channels: MutableMap<String, Animation.Channel> = mutableMapOf()
     for (channel in anim.mChannels().map(AINodeAnim::create)) {
         val nodeName: String = channel.mNodeName().dataString()
         channel.mPositionKeys()
         val position = channel.mPositionKeys()?.map {
-            Animation.Frame<Vector3fc>(
-                it.mTime().toFloat(), toJomlVector3(it.mValue())
+            Animation.KeyFrame<Vector3fc>(
+                (it.mTime() * secondsPerTick).toFloat(),
+                toJomlVector3(it.mValue())
             )
         } ?: listOf()
         val rotation = channel.mRotationKeys()?.map {
-            Animation.Frame<Quaternionfc>(
-                it.mTime().toFloat(), toJomlQuaternion(it.mValue())
+            Animation.KeyFrame<Quaternionfc>(
+                (it.mTime() * secondsPerTick).toFloat(),
+                toJomlQuaternion(it.mValue())
             )
         } ?: listOf()
         val scale = channel.mScalingKeys()?.map {
-            Animation.Frame<Vector3fc>(
-                it.mTime().toFloat(), toJomlVector3(it.mValue())
+            Animation.KeyFrame<Vector3fc>(
+                (it.mTime() * secondsPerTick).toFloat(),
+                toJomlVector3(it.mValue())
             )
         } ?: listOf()
         channels[nodeName] = Animation.Channel(position, rotation, scale)
     }
-    dest.load(lengthS, channels)
+    return Animation(name, lengthS, channels)
 }
 
 private const val ASSIMP_FLAGS: Int =
@@ -404,7 +415,7 @@ private const val ASSIMP_FLAGS: Int =
     aiProcess_ValidateDataStructure or
     aiProcess_GenNormals
 
-fun <A : Model.Animations<A>> Model.Companion.loadFile(
+fun <A : Animations<A>> Model.Companion.loadFile(
     path: String, properties: List<Model.Property>,
     animations: A,
     textureFilter: Texture.Filter = Texture.Filter.NEAREST,
@@ -430,16 +441,16 @@ fun <A : Model.Animations<A>> Model.Companion.loadFile(
         else { walkNode(rawRootNode, Matrix4f(), sceneInfo) }
     val rawMeshes: List<RawMesh> = scene.mMeshes()
         .map { createRawMesh(AIMesh.create(it), sceneInfo) }
+    val animations: MutableMap<String, Animation<A>> = mutableMapOf()
     for (animation in scene.mAnimations().map(AIAnimation::create)) {
-        val name: String = animation.mName().dataString()
-        val dest: Animation<A> = animations.byName[name] ?: continue
-        loadAnimation(animation, dest)
+        val loaded: Animation<A> = loadAnimation(animation)
+        animations[loaded.name] = loaded
     }
     return@Resource {
         val meshes: List<Model.Mesh> = rawMeshes
             .map { completeRawMesh(it, sceneInfo) }
         aiReleaseImport(scene)
-        Model(rootNode, sceneInfo.nodesByName, meshes)
+        Model(rootNode, sceneInfo.nodesByName, meshes, animations)
     }
 }
 

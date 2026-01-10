@@ -2,8 +2,8 @@
 layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec3 vNormal;
 layout(location = 2) in vec2 vTexCoords;
-layout(location = 4) in uvec4 vBoneIds;
-layout(location = 5) in vec4 vBoneWeights;
+layout(location = 3) in uvec4 vBoneIds;
+layout(location = 4) in vec4 vBoneWeights;
 
 uniform mat4 uLocalTransform;
 uniform mat4 uModelTransform;
@@ -15,12 +15,11 @@ out vec2 fTexCoords;
 
 void main(void) {
     vec4 posHomo = vec4(vPosition, 1.0);
-    // vec4 posSkinned
-    //     = (uJointTransforms[vBoneIds[0]] * posHomo) * vBoneWeights[0]
-    //     + (uJointTransforms[vBoneIds[1]] * posHomo) * vBoneWeights[1]
-    //     + (uJointTransforms[vBoneIds[2]] * posHomo) * vBoneWeights[2]
-    //     + (uJointTransforms[vBoneIds[3]] * posHomo) * vBoneWeights[3];
-    vec4 posSkinned = uJointTransforms[0] * posHomo;
+    vec4 posSkinned
+        = (uJointTransforms[vBoneIds[0]] * posHomo) * vBoneWeights[0]
+        + (uJointTransforms[vBoneIds[1]] * posHomo) * vBoneWeights[1]
+        + (uJointTransforms[vBoneIds[2]] * posHomo) * vBoneWeights[2]
+        + (uJointTransforms[vBoneIds[3]] * posHomo) * vBoneWeights[3];
     gl_Position
         = uViewProjection
         * uModelTransform

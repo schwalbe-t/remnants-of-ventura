@@ -165,7 +165,7 @@ object TestModelFrag : FragShaderDef<TestModelFrag> {
     val texture = sampler2D("uTexture")
 }
 
-object TestModelAnim : Model.Animations<TestModelAnim>() {
+object TestModelAnim : Animations<TestModelAnim> {
     val floss = anim("floss")
     val idle = anim("idle")
     val ride = anim("ride")
@@ -179,7 +179,7 @@ fun main() {
     
     loadUiResources(resLoader)
     
-    val window = Window("Remnants of Ventura", fullscreen = true)
+    val window = Window("Remnants of Ventura", fullscreen = false)
     
     val out = Framebuffer()
     out.attachColor(
@@ -191,7 +191,7 @@ fun main() {
     
     val ui = UiContext(out, window.inputEvents)
     
-    var onFrame: () -> Unit = {}
+    var onFrame: (deltaTime: Float) -> Unit = {}
     
     // val jetbrainsMono: Resource<Font> = Font.loadTtf(
     //     "res/fonts/JetBrainsMonoNL-SemiBold.ttf"
@@ -201,6 +201,7 @@ fun main() {
     // )
     // resLoader.submitAll(jetbrainsMono, testImage)
     
+    val testModelAnim = AnimState(TestModelAnim.idle)
     val testModel: Resource<Model<TestModelAnim>> = Model.loadFile(
         "res/test.glb",
         listOf(
@@ -268,14 +269,18 @@ fun main() {
         //     )
         //     .add(20.vh, BlurBackground().withRadius(20))
         // )
-        onFrame = {
+        onFrame = { deltaTime ->
+            if (!testModelAnim.isTransitioning && Key.W.isPressed) {
+                testModelAnim.transitionTo(TestModelAnim.walk, 0.35f)
+            }
+            if (!testModelAnim.isTransitioning && Key.I.isPressed) {
+                testModelAnim.transitionTo(TestModelAnim.idle, 0.35f)
+            }
+            testModelAnim.addTimePassed(deltaTime)
+            
             // blitTexture(testImage(), out)
             val shader: Shader<TestModelVert, TestModelFrag> = testModelShader()
             shader[TestModelVert.modelTransform] = Matrix4f()
-                .rotateY(
-                    (System.currentTimeMillis() % 100000).toFloat()
-                        / 1000f * 2f * Math.PI.toFloat() / 4f
-                )
             shader[TestModelVert.viewProjection] = Matrix4f()
                 .setPerspective(
                     Math.PI.toFloat() / 2f,
@@ -290,14 +295,22 @@ fun main() {
             testModel().render(
                 shader, out,
                 TestModelVert.localTransform, TestModelFrag.texture,
-                TestModelVert.jointTransforms
+                TestModelVert.jointTransforms,
+                testModelAnim
             )
         }
     })
     
+    var lastFrameTime: Long = System.nanoTime()
     while (!window.shouldClose()) {
         window.beginFrame()
         resLoader.loadQueuedFully()
+        
+        val now: Long = System.nanoTime()
+        val deltaTimeNanos: Long = now - lastFrameTime
+        val deltaTime: Float = (deltaTimeNanos.toDouble() * 0.000_000_001)
+            .toFloat()
+        lastFrameTime = now
         
         out.resize(window.framebuffer.width, window.framebuffer.height)
         
@@ -306,7 +319,7 @@ fun main() {
         
         ui.captureInput()
         window.flushInputEvents()
-        onFrame()
+        onFrame(deltaTime)
         ui.update()
         
         blitTexture(out.color, window.framebuffer)
