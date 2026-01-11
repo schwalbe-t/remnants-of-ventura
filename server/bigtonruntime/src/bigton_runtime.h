@@ -4,34 +4,7 @@
 
 #include "bigton.h"
 #include "bigton_ir.h"
-
-typedef enum BigtonError {
-    BIGTONE_NONE,
-    
-    BIGTONE_EXCEEDED_INSTR_LIMIT,
-    BIGTONE_INT_DIVISION_BY_ZERO,
-    BIGTONE_BY_PROGRAM,
-    BIGTONE_TUPLE_INDEX_OOB,
-    BIGTONE_INVALID_OBJECT_MEMBER,
-    BIGTONE_ARRAY_INDEX_OOB,
-    BIGTONE_OPERANDS_NOT_NUMBERS,
-    BIGTONE_OPERAND_NOT_INTEGER,
-    BIGTONE_OPERAND_NOT_TUPLE,
-    BIGTONE_OPERAND_NOT_OBJECT,
-    BIGTONE_OPERAND_NOT_ARRAY,
-    BIGTONE_EXCEEDED_MAXIMUM_CALL_DEPTH,
-    BIGTONE_TUPLE_TOO_BIG,
-    BIGTONE_EXCEEDED_MEMORY_LIMIT,
-    
-    BIGTONE_INT_INCOMPLETE_PROGRAM,
-    BIGTONE_INT_INVALID_CONST_STRING,
-    BIGTONE_INT_STACK_EMPTY,
-    BIGTONE_INT_STACK_IDX_OOB,
-    BIGTONE_INT_SCOPE_STACK_EMPTY,
-    BIGTONE_INT_GLOBAL_VAR_REF_INVALID,
-    BIGTONE_INT_INSTR_COUNTER_OOB,
-    BIGTONE_INT_LOCAL_IDX_OOB
-} bigton_error_t;
+#include "bigton_error.h"
 
 typedef struct BigtonParsedProgram {
     bigton_str_id_t unknownStrId;
@@ -47,10 +20,13 @@ typedef struct BigtonParsedProgram {
     
     bigton_shape_id_t numShapes;
     bigton_shape_t *shapes;
+    size_t numProps;
     bigton_shape_prop_t *props;
     
     bigton_slot_t numFunctions;
     bigton_function_t *functions;
+    bigton_slot_t numBuiltinFunctions;
+    bigton_builtin_function_t *builtinFunctions;
     
     bigton_slot_t numGlobals;
     bigton_instr_idx_t globalStart;
@@ -59,9 +35,16 @@ typedef struct BigtonParsedProgram {
 
 typedef struct BigtonRuntimeSettings {
     uint64_t tickInstructionLimit;
+    size_t memoryUsageLimit;
     uint32_t maxCallDepth;
     uint32_t maxTupleSize;
 } bigton_runtime_settings_t;
+
+typedef struct BigtonTraceCall {
+    bigton_str_id_t name;
+    bigton_source_t calledFrom;
+    bigton_source_t definedAt;
+} bigton_trace_call_t;
 
 typedef enum BigtonScopeType {
     BIGTONSC_GLOBAL,
@@ -94,12 +77,18 @@ typedef struct BigtonRuntimeState {
     bigton_parsed_program_t program;
     bigton_runtime_settings_t settings;
 
+    bigton_buff_owner_t b;
+    
     bigton_value_type_t *globalTypes;
     bigton_value_t *globalValues;
     
     size_t logsCapacity;
     size_t logsCount;
     bigton_string_t **logs;
+    
+    size_t traceCapacity;
+    size_t traceCount;
+    bigton_trace_call_t *trace;
     
     bigton_value_stack_t stack;
     
@@ -112,6 +101,8 @@ typedef struct BigtonRuntimeState {
     bigton_error_t error;
     bigton_source_t currentSource;
     bigton_instr_idx_t currentInstr;
+    size_t accCost;
+    bigton_slot_t awaitingBuiltinFun;
 } bigton_runtime_state_t;
 
 
@@ -125,6 +116,7 @@ void bigtonFree(bigton_runtime_state_t *r);
 
 typedef enum BigtonExecStatus {
     BIGTONST_CONTINUE,
+    BIGTONST_EXEC_BUILTIN_FUN,
     BIGTONST_AWAIT_TICK,
     BIGTONST_COMPLETE,
     BIGTONST_ERROR
@@ -132,31 +124,38 @@ typedef enum BigtonExecStatus {
 
 void bigtonLogLine(bigton_runtime_state_t *r, bigton_string_t *line);
 
-void bigtonStackPush(bigton_value_stack_t *s, bigton_tagged_value_t value);
+void bigtonTracePush(bigton_runtime_state_t *r, bigton_trace_call_t t);
+void bigtonTracePop(bigton_runtime_state_t *r);
+
+void bigtonStackPush(
+    bigton_value_stack_t *s, bigton_tagged_value_t value,
+    bigton_runtime_state_t *r
+);
 bigton_tagged_value_t bigtonStackSet(
     bigton_value_stack_t *s, size_t i, bigton_tagged_value_t v,
-    bigton_error_t *e
+    bigton_runtime_state_t *r
 );
 bigton_tagged_value_t bigtonStackAt(
-    bigton_value_stack_t *s, size_t i, bigton_error_t *e
+    bigton_value_stack_t *s, size_t i, bigton_runtime_state_t *r
 );
 bigton_tagged_value_t bigtonStackPop(
-    bigton_value_stack_t *s, bigton_error_t *e
+    bigton_value_stack_t *s, bigton_runtime_state_t *r
 );
 
 void bigtonScopePush(bigton_runtime_state_t *r, bigton_scope_t scope);
 bigton_scope_t *bigtonScopeCurr(bigton_runtime_state_t *r);
 void bigtonScopePop(bigton_runtime_state_t *r);
 
+void bigtonStartTick(bigton_runtime_state_t *r);
 bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r);
-bigton_exec_status_t bigtonExecTick(bigton_runtime_state_t *r);
+bigton_exec_status_t bigtonExecBatch(bigton_runtime_state_t *r);
 
 
 bigton_string_t *bigtonAllocConstString(
     bigton_runtime_state_t *r, bigton_str_id_t id
 );
 bigton_string_t *bigtonAllocString(
-    uint64_t length, const bigton_char_t *content
+    bigton_buff_owner_t *o, uint64_t length, const bigton_char_t *content
 );
 
 #ifdef BIGTON_ERROR_MACROS

@@ -1,8 +1,8 @@
 
-#include <endian.h>
 #define BIGTON_ERROR_MACROS
 #include "bigton.h"
 #include "bigton_ir.h"
+#include "bigton_error.h"
 #include "bigton_runtime.h"
 #include <stdbool.h>
 #include <string.h>
@@ -11,10 +11,9 @@
 void bigtonLogLine(bigton_runtime_state_t *r, bigton_string_t *line) {
     size_t oldCount = r->logsCount;
     if (oldCount >= r->logsCapacity) {
-        r->logsCapacity = r->logsCapacity == 0 ? 8
-            : r->logsCapacity * 2;
+        r->logsCapacity += 8;
         r->logs = bigtonReallocNullableBuff(
-            r->logs, sizeof(bigton_string_t *) * r->logsCapacity
+            &r->b, r->logs, sizeof(bigton_string_t *) * r->logsCapacity
         );
     }
     line->rc.count += 1;
@@ -22,18 +21,36 @@ void bigtonLogLine(bigton_runtime_state_t *r, bigton_string_t *line) {
     r->logsCount = oldCount + 1;
 }
 
+void bigtonTracePush(bigton_runtime_state_t *r, bigton_trace_call_t t) {
+    size_t oldCount = r->traceCount;
+    if (oldCount >= r->traceCapacity) {
+        r->traceCapacity += 8;
+        r->trace = bigtonReallocNullableBuff(
+            &r->b, r->trace, sizeof(bigton_trace_call_t) * r->traceCapacity
+        );
+    }
+    r->trace[oldCount] = t;
+    r->traceCount += 1;
+}
+
+void bigtonTracePop(bigton_runtime_state_t *r) {
+    size_t oldCount = r->traceCount;
+    if (oldCount == 0) { return; }
+    r->traceCount = oldCount - 1;
+}
+
 void bigtonStackPush(
-    bigton_value_stack_t *s, bigton_tagged_value_t value
+    bigton_value_stack_t *s, bigton_tagged_value_t value,
+    bigton_runtime_state_t *r
 ) {
     size_t oldCount = s->count;
     if (oldCount >= s->capacity) {
-        s->capacity = s->capacity == 0 ? 16
-            : s->capacity * 2;
+        s->capacity += 16;
         s->types = bigtonReallocNullableBuff(
-            s->types, sizeof(bigton_value_type_t) * s->capacity
+            &r->b, s->types, sizeof(bigton_value_type_t) * s->capacity
         );
         s->values = bigtonReallocNullableBuff(
-            s->values, sizeof(bigton_value_t) * s->capacity
+            &r->b, s->values, sizeof(bigton_value_t) * s->capacity
         );
     }
     s->types[oldCount] = value.t;
@@ -43,10 +60,10 @@ void bigtonStackPush(
 
 bigton_tagged_value_t bigtonStackSet(
     bigton_value_stack_t *s, size_t i, bigton_tagged_value_t v,
-    bigton_error_t *e
+    bigton_runtime_state_t *r
 ) {
     if (i >= s->count) {
-        *e = BIGTONE_INT_STACK_IDX_OOB;
+        r->error = BIGTONE_INT_STACK_IDX_OOB;
         return BIGTON_NULL_VALUE;
     }
     bigton_tagged_value_t oldValue = {
@@ -58,10 +75,10 @@ bigton_tagged_value_t bigtonStackSet(
 }
 
 bigton_tagged_value_t bigtonStackAt(
-    bigton_value_stack_t *s, size_t i, bigton_error_t *e
+    bigton_value_stack_t *s, size_t i, bigton_runtime_state_t *r
 ) {
     if (i >= s->count) {
-        *e = BIGTONE_INT_STACK_IDX_OOB;
+        r->error = BIGTONE_INT_STACK_IDX_OOB;
         return BIGTON_NULL_VALUE;
     }
     return (bigton_tagged_value_t) {
@@ -70,11 +87,11 @@ bigton_tagged_value_t bigtonStackAt(
 }
 
 bigton_tagged_value_t bigtonStackPop(
-    bigton_value_stack_t *s, bigton_error_t *e
+    bigton_value_stack_t *s, bigton_runtime_state_t *r
 ) {
     size_t oldCount = s->count;
     if (oldCount == 0) {
-        *e = BIGTONE_INT_STACK_EMPTY;
+        r->error = BIGTONE_INT_STACK_EMPTY;
         return BIGTON_NULL_VALUE;
     }
     size_t newCount = oldCount - 1;
@@ -87,10 +104,9 @@ bigton_tagged_value_t bigtonStackPop(
 void bigtonScopePush(bigton_runtime_state_t *r, bigton_scope_t scope) {
     size_t oldCount = r->scopesCount;
     if (oldCount >= r->scopesCapacity) {
-        r->scopesCapacity = r->scopesCapacity == 0 ? 4
-            : r->scopesCapacity * 2;
+        r->scopesCapacity += 8;
         r->scopes = bigtonReallocNullableBuff(
-            r->scopes, sizeof(bigton_scope_t) * r->scopesCapacity
+            &r->b, r->scopes, sizeof(bigton_scope_t) * r->scopesCapacity
         );
     }
     r->scopes[oldCount] = scope;
@@ -116,7 +132,7 @@ void bigtonScopePop(bigton_runtime_state_t *r) {
     r->scopesCount = newCount;
     bigton_scope_t scope = r->scopes[newCount];
     for (size_t i = 0; i < scope.numLocals; i += 1) {
-        bigtonValRcDecr(bigtonStackPop(&r->locals, &r->error));
+        bigtonValRcDecr(bigtonStackPop(&r->locals, r));
     }
 }
 
@@ -126,21 +142,21 @@ static void assertGlobalVarValid(bigton_runtime_state_t *r, bigton_slot_t id) {
 }
 
 #define ARITHMETIC_BIOP_INSTR(iop, fop, dbz) \
-    bigton_tagged_value_t bv = bigtonStackPop(&r->stack, &r->error); \
-    bigton_tagged_value_t av = bigtonStackPop(&r->stack, &r->error); \
+    bigton_tagged_value_t bv = bigtonStackPop(&r->stack, r); \
+    bigton_tagged_value_t av = bigtonStackPop(&r->stack, r); \
     if (av.t == BIGTON_INT && bv.t == BIGTON_INT) { \
         uint64_t a = (uint64_t) av.v.i; \
         uint64_t b = (uint64_t) bv.v.i; \
         if (!(dbz)) { \
             uint64_t c = iop; \
-            bigtonStackPush(&r->stack, BIGTON_INT_VALUE((bigton_int_t) c)); \
+            bigtonStackPush(&r->stack, BIGTON_INT_VALUE((bigton_int_t) c), r); \
         } else if (!HAS_ERROR(r)) { \
             r->error = BIGTONE_INT_DIVISION_BY_ZERO; \
         } \
     } else if (av.t == BIGTON_FLOAT && bv.t == BIGTON_FLOAT) { \
         double a = av.v.f; \
         double b = bv.v.f; \
-        bigtonStackPush(&r->stack, BIGTON_FLOAT_VALUE(fop)); \
+        bigtonStackPush(&r->stack, BIGTON_FLOAT_VALUE(fop), r); \
     } else if (!HAS_ERROR(r)) { \
         r->error = BIGTONE_OPERANDS_NOT_NUMBERS; \
     } \
@@ -148,16 +164,16 @@ static void assertGlobalVarValid(bigton_runtime_state_t *r, bigton_slot_t id) {
     bigtonValRcDecr(bv);
     
 #define COMPARISON_BIOP_INSTR(iop, fop) \
-    bigton_tagged_value_t bv = bigtonStackPop(&r->stack, &r->error); \
-    bigton_tagged_value_t av = bigtonStackPop(&r->stack, &r->error); \
+    bigton_tagged_value_t bv = bigtonStackPop(&r->stack, r); \
+    bigton_tagged_value_t av = bigtonStackPop(&r->stack, r); \
     if (av.t == BIGTON_INT && bv.t == BIGTON_INT) { \
         bigton_int_t a = av.v.i; \
         bigton_int_t b = bv.v.i; \
-        bigtonStackPush(&r->stack, BIGTON_INT_VALUE(iop)); \
+        bigtonStackPush(&r->stack, BIGTON_INT_VALUE(iop), r); \
     } else if (av.t == BIGTON_FLOAT && bv.t == BIGTON_FLOAT) { \
         double a = av.v.f; \
         double b = bv.v.f; \
-        bigtonStackPush(&r->stack, BIGTON_INT_VALUE(fop)); \
+        bigtonStackPush(&r->stack, BIGTON_INT_VALUE(fop), r); \
     } else if (!HAS_ERROR(r)) { \
         r->error = BIGTONE_OPERANDS_NOT_NUMBERS; \
     } \
@@ -214,6 +230,14 @@ bool valueIsTruthy(bigton_tagged_value_t x) {
 }
 
 bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
+    if (r->b.totalSizeBytes > r->settings.memoryUsageLimit) {
+        r->error = BIGTONE_EXCEEDED_MEMORY_LIMIT;
+        return BIGTONST_ERROR;
+    }
+    if (r->accCost > r->settings.tickInstructionLimit) {
+        r->error = BIGTONE_EXCEEDED_INSTR_LIMIT;
+        return BIGTONST_ERROR;
+    }
     bigton_scope_t *scope = bigtonScopeCurr(r);
     if (HAS_ERROR(r)) { return BIGTONST_ERROR; }
     bigton_instr_idx_t instrIdx = r->currentInstr;
@@ -223,7 +247,10 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                 bigtonScopePop(r);
                 return BIGTONST_COMPLETE;
             case BIGTONSC_FUNCTION:
-                // TODO! implicit return
+                r->currentInstr = scope->after;
+                bigtonScopePop(r);
+                bigtonTracePop(r);
+                bigtonStackPush(&r->stack, BIGTON_NULL_VALUE, r);
                 return BIGTONST_COMPLETE;
             case BIGTONSC_LOOP:
                 r->currentInstr = scope->start;
@@ -252,37 +279,45 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             break;
         }
         case BIGTONIR_DISCARD: {
-            bigtonValRcDecr(bigtonStackPop(&r->stack, &r->error));
+            bigtonValRcDecr(bigtonStackPop(&r->stack, r));
             break;
         }
         
         case BIGTONIR_LOAD_NULL: {
-            bigtonStackPush(&r->stack, BIGTON_NULL_VALUE);
+            bigtonStackPush(&r->stack, BIGTON_NULL_VALUE, r);
             break;
         }
         case BIGTONIR_LOAD_INT: {
-            bigtonStackPush(&r->stack, BIGTON_INT_VALUE(instrArgs.loadInt));
+            bigtonStackPush(
+                &r->stack, BIGTON_INT_VALUE(instrArgs.loadInt), r
+            );
             break;
         }
         case BIGTONIR_LOAD_FLOAT: {
-            bigtonStackPush(&r->stack, BIGTON_FLOAT_VALUE(instrArgs.loadFloat));
+            bigtonStackPush(
+                &r->stack, BIGTON_FLOAT_VALUE(instrArgs.loadFloat), r
+            );
             break;
         }
         case BIGTONIR_LOAD_STRING: {
-            bigtonStackPush(&r->stack, BIGTON_STRING_VALUE(
-                bigtonAllocConstString(r, instrArgs.loadString)
-            ));
+            bigtonStackPush(
+                &r->stack,
+                BIGTON_STRING_VALUE(
+                    bigtonAllocConstString(r, instrArgs.loadString)
+                ), 
+                r
+            );
             break;
         }
         case BIGTONIR_LOAD_TUPLE: {
             size_t length = instrArgs.loadTupleLength;
             bigton_value_type_t *memberTypes
-                = bigtonAllocBuff(sizeof(bigton_value_type_t) * length);
+                = bigtonAllocBuff(&r->b, sizeof(bigton_value_type_t) * length);
             bigton_value_t *memberValues
-                = bigtonAllocBuff(sizeof(bigton_value_t) * length);
+                = bigtonAllocBuff(&r->b, sizeof(bigton_value_t) * length);
             size_t flatLength = 0;
             for (int64_t i = length - 1; i >= 0; i -= 1) {
-                bigton_tagged_value_t mv = bigtonStackPop(&r->stack, &r->error);
+                bigton_tagged_value_t mv = bigtonStackPop(&r->stack, r);
                 memberTypes[i] = mv.t;
                 memberValues[i] = mv.v;
                 flatLength += mv.t != BIGTON_TUPLE ? 1 : mv.v.t->flatLength;
@@ -290,52 +325,84 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             if (!HAS_ERROR(r) && flatLength > r->settings.maxTupleSize) {
                 r->error = BIGTONE_TUPLE_TOO_BIG;
             }
-            bigton_tuple_t *tuple = bigtonAllocBuff(sizeof(bigton_tuple_t));
+            bigton_tuple_t *tuple
+                = bigtonAllocBuff(&r->b, sizeof(bigton_tuple_t));
             tuple->rc = BIGTON_RC_INIT;
             tuple->length = (uint32_t) length;
             tuple->flatLength = (uint32_t) flatLength;
             tuple->valueTypes = memberTypes;
             tuple->values = memberValues;
-            bigtonStackPush(&r->stack, BIGTON_TUPLE_VALUE(tuple));
+            bigtonStackPush(&r->stack, BIGTON_TUPLE_VALUE(tuple), r);
             break;
         }
         case BIGTONIR_LOAD_OBJECT: {
-            // TODO!
+            bigton_shape_id_t shapeId = instrArgs.loadObject;
+            if (shapeId >= r->program.numShapes) {
+                r->error = BIGTONE_INT_SHAPE_ID_OOB;
+                return BIGTONST_ERROR;
+            }
+            bigton_shape_t *shape = &r->program.shapes[shapeId];
+            size_t numAllProps = r->program.numProps;
+            bool propsInBounds = shape->firstPropOffset < numAllProps
+                && shape->firstPropOffset + shape->propCount < numAllProps;
+            if (!propsInBounds) {
+                r->error = BIGTONE_INT_SHAPE_PROP_IDX_OOB;
+                return BIGTONST_ERROR;
+            }
+            const bigton_shape_prop_t *props
+                = r->program.props + shape->firstPropOffset;
+            size_t propCount = shape->propCount;
+            bigton_value_type_t *memberTypes = bigtonAllocNullableBuff(
+                &r->b, sizeof(bigton_value_type_t) * propCount
+            );
+            bigton_value_t *memberValues = bigtonAllocNullableBuff(
+                &r->b, sizeof(bigton_value_t) * propCount
+            );
+            for (int64_t propI = (int64_t) propCount; propI >= 0; propI -= 1) {
+                bigton_tagged_value_t mv = bigtonStackPop(&r->stack, r);
+                memberTypes[propI] = mv.t;
+                memberValues[propI] = mv.v;
+            }
+            bigton_object_t *o
+                = bigtonAllocBuff(&r->b, sizeof(bigton_object_t));
+            o->rc = BIGTON_RC_INIT;
+            o->shape = shape;
+            o->memberTypes = memberTypes;
+            o->memberValues = memberValues;
+            bigtonStackPush(&r->stack, BIGTON_OBJECT_VALUE(o), r);
             break;
         }
         case BIGTONIR_LOAD_ARRAY: {
             size_t length = instrArgs.loadArrayLength;
-            bigton_value_type_t *elementTypes
-                = bigtonAllocNullableBuff(sizeof(bigton_value_type_t) * length);
-            bigton_value_t *elementValues
-                = bigtonAllocNullableBuff(sizeof(bigton_value_t) * length);
+            bigton_value_type_t *elementTypes = bigtonAllocNullableBuff(
+                &r->b, sizeof(bigton_value_type_t) * length
+            );
+            bigton_value_t *elementValues = bigtonAllocNullableBuff(
+                &r->b, sizeof(bigton_value_t) * length
+            );
             for (int64_t i = length - 1; i >= 0; i -= 1) {
-                bigton_tagged_value_t ev = bigtonStackPop(&r->stack, &r->error);
+                bigton_tagged_value_t ev = bigtonStackPop(&r->stack, r);
                 elementTypes[i] = ev.t;
                 elementValues[i] = ev.v;
             }
-            bigton_array_t *array = bigtonAllocBuff(sizeof(bigton_array_t));
+            bigton_array_t *array
+                = bigtonAllocBuff(&r->b, sizeof(bigton_array_t));
             array->rc = BIGTON_RC_INIT;
             array->capacity = (uint32_t) length;
             array->length = (uint32_t) length;
             array->elementTypes = elementTypes;
             array->elementValues = elementValues;
-            bigtonStackPush(&r->stack, BIGTON_ARRAY_VALUE(array));
+            bigtonStackPush(&r->stack, BIGTON_ARRAY_VALUE(array), r);
             break;
         }
             
         case BIGTONIR_LOAD_TUPLE_MEMBER: {
-            bigton_tagged_value_t t = bigtonStackPop(&r->stack, &r->error);
+            bigton_tagged_value_t t = bigtonStackPop(&r->stack, r);
             if (t.t == BIGTON_TUPLE) {
                 uint32_t i = instrArgs.loadTupleMemIdx;
-                if (i < t.v.t->length) {
-                    bigtonStackPush(&r->stack, (bigton_tagged_value_t) {
-                        .t = t.v.t->valueTypes[i],
-                        .v = t.v.t->values[i]
-                    });
-                } else if (!HAS_ERROR(r)) {
-                    r->error = BIGTONE_TUPLE_INDEX_OOB;
-                }
+                bigton_tagged_value_t mv = bigtonTupleAt(t.v.t, i, &r->error);
+                bigtonValRcIncr(mv);
+                bigtonStackPush(&r->stack, mv, r);
             } else if (!HAS_ERROR(r)) {
                 r->error = BIGTONE_OPERAND_NOT_TUPLE;
             }
@@ -343,17 +410,40 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             break;
         }
         case BIGTONIR_LOAD_OBJECT_MEMBER: {
-            // TODO!
+            bigton_tagged_value_t o = bigtonStackPop(&r->stack, r);
+            if (o.t == BIGTON_OBJECT) {
+                size_t i = bigtonObjectFindMem(
+                    o.v.o, instrArgs.loadObjectMemName, 
+                    r->program.props, r->program.numProps, &r->error
+                );
+                if (!HAS_ERROR(r)) {
+                    bigton_tagged_value_t mem = bigtonObjectAt(o.v.o, i);
+                    bigtonValRcIncr(mem);
+                    bigtonStackPush(&r->stack, mem, r);
+                }
+            } else if (!HAS_ERROR(r)) {
+                r->error = BIGTONE_OPERAND_NOT_OBJECT;
+            }
+            bigtonValRcDecr(o);
             break;
         }
         case BIGTONIR_LOAD_ARRAY_ELEMENT: {
-            bigton_tagged_value_t a = bigtonStackPop(&r->stack, &r->error);
-            if (a.t == BIGTON_ARRAY) {
-                // TODO!
+            bigton_tagged_value_t iv = bigtonStackPop(&r->stack, r);
+            bigton_tagged_value_t av = bigtonStackPop(&r->stack, r);
+            if (av.t == BIGTON_ARRAY) {
+                if (iv.t == BIGTON_INT) {
+                    bigton_tagged_value_t ev
+                        = bigtonArrayAt(av.v.a, iv.v.i, &r->error);
+                    bigtonValRcIncr(ev);
+                    bigtonStackPush(&r->stack, ev, r);
+                } else if (!HAS_ERROR(r)) {
+                    r->error = BIGTONE_OPERAND_NOT_INTEGER;
+                }
             } else if (!HAS_ERROR(r)) {
                 r->error = BIGTONE_OPERAND_NOT_ARRAY;
             }
-            bigtonValRcDecr(a);
+            bigtonValRcDecr(av);
+            bigtonValRcDecr(iv);
             break;
         }
         case BIGTONIR_LOAD_GLOBAL: {
@@ -365,7 +455,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                 .v = r->globalValues[instrArgs.loadGlobal]
             };
             bigtonValRcIncr(value);
-            bigtonStackPush(&r->stack, value);
+            bigtonStackPush(&r->stack, value, r);
             break;
         }
         case BIGTONIR_LOAD_LOCAL: {
@@ -377,10 +467,10 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             }
             size_t idx = localCount - 1 - relIdx; 
             bigton_tagged_value_t value = bigtonStackAt(
-                &r->locals, idx, &r->error
+                &r->locals, idx, r
             );
             bigtonValRcIncr(value);
-            bigtonStackPush(&r->stack, value);
+            bigtonStackPush(&r->stack, value, r);
             break;
         }
         
@@ -405,13 +495,13 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             break;
         }
         case BIGTONIR_NEGATE: {
-            bigton_tagged_value_t xv = bigtonStackPop(&r->stack, &r->error);
+            bigton_tagged_value_t xv = bigtonStackPop(&r->stack, r);
             if (xv.t == BIGTON_INT) {
                 uint64_t x = (uint64_t) xv.v.i;
                 bigton_int_t result = (bigton_int_t) -x;
-                bigtonStackPush(&r->stack, BIGTON_INT_VALUE(result));
+                bigtonStackPush(&r->stack, BIGTON_INT_VALUE(result), r);
             } else if (xv.t == BIGTON_FLOAT) {
-                bigtonStackPush(&r->stack, BIGTON_FLOAT_VALUE(-xv.v.f));
+                bigtonStackPush(&r->stack, BIGTON_FLOAT_VALUE(-xv.v.f), r);
             } else if (!HAS_ERROR(r)) {
                 r->error = BIGTONE_OPERANDS_NOT_NUMBERS;
             }
@@ -436,30 +526,30 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             break;
         }
         case BIGTONIR_EQUAL: {
-            bigton_tagged_value_t b = bigtonStackPop(&r->stack, &r->error);
-            bigton_tagged_value_t a = bigtonStackPop(&r->stack, &r->error);
-            bigtonStackPush(&r->stack, BIGTON_INT_VALUE(valuesEqual(a, b)));
+            bigton_tagged_value_t b = bigtonStackPop(&r->stack, r);
+            bigton_tagged_value_t a = bigtonStackPop(&r->stack, r);
+            bigtonStackPush(&r->stack, BIGTON_INT_VALUE(valuesEqual(a, b)), r);
             bigtonValRcDecr(a);
             bigtonValRcDecr(b);
             break;
         }
         case BIGTONIR_NOT_EQUAL: {
-            bigton_tagged_value_t b = bigtonStackPop(&r->stack, &r->error);
-            bigton_tagged_value_t a = bigtonStackPop(&r->stack, &r->error);
-            bigtonStackPush(&r->stack, BIGTON_INT_VALUE(!valuesEqual(a, b)));
+            bigton_tagged_value_t b = bigtonStackPop(&r->stack, r);
+            bigton_tagged_value_t a = bigtonStackPop(&r->stack, r);
+            bigtonStackPush(&r->stack, BIGTON_INT_VALUE(!valuesEqual(a, b)), r);
             bigtonValRcDecr(a);
             bigtonValRcDecr(b);
             break;
         }
         
         case BIGTONIR_AND: {
-            bigton_tagged_value_t b = bigtonStackPop(&r->stack, &r->error);
-            bigton_tagged_value_t a = bigtonStackPop(&r->stack, &r->error);
+            bigton_tagged_value_t b = bigtonStackPop(&r->stack, r);
+            bigton_tagged_value_t a = bigtonStackPop(&r->stack, r);
             if (!valueIsTruthy(a)) {
-                bigtonStackPush(&r->stack, a);
+                bigtonStackPush(&r->stack, a, r);
                 bigtonValRcIncr(a);
             } else {
-                bigtonStackPush(&r->stack, b);
+                bigtonStackPush(&r->stack, b, r);
                 bigtonValRcIncr(b);
             }
             bigtonValRcDecr(a);
@@ -467,13 +557,13 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             break;
         }
         case BIGTONIR_OR: {
-            bigton_tagged_value_t b = bigtonStackPop(&r->stack, &r->error);
-            bigton_tagged_value_t a = bigtonStackPop(&r->stack, &r->error);
+            bigton_tagged_value_t b = bigtonStackPop(&r->stack, r);
+            bigton_tagged_value_t a = bigtonStackPop(&r->stack, r);
             if (valueIsTruthy(a)) {
-                bigtonStackPush(&r->stack, a);
+                bigtonStackPush(&r->stack, a, r);
                 bigtonValRcIncr(a);
             } else {
-                bigtonStackPush(&r->stack, b);
+                bigtonStackPush(&r->stack, b, r);
                 bigtonValRcIncr(b);
             }
             bigtonValRcDecr(a);
@@ -481,8 +571,8 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             break;
         }
         case BIGTONIR_NOT: {
-            bigton_tagged_value_t x = bigtonStackPop(&r->stack, &r->error);
-            bigtonStackPush(&r->stack, BIGTON_INT_VALUE(!valueIsTruthy(x)));
+            bigton_tagged_value_t x = bigtonStackPop(&r->stack, r);
+            bigtonStackPush(&r->stack, BIGTON_INT_VALUE(!valueIsTruthy(x)), r);
             bigtonValRcDecr(x);
             break;
         }
@@ -493,7 +583,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             if (HAS_ERROR(r)) { return BIGTONST_ERROR; }
             bigton_value_type_t *globalType = r->globalTypes + globalId;
             bigton_value_t *globalValue = r->globalValues + globalId;
-            bigton_tagged_value_t value = bigtonStackPop(&r->stack, &r->error);
+            bigton_tagged_value_t value = bigtonStackPop(&r->stack, r);
             bigtonValRcDecr((bigton_tagged_value_t) {
                 .t = *globalType, .v = *globalValue
             });
@@ -502,13 +592,13 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             break;
         }
         case BIGTONIR_PUSH_LOCAL: {
-            bigton_tagged_value_t value = bigtonStackPop(&r->stack, &r->error);
-            bigtonStackPush(&r->locals, value);
+            bigton_tagged_value_t value = bigtonStackPop(&r->stack, r);
+            bigtonStackPush(&r->locals, value, r);
             scope->numLocals += 1;
             break;
         }
         case BIGTONIR_STORE_LOCAL: {
-            bigton_tagged_value_t value = bigtonStackPop(&r->stack, &r->error);
+            bigton_tagged_value_t value = bigtonStackPop(&r->stack, r);
             size_t relIdx = instrArgs.storeLocal;
             size_t localCount = r->locals.count;
             if (relIdx >= r->locals.count) {
@@ -517,17 +607,46 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             }
             size_t idx = localCount - 1 - relIdx; 
             bigton_tagged_value_t oldValue = bigtonStackSet(
-                &r->stack, idx, value, &r->error
+                &r->stack, idx, value, r
             );
             bigtonValRcDecr(oldValue);
             break;
         }
         case BIGTONIR_STORE_OBJECT_MEMBER: {
-            // TODO!
+            bigton_tagged_value_t v = bigtonStackPop(&r->stack, r);
+            bigton_tagged_value_t o = bigtonStackPop(&r->stack, r);
+            if (o.t == BIGTON_OBJECT) {
+                size_t i = bigtonObjectFindMem(
+                    o.v.o, instrArgs.storeObjectMemName, 
+                    r->program.props, r->program.numProps, &r->error
+                );
+                if (!HAS_ERROR(r)) {
+                    bigton_tagged_value_t oldMv = bigtonObjectSet(o.v.o, i, v);
+                    bigtonValRcDecr(oldMv);
+                }
+            } else if (!HAS_ERROR(r)) {
+                r->error = BIGTONE_OPERAND_NOT_OBJECT;
+            }
+            bigtonValRcDecr(o);
             break;
         }
         case BIGTONIR_STORE_ARRAY_ELEMENT: {
-            // TODO!
+            bigton_tagged_value_t v = bigtonStackPop(&r->stack, r);
+            bigton_tagged_value_t i = bigtonStackPop(&r->stack, r);
+            bigton_tagged_value_t a = bigtonStackPop(&r->stack, r);
+            if (a.t == BIGTON_ARRAY) {
+                if (i.t == BIGTON_INT) {
+                    bigton_tagged_value_t oldEv
+                        = bigtonArraySet(a.v.a, i.v.i, v, &r->error);
+                    bigtonValRcDecr(oldEv);
+                } else if (!HAS_ERROR(r)) {
+                    r->error = BIGTONE_OPERAND_NOT_INTEGER;
+                }
+            } else if (!HAS_ERROR(r)) {
+                r->error = BIGTONE_OPERAND_NOT_ARRAY;
+            }
+            bigtonValRcDecr(a);
+            bigtonValRcDecr(i);
             break;
         }
             
@@ -535,7 +654,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             bigton_if_args_t args = instrArgs.ifParams;
             bigton_instr_idx_t elseStart = instrIdx + 1 + args.if_body_length;
             bigton_instr_idx_t elseEnd = elseStart + args.else_body_length;
-            bigton_tagged_value_t cond = bigtonStackPop(&r->stack, &r->error);
+            bigton_tagged_value_t cond = bigtonStackPop(&r->stack, r);
             bool isTruthy = valueIsTruthy(cond);
             bigtonScopePush(r, (bigton_scope_t) {
                 .type = BIGTONSC_IF,
@@ -616,8 +735,44 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             break;
         }
         case BIGTONIR_CALL: {
-            // TODO!
-            break;
+            if (r->traceCount + 1 > r->settings.maxCallDepth) {
+                r->error = BIGTONE_EXCEEDED_MAXIMUM_CALL_DEPTH;
+                return BIGTONST_ERROR;
+            }
+            bigton_slot_t funcId = instrArgs.called;
+            if (funcId >= r->program.numFunctions) {
+                r->error = BIGTONE_INT_FUN_REF_INVALID;
+                return BIGTONST_ERROR;
+            }
+            bigton_function_t *func = r->program.functions + funcId;
+            bigtonTracePush(r, (bigton_trace_call_t) {
+                .name = func->name,
+                .definedAt = func->declSource,
+                .calledFrom = r->currentSource
+            });
+            bigton_instr_idx_t start = func->start;
+            bigtonScopePush(r, (bigton_scope_t) {
+                .type = BIGTONSC_FUNCTION,
+                .start = start,
+                .end = start + func->length,
+                .after = instrIdx,
+                .numLocals = 0
+            });
+            r->currentInstr = start;
+            return BIGTONST_CONTINUE;
+        }
+        case BIGTONIR_CALL_BUILTIN: {
+            bigton_slot_t builtinId = instrArgs.calledBuiltin;
+            if (builtinId >= r->program.numBuiltinFunctions) {
+                r->error = BIGTONE_INT_BUILTIN_FUN_REF_INVALID;
+                return BIGTONST_ERROR;
+            }
+            bigton_builtin_function_t *builtin
+                = r->program.builtinFunctions + builtinId;
+            r->accCost += builtin->cost;
+            r->currentInstr += 1;
+            r->awaitingBuiltinFun = builtinId;
+            return BIGTONST_EXEC_BUILTIN_FUN;
         }
         case BIGTONIR_RETURN: {
             bigton_scope_t *currScope = scope;
@@ -626,9 +781,9 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                     case BIGTONSC_GLOBAL:
                         break;
                     case BIGTONSC_FUNCTION:
+                        r->currentInstr = currScope->after;
                         bigtonScopePop(r);
-                        // TODO! pop stack trace
-                        r->currentInstr = scope->after;
+                        bigtonTracePop(r);
                         return BIGTONST_CONTINUE;
                     case BIGTONSC_LOOP:
                     case BIGTONSC_TICK:
@@ -643,10 +798,15 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
         }
     }
     r->currentInstr += 1;
+    r->accCost += 1;
     return BIGTONST_CONTINUE;
 }
 
-bigton_exec_status_t bigtonExecTick(bigton_runtime_state_t *r) {
+void bigtonStartTick(bigton_runtime_state_t *r) {
+    r->accCost = 0;
+}
+
+bigton_exec_status_t bigtonExecBatch(bigton_runtime_state_t *r) {
     while (true) {
         bigton_exec_status_t status = bigtonExecInstr(r);
         if (HAS_ERROR(r)) {

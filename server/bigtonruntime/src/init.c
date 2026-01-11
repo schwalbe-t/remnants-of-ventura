@@ -17,7 +17,9 @@ static void parseProgram(
     dest->numConstStrings       = header->numStrings;
     dest->numConstStringChars   = header->numConstStringChars;
     dest->numShapes             = header->numShapes;
+    dest->numProps              = header->numShapeProps;
     dest->numFunctions          = header->numFunctions;
+    dest->numBuiltinFunctions   = header->numBuiltinFunctions;
     dest->numGlobals            = header->numGlobalVars;
     dest->globalStart           = header->globalStart;
     dest->globalEnd             = header->globalStart + header->globalLength;
@@ -34,6 +36,9 @@ static void parseProgram(
     
     dest->functions = (bigton_function_t *) p;
     p += sizeof(bigton_function_t) * header->numFunctions;
+    
+    dest->builtinFunctions = (bigton_builtin_function_t *) p;
+    p += sizeof(bigton_builtin_function_t) * header->numBuiltinFunctions;
     
     dest->props = (bigton_shape_prop_t *) p;
     p += sizeof(bigton_shape_prop_t) * header->numShapeProps;
@@ -54,8 +59,8 @@ static void parseProgram(
 static void allocateGlobals(bigton_runtime_state_t *r) {
     size_t globalsTSize = sizeof(bigton_value_type_t) * r->program.numGlobals;
     size_t globalsVSize = sizeof(bigton_value_t) * r->program.numGlobals;
-    r->globalTypes = bigtonAllocNullableBuff(globalsTSize);
-    r->globalValues = bigtonAllocNullableBuff(globalsVSize);
+    r->globalTypes = bigtonAllocNullableBuff(&r->b, globalsTSize);
+    r->globalValues = bigtonAllocNullableBuff(&r->b, globalsVSize);
     for (size_t i = 0; i < r->program.numGlobals; i += 1) {
         r->globalTypes[i] = BIGTON_NULL;
     }
@@ -70,10 +75,18 @@ void bigtonInit(
     parseProgram(r, rawProgram, rawProgramSize);
     if (HAS_ERROR(r)) { return; }
     r->settings = *settings;
+    r->b = (bigton_buff_owner_t) {
+        .first = NULL,
+        .last = NULL,
+        .totalSizeBytes = 0
+    };
     allocateGlobals(r);
     r->logsCapacity = 0;
     r->logsCount = 0;
     r->logs = NULL;
+    r->traceCapacity = 0;
+    r->traceCount = 0;
+    r->trace = NULL;
     r->stack = BIGTON_VALUE_STACK_INIT;
     r->scopesCapacity = 0;
     r->scopesCount = 0;
@@ -84,6 +97,8 @@ void bigtonInit(
         .line = 0
     };
     r->currentInstr = r->program.globalStart;
+    r->accCost = 0;
+    r->awaitingBuiltinFun = 0;
     bigtonScopePush(r, (bigton_scope_t) {
         .type = BIGTONSC_GLOBAL,
         .start = r->program.globalStart,
@@ -93,28 +108,6 @@ void bigtonInit(
     });
 }
 
-static void freeStack(bigton_value_stack_t *s) {
-    bigton_error_t e = BIGTONE_NONE;
-    while (s->count > 0 && e == BIGTONE_NONE) {
-        bigtonValRcDecr(bigtonStackPop(s, &e));
-    }
-    bigtonFreeNullableBuff(s->types);
-    bigtonFreeNullableBuff(s->values);
-}
-
 void bigtonFree(bigton_runtime_state_t *r) {
-    freeStack(&r->stack);
-    freeStack(&r->locals);
-    for (size_t i = 0; i < r->scopesCount; i += 1) {
-        bigtonScopePop(r);
-    }
-    for (size_t i = 0; i < r->program.numGlobals; i += 1) {
-        bigtonValRcDecr((bigton_tagged_value_t) {
-            .t = r->globalTypes[i], .v = r->globalValues[i]
-        });
-    }
-    bigtonFreeNullableBuff(r->globalTypes);
-    bigtonFreeNullableBuff(r->globalValues);
-    bigtonFreeNullableBuff(r->logs);
-    bigtonFreeNullableBuff(r->scopes);
+    bigtonFreeAll(&r->b);
 }

@@ -54,6 +54,7 @@ void bigtonValFree(bigton_tagged_value_t value) {
     }
 }
 
+
 bigton_string_t *bigtonAllocConstString(
     bigton_runtime_state_t *r, bigton_str_id_t id
 ) {
@@ -70,19 +71,19 @@ bigton_string_t *bigtonAllocConstString(
         return NULL;
     }
     return bigtonAllocString(
-        cstr.charLength, p->constStringChars + cstr.firstOffset
+        &r->b, cstr.charLength, p->constStringChars + cstr.firstOffset
     );
 }
 
 bigton_string_t *bigtonAllocString(
-    uint64_t length, const bigton_char_t *content
+    bigton_buff_owner_t *o, uint64_t length, const bigton_char_t *content
 ) {
     size_t lengthBytes = sizeof(bigton_char_t) * length;
     bigton_char_t *buffer
-        = (bigton_char_t *) bigtonAllocNullableBuff(lengthBytes);
+        = (bigton_char_t *) bigtonAllocNullableBuff(o, lengthBytes);
     memcpy(buffer, content, lengthBytes);
     bigton_string_t *str
-        = (bigton_string_t *) bigtonAllocBuff(sizeof(bigton_string_t));
+        = (bigton_string_t *) bigtonAllocBuff(o, sizeof(bigton_string_t));
     str->rc = BIGTON_RC_INIT;
     str->length = length;
     str->content = buffer;

@@ -150,6 +150,9 @@ typedef enum BigtonInstrType {
     // arg: bigton_slot_t called
     // stack: a, b, c, ... -> <return_value>
     BIGTONIR_CALL,
+    // arg: bigton_slot_t calledBuiltin
+    // stack: a, b, c, ... -> <return_value>
+    BIGTONIR_CALL_BUILTIN,
     // arg:
     // stack: return_value -> <return_value>
     BIGTONIR_RETURN
@@ -166,7 +169,7 @@ typedef uint32_t bigton_shape_id_t;
 
 typedef struct BigtonShapeProp {
     bigton_str_id_t name;
-    uint32_t byteOffset;
+    uint32_t offset;
 } bigton_shape_prop_t;
 typedef struct BigtonShape {
     uint32_t propCount;
@@ -202,6 +205,7 @@ typedef union BigtonInstrArg {
     bigton_instr_idx_t infLoopLength;
     bigton_instr_idx_t tickLoopLength;
     bigton_slot_t called;
+    bigton_slot_t calledBuiltin;
 } bigton_instr_args_t;
 
 typedef struct BigtonSource {
@@ -216,6 +220,11 @@ typedef struct BigtonFunction {
     bigton_instr_idx_t length;
 } bigton_function_t;
 
+typedef struct BigtonBuiltinFunction {
+    bigton_str_id_t name;
+    uint32_t cost;
+} bigton_builtin_function_t;
+
 typedef struct BigtonConstString {
     uint64_t firstOffset;
     uint64_t charLength;
@@ -227,6 +236,7 @@ typedef struct BigtonProgram {
     bigton_shape_id_t numShapes;
     
     bigton_slot_t numFunctions;
+    bigton_slot_t numBuiltinFunctions;
     bigton_slot_t numGlobalVars;
     uint32_t numShapeProps;
     
@@ -248,6 +258,7 @@ typedef struct BigtonProgram {
 // 
 // --- alignment = 4 ---
 // bigton_function_t functions[header.numFunctions];
+// bigton_builtin_function_t builtinFunctions[header.numBuiltinFunctions];
 // bigton_shape_prop_t shapeProps[header.numShapeProps];
 // 
 // --- alignment = 2 ---
