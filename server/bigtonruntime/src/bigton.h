@@ -2,14 +2,15 @@
 #ifndef BIGTON_H
 #define BIGTON_H
 
-#include <stddef.h>
-
 #include "bigton_ir.h"
+#include <string.h>
 
 
 typedef struct BigtonRc {
     int32_t count;
 } bigton_rc_t;
+
+#define BIGTON_RC_INIT ((bigton_rc_t) { .count = 1 })
 
 
 typedef enum BigtonValueType {
@@ -28,7 +29,7 @@ typedef union BigtonValue bigton_value_t;
 typedef struct BigtonString {
     bigton_rc_t rc;
     uint32_t length;
-    const uint8_t *value;
+    const bigton_char_t *content;
 } bigton_string_t;
 
 typedef struct BigtonTuple {
@@ -63,90 +64,110 @@ typedef union BigtonValue {
     bigton_array_t *a;
 } bigton_value_t;
 
+typedef struct BigtonTaggedValue {
+    bigton_value_type_t t;
+    bigton_value_t v;
+} bigton_tagged_value_t;
+
+#define BIGTON_NULL_VALUE ((bigton_tagged_value_t) { \
+    .t = BIGTON_NULL, \
+    .v = ((bigton_value_t) {}) \
+})
+#define BIGTON_INT_VALUE(value) ((bigton_tagged_value_t) { \
+    .t = BIGTON_INT, \
+    .v = ((bigton_value_t) { .i = (value) }) \
+})
+#define BIGTON_FLOAT_VALUE(value) ((bigton_tagged_value_t) { \
+    .t = BIGTON_FLOAT, \
+    .v = ((bigton_value_t) { .f = (value) }) \
+})
+#define BIGTON_STRING_VALUE(value) ((bigton_tagged_value_t) { \
+    .t = BIGTON_STRING, \
+    .v = ((bigton_value_t) { .s = (value) }) \
+})
+#define BIGTON_TUPLE_VALUE(value) ((bigton_tagged_value_t) { \
+    .t = BIGTON_TUPLE, \
+    .v = ((bigton_value_t) { .t = (value) }) \
+})
+#define BIGTON_OBJECT_VALUE(value) ((bigton_tagged_value_t) { \
+    .t = BIGTON_OBJECT, \
+    .v = ((bigton_value_t) { .o = (value) }) \
+})
+#define BIGTON_ARRAY_VALUE(value) ((bigton_tagged_value_t) { \
+    .t = BIGTON_ARRAY, \
+    .v = ((bigton_value_t) { .a = (value) }) \
+})
+
 
 void *bigtonAllocBuff(size_t numBytes);
-inline void *bigtonAllocNullableBuff(size_t numBytes) {
+static void *bigtonAllocNullableBuff(size_t numBytes) {
     if (numBytes == 0) { return NULL; }
     return bigtonAllocBuff(numBytes);
 }
 
 void bigtonFreeBuff(const void *buffer);
-inline void bigtonFreeNullableBuff(const void *buffer) {
+static void bigtonFreeNullableBuff(const void *buffer) {
     if (buffer == NULL) { return; }
     bigtonFreeBuff(buffer);
 }
 
-inline void bigtonValRcIncr(bigton_value_type_t type, bigton_value_t value) {
-    switch (type) {
+void *bigtonReallocBuff(const void *buffer, size_t numBytes);
+static void *bigtonReallocNullableBuff(const void *buffer, size_t numBytes) {
+    if (buffer == NULL) {
+        return bigtonAllocNullableBuff(numBytes);
+    }
+    if (numBytes == 0) {
+        bigtonFreeBuff(buffer);
+        return NULL;
+    }
+    return bigtonReallocBuff(buffer, numBytes);
+}
+
+static void bigtonValRcIncr(bigton_tagged_value_t value) {
+    switch (value.t) {
         case BIGTON_NULL:
         case BIGTON_INT:
         case BIGTON_FLOAT:
             break;
         case BIGTON_STRING:
-            value.s->rc.count += 1;
+            value.v.s->rc.count += 1;
             break;
         case BIGTON_TUPLE:
-            value.t->rc.count += 1;
+            value.v.t->rc.count += 1;
             break;
         case BIGTON_OBJECT:
-            value.o->rc.count += 1;
+            value.v.o->rc.count += 1;
             break;
         case BIGTON_ARRAY:
-            value.a->rc.count += 1;
+            value.v.a->rc.count += 1;
             break;
     }
 }
 
-inline void bigtonValFree(bigton_value_type_t type, bigton_value_t value) {
-    switch (type) {
-        case BIGTON_NULL:
-        case BIGTON_INT:
-        case BIGTON_FLOAT:
-            return;
-        case BIGTON_STRING:
-            bigtonFreeNullableBuff(value.s->value);
-            bigtonFreeBuff(value.s);
-            break;
-        case BIGTON_TUPLE:
-            bigtonFreeBuff(value.t->valueTypes);
-            bigtonFreeBuff(value.t->values);
-            bigtonFreeBuff(value.t);
-            break;
-        case BIGTON_OBJECT:
-            bigtonFreeNullableBuff(value.o->memberTypes);
-            bigtonFreeNullableBuff(value.o->memberValues);
-            bigtonFreeBuff(value.o);
-            break;
-        case BIGTON_ARRAY:
-            bigtonFreeNullableBuff(value.a->elementTypes);
-            bigtonFreeNullableBuff(value.a->elementValues);
-            bigtonFreeBuff(value.a);
-            break;
-    }
-}
+void bigtonValFree(bigton_tagged_value_t value);
 
-inline void bigtonValRcDecr(bigton_value_type_t type, bigton_value_t value) {
+static void bigtonValRcDecr(bigton_tagged_value_t value) {
     int32_t newCount;
-    switch (type) {
+    switch (value.t) {
         case BIGTON_NULL:
         case BIGTON_INT:
         case BIGTON_FLOAT:
             return;
         case BIGTON_STRING:
-            newCount = value.s->rc.count -= 1;
+            newCount = value.v.s->rc.count -= 1;
             break;
         case BIGTON_TUPLE:
-            newCount = value.t->rc.count -= 1;
+            newCount = value.v.t->rc.count -= 1;
             break;
         case BIGTON_OBJECT:
-            newCount = value.o->rc.count -= 1;
+            newCount = value.v.o->rc.count -= 1;
             break;
         case BIGTON_ARRAY:
-            newCount = value.a->rc.count -= 1;
+            newCount = value.v.a->rc.count -= 1;
             break;
     }
     if (newCount <= 0) {
-        bigtonValFree(type, value);
+        bigtonValFree(value);
     }
 }
 

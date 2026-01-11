@@ -2,7 +2,7 @@
 #ifndef BIGTON_IR_H
 #define BIGTON_IR_H
 
-#include "bigton_types.h"
+#include <stdint.h>
 
 // BIGTON IR CALLING CONVENTIONS
 //
@@ -119,6 +119,9 @@ typedef enum BigtonInstrType {
     // arg: bigton_slot_t storeGlobal
     // stack: value ->
     BIGTONIR_STORE_GLOBAL,
+    // arg:
+    // stack: value ->
+    BIGTONIR_PUSH_LOCAL,
     // arg: bigton_slot_t storeLocal
     // stack: value ->
     BIGTONIR_STORE_LOCAL,
@@ -132,10 +135,10 @@ typedef enum BigtonInstrType {
     // arg: bigton_if_args_t ifParams
     // stack: condition ->
     BIGTONIR_IF,
-    // arg: uint32_t infLoopLength
+    // arg: bigton_instr_idx_t infLoopLength
     // stack: ->
     BIGTONIR_LOOP,
-    // arg: uint32_t tickLoopLength
+    // arg: bigton_instr_idx_t tickLoopLength
     // stack: ->
     BIGTONIR_TICK,
     // arg:
@@ -152,12 +155,27 @@ typedef enum BigtonInstrType {
     BIGTONIR_RETURN
 } bigton_instr_type_t;
 
+
+typedef uint32_t bigton_str_id_t;
+typedef uint16_t bigton_char_t;
+typedef int64_t bigton_int_t;
+typedef double bigton_float_t;
 typedef uint32_t bigton_slot_t;
+typedef uint32_t bigton_instr_idx_t;
 typedef uint32_t bigton_shape_id_t;
 
+typedef struct BigtonShapeProp {
+    bigton_str_id_t name;
+    uint32_t byteOffset;
+} bigton_shape_prop_t;
+typedef struct BigtonShape {
+    uint32_t propCount;
+    uint32_t firstPropOffset;
+} bigton_shape_t;
+
 typedef struct BigtonIfArgs {
-    uint32_t if_body_length;
-    uint32_t else_body_length;
+    bigton_instr_idx_t if_body_length;
+    bigton_instr_idx_t else_body_length;
 } bigton_if_args_t;
 
 typedef union BigtonInstrArg {
@@ -181,14 +199,61 @@ typedef union BigtonInstrArg {
     bigton_str_id_t storeObjectMemName;
     
     bigton_if_args_t ifParams;
-    uint32_t infLoopLength;
-    uint32_t tickLoopLength;
+    bigton_instr_idx_t infLoopLength;
+    bigton_instr_idx_t tickLoopLength;
     bigton_slot_t called;
-} bigton_instr_params_t;
+} bigton_instr_args_t;
 
-typedef enum BigtonSymbolType {
-    BIGTONIR_FUNCTION,
-    BIGTONIR_VARIABLE
-} bigton_symbol_type_t;
+typedef struct BigtonSource {
+    bigton_str_id_t file;
+    uint32_t line;
+} bigton_source_t;
+
+typedef struct BigtonFunction {
+    bigton_str_id_t name;
+    bigton_source_t declSource;
+    bigton_instr_idx_t start;
+    bigton_instr_idx_t length;
+} bigton_function_t;
+
+typedef struct BigtonConstString {
+    uint64_t firstOffset;
+    uint64_t charLength;
+} bigton_const_string_t;
+
+typedef struct BigtonProgram {
+    bigton_instr_idx_t numInstrs;
+    bigton_str_id_t numStrings;
+    bigton_shape_id_t numShapes;
+    
+    bigton_slot_t numFunctions;
+    bigton_slot_t numGlobalVars;
+    uint32_t numShapeProps;
+    
+    uint64_t numConstStringChars; 
+    
+    bigton_str_id_t unknownStrId;
+    bigton_instr_idx_t globalStart;
+    bigton_instr_idx_t globalLength;
+} bigton_program_t;
+
+// FILE FORMAT STRUCTURE:
+// 
+// bigton_program_t header;
+// 
+// --- alignment = 8 ---
+// bigton_instr_args_t instrArgs[header.numInstrs];
+// bigton_const_string_t constStrings[header.numStrings];
+// bigton_shape_t shapes[header.numShapes];
+// 
+// --- alignment = 4 ---
+// bigton_function_t functions[header.numFunctions];
+// bigton_shape_prop_t shapeProps[header.numShapeProps];
+// 
+// --- alignment = 2 ---
+// bigton_char_t constStringChars[header.numConstStringChars];
+// 
+// --- alignment = 1 ---
+// bigton_instr_type_t instrTypes[header.numInstrs];
 
 #endif
