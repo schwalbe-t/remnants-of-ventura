@@ -2,6 +2,9 @@
 #include "jni/schwalbe_ventura_bigton_runtime_BigtonRuntime.h"
 #include <bigton/runtime.h>
 #include <bigton/values.h>
+#include <bigton/error.h>
+#include <bigton/ir.h>
+#include <jni.h>
 #include <stdlib.h>
 
 /*
@@ -216,4 +219,133 @@ JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_popSt
     bigton_tagged_value_t *v = malloc(sizeof(bigton_tagged_value_t));
     *v = bigtonStackPop(&r->stack, r);
     return (jlong) v;
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    hasError
+ * Signature: (J)Z
+ */
+JNIEXPORT jboolean JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_hasError(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    return (jboolean) r->error != BIGTONE_NONE;
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    getError
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_getError(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    return (jint) r->error;
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    getCurrentFile
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_getCurrentFile(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    return (jint) r->currentSource.file;
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    getCurrentLine
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_getCurrentLine(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    return (jint) r->currentSource.line;
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    getUsedMemory
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_getUsedMemory(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    return (jlong) r->b.totalSizeBytes;
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    getAwaitingBuiltinFun
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_getAwaitingBuiltinFun(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    return (jint) r->awaitingBuiltinFun;
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    getConstString
+ * Signature: (JI)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_getConstString(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime, jint constStrId
+) {
+    (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    bigton_const_string_t *s = r->program.constStrings + constStrId;
+    const bigton_char_t *content = r->program.constStringChars + s->firstOffset;
+    return (*env)->NewString(env, (const jchar *) content, s->charLength);
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    startTick
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_startTick(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    bigtonStartTick(r);
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    execBatch
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_execBatch(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    bigton_exec_status_t status = bigtonExecBatch(r);
+    return (jint) status;
 }
