@@ -105,6 +105,7 @@ JNIEXPORT jstring JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_get
     (void) cls;
     bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
     bigton_string_t *line = r->logs[i];
+    bigtonValRcIncr(BIGTON_STRING_VALUE(line));
     return (*env)->NewString(env, (const jchar *) line->content, line->length);
 }
 
@@ -152,4 +153,67 @@ JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_getTr
     bigton_trace_call_t *t = malloc(sizeof(bigton_trace_call_t));
     *t = r->trace[i];
     return (jlong) t;
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    getStackLength
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_getStackLength(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    return (jlong) r->stack.count;
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    pushStack
+ * Signature: (JJ)V
+ */
+JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_pushStack(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime, jlong rawValue
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    bigton_tagged_value_t *v = (bigton_tagged_value_t *) rawValue;
+    bigtonStackPush(&r->stack, *v, r);
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    getStack
+ * Signature: (JJ)J
+ */
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_getStack(
+    JNIEnv *env, jclass cls, 
+    jlong rawRuntime, jlong i
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    bigton_tagged_value_t *v = malloc(sizeof(bigton_tagged_value_t));
+    *v = bigtonStackAt(&r->stack, (size_t) i, r);
+    bigtonValRcIncr(*v);
+    return (jlong) v;
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    popStack
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_popStack(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    if (r->stack.count == 0) { return (jlong) 0; }
+    bigton_tagged_value_t *v = malloc(sizeof(bigton_tagged_value_t));
+    *v = bigtonStackPop(&r->stack, r);
+    return (jlong) v;
 }
