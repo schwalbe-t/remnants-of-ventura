@@ -2,9 +2,9 @@
 #ifndef BIGTON_RUNTIME_H
 #define BIGTON_RUNTIME_H
 
-#include "bigton.h"
-#include "bigton_ir.h"
-#include "bigton_error.h"
+#include <bigton/values.h>
+#include <bigton/ir.h>
+#include <bigton/error.h>
 
 typedef struct BigtonParsedProgram {
     bigton_str_id_t unknownStrId;
@@ -106,10 +106,14 @@ typedef struct BigtonRuntimeState {
 } bigton_runtime_state_t;
 
 
+void bigtonParseProgram(
+    const uint8_t *rawProgram, size_t rawProgramSize,
+    bigton_parsed_program_t *p, bigton_error_t *e
+);
 void bigtonInit(
     bigton_runtime_state_t *r,
     const bigton_runtime_settings_t *settings,
-    const uint8_t *rawProgram, size_t rawProgramSize
+    const bigton_parsed_program_t* p
 );
 void bigtonFree(bigton_runtime_state_t *r);
 

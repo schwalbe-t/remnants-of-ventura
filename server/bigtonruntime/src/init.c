@@ -1,14 +1,13 @@
 
 #define BIGTON_ERROR_MACROS
-#include "bigton.h"
-#include "bigton_ir.h"
-#include "bigton_runtime.h"
+#include <bigton/values.h>
+#include <bigton/ir.h>
+#include <bigton/runtime.h>
 
-static void parseProgram(
-    bigton_runtime_state_t *r,
-    const uint8_t *rawProgram, size_t rawProgramSize
+void bigtonParseProgram(
+    const uint8_t *rawProgram, size_t rawProgramSize,
+    bigton_parsed_program_t *dest, bigton_error_t *e
 ) {
-    bigton_parsed_program_t *dest = &r->program;
     const uint8_t *p = rawProgram;
     
     bigton_program_t *header = (bigton_program_t *) rawProgram;
@@ -51,7 +50,7 @@ static void parseProgram(
     
     const uint8_t *end = rawProgram + rawProgramSize;
     if (p > end) {
-        r->error = BIGTONE_INT_INCOMPLETE_PROGRAM;
+        *e = BIGTONE_INT_INCOMPLETE_PROGRAM;
         return;
     }
 }
@@ -69,10 +68,10 @@ static void allocateGlobals(bigton_runtime_state_t *r) {
 void bigtonInit(
     bigton_runtime_state_t *r,
     const bigton_runtime_settings_t *settings,
-    const uint8_t *rawProgram, size_t rawProgramSize
+    const bigton_parsed_program_t *p
 ) {
     r->error = BIGTONE_NONE;
-    parseProgram(r, rawProgram, rawProgramSize);
+    r->program = *p;
     if (HAS_ERROR(r)) { return; }
     r->settings = *settings;
     r->b = (bigton_buff_owner_t) {

@@ -21,3 +21,11 @@ dependencies {
 application {
     mainClass.set("schwalbe.ventura.server.MainKt")
 }
+
+sourceSets {
+    named("main") {
+        java {
+            srcDir("bigtonruntime/jni")
+        }
+    }
+}

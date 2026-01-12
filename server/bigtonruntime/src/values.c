@@ -1,7 +1,7 @@
 
-#include "bigton.h"
-#include "bigton_ir.h"
-#include "bigton_runtime.h"
+#include <bigton/values.h>
+#include <bigton/ir.h>
+#include <bigton/runtime.h>
 #include <stdbool.h>
 
 void bigtonValFree(bigton_tagged_value_t value) {

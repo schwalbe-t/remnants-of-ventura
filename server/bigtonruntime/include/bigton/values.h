@@ -2,8 +2,8 @@
 #ifndef BIGTON_H
 #define BIGTON_H
 
-#include "bigton_ir.h"
-#include "bigton_error.h"
+#include <bigton/ir.h>
+#include <bigton/error.h>
 #include <string.h>
 
 
@@ -158,7 +158,7 @@ static bigton_tagged_value_t bigtonArrayAt(
     bigton_array_t *a, bigton_int_t i, bigton_error_t *e
 ) {
     if (i < 0 || (size_t) i >= a->length) {
-        *e = BIGTONE_TUPLE_INDEX_OOB;
+        *e = BIGTONE_ARRAY_INDEX_OOB;
         return BIGTON_NULL_VALUE;
     }
     return (bigton_tagged_value_t) {

@@ -1,9 +1,9 @@
 
 #define BIGTON_ERROR_MACROS
-#include "bigton.h"
-#include "bigton_ir.h"
-#include "bigton_error.h"
-#include "bigton_runtime.h"
+#include <bigton/values.h>
+#include <bigton/ir.h>
+#include <bigton/error.h>
+#include <bigton/runtime.h>
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
@@ -228,6 +228,8 @@ bool valueIsTruthy(bigton_tagged_value_t x) {
             return true;
     }
 }
+
+#include <stdio.h>
 
 bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
     if (r->b.totalSizeBytes > r->settings.memoryUsageLimit) {
@@ -755,7 +757,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                 .type = BIGTONSC_FUNCTION,
                 .start = start,
                 .end = start + func->length,
-                .after = instrIdx,
+                .after = instrIdx + 1,
                 .numLocals = 0
             });
             r->currentInstr = start;
