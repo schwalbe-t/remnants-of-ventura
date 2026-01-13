@@ -9,6 +9,30 @@ extern "C" {
 #endif
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
+ * Method:    copy
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_copy
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
+ * Method:    free
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_free
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
+ * Method:    getType
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_getType
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
  * Method:    createNull
  * Signature: ()J
  */
@@ -25,67 +49,19 @@ JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_createI
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
- * Method:    createFloat
- * Signature: (D)J
- */
-JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_createFloat
-  (JNIEnv *, jclass, jdouble);
-
-/*
- * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
- * Method:    createString
- * Signature: (Ljava/lang/String;J)J
- */
-JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_createString
-  (JNIEnv *, jclass, jstring, jlong);
-
-/*
- * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
- * Method:    createTuple
- * Signature: (IJ)J
- */
-JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_createTuple
-  (JNIEnv *, jclass, jint, jlong);
-
-/*
- * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
- * Method:    createArray
- * Signature: (IJ)J
- */
-JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_createArray
-  (JNIEnv *, jclass, jint, jlong);
-
-/*
- * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
- * Method:    copy
- * Signature: (J)J
- */
-JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_copy
-  (JNIEnv *, jclass, jlong);
-
-/*
- * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
- * Method:    free
- * Signature: (JJ)V
- */
-JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_free
-  (JNIEnv *, jclass, jlong, jlong);
-
-/*
- * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
- * Method:    getType
- * Signature: (J)I
- */
-JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_getType
-  (JNIEnv *, jclass, jlong);
-
-/*
- * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
  * Method:    getInt
  * Signature: (J)J
  */
 JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_getInt
   (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
+ * Method:    createFloat
+ * Signature: (D)J
+ */
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_createFloat
+  (JNIEnv *, jclass, jdouble);
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
@@ -97,11 +73,27 @@ JNIEXPORT jdouble JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_getFl
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
+ * Method:    createString
+ * Signature: (Ljava/lang/String;J)J
+ */
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_createString
+  (JNIEnv *, jclass, jstring, jlong);
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
  * Method:    getString
  * Signature: (J)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_getString
   (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
+ * Method:    createTuple
+ * Signature: (IJ)J
+ */
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_createTuple
+  (JNIEnv *, jclass, jint, jlong);
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
@@ -130,18 +122,18 @@ JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_setTuple
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
  * Method:    findObjectPropDyn
- * Signature: (JLjava/lang/String;)I
+ * Signature: (JLjava/lang/String;J)I
  */
 JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_findObjectPropDyn
-  (JNIEnv *, jclass, jlong, jstring);
+  (JNIEnv *, jclass, jlong, jstring, jlong);
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
  * Method:    findObjectPropConst
- * Signature: (JI)I
+ * Signature: (JIJ)I
  */
 JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_findObjectPropConst
-  (JNIEnv *, jclass, jlong, jint);
+  (JNIEnv *, jclass, jlong, jint, jlong);
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
@@ -166,6 +158,14 @@ JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_getObje
  */
 JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_setObjectMember
   (JNIEnv *, jclass, jlong, jint, jlong);
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
+ * Method:    createArray
+ * Signature: (IJ)J
+ */
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_createArray
+  (JNIEnv *, jclass, jint, jlong);
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonValue

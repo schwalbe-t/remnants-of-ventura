@@ -31,7 +31,8 @@ public final class BigtonRuntime {
     );
     /**
      * Deletes the given runtime settings.
-     * @param settings The pointer to the settings
+     * @param settings The pointer to the settings - pointers that do not refer
+     * to a valid settings object result in undefined behavior
      */
     public static native void freeSettings(long settings);
     
@@ -54,7 +55,8 @@ public final class BigtonRuntime {
     /**
      * Destroys the runtime instance pointed to by 'r',
      * ALSO FREEING ALL OBJECTS ALLOCATED BY THE INSTANCE.
-     * @param r The pointer to the resource instance.
+     * @param r The pointer to the runtime instance - pointers that do not refer
+     * to a valid runtime instance object result in undefined behavior
      */
     public static native void free(long r);
     
@@ -111,14 +113,14 @@ public final class BigtonRuntime {
      * an out of bounds index results in undefined behavior
      * @return A pointer to a newly allocated value object containing the value -
      * ownership belongs to the caller and must be freed using
-     * {@link BigtonValue#free(long)}
+     * {@link BigtonValue#free}
      */
     public static native long getStack(long r, long i);
     /**
      * @param r A pointer to the runtime instance
      * @return A pointer to a newly allocated value object containing the popped
      * value - may be 0 if the stack is empty - ownership belongs to the caller
-     * and must be freed using {@link BigtonValue#free(long)}
+     * and must be freed using {@link BigtonValue#free}
      */
     public static native long popStack(long r);
     
