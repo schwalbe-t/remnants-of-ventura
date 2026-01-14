@@ -100,7 +100,8 @@ public final class BigtonValue {
      * deallocated when {@link BigtonRuntime#free} is used on this instance
      * @return A newly allocated value object containing the given tuple
      * reference - ownership is transferred to the caller and the object
-     * needs to be freed using {@link BigtonValue#free}
+     * needs to be freed using {@link BigtonValue#free} - the tuple is filled
+     * with value type NULL
      */
     public static native long createTuple(int length, long r);
     /**
@@ -131,7 +132,16 @@ public final class BigtonValue {
      * at the given index to - does not take ownership of the value object
      */
     public static native void setTupleMember(long v, int i, long value);
-
+    /**
+     * Updates the tuple contained by the given value object bsaed on the
+     * values contained in the tuple. Call this method after modifying a tuple
+     * using {@link #setTupleMember}.
+     * @param v A pointer to a value object with contained type
+     * {@link BigtonValue.Type#TUPLE} - a value object containing another type
+     * results in undefined behavior
+     */
+    public static native void updateTupleInfo(long v);
+    
     /**
      * @param v A pointer to a value object with contained type
      * {@link BigtonValue.Type#OBJECT} - a value object containing another type
