@@ -96,60 +96,61 @@ package schwalbe.ventura.server
 // }
 
 import schwalbe.ventura.bigton.*
-import schwalbe.ventura.bigton.compilation.*
-import schwalbe.ventura.bigton.runtime.*
+import java.nio.file.Paths
 
 fun main() {
-    try {
+    System.load(Paths.get("bigtonruntime/libbigtonruntime.so").toAbsolutePath().toString())
+    println("test")
+    // try {
 
-        val utilsSrc = """
+    //     val utilsSrc = """
         
-        fun range(i, max) {
-            if i >= max { return null }
-            return (i, range(i + 1, max))
-        }
+    //     fun range(i, max) {
+    //         if i >= max { return null }
+    //         return (i, range(i + 1, max))
+    //     }
 
-        """
-        val mainSrc = """
+    //     """
+    //     val mainSrc = """
         
-        print(range(0, 4))
-        print(range(0, 8))
+    //     print(range(0, 4))
+    //     print(range(0, 8))
         
-        """
+    //     """
 
-        val files = listOf(
-            BigtonSourceFile("utils", utilsSrc),
-            BigtonSourceFile("main", mainSrc)
-        )
-        val features = setOf(
-            BigtonFeature.RAM_MODULE,
-            BigtonFeature.CUSTOM_FUNCTIONS
-        )
-        val modules = listOf(
-            bigtonStandardModule
-        )
-        val program: BigtonProgram = compileSources(files, features, modules)
+    //     val files = listOf(
+    //         BigtonSourceFile("utils", utilsSrc),
+    //         BigtonSourceFile("main", mainSrc)
+    //     )
+    //     val features = setOf(
+    //         BigtonFeature.RAM_MODULE,
+    //         BigtonFeature.CUSTOM_FUNCTIONS
+    //     )
+    //     val modules = listOf(
+    //         bigtonStandardModule
+    //     )
+    //     val program: BigtonProgram = compileSources(files, features, modules)
 
-        // println(program.displayInstr())
+    //     // println(program.displayInstr())
 
-        val runtime = BigtonRuntime(
-            program, modules,
-            memorySize = 100,
-            tickInstructionLimit = Long.MAX_VALUE,
-            maxCallDepth = 100,
-            maxTupleSize = 8
-        )
-        try {
-            val startTime: Long = System.currentTimeMillis()
-            runtime.executeTick()
-            val endTime: Long = System.currentTimeMillis()
-            println("Execution time: ${endTime - startTime}ms")
-        } catch (e: BigtonException) {
-            runtime.logStackTrace(e)
-        }
-        println(runtime.getLogString())
+    //     val runtime = BigtonRuntime(
+    //         program, modules,
+    //         memorySize = 100,
+    //         tickInstructionLimit = Long.MAX_VALUE,
+    //         maxCallDepth = 100,
+    //         maxTupleSize = 8
+    //     )
+    //     try {
+    //         val startTime: Long = System.currentTimeMillis()
+    //         runtime.executeTick()
+    //         val endTime: Long = System.currentTimeMillis()
+    //         println("Execution time: ${endTime - startTime}ms")
+    //     } catch (e: BigtonException) {
+    //         runtime.logStackTrace(e)
+    //     }
+    //     println(runtime.getLogString())
 
-    } catch (e: BigtonException) {
-        println(e.message)
-    }
+    // } catch (e: BigtonException) {
+    //     println(e.message)
+    // }
 }

@@ -7,7 +7,7 @@ val exposedVersion = "0.51.1"
 
 dependencies {
     implementation(project(":common"))
-
+    implementation(project("bigtonruntime"))
 
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
@@ -20,12 +20,4 @@ dependencies {
 
 application {
     mainClass.set("schwalbe.ventura.server.MainKt")
-}
-
-sourceSets {
-    named("main") {
-        java {
-            srcDir("bigtonruntime/jni")
-        }
-    }
 }

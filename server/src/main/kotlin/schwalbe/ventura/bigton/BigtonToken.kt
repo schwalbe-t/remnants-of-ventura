@@ -1,7 +1,5 @@
 
-package schwalbe.ventura.bigton.compilation
-
-import schwalbe.ventura.bigton.BigtonSource
+package schwalbe.ventura.bigton
 
 enum class BigtonTokenType {
 

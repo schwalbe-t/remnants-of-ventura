@@ -1,5 +1,5 @@
 
-#include "jni/schwalbe_ventura_bigton_runtime_BigtonRuntime.h"
+#include "jni-headers/schwalbe_ventura_bigton_runtime_BigtonRuntime.h"
 #include <bigton/runtime.h>
 #include <bigton/values.h>
 #include <bigton/error.h>

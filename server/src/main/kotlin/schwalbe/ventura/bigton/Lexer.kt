@@ -1,7 +1,5 @@
 
-package schwalbe.ventura.bigton.compilation
-
-import schwalbe.ventura.bigton.*
+package schwalbe.ventura.bigton
 
 private fun isAsciiWhitespace(ch: Char): Boolean = when (ch) {
     ' ', '\n', '\r', '\t' -> true

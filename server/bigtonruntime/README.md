@@ -1,31 +1,31 @@
 
 # Bigton C runtime
 
-To generate Java glue headers, run the following command in the `jni`-directory:
+- `src/main/c/glue/jni-headers/` - Machine-generated C JNI headers
+- `src/main/c/glue/` - Glue code implementing JNI interface functions
+- `src/main/c/runtime/` - Implementation of the BIGTON runtime in C
+- `src/main/headers/bigton/` - BIGTON runtime API C headers
+- `src/main/java/.../` - Java definitions of the JNI API
+
+### (Re-)Generation of JNI headers
+
+To generate Java glue headers, run the following command in this directory:
 ```bash
-javac -h ../glue/jni -d ../java-out schwalbe/ventura/bigton/runtime/*.java
+javac -h src/main/c/glue/jni-headers -d javac-out src/main/java/schwalbe/ventura/bigton/runtime/*.java
 ```
-This will generate several headers in `glue/jni` for the glue code in `glue` to use.
+This will generate several headers in `src/main/c/glue/jni-headers` for the glue code in `src/main/c/glue` to use.
 
-## Compilation
-
-To compile this into a dynamic library loadable by the JVM:
-- Compile all `.c` files in the `glue` and `src` directories
-- Link the maths library: `-lm`
-- Include BIGTON headers: `-I $(realpath include)`
-- Include JNI headers: `-I $(realpath $(dirname $(readlink -f /usr/bin/javac))/../include/)`
-- Include Linux JNI headers (if on Linux): `-I $(realpath $(dirname $(readlink -f /usr/bin/javac))/../include/linux/)`
-
-## IDE Headers
+### IDEs
 
 As seen in the previous section, the glue code relies on JNI headers provided by your JVM implementation. On a system using a POSIX shell, you can get the include paths using:
 ```
-echo $(realpath include)
+echo $(realpath src/main/headers)
 echo $(realpath $(dirname $(readlink -f /usr/bin/javac))/../include/)
 ```
-Linux systems additionally need to include the Linux JNI headers:
+Additionally you will also need to include system-specific JNI headers
+(`<SYSTEM>` = `darwin` on MacOS, `linux` on Linux, `win32` on Windows):
 ```
-echo $(realpath $(dirname $(readlink -f /usr/bin/javac))/../include/linux/)
+echo $(realpath $(dirname $(readlink -f /usr/bin/javac))/../include/<SYSTEM>/)
 ```
 
 Add these paths as include paths to your IDE language server. For example, Zed uses Clangd, so users of Zed can add a `.clangd` file in this directory:
@@ -33,7 +33,7 @@ Add these paths as include paths to your IDE language server. For example, Zed u
 CompileFlags:
   Add:
     # Run the commands shown above to get your path(s)
-    - "-I/home/schwalbe/Projects/kotlin/ventura/server/bigtonruntime/include"
+    - "-I/home/schwalbe/Projects/kotlin/ventura/server/bigtonruntime/src/main/headers"
     - "-I/usr/lib/jvm/java-21-openjdk/include/"
     - "-I/usr/lib/jvm/java-21-openjdk/include/linux/"
 ```

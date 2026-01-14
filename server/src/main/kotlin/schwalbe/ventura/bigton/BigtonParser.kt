@@ -1,7 +1,5 @@
 
-package schwalbe.ventura.bigton.compilation
-
-import schwalbe.ventura.bigton.*
+package schwalbe.ventura.bigton
 
 class BigtonParser(val tokens: List<BigtonToken>) {
 

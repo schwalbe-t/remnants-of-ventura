@@ -1,4 +1,6 @@
-test
-*.class
-java-out
+javac-out
 .clangd
+
+*.so
+*.dll
+*.dylib

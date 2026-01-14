@@ -1,7 +1,5 @@
 
-package schwalbe.ventura.bigton.compilation
-
-import schwalbe.ventura.bigton.*
+package schwalbe.ventura.bigton
 
 data class BigtonAstFunction(
     val name: String,
