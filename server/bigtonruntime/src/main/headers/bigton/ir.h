@@ -17,7 +17,7 @@
 //      5. (implicit) null is pushed onto stack 
 // 5. Return value is on stack at call site
 
-typedef enum BigtonInstrType {
+enum BigtonInstrType {
     // arg: uint32_t sourceLine
     // stack: ->
     BIGTONIR_SOURCE_LINE,
@@ -156,7 +156,8 @@ typedef enum BigtonInstrType {
     // arg:
     // stack: return_value -> <return_value>
     BIGTONIR_RETURN
-} bigton_instr_type_t;
+};
+typedef uint8_t bigton_instr_type_t; // enum BigtonInstrType
 
 
 typedef uint32_t bigton_str_id_t;

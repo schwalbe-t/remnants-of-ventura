@@ -26,10 +26,10 @@ JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_freeSe
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
  * Method:    create
- * Signature: (JJJ)J
+ * Signature: (JLjava/nio/ByteBuffer;II)J
  */
 JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_create
-  (JNIEnv *, jclass, jlong, jlong, jlong);
+  (JNIEnv *, jclass, jlong, jobject, jint, jint);
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime

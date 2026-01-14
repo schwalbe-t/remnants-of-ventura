@@ -49,11 +49,15 @@ JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_freeSe
  */
 JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_create(
     JNIEnv *env, jclass cls,
-    jlong rawSettings, jlong rawProgram, jlong rawProgramLength
+    jlong rawSettings, jobject rawProgramBuff,
+    jint rawProgramStart, jint rawProgramLength
 ) {
-    (void) env, (void) cls;
+    (void) cls;
     bigton_runtime_settings_t *settings
         = (bigton_runtime_settings_t *) rawSettings;
+    const uint8_t *rawProgram
+        = (*env)->GetDirectBufferAddress(env, rawProgramBuff)
+        + (size_t) rawProgramStart;
     bigton_error_t parseError;
     bigton_parsed_program_t p;
     bigtonParseProgram(

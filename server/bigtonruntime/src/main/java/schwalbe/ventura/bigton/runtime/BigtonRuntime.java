@@ -1,8 +1,11 @@
 
 package schwalbe.ventura.bigton.runtime;
 
-public final class BigtonRuntime {
+import java.nio.ByteBuffer;
+import java.nio.file.Paths;
 
+public final class BigtonRuntime {
+    
     /**
      * Mirror of definition of 'bigton_exec_status_t'
      * in 'bigtonruntime/include/bigton/runtime.h'
@@ -41,16 +44,20 @@ public final class BigtonRuntime {
      * Destroy with {@link BigtonRuntime#free(long)} once complete.
      * @param settings The settings to use for the runtime.
      * These are copied and have no lifetime requirenments.
-     * @param rawProgram A pointer to the start of the raw program.
+     * @param rawProgram A DIRECT byte buffer containing the raw program.
      * This is NOT COPIED and REFERENCED BY THE RUNTIME, and therefore
-     * must outlive this runtime instance
-     * @param rawProgramLength The size of the raw program block referenced
-     * by 'rawProgram'
+     * must outlive this runtime instance!
+     * Passing a non-direct byte buffer or a byte buffer with insufficient
+     * capacity results in undefined behavior.
+     * @param rawProgramStart The offset in bytes of the start of the raw
+     * program inside the given byte buffer
+     * @param rawProgramLength The length of the raw program in bytes
      * @return The pointer to the allocated runtime - a value of 0 indicates
-     * failure when parsing the given program
+     * failure during parsing of the given program
      */
     public static native long create(
-        long settings, long rawProgram, long rawProgramLength
+        long settings, ByteBuffer rawProgram,
+        int rawProgramStart, int rawProgramLength
     );
     /**
      * Destroys the runtime instance pointed to by 'r',
@@ -193,5 +200,37 @@ public final class BigtonRuntime {
      * @return The execution status code
      */
     public static native int execBatch(long r);
+    
+    
+    private static String getOsLibraryPrefix(String osName) {
+        if (osName.contains("win")) { return ""; }
+        if (osName.contains("mac")) { return "lib"; }
+        if (osName.contains("nux") || osName.contains("nix")) { return "lib"; }
+        throw new IllegalStateException("Unsupported OS '" + osName + "'");
+    }
+    
+    private static String getOsLibraryFileExt(String osName) {
+        if (osName.contains("win")) { return "dll"; }
+        if (osName.contains("mac")) { return "dylib"; }
+        if (osName.contains("nux") || osName.contains("nix")) { return "so"; }
+        throw new IllegalStateException("Unsupported OS '" + osName + "'");
+    }
+    
+    /**
+     * Attempts to load the specified BIGTON runtime binary from disk.
+     * @param relDir The directory relative to the current working directory
+     * containing the binary
+     * @param name The name of the binary, without any platform-specific prefix
+     * or file extension 
+     */
+    public static void loadLibrary(String relDir, String name) {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String prefix = BigtonRuntime.getOsLibraryPrefix(osName);
+        String ext = BigtonRuntime.getOsLibraryFileExt(osName);
+        String fileName = prefix + name + "." + ext;
+        String absPath = Paths.get(relDir, fileName)
+            .toAbsolutePath().toString();
+        System.load(absPath);
+    }
     
 }

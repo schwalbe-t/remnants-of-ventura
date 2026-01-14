@@ -96,11 +96,122 @@ package schwalbe.ventura.server
 // }
 
 import schwalbe.ventura.bigton.*
+import schwalbe.ventura.bigton.runtime.*
+import java.io.ByteArrayOutputStream
+import java.io.DataOutputStream;
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.nio.file.Paths
 
 fun main() {
-    System.load(Paths.get("bigtonruntime/libbigtonruntime.so").toAbsolutePath().toString())
-    println("test")
+    BigtonRuntime.loadLibrary("bigtonruntime", "bigtonruntime")
+    
+    val tickInstructionLimit: Long = 1024
+    val memoryUsageLimit: Long = 1024 * 16
+    val maxCallDepth = 128
+    val maxTupleSize = 8
+    val settings: Long = BigtonRuntime.createSettings(
+        tickInstructionLimit, memoryUsageLimit,
+        maxCallDepth, maxTupleSize
+    )
+    
+    val p = BinaryWriter()
+    // --- bigton_program_t header ---
+    p.beginStruct()
+    p.putInt(3)         // bigton_instr_idx_t numInstrs
+    p.putInt(1)         // bigton_str_id_t numStrings
+    p.putInt(0)         // bigton_shape_id_t numShapes
+    p.putInt(0)         // bigton_slot_t numFunctions
+    p.putInt(0)         // bigton_slot_t numBuiltinFunctions
+    p.putInt(0)         // bigton_slot_t numGlobalVars
+    p.putInt(0)         // uint32_t numShapeProps
+    p.putLong(9)        // uint64_t numConstStringChars
+    p.putInt(0)         // bigton_str_id_t unknownStrId
+    p.putInt(0)         // bigton_instr_idx_t globalStart
+    p.putInt(3)         // bigton_instr_idx_t globalLength
+    p.endStruct()
+    // --- bigton_instr_args_t instrArgs[header.numInstrs] ---
+    p.putLong(5)        // [0] bigton_int_t loadInt
+    p.putLong(10)       // [1] bigton_int_t loadInt
+    p.putLong(0)        // [2] (no data)
+    // --- bigton_const_string_t constStrings[header.numStrings] ---
+    p.beginStruct()     // [0]
+    p.putLong(0)        // uint64_t firstOffset
+    p.putLong(9)        // uint64_t charLength
+    p.endStruct()
+    // --- bigton_shape_t shapes[header.numShapes] ---
+    // --- bigton_function_t functions[header.numFunctions] ---
+    // --- bigton_builtin_function_t builtinFunctions[header.numBuiltinFunctions] ---
+    // --- bigton_shape_prop_t shapeProps[header.numShapeProps] ---
+    // --- bigton_char_t constStringChars[header.numConstStringChars] ---
+    p.putString("<unknown>")
+    // --- bigton_instr_type_t instrTypes[header.numInstrs] ---
+    p.putByte(4)        // BIGTONIR_LOAD_INT
+    p.putByte(4)        // BIGTONIR_LOAD_INT
+    p.putByte(15)       // BIGTONIR_ADD
+    
+    val programBytes: ByteArray = p.output.toByteArray()
+    val rawProgram: ByteBuffer = ByteBuffer.allocateDirect(programBytes.size)
+        .order(ByteOrder.nativeOrder())
+        .put(programBytes)
+        .flip()
+        
+    val runtime: Long = BigtonRuntime.create(
+        settings, rawProgram, rawProgram.position(), rawProgram.remaining()
+    )
+    check(runtime != 0L)
+    check(!BigtonRuntime.hasError(runtime)) { BigtonRuntime.getError(runtime) }
+    
+    BigtonRuntime.startTick(runtime)
+    execLoop@while (true) {
+        val status: Int = BigtonRuntime.execBatch(runtime)
+        when {
+            BigtonRuntime.hasError(runtime) ||
+            status == BigtonRuntime.Status.ERROR -> {
+                val error: Int = BigtonRuntime.getError(runtime)
+                println("Stopped with error code $error")
+            }
+            status == BigtonRuntime.Status.CONTINUE -> {}
+            status == BigtonRuntime.Status.EXEC_BUILTIN_FUN -> {
+                val builtinId: Int
+                    = BigtonRuntime.getAwaitingBuiltinFun(runtime)
+                println("Execute builtin fun [${builtinId}]")
+                error("not implemented")
+            }
+            status == BigtonRuntime.Status.AWAIT_TICK -> {
+                println("Next tick")
+                BigtonRuntime.startTick(runtime)
+            }
+            status == BigtonRuntime.Status.COMPLETE -> {
+                println("Program execution finished")
+                break@execLoop
+            }
+        }
+    }
+    println("Stack:")
+    val stackSize: Long = BigtonRuntime.getStackLength(runtime)
+    for (i in 0..<stackSize) {
+        val value: Long = BigtonRuntime.getStack(runtime, i)
+        val str: String = when (BigtonValue.getType(value)) {
+            BigtonValue.Type.NULL -> "null"
+            BigtonValue.Type.INT -> BigtonValue.getInt(value).toString()
+            BigtonValue.Type.FLOAT -> BigtonValue.getFloat(value).toString()
+            BigtonValue.Type.TUPLE -> "<tuple>"
+            BigtonValue.Type.ARRAY -> "<array>"
+            BigtonValue.Type.OBJECT -> "<object>"
+            else -> "<unknown>"
+        }
+        print(" - $i: $str")
+        BigtonValue.free(value)
+    }
+    
+    BigtonRuntime.free(runtime)
+    BigtonRuntime.freeSettings(settings)
+    
+    // TODO! fun stuff
+    
+    // BigtonRuntime.free(runtime)
+    
     // try {
 
     //     val utilsSrc = """
