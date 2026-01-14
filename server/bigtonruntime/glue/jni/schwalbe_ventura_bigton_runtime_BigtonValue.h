@@ -121,6 +121,14 @@ JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_setTuple
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
+ * Method:    updateTupleInfo
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_updateTupleInfo
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
  * Method:    findObjectPropDyn
  * Signature: (JLjava/lang/String;J)I
  */
