@@ -95,4 +95,9 @@ class BinaryWriter {
         }
     }
     
+    fun putBytes(b: ByteArray) {
+        this.output.write(b)
+        this.offset += b.size
+    }
+    
 }
