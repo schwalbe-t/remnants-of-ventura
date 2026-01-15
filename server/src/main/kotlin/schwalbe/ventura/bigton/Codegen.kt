@@ -340,7 +340,9 @@ private fun generateExpression(
             program.instrArgs.alignTo(8)
         }
         BigtonAstType.DEREF -> {
-            throw IllegalStateException("no runtime support")
+            throw IllegalStateException(
+                "memory derefence not supported by runtime"
+            )
         }
         BigtonAstType.NOT
             -> program.addNoArgInstr(InstrType.NOT)
@@ -375,47 +377,52 @@ private fun generateExpression(
         else -> throw BigtonException(
             BigtonErrorType.UNHANDLED_AST_TYPE, ast.source
         )
-    })
+    }
 }
 
 private fun generateStatement(
-    ast: BigtonAst, ctx: ScopeContext, instrs: MutableList<BigtonInstr>
+    ast: BigtonAst, ctx: ScopeContext, program: ProgramBuilder
 ) {
-    ctx.program.currentSource.setLine(ast.source.line, instrs)
-    ctx.program.currentSource.setFile(ast.source.file, instrs)
+    ctx.program.currentSource.setLine(ast.source.line, program)
+    ctx.program.currentSource.setFile(ast.source.file, program)
     when (ast.type) {
         BigtonAstType.ASSIGNMENT -> {
             val dest: BigtonAst = ast.children[0]
             val value: BigtonAst = ast.children[1]
             when (dest.type) {
                 BigtonAstType.IDENTIFIER -> {
-                    generateExpression(value, ctx, instrs)
+                    generateExpression(value, ctx, program)
                     val name: String = dest.castArg<String>()
                     val localIdx: Int? = ctx.getLocalRelIndex(name)
-                    instrs.add(if (localIdx != null) {
-                        BigtonInstr(BigtonInstrType.STORE_LOCAL, localIdx)
+                    if (localIdx != null) {
+                        program.instrTypes.add(InstrType.STORE_LOCAL)
+                        program.instrArgs.putInt(localIdx)
+                        program.instrArgs.alignTo(8)
                     } else if (name in ctx.program.symbols.globalVars) {
-                        BigtonInstr(BigtonInstrType.STORE_GLOBAL, name)
+                        val globalId: Int = ctx.program.symbols
+                            .globalIds[name]!!
+                        program.instrTypes.add(InstrType.STORE_GLOBAL)
+                        program.instrArgs.putInt(globalId)
+                        program.instrArgs.alignTo(8)
                     } else {
                         throw BigtonException(
                             BigtonErrorType.UNKNOWN_VARIABLE, ast.source
                         )
-                    })
+                    }
                 }
                 BigtonAstType.DEREF -> {
-                    ctx.program.assertFeatureSupported(BigtonFeature.RAM_MODULE)
-                    generateExpression(dest.children[0], ctx, instrs)
-                    generateExpression(value, ctx, instrs)
-                    instrs.add(BigtonInstr(BigtonInstrType.STORE_MEMORY))
+                    throw IllegalStateException(
+                        "memory derefence not supported by runtime"
+                    )
                 }
                 BigtonAstType.OBJECT_MEMBER -> {
                     ctx.program.assertFeatureSupported(BigtonFeature.OBJECTS)
                     val member: String = dest.castArg<String>()
-                    generateExpression(dest.children[0], ctx, instrs)
-                    generateExpression(value, ctx, instrs)
-                    instrs.add(BigtonInstr(
-                        BigtonInstrType.STORE_OBJECT_MEMBER, member
-                    ))
+                    generateExpression(dest.children[0], ctx, program)
+                    generateExpression(value, ctx, program)
+                    program.instrTypes.add(InstrType.STORE_OBJECT_MEMBER)
+                    program.instrArgs.putInt(program.strings[member])
+                    program.instrArgs.alignTo(8)
                 }
                 else -> throw BigtonException(
                     BigtonErrorType.ASSIGNMENT_TO_CONST, ast.source
@@ -424,116 +431,128 @@ private fun generateStatement(
         }
         BigtonAstType.IF -> {
             val cond: BigtonAst = ast.children[0]
-            val (if_ast, else_ast) = ast.castArg<
+            val (ifAst, elseAst) = ast.castArg<
                 Pair<List<BigtonAst>, List<BigtonAst>?>
             >()
-            generateExpression(cond, ctx, instrs)
-            val if_body: List<BigtonInstr>
-                = generateStatementList(if_ast, ctx.inChildScope())
-            val else_body: List<BigtonInstr>? =
-                if (else_ast == null) { null }
-                else { generateStatementList(else_ast, ctx.inChildScope()) }
-            instrs.add(BigtonInstr(
-                BigtonInstrType.IF, Pair(if_body, else_body)
-            ))
+            generateExpression(cond, ctx, program)
+            val ifBody = program.child()
+            generateStatementList(ifAst, ctx.inChildScope(), ifBody)
+            val elseBody = program.child()
+            if (elseAst != null) {
+                generateStatementList(elseAst, ctx.inChildScope(), elseBody)
+            }
+            program.instrTypes.add(InstrType.IF)
+            program.instrArgs.beginStruct()
+            program.instrArgs.putInt(ifBody.instrTypes.size)
+            program.instrArgs.putInt(elseBody.instrTypes.size)
+            program.instrArgs.endStruct()
+            program.append(ifBody)
+            program.append(elseBody)
         }
         BigtonAstType.LOOP -> {
-            val body_ast = ast.castArg<List<BigtonAst>>()
-            val body: List<BigtonInstr> = generateStatementList(
-                body_ast, ctx.inChildScope(isLoop = true)
+            val bodyAst = ast.castArg<List<BigtonAst>>()
+            val body = program.child()
+            generateStatementList(
+                bodyAst, ctx.inChildScope(isLoop = true), body
             )
-            instrs.add(BigtonInstr(BigtonInstrType.LOOP, body))
+            program.instrTypes.add(InstrType.LOOP)
+            program.instrArgs.putInt(body.instrTypes.size)
+            program.instrArgs.alignTo(8)
+            program.append(body)
         }
         BigtonAstType.TICK -> {
-            val body_ast = ast.castArg<List<BigtonAst>>()
-            val body: List<BigtonInstr> = generateStatementList(
-                body_ast, ctx.inChildScope(isLoop = true)
+            val bodyAst = ast.castArg<List<BigtonAst>>()
+            val body = program.child()
+            generateStatementList(
+                bodyAst, ctx.inChildScope(isLoop = true), body
             )
-            instrs.add(BigtonInstr(BigtonInstrType.TICK, body))
+            program.instrTypes.add(InstrType.TICK)
+            program.instrArgs.putInt(body.instrTypes.size)
+            program.instrArgs.alignTo(8)
+            program.append(body)
         }
         BigtonAstType.WHILE -> {
             val cond: BigtonAst = ast.children[0]
-            val body_ast = ast.castArg<List<BigtonAst>>()
-            // The following BIGTON source...:
+            val bodyAst = ast.castArg<List<BigtonAst>>()
+            val childCtx = ctx.inChildScope(isLoop = true)
+            // The following BIGTON source:
             //
             //     while x { ... }
             //
-            // ...is converted to the following BIGTON runtime instructions:
+            // ...is converted to BIGTON runtime instructions closer matching
+            // the following BIGTON source:
             // 
-            //     LOOP {
-            //         instructionsOf(x)
-            //         NOT
-            //         IF { BREAK }
+            //     loop {
+            //         if instructionsOf(x) {} else { break }
             //         ...
             //     }
             //
-            val body: MutableList<BigtonInstr> = mutableListOf()
-            generateExpression(cond, ctx, body)
-            body.add(BigtonInstr(BigtonInstrType.NOT))
-            body.add(BigtonInstr(
-                BigtonInstrType.IF,
-                Pair<List<BigtonInstr>, List<BigtonInstr>?>(
-                    listOf(BigtonInstr(BigtonInstrType.BREAK)),
-                    null
-                )
-            ))
-            body.addAll(generateStatementList(
-                body_ast, ctx.inChildScope(isLoop = true)
-            ))
-            instrs.add(BigtonInstr(BigtonInstrType.LOOP, body))
+            val body = program.child()
+            generateExpression(cond, childCtx, body)
+            body.instrTypes.add(InstrType.IF)
+            body.instrArgs.beginStruct()
+            body.instrArgs.putInt(0 /* if_body_length */) 
+            body.instrArgs.putInt(1 /* else_body_length */)
+            body.instrArgs.endStruct()
+            body.addNoArgInstr(InstrType.BREAK)
+            generateStatementList(bodyAst, childCtx, body)
+            program.instrTypes.add(InstrType.LOOP)
+            program.instrArgs.putInt(body.instrTypes.size)
+            program.instrArgs.alignTo(8)
+            program.append(body)
         }
         BigtonAstType.CONTINUE -> {
             ctx.assertInLoop()
-            instrs.add(BigtonInstr(BigtonInstrType.CONTINUE))
+            program.addNoArgInstr(InstrType.CONTINUE)
         }
         BigtonAstType.BREAK -> {
             ctx.assertInLoop()
-            instrs.add(BigtonInstr(BigtonInstrType.BREAK))
+            program.addNoArgInstr(InstrType.BREAK)
         }
         BigtonAstType.RETURN -> {
             ctx.assertInFunction()
             val value: BigtonAst = ast.children[0]
-            generateExpression(value, ctx, instrs)
-            instrs.add(BigtonInstr(BigtonInstrType.RETURN))
+            generateExpression(value, ctx, program)
+            program.addNoArgInstr(InstrType.RETURN)
         }
         BigtonAstType.VARIABLE -> {
             val name: String = ast.castArg<String>()
             val value: BigtonAst = ast.children[0]
-            generateExpression(value, ctx, instrs)
-            instrs.add(if (ctx.inGlobal) {
-                BigtonInstr(BigtonInstrType.STORE_GLOBAL, name)
+            generateExpression(value, ctx, program)
+            if (ctx.inGlobal) {
+                val globalId: Int = ctx.program.symbols.globalIds[name]!!
+                program.instrTypes.add(InstrType.STORE_GLOBAL)
+                program.instrArgs.putInt(globalId)
+                program.instrArgs.alignTo(8)
             } else {
                 val idx: Int = ctx.numLocals
                 ctx.locals[name] = idx
                 ctx.numLocals += 1
-                BigtonInstr(BigtonInstrType.PUSH_LOCAL)
-            })
+                program.addNoArgInstr(InstrType.PUSH_LOCAL)
+            }
         }
         BigtonAstType.FUNCTION -> throw BigtonException(
             BigtonErrorType.FUNCTION_INSIDE_FUNCTION, ast.source
         )
         else -> {
-            generateExpression(ast, ctx, instrs)
-            instrs.add(BigtonInstr(BigtonInstrType.DISCARD))
+            generateExpression(ast, ctx, program)
+            program.addNoArgInstr(InstrType.DISCARD)
         }
     }
 }
 
 private fun generateStatementList(
-    ast: List<BigtonAst>, ctx: ScopeContext
-): List<BigtonInstr> {
-    val instrs = mutableListOf<BigtonInstr>()
-    ast.forEach { n -> generateStatement(n, ctx, instrs) }
-    return instrs
+    ast: List<BigtonAst>, ctx: ScopeContext, program: ProgramBuilder
+) {
+    ast.forEach { n -> generateStatement(n, ctx, program) }
 }
 
 private fun generateFunction(
-    ast: BigtonAst, ctx: ProgramContext
-): List<BigtonInstr> {
+    ast: BigtonAst, ctx: ProgramContext, program: ProgramBuilder
+) {
     ctx.assertFeatureSupported(BigtonFeature.CUSTOM_FUNCTIONS)
     ctx.currentSource.reset()
     val function: BigtonAstFunction = ast.castArg<BigtonAstFunction>()
-    val instrs = mutableListOf<BigtonInstr>()
     // When calling, we push the arguments in normal order onto the stack,
     // then execute the function body.
     // This means that in the function, we need to pop the arguments into
@@ -542,7 +561,7 @@ private fun generateFunction(
     // popped next)
     val params: MutableMap<String, Int> = mutableMapOf()
     for ((i, n) in function.argNames.asReversed().withIndex()) {
-        instrs.add(BigtonInstr(BigtonInstrType.PUSH_LOCAL))
+        program.addNoArgInstr(InstrType.PUSH_LOCAL)
         params[n] = i
     }
     val scope = ScopeContext(
@@ -553,18 +572,18 @@ private fun generateFunction(
         numLocals = function.argNames.size,
         program = ctx
     )
-    function.body.forEach { n -> generateStatement(n, scope, instrs) }
-    return instrs
+    generateStatementList(function.body, scope, program)
 }
 
 private fun generateGlobal(
-    ast: List<BigtonAst>, ctx: ProgramContext
-): List<BigtonInstr> {
+    ast: List<BigtonAst>, ctx: ProgramContext, program: ProgramBuilder
+) {
     ctx.currentSource.reset()
-    val instrs = mutableListOf<BigtonInstr>()
-    for (globalName in ctx.symbols.globalVars) {
-        instrs.add(BigtonInstr(BigtonInstrType.LOAD_VALUE, BigtonNull))
-        instrs.add(BigtonInstr(BigtonInstrType.STORE_GLOBAL, globalName))
+    for (globalId in ctx.symbols.globalIds.values) {
+        program.addNoArgInstr(InstrType.LOAD_NULL)
+        program.instrTypes.add(InstrType.STORE_GLOBAL)
+        program.instrArgs.putInt(globalId)
+        program.instrArgs.alignTo(8)
     }
     val scope = ScopeContext(
         inGlobal = true,
@@ -574,26 +593,28 @@ private fun generateGlobal(
         numLocals = 0,
         program = ctx
     )
-    ast.forEach { n -> generateStatement(n, scope, instrs) }
-    return instrs
+    generateStatementList(ast, scope, program)
 }
 
 fun generateProgram(
     ast: List<BigtonAst>,
     features: Set<BigtonFeature>,
-    modules: List<BigtonRuntime.Module>
-): BigtonProgram {
-    val functionAsts: Map<String, BigtonAst> = collectFunctions(ast)
-    val globalVars: Set<String> = collectGlobalVars(ast)
-    val globalAst: List<BigtonAst> = collectGlobalStatements(ast)
-    val symbols = ProgramSymbols(functionAsts, globalVars)
-    val ctx = ProgramContext(
-        currentSource = SourceTracker(), symbols, features, modules
-    )
-    val functionInstrs: Map<String, List<BigtonInstr>> = functionAsts
-        .map { (name, ast) -> name to generateFunction(ast, ctx) }
-        .toMap()
-    val globalInstrs: List<BigtonInstr>
-        = generateGlobal(globalAst, ctx)
-    return BigtonProgram(functionInstrs, globalInstrs)
+    modules: List<BigtonModule>
+): ByteArray {
+    // val functionAsts: Map<String, BigtonAst> = collectFunctions(ast)
+    // val globalVars: Set<String> = collectGlobalVars(ast)
+    // val globalAst: List<BigtonAst> = collectGlobalStatements(ast)
+    // val symbols = ProgramSymbols(functionAsts, globalVars)
+    // val ctx = ProgramContext(
+    //     currentSource = SourceTracker(), symbols, features, modules
+    // )
+    // val functionInstrs: Map<String, List<BigtonInstr>> = functionAsts
+    //     .map { (name, ast) -> name to generateFunction(ast, ctx) }
+    //     .toMap()
+    // val globalInstrs: List<BigtonInstr>
+    //     = generateGlobal(globalAst, ctx)
+    // return BigtonProgram(functionInstrs, globalInstrs)
+    
+    // TODO!
+    error("not yet implemented")
 }
