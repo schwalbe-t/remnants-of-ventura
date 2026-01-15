@@ -68,6 +68,13 @@ public final class BigtonRuntime {
     public static native void free(long r);
     
     /**
+     * Prints detailed information about the program loaded by the given
+     * runtime instance.
+     * @param r A pointer to the runtime instance
+     */
+    public static native void debugLoadedProgram(long r);
+    
+    /**
      * @param r A pointer to a runtime instance
      * @return The number of lines logged in the runtime
      */

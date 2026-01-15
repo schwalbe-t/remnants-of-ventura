@@ -88,6 +88,20 @@ JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_free(
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    debugLoadedProgram
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_debugLoadedProgram(
+    JNIEnv *env, jclass cls,
+    jlong rawRuntime
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    bigtonDebugProgram(&r->program);
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
  * Method:    getLogLength
  * Signature: (J)J
  */

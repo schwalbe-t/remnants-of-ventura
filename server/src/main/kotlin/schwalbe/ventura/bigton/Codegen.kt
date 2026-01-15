@@ -79,7 +79,7 @@ private enum class InstrType {
 
 private data class ProgramBuilder(
     val strings: IdBank<String> = IdBank(),
-    val shapes: IdBank<List<String>> = IdBank(),
+    val shapes: IdBank<List<Int>> = IdBank(),
     val instrTypes: MutableList<InstrType> = mutableListOf(),
     val instrArgs: BinaryWriter = BinaryWriter()
 )
@@ -292,7 +292,8 @@ private fun generateExpression(
         }
         BigtonAstType.OBJECT_LITERAL -> {
             ctx.program.assertFeatureSupported(BigtonFeature.OBJECTS)
-            val shape: List<String> = ast.castArg<List<String>>()
+            val shape: List<Int> = ast.castArg<List<String>>()
+                .map { program.strings[it] }
             val shapeId: Int = program.shapes[shape]
             program.instrTypes.add(InstrType.LOAD_OBJECT)
             program.instrArgs.putInt(shapeId)
@@ -491,8 +492,8 @@ private fun generateStatement(
             generateExpression(cond, childCtx, body)
             body.instrTypes.add(InstrType.IF)
             body.instrArgs.beginStruct()
-            body.instrArgs.putInt(0 /* if_body_length */) 
-            body.instrArgs.putInt(1 /* else_body_length */)
+            body.instrArgs.putInt(0 /* ifBodyLength */) 
+            body.instrArgs.putInt(1 /* elseBodyLength */)
             body.instrArgs.endStruct()
             body.addNoArgInstr(InstrType.BREAK)
             generateStatementList(bodyAst, childCtx, body)
@@ -596,25 +597,144 @@ private fun generateGlobal(
     generateStatementList(ast, scope, program)
 }
 
+private data class IrFunctionInfo(
+    val name: Int,
+    val declFile: Int, val declLine: Int,
+    val start: Int, val length: Int
+)
+
+private data class IrBuiltinFunctionInfo(
+    val name: Int,
+    val cost: Int
+)
+
 fun generateProgram(
     ast: List<BigtonAst>,
     features: Set<BigtonFeature>,
-    modules: List<BigtonModule>
+    modules: List<BigtonModule>,
+    builtinFunctions: BigtonBuiltinFunctions = BigtonModules.functions
 ): ByteArray {
-    // val functionAsts: Map<String, BigtonAst> = collectFunctions(ast)
-    // val globalVars: Set<String> = collectGlobalVars(ast)
-    // val globalAst: List<BigtonAst> = collectGlobalStatements(ast)
-    // val symbols = ProgramSymbols(functionAsts, globalVars)
-    // val ctx = ProgramContext(
-    //     currentSource = SourceTracker(), symbols, features, modules
-    // )
-    // val functionInstrs: Map<String, List<BigtonInstr>> = functionAsts
-    //     .map { (name, ast) -> name to generateFunction(ast, ctx) }
-    //     .toMap()
-    // val globalInstrs: List<BigtonInstr>
-    //     = generateGlobal(globalAst, ctx)
-    // return BigtonProgram(functionInstrs, globalInstrs)
-    
-    // TODO!
-    error("not yet implemented")
+    val functionAsts: Map<String, BigtonAst> = collectFunctions(ast)
+    val functionIds: Map<String, Int> = functionAsts.keys.withIndex()
+        .associateBy({ it.value }, { it.index })
+    val globalVars: Set<String> = collectGlobalVars(ast)
+    val globalIds: Map<String, Int> = globalVars.withIndex()
+        .associateBy({ it.value }, { it.index })
+    val symbols = ProgramSymbols(
+        builtinFunctions,
+        functionAsts, functionIds,
+        globalVars, globalIds
+    )
+    val ctx = ProgramContext(
+        currentSource = SourceTracker(), symbols, features, modules
+    )
+    val program = ProgramBuilder()
+    val irFunctions: List<IrFunctionInfo> = functionIds.map { (name, id) ->
+        val ast: BigtonAst = functionAsts[name]!!
+        val func: BigtonAstFunction = ast.castArg<BigtonAstFunction>()
+        val funcBody = program.child()
+        generateFunction(ast, ctx, funcBody)
+        val start: Int = program.instrTypes.size
+        val length: Int = funcBody.instrTypes.size
+        program.append(funcBody)
+        IrFunctionInfo(
+            name = program.strings[func.name],
+            declFile = program.strings[ast.source.file],
+            declLine = ast.source.line + 1,
+            start, length
+        )
+    }
+    val irBuiltinFunctions: List<IrBuiltinFunctionInfo>
+        = builtinFunctions.functions
+        .map { IrBuiltinFunctionInfo(program.strings[it.name], it.cost) }
+    val globalAst: List<BigtonAst> = collectGlobalStatements(ast)
+    val globalStart: Int = program.instrTypes.size
+    generateGlobal(globalAst, ctx, program)
+    val globalEnd: Int = program.instrTypes.size
+    val unknownStringId: Int = program.strings["<unknown>"]
+    val out = BinaryWriter()
+    // --- bigton_program_t header ---
+    out.beginStruct()
+    // bigton_instr_idx_t numInstrs
+    out.putInt(program.instrTypes.size)
+    // bigton_str_id_t numStrings
+    out.putInt(program.strings.values.size)
+    // bigton_shape_id_t numShapes
+    out.putInt(program.shapes.values.size)
+    // bigton_slot_t numFunctions
+    out.putInt(irFunctions.size)
+    // bigton_slot_t numBuiltinFunctions
+    out.putInt(irBuiltinFunctions.size)
+    // bigton_slot_t numGlobalVars
+    out.putInt(globalIds.size)
+    // uint32_t numShapeProps
+    val numShapeProps: Int = program.shapes.values.sumOf { it.size }
+    out.putInt(numShapeProps)
+    // uint64_t numConstStringChars
+    val numConstStringChars: Int = program.strings.values.sumOf { it.length }
+    out.putLong(numConstStringChars.toLong())
+    // bigton_str_id_t unknownStrId
+    out.putInt(unknownStringId)
+    // bigton_instr_idx_t globalStart
+    out.putInt(globalStart)
+    // bigton_instr_idx_t globalLength
+    out.putInt(globalEnd - globalStart)
+    out.endStruct()
+    // --- bigton_instr_args_t instrArgs[header.numInstrs] ---
+    out.putBytes(program.instrArgs.output.toByteArray())
+    // --- bigton_const_string_t constStrings[header.numStrings] ---
+    var currStrOffset = 0L
+    for (constString in program.strings.values) {
+        val charLength: Long = constString.length.toLong()
+        out.beginStruct()           // bigton_const_string_t
+        out.putLong(currStrOffset)  // uint64_t firstOffset
+        out.putLong(charLength)     // uint64_t charLength
+        out.endStruct()
+        currStrOffset += charLength
+    }
+    // --- bigton_shape_t shapes[header.numShapes] ---
+    var currPropOffset = 0
+    for (shape in program.shapes.values) {
+        out.beginStruct()           // bigton_shape_t
+        out.putInt(shape.size)      // uint32_t propCount
+        out.putInt(currPropOffset)  // uint32_t firstPropOffset
+        out.endStruct()
+        currPropOffset += shape.size
+    }
+    // --- bigton_function_t functions[header.numFunctions] ---
+    for (f in irFunctions) {
+        out.beginStruct()           // bigton_function_t
+        out.putInt(f.name)          // bigton_str_id_t name
+        out.beginStruct()           // bigton_source_t declSource
+        out.putInt(f.declFile)      //     bigton_str_id_t file
+        out.putInt(f.declLine)      //     uint32_t line
+        out.endStruct()
+        out.putInt(f.start)         // bigton_instr_idx_t start
+        out.putInt(f.length)        // bigton_instr_idx_t length
+        out.endStruct()
+    }
+    // --- bigton_builtin_function_t builtinFunctions[header.numBuiltinFunctions] ---
+    for (f in irBuiltinFunctions) {
+        out.beginStruct()           // bigton_builtin_function_t
+        out.putInt(f.name)          // bigton_str_id_t name
+        out.putInt(f.cost)          // uint32_t cost
+        out.endStruct()
+    }
+    // --- bigton_shape_prop_t shapeProps[header.numShapeProps] ---
+    for (shape in program.shapes.values) {
+        for (propName in shape) {
+            out.beginStruct()       // bigton_shape_prop_t
+            out.putInt(propName)    // bigton_str_id_t name
+            out.endStruct()
+        }
+    }
+    // --- bigton_char_t constStringChars[header.numConstStringChars] ---
+    for (constString in program.strings.values) {
+        out.putString(constString)
+    }
+    // --- bigton_instr_type_t instrTypes[header.numInstrs] ---
+    for (instrType in program.instrTypes) {
+        out.putByte(instrType.ordinal.toByte())
+    }
+    return out.output.toByteArray()
 }

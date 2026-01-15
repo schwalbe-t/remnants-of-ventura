@@ -262,6 +262,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                 return BIGTONST_AWAIT_TICK;
             case BIGTONSC_IF:
                 r->currentInstr = scope->after;
+                bigtonScopePop(r);
                 return BIGTONST_CONTINUE;
         }
     }
@@ -654,22 +655,21 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             
         case BIGTONIR_IF: {
             bigton_if_args_t args = instrArgs.ifParams;
-            bigton_instr_idx_t elseStart = instrIdx + 1 + args.if_body_length;
-            bigton_instr_idx_t elseEnd = elseStart + args.else_body_length;
+            bigton_instr_idx_t ifStart = instrIdx + 1;
+            bigton_instr_idx_t elseStart = ifStart + args.ifBodyLength;
+            bigton_instr_idx_t after = elseStart + args.elseBodyLength;
             bigton_tagged_value_t cond = bigtonStackPop(&r->stack, r);
             bool isTruthy = valueIsTruthy(cond);
             bigtonScopePush(r, (bigton_scope_t) {
                 .type = BIGTONSC_IF,
-                .start = isTruthy
-                    ? instrIdx + 1
-                    : elseStart,
-                .end = isTruthy
-                    ? elseStart
-                    : elseEnd,
-                .after = elseEnd,
+                .start = isTruthy ? ifStart : elseStart,
+                .end = isTruthy ? elseStart : after,
+                .after = after,
                 .numLocals = 0
             });
-            break;
+            r->currentInstr = isTruthy ? ifStart : elseStart;
+            r->accCost += 1;
+            return BIGTONST_CONTINUE;
         }
         case BIGTONIR_LOOP: {
             bigton_instr_idx_t end = instrIdx + 1 + instrArgs.infLoopLength;
@@ -761,6 +761,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                 .numLocals = 0
             });
             r->currentInstr = start;
+            r->accCost += 1;
             return BIGTONST_CONTINUE;
         }
         case BIGTONIR_CALL_BUILTIN: {

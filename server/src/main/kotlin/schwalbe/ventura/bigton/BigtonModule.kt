@@ -113,6 +113,9 @@ object BigtonModules {
             }
             BigtonRuntime.addLogLine(r, disp)
             BigtonValue.free(disp)
+            val retNull: Long = BigtonValue.createNull()
+            BigtonRuntime.pushStack(r, retNull)
+            BigtonValue.free(retNull)
         }
         .withFunction("string", cost = 1, argc = 1) { r ->
             val value = BigtonRuntime.popStack(r)

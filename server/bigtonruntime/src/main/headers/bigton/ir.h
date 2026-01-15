@@ -177,8 +177,8 @@ typedef struct BigtonShape {
 } bigton_shape_t;
 
 typedef struct BigtonIfArgs {
-    bigton_instr_idx_t if_body_length;
-    bigton_instr_idx_t else_body_length;
+    bigton_instr_idx_t ifBodyLength;
+    bigton_instr_idx_t elseBodyLength;
 } bigton_if_args_t;
 
 typedef union BigtonInstrArg {

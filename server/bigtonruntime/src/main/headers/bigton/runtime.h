@@ -118,6 +118,8 @@ void bigtonInit(
 void bigtonFree(bigton_runtime_state_t *r);
 
 
+void bigtonDebugProgram(bigton_parsed_program_t *p);
+
 typedef enum BigtonExecStatus {
     BIGTONST_CONTINUE,
     BIGTONST_EXEC_BUILTIN_FUN,
