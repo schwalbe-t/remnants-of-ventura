@@ -125,11 +125,9 @@ static size_t bigtonObjectFindMem(
         *e = BIGTONE_INT_SHAPE_PROP_IDX_OOB;
         return 0;
     }
-    const bigton_shape_prop_t *prop = allProps + shape.firstPropOffset;
-    const bigton_shape_prop_t *propEnd = prop + shape.propCount;
-    while (prop < propEnd) {
-        if (prop->name == name) { return prop->offset; }
-        prop += 1;
+    const bigton_shape_prop_t *props = allProps + shape.firstPropOffset;
+    for (size_t i = 0; i < shape.propCount; i += 1) {
+        if (props[i].name == name) { return i; }
     }
     *e = BIGTONE_INVALID_OBJECT_MEMBER;
     return 0;

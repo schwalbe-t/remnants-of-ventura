@@ -188,6 +188,7 @@ JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_pushSt
     (void) env, (void) cls;
     bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
     bigton_tagged_value_t *v = (bigton_tagged_value_t *) rawValue;
+    bigtonValRcIncr(*v);
     bigtonStackPush(&r->stack, *v, r);
 }
 

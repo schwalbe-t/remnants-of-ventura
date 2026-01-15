@@ -360,10 +360,10 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             bigton_value_t *memberValues = bigtonAllocNullableBuff(
                 &r->b, sizeof(bigton_value_t) * propCount
             );
-            for (int64_t propI = (int64_t) propCount; propI >= 0; propI -= 1) {
+            for (int64_t i = (int64_t) propCount - 1; i >= 0; i -= 1) {
                 bigton_tagged_value_t mv = bigtonStackPop(&r->stack, r);
-                memberTypes[propI] = mv.t;
-                memberValues[propI] = mv.v;
+                memberTypes[i] = mv.t;
+                memberValues[i] = mv.v;
             }
             bigton_object_t *o
                 = bigtonAllocBuff(&r->b, sizeof(bigton_object_t));

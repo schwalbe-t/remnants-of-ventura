@@ -356,6 +356,24 @@ JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_getObjec
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
+ * Method:    getObjectPropName
+ * Signature: (JI)I
+ */
+JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_getObjectPropName(
+    JNIEnv *env, jclass cls,
+    jlong rawValue, jint propId, jlong rawRuntime
+) {
+    bigton_tagged_value_t *ov = (bigton_tagged_value_t *) rawValue;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    bigton_object_t *o = ov->v.o;
+    const bigton_shape_t *s = o->shape;
+    size_t glPropId = s->firstPropOffset + (size_t) propId;
+    if (glPropId >= r->program.numProps) { return (jint) -1; }
+    return r->program.props[glPropId].name;
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
  * Method:    getObjectMember
  * Signature: (JI)J
  */

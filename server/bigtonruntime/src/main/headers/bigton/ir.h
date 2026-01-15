@@ -170,7 +170,6 @@ typedef uint32_t bigton_shape_id_t;
 
 typedef struct BigtonShapeProp {
     bigton_str_id_t name;
-    uint32_t offset;
 } bigton_shape_prop_t;
 typedef struct BigtonShape {
     uint32_t propCount;

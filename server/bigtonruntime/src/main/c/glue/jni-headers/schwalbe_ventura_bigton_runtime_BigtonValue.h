@@ -153,6 +153,14 @@ JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_getObjec
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
+ * Method:    getObjectPropName
+ * Signature: (JIJ)I
+ */
+JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_getObjectPropName
+  (JNIEnv *, jclass, jlong, jint, jlong);
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonValue
  * Method:    getObjectMember
  * Signature: (JI)J
  */

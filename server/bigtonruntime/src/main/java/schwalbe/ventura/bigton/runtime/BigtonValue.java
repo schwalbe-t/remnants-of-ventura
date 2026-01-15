@@ -174,6 +174,16 @@ public final class BigtonValue {
      * @param v A pointer to a value object with contained type
      * {@link BigtonValue.Type#OBJECT} - a value object containing another type
      * results in undefined behavior
+     * @param slotId The ID of the slot to get the name of
+     * @param r The pointer of the runtime instance
+     * @return The const string ID of the name of the member specified by the
+     * give slot (or -1 if the object or prop ID is invalid)
+     */
+    public static native int getObjectPropName(long v, int slotId, long r);
+    /**
+     * @param v A pointer to a value object with contained type
+     * {@link BigtonValue.Type#OBJECT} - a value object containing another type
+     * results in undefined behavior
      * @param slotId The ID of the slot to get the value of - an out of bounds
      * slot index results in undefined behavior
      * @return A newly allocated value object containing the value of the object
