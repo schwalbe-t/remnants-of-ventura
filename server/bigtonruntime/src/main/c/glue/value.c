@@ -37,6 +37,7 @@ JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_free(
     (void) env, (void) cls;
     bigton_tagged_value_t *v = (bigton_tagged_value_t *) rawValue;
     bigtonValRcDecr(*v);
+    free((void *) v);
 }
 
 /*

@@ -8,15 +8,27 @@
 #include <string.h>
 #include <math.h>
 
+#define MAX_LOG_LENGTH 64
+
 void bigtonLogLine(bigton_runtime_state_t *r, bigton_string_t *line) {
     size_t oldCount = r->logsCount;
+    if (oldCount >= MAX_LOG_LENGTH) {
+        bigton_string_t *removed = r->logs[0];
+        bigtonValRcDecr(BIGTON_STRING_VALUE(removed));
+        for (size_t i = 0; i < oldCount - 1; i += 1) {
+            r->logs[i] = r->logs[i + 1];
+        }
+        bigtonValRcIncr(BIGTON_STRING_VALUE(line));
+        r->logs[oldCount - 1] = line;
+        return; 
+    }
     if (oldCount >= r->logsCapacity) {
         r->logsCapacity += 8;
         r->logs = bigtonReallocNullableBuff(
             &r->b, r->logs, sizeof(bigton_string_t *) * r->logsCapacity
         );
     }
-    line->rc.count += 1;
+    bigtonValRcIncr(BIGTON_STRING_VALUE(line));
     r->logs[oldCount] = line;
     r->logsCount = oldCount + 1;
 }
@@ -688,7 +700,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             break;
         }
         case BIGTONIR_TICK: {
-            bigton_instr_idx_t end = instrIdx + 1 + instrArgs.infLoopLength;
+            bigton_instr_idx_t end = instrIdx + 1 + instrArgs.tickLoopLength;
             bigtonScopePush(r, (bigton_scope_t) {
                 .type = BIGTONSC_TICK,
                 .start = instrIdx + 1,

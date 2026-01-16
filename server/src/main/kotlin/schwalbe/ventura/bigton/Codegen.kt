@@ -327,6 +327,14 @@ private fun generateExpression(
                 program.instrArgs.putInt(id)
                 program.instrArgs.alignTo(8)
             }
+            val callSiteFileNameId: Int = program
+                .strings[ctx.program.currentSource.file]
+            program.instrTypes.add(InstrType.SOURCE_FILE)
+            program.instrArgs.putInt(callSiteFileNameId)
+            program.instrArgs.alignTo(8)
+            program.instrTypes.add(InstrType.SOURCE_LINE)
+            program.instrArgs.putInt(ctx.program.currentSource.line + 1)
+            program.instrArgs.alignTo(8)
         }
         BigtonAstType.TUPLE_MEMBER -> {
             program.instrTypes.add(InstrType.LOAD_TUPLE_MEMBER)

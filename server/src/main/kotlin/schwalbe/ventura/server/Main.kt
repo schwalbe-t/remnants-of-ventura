@@ -134,8 +134,9 @@ fun main() {
     
     var n = 0
     tick {
-        if n > 10 { break } 
+        if n >= 10 { break }
         print(n)
+        n = 2
     }
     
     """.trimIndent()
@@ -166,7 +167,7 @@ fun main() {
     // println("Wrote compilation output to '$outPath'")
     
     
-    val tickInstructionLimit: Long = Long.MAX_VALUE
+    val tickInstructionLimit: Long = 9999
     val memoryUsageLimit: Long = 1024 * 16
     val maxCallDepth = 128
     val maxTupleSize = 8
