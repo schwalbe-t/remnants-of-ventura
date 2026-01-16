@@ -122,6 +122,13 @@ bigton_scope_t *bigtonScopeCurr(bigton_runtime_state_t *r) {
     return r->scopes + count - 1;
 }
 
+static void bigtonScopeReset(bigton_runtime_state_t *r, bigton_scope_t *s) {
+    for (size_t i = 0; i < s->numLocals; i += 1) {
+        bigtonValRcDecr(bigtonStackPop(&r->locals, r));
+    }
+    s->numLocals = 0;
+}
+
 void bigtonScopePop(bigton_runtime_state_t *r) {
     size_t oldCount = r->scopesCount;
     if (oldCount == 0) {
@@ -129,11 +136,9 @@ void bigtonScopePop(bigton_runtime_state_t *r) {
         return;
     }
     size_t newCount = oldCount - 1;
+    bigton_scope_t poppedScope = r->scopes[newCount];
+    bigtonScopeReset(r, &poppedScope);
     r->scopesCount = newCount;
-    bigton_scope_t scope = r->scopes[newCount];
-    for (size_t i = 0; i < scope.numLocals; i += 1) {
-        bigtonValRcDecr(bigtonStackPop(&r->locals, r));
-    }
 }
 
 static void assertGlobalVarValid(bigton_runtime_state_t *r, bigton_slot_t id) {
@@ -162,7 +167,7 @@ static void assertGlobalVarValid(bigton_runtime_state_t *r, bigton_slot_t id) {
     } \
     bigtonValRcDecr(av); \
     bigtonValRcDecr(bv);
-    
+
 #define COMPARISON_BIOP_INSTR(iop, fop) \
     bigton_tagged_value_t bv = bigtonStackPop(&r->stack, r); \
     bigton_tagged_value_t av = bigtonStackPop(&r->stack, r); \
@@ -179,7 +184,7 @@ static void assertGlobalVarValid(bigton_runtime_state_t *r, bigton_slot_t id) {
     } \
     bigtonValRcDecr(av); \
     bigtonValRcDecr(bv);
-    
+
 bool valuesEqual(bigton_tagged_value_t a, bigton_tagged_value_t b) {
     if (a.t != b.t) { return false; }
     switch (a.t) {
@@ -254,9 +259,11 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                 return BIGTONST_CONTINUE;
             case BIGTONSC_LOOP:
                 r->currentInstr = scope->start;
+                bigtonScopeReset(r, scope);
                 return BIGTONST_CONTINUE;
             case BIGTONSC_TICK:
                 r->currentInstr = scope->start;
+                bigtonScopeReset(r, scope);
                 return BIGTONST_AWAIT_TICK;
             case BIGTONSC_IF:
                 r->currentInstr = scope->after;
@@ -283,7 +290,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             bigtonValRcDecr(bigtonStackPop(&r->stack, r));
             break;
         }
-        
+
         case BIGTONIR_LOAD_NULL: {
             bigtonStackPush(&r->stack, BIGTON_NULL_VALUE, r);
             break;
@@ -305,7 +312,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                 &r->stack,
                 BIGTON_STRING_VALUE(
                     bigtonAllocConstString(r, instrArgs.loadString)
-                ), 
+                ),
                 r
             );
             break;
@@ -396,7 +403,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             bigtonStackPush(&r->stack, BIGTON_ARRAY_VALUE(array), r);
             break;
         }
-            
+
         case BIGTONIR_LOAD_TUPLE_MEMBER: {
             bigton_tagged_value_t t = bigtonStackPop(&r->stack, r);
             if (t.t == BIGTON_TUPLE) {
@@ -414,7 +421,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             bigton_tagged_value_t o = bigtonStackPop(&r->stack, r);
             if (o.t == BIGTON_OBJECT) {
                 size_t i = bigtonObjectFindMem(
-                    o.v.o, instrArgs.loadObjectMemName, 
+                    o.v.o, instrArgs.loadObjectMemName,
                     r->program.props, r->program.numProps, &r->error
                 );
                 if (!HAS_ERROR(r)) {
@@ -466,7 +473,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                 r->error = BIGTONE_INT_LOCAL_IDX_OOB;
                 return BIGTONST_ERROR;
             }
-            size_t idx = localCount - 1 - relIdx; 
+            size_t idx = localCount - 1 - relIdx;
             bigton_tagged_value_t value = bigtonStackAt(
                 &r->locals, idx, r
             );
@@ -474,7 +481,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             bigtonStackPush(&r->stack, value, r);
             break;
         }
-        
+
         case BIGTONIR_ADD: {
             ARITHMETIC_BIOP_INSTR(a + b, a + b, false)
             break;
@@ -509,7 +516,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             bigtonValRcDecr(xv);
             break;
         }
-        
+
         case BIGTONIR_LESS_THAN: {
             COMPARISON_BIOP_INSTR(a < b, a < b)
             break;
@@ -542,7 +549,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             bigtonValRcDecr(b);
             break;
         }
-        
+
         case BIGTONIR_AND: {
             bigton_tagged_value_t b = bigtonStackPop(&r->stack, r);
             bigton_tagged_value_t a = bigtonStackPop(&r->stack, r);
@@ -577,7 +584,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             bigtonValRcDecr(x);
             break;
         }
-        
+
         case BIGTONIR_STORE_GLOBAL: {
             bigton_slot_t globalId = instrArgs.storeGlobal;
             assertGlobalVarValid(r, globalId);
@@ -606,9 +613,9 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                 r->error = BIGTONE_INT_LOCAL_IDX_OOB;
                 return BIGTONST_ERROR;
             }
-            size_t idx = localCount - 1 - relIdx; 
+            size_t idx = localCount - 1 - relIdx;
             bigton_tagged_value_t oldValue = bigtonStackSet(
-                &r->stack, idx, value, r
+                &r->locals, idx, value, r
             );
             bigtonValRcDecr(oldValue);
             break;
@@ -618,7 +625,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             bigton_tagged_value_t o = bigtonStackPop(&r->stack, r);
             if (o.t == BIGTON_OBJECT) {
                 size_t i = bigtonObjectFindMem(
-                    o.v.o, instrArgs.storeObjectMemName, 
+                    o.v.o, instrArgs.storeObjectMemName,
                     r->program.props, r->program.numProps, &r->error
                 );
                 if (!HAS_ERROR(r)) {
@@ -650,7 +657,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             bigtonValRcDecr(i);
             break;
         }
-            
+
         case BIGTONIR_IF: {
             bigton_if_args_t args = instrArgs.ifParams;
             bigton_instr_idx_t ifStart = instrIdx + 1;
@@ -700,7 +707,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                         break;
                     case BIGTONSC_LOOP:
                     case BIGTONSC_TICK:
-                        r->currentInstr = scope->end;
+                        r->currentInstr = currScope->end;
                         return BIGTONST_CONTINUE;
                     case BIGTONSC_IF:
                         bigtonScopePop(r);
@@ -720,7 +727,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                         break;
                     case BIGTONSC_LOOP:
                     case BIGTONSC_TICK:
-                        r->currentInstr = scope->after;
+                        r->currentInstr = currScope->after;
                         bigtonScopePop(r);
                         return BIGTONST_CONTINUE;
                     case BIGTONSC_IF:

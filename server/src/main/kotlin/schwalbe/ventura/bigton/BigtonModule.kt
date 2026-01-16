@@ -94,6 +94,22 @@ private fun displayValue(value: Long, maxDepth: Int, r: Long): String {
     }
 }
 
+private fun printValue(r: Long) {
+    val value = BigtonRuntime.popStack(r)
+    val disp: Long = if (value != 0L) {
+        val dispStr: String = displayValue(value, PRINT_MAX_DEPTH, r)
+        BigtonValue.free(value)
+        BigtonValue.createString(dispStr, r)
+    } else {
+        BigtonValue.createString("<empty stack>", r)
+    }
+    BigtonRuntime.addLogLine(r, disp)
+    BigtonValue.free(disp)
+    val retNull: Long = BigtonValue.createNull()
+    BigtonRuntime.pushStack(r, retNull)
+    BigtonValue.free(retNull)
+}
+
 const val PRINT_MAX_DEPTH: Int = 5
 const val DISPLAY_MAX_DEPTH: Int = 3
 
@@ -102,20 +118,10 @@ object BigtonModules {
     val functions = BigtonBuiltinFunctions()
     
     val standard = BigtonModule(functions)
-        .withFunction("print", cost = 1, argc = 1) { r ->
-            val value = BigtonRuntime.popStack(r)
-            val disp: Long = if (value != 0L) {
-                val dispStr: String = displayValue(value, PRINT_MAX_DEPTH, r)
-                BigtonValue.free(value)
-                BigtonValue.createString(dispStr, r)
-            } else {
-                BigtonValue.createString("<empty stack>", r)
-            }
-            BigtonRuntime.addLogLine(r, disp)
-            BigtonValue.free(disp)
-            val retNull: Long = BigtonValue.createNull()
-            BigtonRuntime.pushStack(r, retNull)
-            BigtonValue.free(retNull)
+        .withFunction("print", cost = 1, argc = 1, ::printValue)
+        .withFunction("error", cost = 1, argc = 1) { r ->
+            printValue(r)
+            BigtonRuntime.setError(r, BigtonRuntimeError.BY_PROGRAM.ordinal)
         }
         .withFunction("string", cost = 1, argc = 1) { r ->
             val value = BigtonRuntime.popStack(r)

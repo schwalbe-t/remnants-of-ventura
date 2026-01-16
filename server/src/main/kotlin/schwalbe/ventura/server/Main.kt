@@ -123,11 +123,20 @@ fun main() {
         return a
     }
     
+    fun recFib(n) {
+        if n <= 1 { return n }
+        return recFib(n - 1) + recFib(n - 2)
+    }
+    
     """.trimIndent()
     
     val mainSrc = """
     
-    print(lnFib(40))
+    var n = 0
+    tick {
+        if n > 10 { break } 
+        print(n)
+    }
     
     """.trimIndent()
     
@@ -180,56 +189,41 @@ fun main() {
     BigtonRuntime.debugLoadedProgram(runtime)
     
     BigtonRuntime.startTick(runtime)
-    while (true) {
-        val status: Int = BigtonRuntime.execBatch(runtime)
-        when {
-            BigtonRuntime.hasError(runtime) ||
-            status == BigtonRuntime.Status.ERROR -> {
-                val error: Int = BigtonRuntime.getError(runtime)
-                println("Stopped with error code $error")
-                break
-            }
-            status == BigtonRuntime.Status.CONTINUE -> {}
-            status == BigtonRuntime.Status.EXEC_BUILTIN_FUN -> {
-                val builtinId: Int
-                    = BigtonRuntime.getAwaitingBuiltinFun(runtime)
-                val f: BuiltinFunctionInfo
-                    = BigtonModules.functions.functions[builtinId]
-                f.impl(runtime)
-            }
-            status == BigtonRuntime.Status.AWAIT_TICK -> {
-                println("Next tick")
-                BigtonRuntime.startTick(runtime)
-            }
-            status == BigtonRuntime.Status.COMPLETE -> {
-                println("Program execution finished")
-                break
+    try {
+        while (true) {
+            val status: Int = BigtonRuntime.execBatch(runtime)
+            when {
+                BigtonRuntime.hasError(runtime) ||
+                status == BigtonRuntime.Status.ERROR -> {
+                    val error: Int = BigtonRuntime.getError(runtime)
+                    val file: String = BigtonRuntime.getConstString(
+                        runtime, BigtonRuntime.getCurrentFile(runtime)
+                    )
+                    val line: Int = BigtonRuntime.getCurrentLine(runtime)
+                    throw BigtonException(
+                        error.toBigtonError(), BigtonSource(line, file)
+                    )
+                }
+                status == BigtonRuntime.Status.CONTINUE -> {}
+                status == BigtonRuntime.Status.EXEC_BUILTIN_FUN -> {
+                    val builtinId: Int
+                        = BigtonRuntime.getAwaitingBuiltinFun(runtime)
+                    val f: BuiltinFunctionInfo
+                        = BigtonModules.functions.functions[builtinId]
+                    f.impl(runtime)
+                }
+                status == BigtonRuntime.Status.AWAIT_TICK -> {
+                    BigtonRuntime.startTick(runtime)
+                }
+                status == BigtonRuntime.Status.COMPLETE -> {
+                    println("Program execution finished")
+                    break
+                }
             }
         }
+    } catch (e: BigtonException) {
+        println(e.message)
     }
-    val currFile: String = BigtonRuntime.getConstString(
-        runtime, BigtonRuntime.getCurrentFile(runtime)
-    )
-    val currLine: Int = BigtonRuntime.getCurrentLine(runtime)
-    println("Current file: '$currFile'")
-    println("Current line: $currLine")
-    println("Stack:")
-    val stackSize: Long = BigtonRuntime.getStackLength(runtime)
-    for (i in 0..<stackSize) {
-        val value: Long = BigtonRuntime.getStack(runtime, i)
-        val str: String = when (BigtonValue.getType(value)) {
-            BigtonValue.Type.NULL -> "null"
-            BigtonValue.Type.INT -> BigtonValue.getInt(value).toString()
-            BigtonValue.Type.FLOAT -> BigtonValue.getFloat(value).toString()
-            BigtonValue.Type.TUPLE -> "<tuple>"
-            BigtonValue.Type.ARRAY -> "<array>"
-            BigtonValue.Type.OBJECT -> "<object>"
-            else -> "<unknown>"
-        }
-        println(" - $i: $str")
-        BigtonValue.free(value)
-    }
-    println("Logs:")
     for (lineI in 0..<BigtonRuntime.getLogLength(runtime)) {
         val line: String = BigtonRuntime.getLogString(runtime, lineI)
         println(line)

@@ -270,6 +270,20 @@ JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_getErr
 
 /*
  * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
+ * Method:    setError
+ * Signature: (JI)V
+ */
+JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_setError(
+    JNIEnv *env, jclass cls, 
+    jlong rawRuntime, jint error
+) {
+    (void) env, (void) cls;
+    bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
+    r->error = (bigton_error_t) error;
+}
+
+/*
+ * Class:     schwalbe_ventura_bigton_runtime_BigtonRuntime
  * Method:    getCurrentFile
  * Signature: (J)I
  */

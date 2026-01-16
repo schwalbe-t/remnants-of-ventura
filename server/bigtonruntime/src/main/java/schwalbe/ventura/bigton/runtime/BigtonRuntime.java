@@ -149,6 +149,12 @@ public final class BigtonRuntime {
      */
     public static native int getError(long r);
     /**
+     * Sets the error flag to contain the given error value.
+     * @param r A pointer to the runtime instance
+     * @param error The error value
+     */
+    public static native void setError(long r, int error);
+    /**
      * @param r A pointer to the runtime instance
      * @return The constant string ID of the current file name
      */
