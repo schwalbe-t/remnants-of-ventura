@@ -489,7 +489,7 @@ private fun generateStatement(
             //     }
             //
             val body = program.child()
-            generateExpression(cond, childCtx, body)
+            generateExpression(cond, ctx, body)
             body.instrTypes.add(InstrType.IF)
             body.instrArgs.beginStruct()
             body.instrArgs.putInt(0 /* ifBodyLength */) 

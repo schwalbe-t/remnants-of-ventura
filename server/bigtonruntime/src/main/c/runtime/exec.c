@@ -229,8 +229,6 @@ bool valueIsTruthy(bigton_tagged_value_t x) {
     }
 }
 
-#include <stdio.h>
-
 bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
     if (r->b.totalSizeBytes > r->settings.memoryUsageLimit) {
         r->error = BIGTONE_EXCEEDED_MEMORY_LIMIT;
@@ -253,7 +251,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                 bigtonScopePop(r);
                 bigtonTracePop(r);
                 bigtonStackPush(&r->stack, BIGTON_NULL_VALUE, r);
-                return BIGTONST_COMPLETE;
+                return BIGTONST_CONTINUE;
             case BIGTONSC_LOOP:
                 r->currentInstr = scope->start;
                 return BIGTONST_CONTINUE;
@@ -346,8 +344,8 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             }
             bigton_shape_t *shape = &r->program.shapes[shapeId];
             size_t numAllProps = r->program.numProps;
-            bool propsInBounds = shape->firstPropOffset < numAllProps
-                && shape->firstPropOffset + shape->propCount < numAllProps;
+            bool propsInBounds = shape->firstPropOffset <= numAllProps
+                && shape->firstPropOffset + shape->propCount <= numAllProps;
             if (!propsInBounds) {
                 r->error = BIGTONE_INT_SHAPE_PROP_IDX_OOB;
                 return BIGTONST_ERROR;
@@ -694,8 +692,8 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             break;
         }
         case BIGTONIR_CONTINUE: {
-            bigton_scope_t *currScope = scope;
             while (true) {
+                bigton_scope_t *currScope = bigtonScopeCurr(r);
                 switch (currScope->type) {
                     case BIGTONSC_GLOBAL:
                     case BIGTONSC_FUNCTION:
@@ -706,7 +704,6 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
                         return BIGTONST_CONTINUE;
                     case BIGTONSC_IF:
                         bigtonScopePop(r);
-                        currScope = bigtonScopeCurr(r);
                         if (HAS_ERROR(r)) { return BIGTONST_ERROR; }
                         continue;
                 }
@@ -715,20 +712,19 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
             break;
         }
         case BIGTONIR_BREAK: {
-            bigton_scope_t *currScope = scope;
             while (true) {
+                bigton_scope_t *currScope = bigtonScopeCurr(r);
                 switch (currScope->type) {
                     case BIGTONSC_GLOBAL:
                     case BIGTONSC_FUNCTION:
                         break;
                     case BIGTONSC_LOOP:
                     case BIGTONSC_TICK:
-                        bigtonScopePop(r);
                         r->currentInstr = scope->after;
+                        bigtonScopePop(r);
                         return BIGTONST_CONTINUE;
                     case BIGTONSC_IF:
                         bigtonScopePop(r);
-                        currScope = bigtonScopeCurr(r);
                         if (HAS_ERROR(r)) { return BIGTONST_ERROR; }
                         continue;
                 }

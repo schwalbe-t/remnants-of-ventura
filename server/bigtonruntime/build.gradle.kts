@@ -5,6 +5,19 @@ plugins {
     id("java")
 }
 
+tasks.withType<org.gradle.language.c.tasks.CCompile>().configureEach {
+    compilerArgs.addAll(listOf(
+        "-O3",
+        "-flto"
+    ))
+}
+
+tasks.withType<org.gradle.nativeplatform.tasks.AbstractLinkTask>().configureEach {
+    linkerArgs.addAll(listOf(
+        "-flto"
+    ))
+}
+
 val currentOs = org.gradle.internal.os.OperatingSystem.current()
 
 val libPrefix = when {

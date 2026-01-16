@@ -7,6 +7,18 @@
 - `src/main/headers/bigton/` - BIGTON runtime API C headers
 - `src/main/java/.../` - Java definitions of the JNI API
 
+### Standalone Executable
+
+The BIGTON runtime can be compiled into a bare-bones standalone executable
+for testing purposes. To do this, run the following command:
+```bash
+cc src/main/c/runtime/*.c -I src/main/headers -lm -O3 -g -o bigton
+```
+This generates a `bigton` executable than can be used by running
+```bash
+./bigton <file>
+```
+
 ### (Re-)Generation of JNI headers
 
 To generate Java glue headers, run the following command in this directory:

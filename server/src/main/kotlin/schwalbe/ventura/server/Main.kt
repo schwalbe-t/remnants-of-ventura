@@ -99,6 +99,7 @@ import schwalbe.ventura.bigton.*
 import schwalbe.ventura.bigton.runtime.*
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream;
+import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.file.Paths
@@ -109,20 +110,24 @@ fun main() {
     
     val utilsSrc = """
     
-    fun fib(n) {
-        if n <= 1 { return n }
-        return fib(n - 1) + fib(n - 2)
+    fun lnFib(n) {
+        var a = 0
+        var b = 1
+        var i = 0
+        while i < n {
+            var c = a + b
+            a = b
+            b = c
+            i = i + 1
+        }
+        return a
     }
     
     """.trimIndent()
     
     val mainSrc = """
-            
-    var n = 0
-    while n <= 11 {
-        print(fib(n))
-        n = n + 1
-    }
+    
+    print(lnFib(40))
     
     """.trimIndent()
     
@@ -132,7 +137,9 @@ fun main() {
     )
     val features = setOf(
         BigtonFeature.RAM_MODULE,
-        BigtonFeature.CUSTOM_FUNCTIONS
+        BigtonFeature.CUSTOM_FUNCTIONS,
+        BigtonFeature.OBJECTS,
+        BigtonFeature.FPU_MODULE
     )
     val modules = listOf(
         BigtonModules.standard
@@ -145,8 +152,12 @@ fun main() {
         return
     }
     
+    // val outPath = "bigtonruntime/test.bigtonm"
+    // File(outPath).writeBytes(programBytes)
+    // println("Wrote compilation output to '$outPath'")
     
-    val tickInstructionLimit: Long = 99999999
+    
+    val tickInstructionLimit: Long = Long.MAX_VALUE
     val memoryUsageLimit: Long = 1024 * 16
     val maxCallDepth = 128
     val maxTupleSize = 8
@@ -226,61 +237,4 @@ fun main() {
     
     BigtonRuntime.free(runtime)
     BigtonRuntime.freeSettings(settings)
-    
-    // TODO! fun stuff
-    
-    // BigtonRuntime.free(runtime)
-    
-    // try {
-
-    //     val utilsSrc = """
-        
-    //     fun range(i, max) {
-    //         if i >= max { return null }
-    //         return (i, range(i + 1, max))
-    //     }
-
-    //     """
-    //     val mainSrc = """
-        
-    //     print(range(0, 4))
-    //     print(range(0, 8))
-        
-    //     """
-
-    //     val files = listOf(
-    //         BigtonSourceFile("utils", utilsSrc),
-    //         BigtonSourceFile("main", mainSrc)
-    //     )
-    //     val features = setOf(
-    //         BigtonFeature.RAM_MODULE,
-    //         BigtonFeature.CUSTOM_FUNCTIONS
-    //     )
-    //     val modules = listOf(
-    //         bigtonStandardModule
-    //     )
-    //     val program: BigtonProgram = compileSources(files, features, modules)
-
-    //     // println(program.displayInstr())
-
-    //     val runtime = BigtonRuntime(
-    //         program, modules,
-    //         memorySize = 100,
-    //         tickInstructionLimit = Long.MAX_VALUE,
-    //         maxCallDepth = 100,
-    //         maxTupleSize = 8
-    //     )
-    //     try {
-    //         val startTime: Long = System.currentTimeMillis()
-    //         runtime.executeTick()
-    //         val endTime: Long = System.currentTimeMillis()
-    //         println("Execution time: ${endTime - startTime}ms")
-    //     } catch (e: BigtonException) {
-    //         runtime.logStackTrace(e)
-    //     }
-    //     println(runtime.getLogString())
-
-    // } catch (e: BigtonException) {
-    //     println(e.message)
-    // }
 }

@@ -24,9 +24,11 @@ void *bigtonAllocBuff(bigton_buff_owner_t *o, size_t numBytes) {
     return (void *) buff->data;
 }
 
+#define GET_HEADER(b) \
+    (bigton_buff_t *) (((const uint8_t *) (b)) - offsetof(bigton_buff_t, data))
+
 void bigtonFreeBuff(const void *buffData) {
-    bigton_buff_t *buff
-        = (bigton_buff_t *) (buffData - offsetof(bigton_buff_t, data));
+    bigton_buff_t *buff = GET_HEADER(buffData);
     bigton_buff_owner_t *o = buff->owner;
     bigton_buff_t *prev = buff->prev;
     bigton_buff_t *next = buff->next;
@@ -45,13 +47,12 @@ void bigtonFreeBuff(const void *buffData) {
 }
 
 void *bigtonReallocBuff(const void *buffData, size_t numBytes) {
-    bigton_buff_t *oldBuff
-        = (bigton_buff_t *) (buffData - offsetof(bigton_buff_t, data));
+    bigton_buff_t *oldBuff = GET_HEADER(buffData);
     bigton_buff_owner_t *o = oldBuff->owner;
     bigton_buff_t *prev = oldBuff->prev;
     bigton_buff_t *next = oldBuff->next;
     size_t oldSize = oldBuff->sizeBytes;
-    bigton_buff_t *newBuff = realloc(oldBuff, numBytes);
+    bigton_buff_t *newBuff = realloc(oldBuff, sizeof(bigton_buff_t) + numBytes);
     newBuff->owner = o;
     newBuff->sizeBytes = numBytes;
     newBuff->prev = prev;

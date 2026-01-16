@@ -4,3 +4,6 @@ javac-out
 *.so
 *.dll
 *.dylib
+
+/bigton
+/test.bigtonm
