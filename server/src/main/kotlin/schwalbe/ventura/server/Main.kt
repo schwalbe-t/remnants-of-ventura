@@ -134,9 +134,9 @@ fun main() {
     
     var n = 0
     tick {
-        if n >= 10 { break }
+        if n >= 100000 { break }
         print(n)
-        n = 2
+        n = n + 1
     }
     
     """.trimIndent()
@@ -162,9 +162,10 @@ fun main() {
         return
     }
     
-    // val outPath = "bigtonruntime/test.bigtonm"
-    // File(outPath).writeBytes(programBytes)
-    // println("Wrote compilation output to '$outPath'")
+    val outPath = "bigtonruntime/test.bigtonm"
+    File(outPath).writeBytes(programBytes)
+    println("Wrote compilation output to '$outPath'")
+    return
     
     
     val tickInstructionLimit: Long = 9999

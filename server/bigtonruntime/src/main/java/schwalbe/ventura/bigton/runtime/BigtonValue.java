@@ -82,7 +82,8 @@ public final class BigtonValue {
      * deallocated when {@link BigtonRuntime#free} is used on this instance
      * @return A newly allocated value object containing the given string
      * reference - ownership is transferred to the caller and the object
-     * needs to be freed using {@link BigtonValue#free}
+     * needs to be freed using {@link BigtonValue#free} - may return 0 if an
+     * invalid string is passed
      */
     public static native long createString(String s, long r);
     /**

@@ -126,7 +126,6 @@ JNIEXPORT jstring JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_get
     (void) cls;
     bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
     bigton_string_t *line = r->logs[i];
-    bigtonValRcIncr(BIGTON_STRING_VALUE(line));
     return (*env)->NewString(env, (const jchar *) line->content, line->length);
 }
 
@@ -143,6 +142,7 @@ JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntime_addLog
     bigton_runtime_state_t *r = (bigton_runtime_state_t *) rawRuntime;
     bigton_tagged_value_t *lineValue = (bigton_tagged_value_t *) rawLineValue;
     if (lineValue->t != BIGTON_STRING) { return; }
+    bigtonValRcIncr(*lineValue);
     bigtonLogLine(r, lineValue->v.s);
 }
 

@@ -43,7 +43,7 @@ void bigtonFreeBuff(const void *buffData) {
         next->prev = prev;
     }
     o->totalSizeBytes -= buff->sizeBytes;
-    return free((void *) buff);
+    free((void *) buff);
 }
 
 void *bigtonReallocBuff(const void *buffData, size_t numBytes) {

@@ -20,7 +20,7 @@ JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValue_copy(
     bigton_tagged_value_t *old = (bigton_tagged_value_t *) rawValue;
     bigton_tagged_value_t value = *old;
     bigton_tagged_value_t *new = malloc(sizeof(bigton_tagged_value_t));
-    *new = value;
+    *new = *old;
     bigtonValRcIncr(value);
     return (jlong) new;
 }

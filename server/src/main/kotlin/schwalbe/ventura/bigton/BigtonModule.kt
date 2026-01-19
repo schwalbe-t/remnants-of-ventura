@@ -79,9 +79,8 @@ private fun displayValue(value: Long, maxDepth: Int, r: Long): String {
         }
         BigtonValue.Type.ARRAY -> {
             val length: Int = BigtonValue.getArrayLength(value)
-            if (maxDepth == 0) {
-                return if (length == 0) { "[]" } else { "[...]" }
-            }
+            if (length == 0) { return "[]" }
+            if (maxDepth == 0) { return "[...]" }
             val c: String = (0..<length).joinToString(", ", transform = { i ->
                 val ev: Long = BigtonValue.getArrayElement(value, i)
                 val str: String = displayValue(ev, nextDepth, r)
@@ -103,6 +102,7 @@ private fun printValue(r: Long) {
     } else {
         BigtonValue.createString("<empty stack>", r)
     }
+    check(disp != 0L)
     BigtonRuntime.addLogLine(r, disp)
     BigtonValue.free(disp)
     val retNull: Long = BigtonValue.createNull()

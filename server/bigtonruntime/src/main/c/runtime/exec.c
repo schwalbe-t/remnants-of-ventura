@@ -18,7 +18,6 @@ void bigtonLogLine(bigton_runtime_state_t *r, bigton_string_t *line) {
         for (size_t i = 0; i < oldCount - 1; i += 1) {
             r->logs[i] = r->logs[i + 1];
         }
-        bigtonValRcIncr(BIGTON_STRING_VALUE(line));
         r->logs[oldCount - 1] = line;
         return; 
     }
@@ -28,7 +27,6 @@ void bigtonLogLine(bigton_runtime_state_t *r, bigton_string_t *line) {
             &r->b, r->logs, sizeof(bigton_string_t *) * r->logsCapacity
         );
     }
-    bigtonValRcIncr(BIGTON_STRING_VALUE(line));
     r->logs[oldCount] = line;
     r->logsCount = oldCount + 1;
 }
