@@ -205,10 +205,6 @@ public final class BigtonRuntime {
      * <li>{@link Status#ERROR} - could not continue execution due to
      * error code indicated by {@link #getError}</li>
      * </ul>
-     * Note that in special cases, the runtime may set the error flag without
-     * explicitly indicating this by returning {@link Status#ERROR}; the host
-     * environment should check {@link #hasError} after each call to this
-     * method even if the returned status does not indicate an error.
      * @param r A pointer to the runtime instance
      * @return The execution status code
      */

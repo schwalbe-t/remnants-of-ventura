@@ -134,7 +134,7 @@ fun main() {
     
     var n = 0
     tick {
-        if n >= 100000 { break }
+        if n >= 100000000 { break }
         print(n)
         n = n + 1
     }
@@ -162,10 +162,10 @@ fun main() {
         return
     }
     
-    val outPath = "bigtonruntime/test.bigtonm"
-    File(outPath).writeBytes(programBytes)
-    println("Wrote compilation output to '$outPath'")
-    return
+    // val outPath = "bigtonruntime/test.bigtonm"
+    // File(outPath).writeBytes(programBytes)
+    // println("Wrote compilation output to '$outPath'")
+    // return
     
     
     val tickInstructionLimit: Long = 9999
@@ -194,30 +194,26 @@ fun main() {
     try {
         while (true) {
             val status: Int = BigtonRuntime.execBatch(runtime)
-            when {
-                BigtonRuntime.hasError(runtime) ||
-                status == BigtonRuntime.Status.ERROR -> {
+            when (status) {
+                BigtonRuntime.Status.ERROR -> {
                     val error: Int = BigtonRuntime.getError(runtime)
-                    val file: String = BigtonRuntime.getConstString(
-                        runtime, BigtonRuntime.getCurrentFile(runtime)
-                    )
                     val line: Int = BigtonRuntime.getCurrentLine(runtime)
                     throw BigtonException(
-                        error.toBigtonError(), BigtonSource(line, file)
+                        error.toBigtonError(), BigtonSource(line, "<not queried>")
                     )
                 }
-                status == BigtonRuntime.Status.CONTINUE -> {}
-                status == BigtonRuntime.Status.EXEC_BUILTIN_FUN -> {
+                BigtonRuntime.Status.CONTINUE -> {}
+                BigtonRuntime.Status.EXEC_BUILTIN_FUN -> {
                     val builtinId: Int
                         = BigtonRuntime.getAwaitingBuiltinFun(runtime)
                     val f: BuiltinFunctionInfo
                         = BigtonModules.functions.functions[builtinId]
                     f.impl(runtime)
                 }
-                status == BigtonRuntime.Status.AWAIT_TICK -> {
+                BigtonRuntime.Status.AWAIT_TICK -> {
                     BigtonRuntime.startTick(runtime)
                 }
-                status == BigtonRuntime.Status.COMPLETE -> {
+                BigtonRuntime.Status.COMPLETE -> {
                     println("Program execution finished")
                     break
                 }
@@ -226,7 +222,9 @@ fun main() {
     } catch (e: BigtonException) {
         println(e.message)
     }
-    for (lineI in 0..<BigtonRuntime.getLogLength(runtime)) {
+    val loggedLineCount: Long = BigtonRuntime.getLogLength(runtime)
+    println("Last $loggedLineCount logged line(s):")
+    for (lineI in 0..<loggedLineCount) {
         val line: String = BigtonRuntime.getLogString(runtime, lineI)
         println(line)
     }

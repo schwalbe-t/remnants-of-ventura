@@ -11,24 +11,24 @@
 #define MAX_LOG_LENGTH 64
 
 void bigtonLogLine(bigton_runtime_state_t *r, bigton_string_t *line) {
-    size_t oldCount = r->logsCount;
-    if (oldCount >= MAX_LOG_LENGTH) {
+    size_t count = r->logsCount;
+    if (count == MAX_LOG_LENGTH) {
+        size_t lastIdx = MAX_LOG_LENGTH - 1;
         bigton_string_t *removed = r->logs[0];
         bigtonValRcDecr(BIGTON_STRING_VALUE(removed));
-        for (size_t i = 0; i < oldCount - 1; i += 1) {
-            r->logs[i] = r->logs[i + 1];
-        }
-        r->logs[oldCount - 1] = line;
+        size_t movedBytes = (MAX_LOG_LENGTH - 1) * sizeof(bigton_string_t *);
+        memmove(r->logs, r->logs + 1, movedBytes);
+        r->logs[lastIdx] = line;
         return; 
     }
-    if (oldCount >= r->logsCapacity) {
+    if (count + 1 > r->logsCapacity) {
         r->logsCapacity += 8;
         r->logs = bigtonReallocNullableBuff(
             &r->b, r->logs, sizeof(bigton_string_t *) * r->logsCapacity
         );
     }
-    r->logs[oldCount] = line;
-    r->logsCount = oldCount + 1;
+    r->logs[count] = line;
+    r->logsCount += 1;
 }
 
 void bigtonTracePush(bigton_runtime_state_t *r, bigton_trace_call_t t) {

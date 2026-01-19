@@ -3,21 +3,18 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdbool.h>
-
+    
 void *bigtonAllocBuff(bigton_buff_owner_t *o, size_t numBytes) {
     bigton_buff_t *buff = malloc(sizeof(bigton_buff_t) + numBytes);
     buff->owner = o;
     buff->sizeBytes = numBytes;
-    if (o->first == NULL) {
-        buff->prev = NULL;
-        buff->next = NULL;
+    buff->prev = o->last;
+    buff->next = NULL;
+    if (o->last == NULL) {
         o->first = buff;
         o->last = buff;
     } else {
-        bigton_buff_t *prev = o->last;
-        buff->prev = prev;
-        buff->next = NULL;
-        prev->next = buff;
+        o->last->next = buff;
         o->last = buff;
     }
     o->totalSizeBytes += numBytes;
@@ -27,21 +24,21 @@ void *bigtonAllocBuff(bigton_buff_owner_t *o, size_t numBytes) {
 #define GET_HEADER(b) \
     (bigton_buff_t *) (((const uint8_t *) (b)) - offsetof(bigton_buff_t, data))
 
+#define POINT_PREV_NODE_TO(o, prev, newRef) \
+    if ((prev) == NULL) { (o)->first = (newRef); } \
+    else { (prev)->next = (newRef); }
+
+#define POINT_NEXT_NODE_TO(o, next, newRef) \
+    if ((next) == NULL) { (o)->last = (newRef); } \
+    else { (next)->prev = (newRef); }
+    
 void bigtonFreeBuff(const void *buffData) {
     bigton_buff_t *buff = GET_HEADER(buffData);
     bigton_buff_owner_t *o = buff->owner;
     bigton_buff_t *prev = buff->prev;
     bigton_buff_t *next = buff->next;
-    if (prev == NULL) {
-        o->first = next;
-    } else {
-        prev->next = next;
-    }
-    if (next == NULL) {
-        o->last = prev;
-    } else {
-        next->prev = prev;
-    }
+    POINT_PREV_NODE_TO(o, prev, next); // prev.next = next
+    POINT_NEXT_NODE_TO(o, next, prev); // next.prev = prev
     o->totalSizeBytes -= buff->sizeBytes;
     free((void *) buff);
 }
@@ -53,20 +50,9 @@ void *bigtonReallocBuff(const void *buffData, size_t numBytes) {
     bigton_buff_t *next = oldBuff->next;
     size_t oldSize = oldBuff->sizeBytes;
     bigton_buff_t *newBuff = realloc(oldBuff, sizeof(bigton_buff_t) + numBytes);
-    newBuff->owner = o;
     newBuff->sizeBytes = numBytes;
-    newBuff->prev = prev;
-    newBuff->next = next;
-    if (prev == NULL) {
-        o->first = newBuff;
-    } else {
-        prev->next = newBuff;
-    }
-    if (next == NULL) {
-        o->last = newBuff;
-    } else {
-        next->prev = newBuff;
-    }
+    POINT_PREV_NODE_TO(o, prev, newBuff); // prev.next = newBuff
+    POINT_NEXT_NODE_TO(o, next, newBuff); // next.prev = newBuff
     o->totalSizeBytes = o->totalSizeBytes - oldSize + numBytes;
     return (void *) newBuff->data;
 }
