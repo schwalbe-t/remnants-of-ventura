@@ -5,7 +5,7 @@ import schwalbe.ventura.bigton.runtime.*
 
 data class BuiltinFunctionInfo(
     val name: String, val cost: Int, val argc: Int,
-    val impl: (Long) -> Unit
+    val impl: (BigtonRuntime) -> Unit
 )
 
 class BigtonBuiltinFunctions {
@@ -34,7 +34,7 @@ class BigtonModule(val funcOut: BigtonBuiltinFunctions) {
     val functions: Map<String, BuiltinFunctionInfo> = this.mutFunctions
     
     fun withFunction(
-        name: String, cost: Int, argc: Int, f: (Long) -> Unit
+        name: String, cost: Int, argc: Int, f: (BigtonRuntime) -> Unit
     ): BigtonModule {
         val info = BuiltinFunctionInfo(name, cost, argc, f)
         this.mutFunctions[name] = info
@@ -44,70 +44,59 @@ class BigtonModule(val funcOut: BigtonBuiltinFunctions) {
 
 }
 
-private fun displayValue(value: Long, maxDepth: Int, r: Long): String {
+private fun displayValue(
+    value: BigtonValue, maxDepth: Int, r: BigtonRuntime
+): String {
     val nextDepth: Int = maxDepth - 1
-    return when (BigtonValue.getType(value)) {
-        BigtonValue.Type.NULL -> "null"
-        BigtonValue.Type.INT -> BigtonValue.getInt(value).toString()
-        BigtonValue.Type.FLOAT -> BigtonValue.getFloat(value).toString()
-        BigtonValue.Type.STRING -> BigtonValue.getString(value)
-        BigtonValue.Type.TUPLE -> {
-            val length: Int = BigtonValue.getTupleLength(value)
-            if (length == 0) { return "()" }
+    return when (value) {
+        is BigtonNull -> "null"
+        is BigtonInt -> value.value.toString()
+        is BigtonFloat -> value.value.toString()
+        is BigtonString -> value.value
+        is BigtonTuple -> {
+            if (value.length == 0) { return "()" }
             if (maxDepth == 0) { return "(...)" }
-            val c: String = (0..<length).joinToString(", ", transform = { i ->
-                val mv: Long = BigtonValue.getTupleMember(value, i)
-                val str: String = displayValue(mv, nextDepth, r)
-                BigtonValue.free(mv)
-                str
-            })
+            val c: String = (0..<value.length)
+                .map { i -> value[i].use { displayValue(it, nextDepth, r) } }
+                .joinToString(", ")
             "($c)"
         }
-        BigtonValue.Type.OBJECT -> {
-            val size: Int = BigtonValue.getObjectSize(value)
-            if (size == 0) { return "{}" }
-            if (maxDepth == 0) { return "{...}" }
-            val c: String = (0..<size).joinToString(", ", transform = { i ->
-                val nid: Int = BigtonValue.getObjectPropName(value, i, r)
-                val name: String = BigtonRuntime.getConstString(r, nid)
-                val mv: Long = BigtonValue.getObjectMember(value, i)
-                val mvStr: String = displayValue(mv, nextDepth, r)
-                BigtonValue.free(mv)
-                "$name=$mvStr"
-            })
-            "{$c}"
+        is BigtonObject -> {
+            error("TODO!")
+            //     BigtonValue.Type.OBJECT -> {
+            //         val size: Int = BigtonValue.getObjectSize(value)
+            //         if (size == 0) { return "{}" }
+            //         if (maxDepth == 0) { return "{...}" }
+            //         val c: String = (0..<size).joinToString(", ", transform = { i ->
+            //             val nid: Int = BigtonValue.getObjectPropName(value, i, r)
+            //             val name: String = BigtonRuntime.getConstString(r, nid)
+            //             val mv: Long = BigtonValue.getObjectMember(value, i)
+            //             val mvStr: String = displayValue(mv, nextDepth, r)
+            //             BigtonValue.free(mv)
+            //             "$name=$mvStr"
+            //         })
+            //         "{$c}"
+            //     }
         }
-        BigtonValue.Type.ARRAY -> {
-            val length: Int = BigtonValue.getArrayLength(value)
-            if (length == 0) { return "[]" }
+        is BigtonArray -> {
+            if (value.length == 0) { return "[]" }
             if (maxDepth == 0) { return "[...]" }
-            val c: String = (0..<length).joinToString(", ", transform = { i ->
-                val ev: Long = BigtonValue.getArrayElement(value, i)
-                val str: String = displayValue(ev, nextDepth, r)
-                BigtonValue.free(ev)
-                str
-            })
+            val c: String = (0..<value.length)
+                .map { i -> value[i].use { displayValue(it, nextDepth, r) } }
+                .joinToString(", ")
             "[$c]"
         }
-        else -> "<unknown>"
     }
 }
 
-private fun printValue(r: Long) {
-    val value = BigtonRuntime.popStack(r)
-    val disp: Long = if (value != 0L) {
-        val dispStr: String = displayValue(value, PRINT_MAX_DEPTH, r)
-        BigtonValue.free(value)
-        BigtonValue.createString(dispStr, r)
-    } else {
-        BigtonValue.createString("<empty stack>", r)
-    }
-    check(disp != 0L)
-    BigtonRuntime.addLogLine(r, disp)
-    BigtonValue.free(disp)
-    val retNull: Long = BigtonValue.createNull()
-    BigtonRuntime.pushStack(r, retNull)
-    BigtonValue.free(retNull)
+private fun printValue(r: BigtonRuntime) {
+    val dispStr: String = r.popStack()
+        ?.let { v -> v.use {
+            displayValue(it, PRINT_MAX_DEPTH, r)
+        } }
+        ?: "<empty stack>"
+    r.logLine(dispStr)
+    BigtonNull.create().use(r::pushStack)
 }
 
 const val PRINT_MAX_DEPTH: Int = 5
@@ -121,19 +110,15 @@ object BigtonModules {
         .withFunction("print", cost = 1, argc = 1, ::printValue)
         .withFunction("error", cost = 1, argc = 1) { r ->
             printValue(r)
-            BigtonRuntime.setError(r, BigtonRuntimeError.BY_PROGRAM.ordinal)
+            r.error = BigtonRuntimeError.BY_PROGRAM
         }
         .withFunction("string", cost = 1, argc = 1) { r ->
-            val value = BigtonRuntime.popStack(r)
-            val disp: Long = if (value != 0L) {
-                val dispStr: String = displayValue(value, DISPLAY_MAX_DEPTH, r)
-                BigtonValue.free(value)
-                BigtonValue.createString(dispStr, r)
-            } else {
-                BigtonValue.createString("<empty stack>", r)
-            }
-            BigtonRuntime.pushStack(r, disp)
-            BigtonValue.free(disp)
+            val dispStr: String = r.popStack()
+                ?.let { v -> v.use {
+                    displayValue(it, PRINT_MAX_DEPTH, r)
+                } }
+                ?: "<empty stack>"
+            BigtonString.fromValue(dispStr, r).use(r::pushStack)
         }
         // TODO! 'int'
         // TODO! 'float'

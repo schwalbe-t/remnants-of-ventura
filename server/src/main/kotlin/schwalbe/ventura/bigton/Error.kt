@@ -1,6 +1,8 @@
 
 package schwalbe.ventura.bigton
 
+import schwalbe.ventura.bigton.runtime.BigtonRuntimeError
+
 enum class BigtonErrorType(val id: String, val message: String) {
 
     // [TK___] - Failed Tokenization
@@ -70,7 +72,9 @@ enum class BigtonErrorType(val id: String, val message: String) {
     FUN_REF_INVALID("RT-INTERNAL012", "A user-defined function referenced by the program does not exist"),
     
     // [RT-UNKOWN] - Unknown Runtime Error
-    UNKNOWN("RT-UNKNOWN", "Runtime reported unknown error")
+    UNKNOWN("RT-UNKNOWN", "Runtime reported unknown error");
+    
+    companion object
 
 }
 
@@ -82,45 +86,37 @@ class BigtonException(val error: BigtonErrorType, val source: BigtonSource)
 
 data class BigtonSource(val line: Int, val file: String)
 
-/**
- * Mirror of definition of 'bigton_error_t'
- * in 'bigtonruntime/include/bigton/error.h'
- */
-enum class BigtonRuntimeError(val e: BigtonErrorType?) {
-    NONE                        (null),
+private val runtimeToStandardError: Map<BigtonRuntimeError, BigtonErrorType> = mapOf(
+    BigtonRuntimeError.EXCEEDED_INSTR_LIMIT         to BigtonErrorType.EXCEEDED_INSTR_LIMIT,
+    BigtonRuntimeError.INT_DIVISION_BY_ZERO         to BigtonErrorType.INT_DIVISION_BY_ZERO,
+    BigtonRuntimeError.BY_PROGRAM                   to BigtonErrorType.BY_PROGRAM,
+    BigtonRuntimeError.TUPLE_INDEX_OOB              to BigtonErrorType.TUPLE_INDEX_OOB,
+    BigtonRuntimeError.INVALID_OBJECT_MEMBER        to BigtonErrorType.INVALID_OBJECT_MEMBER,
+    BigtonRuntimeError.ARRAY_INDEX_OOB              to BigtonErrorType.ARRAY_INDEX_OOB,
+    BigtonRuntimeError.OPERANDS_NOT_NUMBERS         to BigtonErrorType.OPERANDS_NOT_NUMBERS,
+    BigtonRuntimeError.OPERAND_NOT_INTEGER          to BigtonErrorType.OPERAND_NOT_INTEGER,
+    BigtonRuntimeError.OPERAND_NOT_TUPLE            to BigtonErrorType.OPERAND_NOT_TUPLE,
+    BigtonRuntimeError.OPERAND_NOT_OBJECT           to BigtonErrorType.OPERAND_NOT_OBJECT,
+    BigtonRuntimeError.OPERAND_NOT_ARRAY            to BigtonErrorType.OPERAND_NOT_ARRAY,
+    BigtonRuntimeError.EXCEEDED_MAXIMUM_CALL_DEPTH  to BigtonErrorType.MAXIMUM_CALL_DEPTH,
+    BigtonRuntimeError.TUPLE_TOO_BIG                to BigtonErrorType.TUPLE_TOO_BIG,
+    BigtonRuntimeError.EXCEEDED_MEMORY_LIMIT        to BigtonErrorType.MAXIMUM_MEMORY_USAGE,
     
-    EXCEEDED_INSTR_LIMIT        (BigtonErrorType.EXCEEDED_INSTR_LIMIT),
-    INT_DIVISION_BY_ZERO        (BigtonErrorType.INT_DIVISION_BY_ZERO),
-    BY_PROGRAM                  (BigtonErrorType.BY_PROGRAM),
-    TUPLE_INDEX_OOB             (BigtonErrorType.TUPLE_INDEX_OOB),
-    INVALID_OBJECT_MEMBER       (BigtonErrorType.INVALID_OBJECT_MEMBER),
-    ARRAY_INDEX_OOB             (BigtonErrorType.ARRAY_INDEX_OOB),
-    OPERANDS_NOT_NUMBERS        (BigtonErrorType.OPERANDS_NOT_NUMBERS),
-    OPERAND_NOT_INTEGER         (BigtonErrorType.OPERAND_NOT_INTEGER),
-    OPERAND_NOT_TUPLE           (BigtonErrorType.OPERAND_NOT_TUPLE),
-    OPERAND_NOT_OBJECT          (BigtonErrorType.OPERAND_NOT_OBJECT),
-    OPERAND_NOT_ARRAY           (BigtonErrorType.OPERAND_NOT_ARRAY),
-    EXCEEDED_MAXIMUM_CALL_DEPTH (BigtonErrorType.MAXIMUM_CALL_DEPTH),
-    TUPLE_TOO_BIG               (BigtonErrorType.TUPLE_TOO_BIG),
-    EXCEEDED_MEMORY_LIMIT       (BigtonErrorType.MAXIMUM_MEMORY_USAGE),
-    
-    INT_INCOMPLETE_PROGRAM      (BigtonErrorType.INCOMPLETE_PROGRAM),
-    INT_INVALID_CONST_STRING    (BigtonErrorType.INVALID_CONST_STRING),
-    INT_STACK_EMPTY             (BigtonErrorType.STACK_EMPTY),
-    INT_STACK_IDX_OOB           (BigtonErrorType.STACK_IDX_OOB),
-    INT_SCOPE_STACK_EMPTY       (BigtonErrorType.SCOPE_STACK_EMPTY),
-    INT_GLOBAL_VAR_REF_INVALID  (BigtonErrorType.GLOBAL_VAR_REF_INVALID),
-    INT_INSTR_COUNTER_OOB       (BigtonErrorType.INSTR_COUNTER_OOB),
-    INT_LOCAL_IDX_OOB           (BigtonErrorType.LOCAL_IDX_OOB),
-    INT_SHAPE_PROP_IDX_OOB      (BigtonErrorType.SHAPE_PROP_IDX_OOB),
-    INT_SHAPE_ID_OOB            (BigtonErrorType.SHAPE_ID_OOB),
-    INT_BUILTIN_FUN_REF_INVALID (BigtonErrorType.BUILTIN_FUN_REF_INVALID),
-    INT_FUN_REF_INVALID         (BigtonErrorType.FUN_REF_INVALID);
-}
+    BigtonRuntimeError.INT_INCOMPLETE_PROGRAM       to BigtonErrorType.INCOMPLETE_PROGRAM,
+    BigtonRuntimeError.INT_INVALID_CONST_STRING     to BigtonErrorType.INVALID_CONST_STRING,
+    BigtonRuntimeError.INT_STACK_EMPTY              to BigtonErrorType.STACK_EMPTY,
+    BigtonRuntimeError.INT_STACK_IDX_OOB            to BigtonErrorType.STACK_IDX_OOB,
+    BigtonRuntimeError.INT_SCOPE_STACK_EMPTY        to BigtonErrorType.SCOPE_STACK_EMPTY,
+    BigtonRuntimeError.INT_GLOBAL_VAR_REF_INVALID   to BigtonErrorType.GLOBAL_VAR_REF_INVALID,
+    BigtonRuntimeError.INT_INSTR_COUNTER_OOB        to BigtonErrorType.INSTR_COUNTER_OOB,
+    BigtonRuntimeError.INT_LOCAL_IDX_OOB            to BigtonErrorType.LOCAL_IDX_OOB,
+    BigtonRuntimeError.INT_SHAPE_PROP_IDX_OOB       to BigtonErrorType.SHAPE_PROP_IDX_OOB,
+    BigtonRuntimeError.INT_SHAPE_ID_OOB             to BigtonErrorType.SHAPE_ID_OOB,
+    BigtonRuntimeError.INT_BUILTIN_FUN_REF_INVALID  to BigtonErrorType.BUILTIN_FUN_REF_INVALID,
+    BigtonRuntimeError.INT_FUN_REF_INVALID          to BigtonErrorType.FUN_REF_INVALID
+)
 
-val bigtonRuntimeErrors: Array<BigtonRuntimeError>
-    = BigtonRuntimeError.values()
-    
-fun Int.toBigtonError(): BigtonErrorType
-    = bigtonRuntimeErrors.getOrNull(this)?.e
-    ?: BigtonErrorType.UNKNOWN
+fun BigtonErrorType.Companion.fromRuntimeError(
+    e: BigtonRuntimeError
+): BigtonErrorType
+    = runtimeToStandardError[e] ?: BigtonErrorType.UNKNOWN
