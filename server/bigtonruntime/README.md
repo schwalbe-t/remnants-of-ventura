@@ -1,11 +1,11 @@
 
 # Bigton C runtime
 
-- `src/main/c/glue/jni-headers/` - Machine-generated C JNI headers
-- `src/main/c/glue/` - Glue code implementing JNI interface functions
+- `src/main/c/jni/generated/` - Machine-generated C JNI headers
+- `src/main/c/jni/` - Glue code implementing JNI interface functions
 - `src/main/c/runtime/` - Implementation of the BIGTON runtime in C
 - `src/main/headers/bigton/` - BIGTON runtime API C headers
-- `src/main/java/.../` - Java definitions of the JNI API
+- `src/main/kotlin/.../` - High-level Kotlin wrapper API
 
 ### Standalone Executable
 
@@ -18,14 +18,6 @@ This generates a `bigton` executable than can be used by running
 ```bash
 ./bigton <file>
 ```
-
-### (Re-)Generation of JNI headers
-
-To generate Java glue headers, run the following command in this directory:
-```bash
-javac -h src/main/c/glue/jni-headers -d javac-out src/main/java/schwalbe/ventura/bigton/runtime/*.java
-```
-This will generate several headers in `src/main/c/glue/jni-headers` for the glue code in `src/main/c/glue` to use.
 
 ### IDEs
 

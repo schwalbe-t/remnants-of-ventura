@@ -1,4 +1,5 @@
-javac-out
+/src/main/c/jni/generated
+
 .clangd
 
 *.so

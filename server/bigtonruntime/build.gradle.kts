@@ -1,8 +1,13 @@
 
 plugins {
+    kotlin("jvm")
+    id("io.github.fletchmckee.ktjni") version "0.1.0"
     id("dev.nokee.jni-library")
     id("dev.nokee.c-language")
-    id("java")
+}
+
+ktjni {
+    outputDir = layout.projectDirectory.dir("src/main/c/jni/generated")
 }
 
 tasks.withType<org.gradle.language.c.tasks.CCompile>().configureEach {
@@ -43,6 +48,7 @@ val copyNativeLibs by tasks.registering(Copy::class) {
     dependsOn("link")
 }
 
-tasks.named("processResources") {
-    dependsOn(copyNativeLibs)
+tasks.named("build") {
+    finalizedBy(copyNativeLibs)
 }
+
