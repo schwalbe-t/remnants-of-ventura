@@ -7,6 +7,8 @@
 #include <bigton/error.h>
 
 typedef struct BigtonParsedProgram {
+    const uint8_t *rawProgramBuffer;
+
     bigton_str_id_t unknownStrId;
     
     bigton_instr_idx_t numInstrs;

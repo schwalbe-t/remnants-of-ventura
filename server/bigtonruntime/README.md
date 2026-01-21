@@ -7,6 +7,11 @@
 - `src/main/headers/bigton/` - BIGTON runtime API C headers
 - `src/main/kotlin/.../` - High-level Kotlin wrapper API
 
+### Generating JNI headers
+
+To generate new JNI headers in `src/main/c/jni/generated/`, go to the project root
+and execute `./gradlew :server:bigtonruntime:generateJniHeaders`.
+
 ### Standalone Executable
 
 The BIGTON runtime can be compiled into a bare-bones standalone executable
@@ -21,7 +26,7 @@ This generates a `bigton` executable than can be used by running
 
 ### IDEs
 
-As seen in the previous section, the glue code relies on JNI headers provided by your JVM implementation. On a system using a POSIX shell, you can get the include paths using:
+The glue code relies on JNI headers provided by your JVM implementation. On a system using a POSIX shell, you can get the include paths using:
 ```
 echo $(realpath src/main/headers)
 echo $(realpath $(dirname $(readlink -f /usr/bin/javac))/../include/)
@@ -41,3 +46,4 @@ CompileFlags:
     - "-I/usr/lib/jvm/java-21-openjdk/include/"
     - "-I/usr/lib/jvm/java-21-openjdk/include/linux/"
 ```
+Other IDEs and editors such as VS Code may allow you to specify these paths in their respective graphical settings.

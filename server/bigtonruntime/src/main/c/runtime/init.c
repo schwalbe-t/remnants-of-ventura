@@ -9,7 +9,9 @@ void bigtonParseProgram(
     bigton_parsed_program_t *dest, bigton_error_t *e
 ) {
     const uint8_t *p = rawProgram;
-    
+
+    dest->rawProgramBuffer = rawProgram;
+
     bigton_program_t *header = (bigton_program_t *) rawProgram;
     dest->unknownStrId          = header->unknownStrId;
     dest->numInstrs             = header->numInstrs;

@@ -50,9 +50,6 @@ object BigtonValueN {
     @JvmStatic external fun setArrayAt(
         handle: Long, index: Int, valueHandle: Long
     )
-    @JvmStatic external fun addArrayAt(
-        handle: Long, index: Int, valueHandle: Long, runtimeHandle: Long
-    )
     @JvmStatic external fun getArrayAt(handle: Long, index: Int): Long
     
     fun wrapHandle(handle: Long): BigtonValue {
@@ -166,12 +163,4 @@ operator fun BigtonArray.get(index: Int): BigtonValue {
 operator fun BigtonArray.set(index: Int, value: BigtonValue) {
     require(index >= 0 && index < this.length)
     BigtonValueN.setArrayAt(this.handle, index, value.handle)
-}
-
-fun BigtonArray.add(value: BigtonValue, runtime: BigtonRuntime)
-    = this.add(this.length, value, runtime)
-
-fun BigtonArray.add(index: Int, value: BigtonValue, runtime: BigtonRuntime) {
-    require(index >= 0 && index <= this.length)
-    BigtonValueN.addArrayAt(this.handle, index, value.handle, runtime.handle)
 }

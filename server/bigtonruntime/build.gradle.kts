@@ -11,6 +11,8 @@ ktjni {
 }
 
 tasks.withType<org.gradle.language.c.tasks.CCompile>().configureEach {
+    dependsOn("generateKotlinMainJniHeaders")
+    mustRunAfter("generateKotlinMainJniHeaders")
     // compilerArgs.addAll(listOf(
     //     "-O3",
     //     "-flto"
@@ -51,4 +53,3 @@ val copyNativeLibs by tasks.registering(Copy::class) {
 tasks.named("build") {
     finalizedBy(copyNativeLibs)
 }
-

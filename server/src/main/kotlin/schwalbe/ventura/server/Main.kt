@@ -98,7 +98,7 @@ package schwalbe.ventura.server
 import schwalbe.ventura.bigton.*
 import schwalbe.ventura.bigton.runtime.*
 import java.io.ByteArrayOutputStream
-import java.io.DataOutputStream;
+import java.io.DataOutputStream
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder

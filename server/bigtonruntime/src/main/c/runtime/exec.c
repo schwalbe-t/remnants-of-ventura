@@ -8,7 +8,7 @@
 #include <string.h>
 #include <math.h>
 
-#define MAX_LOG_LENGTH 64
+#define MAX_LOG_LENGTH 32
 
 void bigtonLogLine(bigton_runtime_state_t *r, bigton_string_t *line) {
     size_t count = r->logsCount;

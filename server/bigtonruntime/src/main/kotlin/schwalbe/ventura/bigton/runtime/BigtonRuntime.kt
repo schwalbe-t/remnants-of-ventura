@@ -87,8 +87,6 @@ class BigtonRuntime(
         maxCallDepth, maxTupleSize
     )
     
-    
-    
     override fun close() = BigtonRuntimeN.free(this.handle)
 
 }
@@ -97,8 +95,9 @@ fun BigtonRuntime.debugLoadedProgram()
     = BigtonRuntimeN.debugLoadedProgram(this.handle)
 
 fun BigtonRuntime.logLine(line: String) {
-    val sLine = BigtonString.fromValue(line, this)
-    BigtonRuntimeN.addLogLine(this.handle, sLine.handle)
+    BigtonString.fromValue(line, this).use {
+        BigtonRuntimeN.addLogLine(this.handle, it.handle)
+    }
 }
 
 fun BigtonRuntime.drainLogLines(): List<String> {
