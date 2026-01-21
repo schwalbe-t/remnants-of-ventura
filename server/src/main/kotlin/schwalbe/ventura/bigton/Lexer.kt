@@ -166,6 +166,8 @@ fun tokenize(file: String, source: String): List<BigtonToken> {
             ')' -> advToken(BigtonTokenType.PAREN_CLOSE,    ")")
             '{' -> advToken(BigtonTokenType.BRACE_OPEN,     "{")
             '}' -> advToken(BigtonTokenType.BRACE_CLOSE,    "}")
+            '[' -> advToken(BigtonTokenType.BRACKET_OPEN,   "[")
+            ']' -> advToken(BigtonTokenType.BRACKET_CLOSE,  "]")
             '.' -> advToken(BigtonTokenType.DOT,            ".")
             ',' -> advToken(BigtonTokenType.COMMA,          ",")
             '+' -> advToken(BigtonTokenType.PLUS,           "+")
@@ -176,7 +178,6 @@ fun tokenize(file: String, source: String): List<BigtonToken> {
             '<' -> advToken(BigtonTokenType.LESS_THAN,      "<")
             '>' -> advToken(BigtonTokenType.GREATER_THAN,   ">")
             '=' -> advToken(BigtonTokenType.EQUALS,         "=")
-            '@' -> advToken(BigtonTokenType.AT,             "@")
             '#' -> {
                 while (currentIdx < source.length) {
                     val c: Char = source[currentIdx]

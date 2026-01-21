@@ -299,6 +299,12 @@ private fun generateExpression(
             program.instrArgs.putInt(shapeId)
             program.instrArgs.alignTo(8)
         }
+        BigtonAstType.ARRAY_LITERAL -> {
+            ctx.program.assertFeatureSupported(BigtonFeature.OBJECTS)
+            program.instrTypes.add(InstrType.LOAD_ARRAY)
+            program.instrArgs.putInt(ast.children.size)
+            program.instrArgs.alignTo(8)
+        }
         BigtonAstType.CALL -> {
             val name = ast.castArg<String>()
             val (argc, isBuiltin) = ctx.program.findFunctionArgc(name)
@@ -348,10 +354,9 @@ private fun generateExpression(
             program.instrArgs.putInt(nameId)
             program.instrArgs.alignTo(8)
         }
-        BigtonAstType.DEREF -> {
-            throw IllegalStateException(
-                "memory derefence not supported by runtime"
-            )
+        BigtonAstType.ARRAY_INDEX -> {
+            ctx.program.assertFeatureSupported(BigtonFeature.OBJECTS)
+            program.addNoArgInstr(InstrType.LOAD_ARRAY_ELEMENT)
         }
         BigtonAstType.NOT
             -> program.addNoArgInstr(InstrType.NOT)
@@ -419,11 +424,6 @@ private fun generateStatement(
                         )
                     }
                 }
-                BigtonAstType.DEREF -> {
-                    throw IllegalStateException(
-                        "memory derefence not supported by runtime"
-                    )
-                }
                 BigtonAstType.OBJECT_MEMBER -> {
                     ctx.program.assertFeatureSupported(BigtonFeature.OBJECTS)
                     val member: String = dest.castArg<String>()
@@ -432,6 +432,15 @@ private fun generateStatement(
                     program.instrTypes.add(InstrType.STORE_OBJECT_MEMBER)
                     program.instrArgs.putInt(program.strings[member])
                     program.instrArgs.alignTo(8)
+                }
+                BigtonAstType.ARRAY_INDEX -> {
+                    ctx.program.assertFeatureSupported(BigtonFeature.OBJECTS)
+                    val array: BigtonAst = dest.children[0]
+                    val index: BigtonAst = dest.children[1]
+                    generateExpression(array, ctx, program)
+                    generateExpression(index, ctx, program)
+                    generateExpression(value, ctx, program)
+                    program.addNoArgInstr(InstrType.STORE_ARRAY_ELEMENT)
                 }
                 else -> throw BigtonException(
                     BigtonErrorType.ASSIGNMENT_TO_CONST, ast.source

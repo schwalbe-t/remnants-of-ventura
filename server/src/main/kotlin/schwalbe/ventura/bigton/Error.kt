@@ -25,6 +25,7 @@ enum class BigtonErrorType(val id: String, val message: String) {
     MISSING_EXPECTED_FUNCTION_NAME("PA012", "Expected the function name after 'fun', but got something else"),
     MISSING_EXPECTED_FUNC_ARGS_OPEN("PA013", "Expected '(' after the function name, but got something else"),
     MISSING_EXPECTED_ARGUMENT_NAME("PA014", "Expected a function argument name in the function argument list, but got something else"),
+    MISSING_EXPECTED_CLOSING_BRACKET("PA015", "Expected ']' after array index, but got something else"),
 
     // [SC___] - Failed Static Checks
     FEATURE_UNSUPPORTED("SC001", "Feature not supported by the processor"),

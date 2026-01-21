@@ -17,10 +17,10 @@ enum class BigtonAstType {
     STRING_LITERAL, //                      value: String
     TUPLE_LITERAL,  // [...element_vals]
     OBJECT_LITERAL, // [...member_vals]     members: List<String>
+    ARRAY_LITERAL,  // [...member_vals]
     CALL,           // [...arg_vals]        function: String
     
     // unary operators
-    DEREF,          // [address]
     NOT,            // [x]
     NEGATE,         // [x]
 
@@ -28,7 +28,8 @@ enum class BigtonAstType {
     TUPLE_MEMBER,   // [tuple]      index: Int
     OBJECT_MEMBER,  // [object]     member: String
 
-    // binary operators (dynamic second operand) 
+    // binary operators (dynamic second operand)
+    ARRAY_INDEX,
     ADD,
     SUBTRACT,
     MULTIPLY,

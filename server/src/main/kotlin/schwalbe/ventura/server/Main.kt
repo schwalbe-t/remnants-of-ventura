@@ -132,7 +132,12 @@ fun main() {
     
     val mainSrc = """
     
-    print(float("-69"))
+    var primes = [2, 3, 5, 7, 11, 13]
+    print(len(primes))
+    print(primes)
+    print(primes[0])
+    primes[1] = 69
+    print(primes)
     
     """.trimIndent()
     
@@ -147,7 +152,8 @@ fun main() {
         BigtonFeature.FPU_MODULE
     )
     val modules = listOf(
-        BigtonModules.standard
+        BigtonModules.standard,
+        BigtonModules.floatingPoint
     )
     val programBytes: ByteArray
     try {

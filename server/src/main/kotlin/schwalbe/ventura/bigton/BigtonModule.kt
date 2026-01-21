@@ -2,6 +2,7 @@
 package schwalbe.ventura.bigton
 
 import schwalbe.ventura.bigton.runtime.*
+import kotlin.math.*
 
 data class BuiltinFunctionInfo(
     val name: String, val cost: Int, val argc: Int,
@@ -152,6 +153,20 @@ private fun parseFloat(r: BigtonRuntime) {
     BigtonFloat.fromValue(parsed).use(r::pushStack)
 }
 
+private inline fun wrapFloatFunction(
+    name: String, crossinline f: (Double) -> Double
+): (BigtonRuntime) -> Unit = impl@{ r ->
+    val inp: Double = r.popStack()
+        ?.use { when (it) {
+            is BigtonFloat -> it.value
+            else -> return@impl runtimeError(r,
+                "'$name' expects a float, but function received something else"
+            )
+        } }
+        ?: 0.0
+    BigtonFloat.fromValue(f(inp)).use(r::pushStack)
+}
+
 object BigtonModules {
     
     val functions = BigtonBuiltinFunctions()
@@ -164,14 +179,11 @@ object BigtonModules {
         }
         .withFunction("string", cost = 1, argc = 1) { r ->
             val dispStr: String = r.popStack()
-                ?.let { v -> v.use {
-                    displayValue(it, PRINT_MAX_DEPTH, r)
-                } }
+                ?.use { displayValue(it, PRINT_MAX_DEPTH, r) }
                 ?: "<empty stack>"
             BigtonString.fromValue(dispStr, r).use(r::pushStack)
         }
         .withFunction("int", cost = 1, argc = 1, ::parseInt)
-        .withFunction("float", cost = 1, argc = 1, ::parseFloat)
         .withFunction("len", cost = 1, argc = 1) { r ->
             val length: Int = r.popStack()
                 ?.use { when (it) {
@@ -199,4 +211,31 @@ object BigtonModules {
                 ?: 0
             BigtonInt.fromValue(flatLength.toLong()).use(r::pushStack)
         }
+
+    val floatingPoint = BigtonModule(functions)
+        .withFunction("float", cost = 1, argc = 1, ::parseFloat)
+        .withFunction("ceil", cost = 1, argc = 1,
+            wrapFloatFunction("ceil", ::ceil)
+        )
+        .withFunction("round", cost = 1, argc = 1,
+            wrapFloatFunction("round", ::round)
+        )
+        .withFunction("floor", cost = 1, argc = 1,
+            wrapFloatFunction("floor", ::floor)
+        )
+        .withFunction("sqrt", cost = 1, argc = 1,
+            wrapFloatFunction("sqrt", ::sqrt)
+        )
+        .withFunction("cbrt", cost = 1, argc = 1,
+            wrapFloatFunction("cbrt", ::cbrt)
+        )
+        .withFunction("sin", cost = 1, argc = 1,
+            wrapFloatFunction("sin", ::sin)
+        )
+        .withFunction("cos", cost = 1, argc = 1,
+            wrapFloatFunction("cos", ::cos)
+        )
+        .withFunction("tan", cost = 1, argc = 1,
+            wrapFloatFunction("tan", ::tan)
+        )
 }
