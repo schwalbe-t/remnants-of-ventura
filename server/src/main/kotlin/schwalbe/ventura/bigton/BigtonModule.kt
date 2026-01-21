@@ -11,8 +11,6 @@ data class BuiltinFunctionInfo(
 
 class BigtonBuiltinFunctions {
     
-    private var nextFunId: Int = 0
-    
     private val mutFunctionsById: MutableList<BuiltinFunctionInfo>
         = mutableListOf()
     private val mutIdByFunctionName: MutableMap<String, Int>
@@ -167,6 +165,123 @@ private inline fun wrapFloatFunction(
     BigtonFloat.fromValue(f(inp)).use(r::pushStack)
 }
 
+private fun assertSliceIndices(
+    length: Int, start: Int, end: Int, r: BigtonRuntime
+): Boolean {
+    if (start !in 0..length) {
+        runtimeError(r,
+            "'slice' received start index $start, which is out of bounds for " +
+            "length $length ([0 <= startIdx <= endIdx <= len] is required)"
+        )
+        return false
+    }
+    if (end !in 0..length) {
+        runtimeError(r,
+            "'slice' received end index $end, which is out of bounds for " +
+            "length $length ([0 <= startIdx <= endIdx <= len] is required)"
+        )
+        return false
+    }
+    if (end < start) {
+        runtimeError(r,
+            "'slice' expects the end index to be larger than or equal to the " +
+            "start index, but received a start index $start which is greater " +
+            "than the given end index $end " +
+            "([0 <= startIdx <= endIdx <= len] is required)"
+        )
+        return false
+    }
+    return true
+}
+
+private fun slice(r: BigtonRuntime) {
+    val endIdx: BigtonValue? = r.popStack()
+    val startIdx: BigtonValue? = r.popStack()
+    val source: BigtonValue? = r.popStack()
+    arrayOf(source, startIdx, endIdx).useAll {
+        if (source == null || startIdx == null || endIdx == null) {
+            return BigtonNull.create().use(r::pushStack)
+        }
+        if (startIdx !is BigtonInt || endIdx !is BigtonInt) {
+            return runtimeError(r,
+                "'slice' expects the start index (second parameter) " +
+                "and end index (third parameter) to both be integers, but " +
+                "the function received something else"
+            )
+        }
+        val start: Int = startIdx.value.toInt()
+        val end: Int = endIdx.value.toInt()
+        when {
+            source is BigtonString
+                -> if (assertSliceIndices(source.length, start, end, r)) {
+                source.slice(start, end, r).use(r::pushStack)
+            }
+            source is BigtonArray
+                -> if (assertSliceIndices(source.length, start, end, r)) {
+                source.slice(start, end, r).use(r::pushStack)
+            }
+            else -> return runtimeError(r,
+                "'slice' expects the source (first parameter) to be a string " +
+                "or an array, but the function received something else"
+            )
+        }
+    }
+}
+
+private fun insert(r: BigtonRuntime) {
+    val value: BigtonValue? = r.popStack()
+    val index: BigtonValue? = r.popStack()
+    val dest: BigtonValue? = r.popStack()
+    arrayOf(dest, index, value).useAll {
+        if (dest == null || index == null || value == null) {
+            return BigtonNull.create().use(r::pushStack)
+        }
+        if (dest !is BigtonArray) { return runtimeError(r,
+            "'insert' expects the target container (first argument) " +
+            "to be an array, but the function received something else"
+        ) }
+        if (index !is BigtonInt) { return runtimeError(r,
+            "'insert' expects the destination index (second argument) " +
+            "to be an integer, but the function received something else"
+        ) }
+        val i: Int = index.value.toInt()
+        if (i !in 0..dest.length) { return runtimeError(r,
+            "'insert' expects the destination index (second argument) " +
+            "to be in bounds of the given array, but received index $i " +
+            "(for an array of length ${dest.length}) " +
+            "([0 <= i <= len] is required)"
+        ) }
+        dest.insert(i, value, r)
+        BigtonNull.create().use(r::pushStack)
+    }
+}
+
+private fun remove(r: BigtonRuntime) {
+    val index: BigtonValue? = r.popStack()
+    val source: BigtonValue? = r.popStack()
+    arrayOf(source, index).useAll {
+        if (source == null || index == null) {
+            return BigtonNull.create().use(r::pushStack)
+        }
+        if (source !is BigtonArray) { return runtimeError(r,
+            "'remove' expects the source container (first argument) " +
+            "to be an array, but the function received something else"
+        ) }
+        if (index !is BigtonInt) { return runtimeError(r,
+            "'remove' expects the source index (second argument) " +
+            "to be an integer, but the function received something else"
+        ) }
+        val i: Int = index.value.toInt()
+        if (i !in 0..<source.length) { return runtimeError(r,
+            "'remove' expects the source index (second argument) " +
+            "to be in bounds of the given array, but received index $i " +
+            "(for an array of length ${source.length}) " +
+            "([0 <= i < len] is required)"
+        ) }
+        source.remove(i).use(r::pushStack)
+    }
+}
+
 object BigtonModules {
     
     val functions = BigtonBuiltinFunctions()
@@ -179,7 +294,7 @@ object BigtonModules {
         }
         .withFunction("string", cost = 1, argc = 1) { r ->
             val dispStr: String = r.popStack()
-                ?.use { displayValue(it, PRINT_MAX_DEPTH, r) }
+                ?.use { displayValue(it, DISPLAY_MAX_DEPTH, r) }
                 ?: "<empty stack>"
             BigtonString.fromValue(dispStr, r).use(r::pushStack)
         }
@@ -210,6 +325,61 @@ object BigtonModules {
                 } }
                 ?: 0
             BigtonInt.fromValue(flatLength.toLong()).use(r::pushStack)
+        }
+        .withFunction("concat", cost = 1, argc = 2) { r ->
+            val b: BigtonValue? = r.popStack()
+            val a: BigtonValue? = r.popStack()
+            arrayOf(a, b).useAll {
+                if (a == null || b == null) {
+                    return@withFunction BigtonNull.create().use(r::pushStack)
+                }
+                when {
+                    a is BigtonString && b is BigtonString
+                        -> BigtonString.concat(a, b, r).use(r::pushStack)
+                    a is BigtonArray && b is BigtonArray
+                        -> BigtonArray.concat(a, b, r).use(r::pushStack)
+                    else -> runtimeError(r,
+                        "'concat' expects its arguments to be either both " +
+                        "strings or both arrays, but the values the function " +
+                        "received do not meet this requirenment"
+                    )
+                }
+            }
+        }
+        .withFunction("slice", cost = 1, argc = 3, ::slice)
+        .withFunction("insert", cost = 1, argc = 3, ::insert)
+        .withFunction("push", cost = 1, argc = 2) { r ->
+            val value: BigtonValue? = r.popStack()
+            val dest: BigtonValue? = r.popStack()
+            arrayOf(dest, value).useAll {
+                if (dest == null || value == null) {
+                    return@withFunction BigtonNull.create().use(r::pushStack)
+                }
+                if (dest !is BigtonArray) { return@withFunction runtimeError(r,
+                    "'push' expects the destination container (first " +
+                    "argument) to be an array, but function received " +
+                    "something else"
+                ) }
+                dest.insert(dest.length, value, r)
+                BigtonNull.create().use(r::pushStack)
+            }
+        }
+        .withFunction("remove", cost = 1, argc = 2, ::remove)
+        .withFunction("pop", cost = 1, argc = 1) { r ->
+            val src: BigtonValue? = r.popStack()
+                ?: return@withFunction BigtonNull.create().use(r::pushStack)
+            src.use {
+                if (src !is BigtonArray) { return@withFunction runtimeError(r,
+                    "'pop' expects the given source container " +
+                    "to be an array, but function received something else"
+                ) }
+                val srcLen: Int = src.length
+                if (srcLen == 0) { return@withFunction runtimeError(r,
+                    "'pop' requires the given source container to contain " +
+                    "at least one value, but the given array was empty"
+                ) }
+                src.remove(srcLen - 1).use(r::pushStack)
+            }
         }
 
     val floatingPoint = BigtonModule(functions)

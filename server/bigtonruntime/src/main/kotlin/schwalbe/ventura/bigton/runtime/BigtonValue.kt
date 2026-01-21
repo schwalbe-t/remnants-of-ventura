@@ -37,6 +37,12 @@ object BigtonValueN {
     ): Long
     @JvmStatic external fun getString(handle: Long): String
     @JvmStatic external fun getStringLength(handle: Long): Int
+    @JvmStatic external fun concatStrings(
+        handleA: Long, handleB: Long, runtimeHandle: Long
+    ): Long
+    @JvmStatic external fun sliceString(
+        handle: Long, startIdx: Int, endIdx: Int, runtimeHandle: Long
+    ): Long
     
     @JvmStatic external fun createTuple(
         length: Int, runtimeHandle: Long
@@ -70,7 +76,17 @@ object BigtonValueN {
     @JvmStatic external fun setArrayAt(
         handle: Long, index: Int, valueHandle: Long
     )
+    @JvmStatic external fun insertArrayAt(
+        handle: Long, index: Int, valueHandle: Long, runtimeHandle: Long
+    )
+    @JvmStatic external fun removeArrayAt(handle: Long, index: Int): Long
     @JvmStatic external fun getArrayAt(handle: Long, index: Int): Long
+    @JvmStatic external fun concatArrays(
+        handleA: Long, handleB: Long, runtimeHandle: Long
+    ): Long
+    @JvmStatic external fun sliceArray(
+        handle: Long, startIdx: Int, endIdx: Int, runtimeHandle: Long
+    ): Long
     
     fun wrapHandle(handle: Long): BigtonValue {
         return when (BigtonValueN.getType(handle)) {
@@ -128,6 +144,24 @@ val BigtonString.length: Int
 val BigtonString.value: String
     get() = BigtonValueN.getString(this.handle)
 
+fun BigtonString.Companion.concat(
+    a: BigtonString, b: BigtonString, runtime: BigtonRuntime
+) = BigtonString(BigtonValueN.concatStrings(
+    a.handle, b.handle, runtime.handle)
+)
+
+fun BigtonString.slice(
+    startIdx: Int, endIdx: Int, runtime: BigtonRuntime
+): BigtonString {
+    val thisLength: Int = this.length
+    require(startIdx in 0..thisLength)
+    require(endIdx in 0..thisLength)
+    require(startIdx <= endIdx)
+    return BigtonString(BigtonValueN.sliceString(
+        this.handle, startIdx, endIdx, runtime.handle
+    ))
+}
+
 
 class BigtonTuple   (handle: Long) : BigtonValue(handle) { companion object }
     
@@ -158,6 +192,9 @@ operator fun BigtonTuple.set(index: Int, value: BigtonValue) {
     require(index >= 0 && index < this.length)
     BigtonValueN.setTupleAt(this.handle, index, value.handle)
 }
+
+val BigtonTuple.values: Sequence<BigtonValue>
+    get() = (0..<this.length).asSequence().map(this::get)
 
 
 class BigtonObject  (handle: Long) : BigtonValue(handle) { companion object }
@@ -225,4 +262,56 @@ operator fun BigtonArray.get(index: Int): BigtonValue {
 operator fun BigtonArray.set(index: Int, value: BigtonValue) {
     require(index >= 0 && index < this.length)
     BigtonValueN.setArrayAt(this.handle, index, value.handle)
+}
+
+val BigtonArray.values: Sequence<BigtonValue>
+    get() = (0..<this.length).asSequence().map(this::get)
+
+fun BigtonArray.Companion.concat(
+    a: BigtonArray, b: BigtonArray, runtime: BigtonRuntime
+) = BigtonArray(BigtonValueN.concatArrays(
+    a.handle, b.handle, runtime.handle
+))
+
+fun BigtonArray.slice(
+    startIdx: Int, endIdx: Int, runtime: BigtonRuntime
+): BigtonArray {
+    val thisLength: Int = this.length
+    require(startIdx in 0..thisLength)
+    require(endIdx in 0..thisLength)
+    require(startIdx <= endIdx)
+    return BigtonArray(BigtonValueN.sliceArray(
+        this.handle, startIdx, endIdx, runtime.handle
+    ))
+}
+
+fun BigtonArray.insert(index: Int, value: BigtonValue, runtime: BigtonRuntime) {
+    require(index in 0..this.length)
+    BigtonValueN.insertArrayAt(
+        this.handle, index, value.handle, runtime.handle
+    )
+}
+
+fun BigtonArray.remove(index: Int): BigtonValue {
+    require(index in 0..<this.length)
+    return BigtonValueN.wrapHandle(
+        BigtonValueN.removeArrayAt(this.handle, index)
+    )
+}
+
+
+inline fun <R> Iterable<BigtonValue?>.useAll(f: () -> R): R {
+    try {
+        return f()
+    } finally {
+        this.forEach { it?.close() }
+    }
+}
+
+inline fun <R> Array<BigtonValue?>.useAll(f: () -> R): R {
+    try {
+        return f()
+    } finally {
+        this.forEach { it?.close() }
+    }
 }

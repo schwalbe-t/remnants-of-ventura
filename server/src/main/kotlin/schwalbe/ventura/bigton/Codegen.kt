@@ -291,7 +291,7 @@ private fun generateExpression(
             program.instrArgs.alignTo(8)
         }
         BigtonAstType.OBJECT_LITERAL -> {
-            ctx.program.assertFeatureSupported(BigtonFeature.OBJECTS)
+            ctx.program.assertFeatureSupported(BigtonFeature.DYNAMIC_MEMORY)
             val shape: List<Int> = ast.castArg<List<String>>()
                 .map { program.strings[it] }
             val shapeId: Int = program.shapes[shape]
@@ -300,7 +300,7 @@ private fun generateExpression(
             program.instrArgs.alignTo(8)
         }
         BigtonAstType.ARRAY_LITERAL -> {
-            ctx.program.assertFeatureSupported(BigtonFeature.OBJECTS)
+            ctx.program.assertFeatureSupported(BigtonFeature.DYNAMIC_MEMORY)
             program.instrTypes.add(InstrType.LOAD_ARRAY)
             program.instrArgs.putInt(ast.children.size)
             program.instrArgs.alignTo(8)
@@ -348,14 +348,14 @@ private fun generateExpression(
             program.instrArgs.alignTo(8)
         }
         BigtonAstType.OBJECT_MEMBER -> {
-            ctx.program.assertFeatureSupported(BigtonFeature.OBJECTS)
+            ctx.program.assertFeatureSupported(BigtonFeature.DYNAMIC_MEMORY)
             val nameId: Int = program.strings[ast.castArg<String>()]
             program.instrTypes.add(InstrType.LOAD_OBJECT_MEMBER)
             program.instrArgs.putInt(nameId)
             program.instrArgs.alignTo(8)
         }
         BigtonAstType.ARRAY_INDEX -> {
-            ctx.program.assertFeatureSupported(BigtonFeature.OBJECTS)
+            ctx.program.assertFeatureSupported(BigtonFeature.DYNAMIC_MEMORY)
             program.addNoArgInstr(InstrType.LOAD_ARRAY_ELEMENT)
         }
         BigtonAstType.NOT
@@ -425,7 +425,9 @@ private fun generateStatement(
                     }
                 }
                 BigtonAstType.OBJECT_MEMBER -> {
-                    ctx.program.assertFeatureSupported(BigtonFeature.OBJECTS)
+                    ctx.program.assertFeatureSupported(
+                        BigtonFeature.DYNAMIC_MEMORY
+                    )
                     val member: String = dest.castArg<String>()
                     generateExpression(dest.children[0], ctx, program)
                     generateExpression(value, ctx, program)
@@ -434,7 +436,9 @@ private fun generateStatement(
                     program.instrArgs.alignTo(8)
                 }
                 BigtonAstType.ARRAY_INDEX -> {
-                    ctx.program.assertFeatureSupported(BigtonFeature.OBJECTS)
+                    ctx.program.assertFeatureSupported(
+                        BigtonFeature.DYNAMIC_MEMORY
+                    )
                     val array: BigtonAst = dest.children[0]
                     val index: BigtonAst = dest.children[1]
                     generateExpression(array, ctx, program)

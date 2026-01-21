@@ -132,12 +132,16 @@ fun main() {
     
     val mainSrc = """
     
-    var primes = [2, 3, 5, 7, 11, 13]
-    print(len(primes))
-    print(primes)
-    print(primes[0])
-    primes[1] = 69
-    print(primes)
+    var values = []
+    push(values, 5)
+    push(values, 10)
+    insert(values, 0, 69)
+    print(values)
+    print(pop(values))
+    print(pop(values))
+    print(values)
+    insert(values, 1, 420)
+    print(values)
     
     """.trimIndent()
     
@@ -146,10 +150,9 @@ fun main() {
         BigtonSourceFile("main", mainSrc)
     )
     val features = setOf(
-        BigtonFeature.RAM_MODULE,
+        BigtonFeature.FPU_MODULE,
         BigtonFeature.CUSTOM_FUNCTIONS,
-        BigtonFeature.OBJECTS,
-        BigtonFeature.FPU_MODULE
+        BigtonFeature.DYNAMIC_MEMORY
     )
     val modules = listOf(
         BigtonModules.standard,

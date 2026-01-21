@@ -94,6 +94,48 @@ PARAMS(jlong valueHandle) {
     return (jint) value->v.s->length;
 }
 
+// external fun concatStrings(
+//     handleA: Long, handleB: Long, runtimeHandle: Long
+// ): Long
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_concatStrings
+PARAMS(jlong handleA, jlong handleB, jlong runtimeHandle) {
+    UNPACK(handleA, bigton_tagged_value_t, valueA);
+    UNPACK(handleB, bigton_tagged_value_t, valueB);
+    UNPACK(runtimeHandle, bigton_runtime_state_t, r);
+    bigton_string_t *a = valueA->v.s;
+    bigton_string_t *b = valueB->v.s;
+    uint32_t newLengthChars = a->length + b->length;
+    size_t newLengthBytes = sizeof(bigton_char_t) * newLengthChars;
+    bigton_char_t *newContent = bigtonAllocNullableBuff(&r->b, newLengthBytes);
+    bigton_char_t *aDestStart = newContent;
+    memcpy(aDestStart, a->content, sizeof(bigton_char_t) * a->length);
+    bigton_char_t *bDestStart = aDestStart + a->length;
+    memcpy(bDestStart, b->content, sizeof(bigton_char_t) * b->length);
+    bigton_string_t *c = bigtonAllocBuff(&r->b, sizeof(bigton_string_t));
+    c->rc = BIGTON_RC_INIT;
+    c->content = newContent;
+    c->length = newLengthChars;
+    MALLOC_VALUE(valueC);
+    valueC->t = BIGTON_STRING;
+    valueC->v.s = c;
+    return AS_HANDLE(valueC);
+}
+
+// external fun sliceString(
+//     handle: Long, startIdx: Int, endIdx: Int, runtimeHandle: Long
+// ): Long
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_sliceString
+PARAMS(jlong valueHandle, jint startIdx, jint endIdx, jlong runtimeHandle) {
+    UNPACK(valueHandle, bigton_tagged_value_t, value);
+    UNPACK(runtimeHandle, bigton_runtime_state_t, r);
+    uint32_t resLength = endIdx - startIdx;
+    const bigton_char_t *resContent = value->v.s->content + startIdx;
+    MALLOC_VALUE(result);
+    result->t = BIGTON_STRING;
+    result->v.s = bigtonAllocString(&r->b, resLength, resContent);
+    return AS_HANDLE(result);
+}
+
 // external fun createTuple(length: Int, runtimeHandle: Long): Long
 JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_createTuple
 PARAMS(jint length, jlong runtimeHandle) {
@@ -315,6 +357,68 @@ PARAMS(jlong valueHandle, jint i, jlong containedValueHandle) {
     elemValues[i] = containedValue->v;
 }
 
+// external fun insertArrayAt(
+//     handle: Long, index: Int, valueHandle: Long, runtimeHandle: Long
+// )
+JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_insertArrayAt
+PARAMS(jlong valueHandle, jint i, jlong insertValueHandle, jlong runtimeHandle) {
+    UNPACK(valueHandle, bigton_tagged_value_t, value);
+    UNPACK(insertValueHandle, bigton_tagged_value_t, insertValue);
+    UNPACK(runtimeHandle, bigton_runtime_state_t, r);
+    bigton_array_t *a = value->v.a;
+    if (a->length + 1 > a->capacity) {
+        a->capacity += 4;
+        a->elementTypes = bigtonReallocNullableBuff(
+            &r->b, a->elementTypes, sizeof(bigton_value_type_t) * a->capacity
+        );
+        a->elementValues = bigtonReallocNullableBuff(
+            &r->b, a->elementValues, sizeof(bigton_value_t) * a->capacity
+        );
+    }
+    bigton_value_type_t *elemTypes = a->elementTypes;
+    bigton_value_t *elemValues = a->elementValues;
+    uint32_t numShifted = a->length - i;
+    if (numShifted != 0) {
+        memmove(
+            elemTypes + i + 1, elemTypes + i,
+            sizeof(bigton_value_type_t) * numShifted
+        );
+        memmove(
+            elemValues + i + 1, elemValues + i,
+            sizeof(bigton_value_t) * numShifted
+        );
+    }
+    bigtonValRcIncr(*insertValue);
+    elemTypes[i] = insertValue->t;
+    elemValues[i] = insertValue->v;
+    a->length += 1;
+}
+
+// external fun removeArrayAt(handle: Long, index: Int): Long
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_removeArrayAt
+PARAMS(jlong valueHandle, jint i) {
+    UNPACK(valueHandle, bigton_tagged_value_t, value);
+    bigton_array_t *a = value->v.a;
+    bigton_value_type_t *elemTypes = a->elementTypes;
+    bigton_value_t *elemValues = a->elementValues;
+    MALLOC_VALUE(removed);
+    removed->t = elemTypes[i];
+    removed->v = elemValues[i];
+    uint32_t numShifted = a->length - i - 1;
+    if (numShifted != 0) {
+        memmove(
+            elemTypes + i, elemTypes + i + 1,
+            sizeof(bigton_value_type_t) * numShifted
+        );
+        memmove(
+            elemValues + i, elemValues + i + 1,
+            sizeof(bigton_value_t) * numShifted
+        );
+    }
+    a->length -= 1;
+    return AS_HANDLE(removed);
+}
+
 // external fun getArrayAt(handle: Long, index: Int): Long
 JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_getArrayAt
 PARAMS(jlong valueHandle, jint i) {
@@ -325,4 +429,86 @@ PARAMS(jlong valueHandle, jint i) {
     containedValue->v = a->elementValues[i];
     bigtonValRcIncr(*containedValue);
     return AS_HANDLE(containedValue);
+}
+
+// external fun concatArrays(
+//     handleA: Long, handleB: Long, runtimeHandle: Long
+// ): Long
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_concatArrays
+PARAMS(jlong handleA, jlong handleB, jlong runtimeHandle) {
+    UNPACK(handleA, bigton_tagged_value_t, valueA);
+    UNPACK(handleB, bigton_tagged_value_t, valueB);
+    UNPACK(runtimeHandle, bigton_runtime_state_t, r);
+    bigton_array_t *a = valueA->v.a;
+    bigton_array_t *b = valueB->v.a;
+    uint32_t newLength = a->length + b->length;
+    bigton_value_type_t *newElemTypes = bigtonAllocNullableBuff(
+        &r->b, sizeof(bigton_value_type_t) * newLength
+    );
+    bigton_value_t *newElemValues = bigtonAllocNullableBuff(
+        &r->b, sizeof(bigton_value_t) * newLength
+    );
+    for (size_t i = 0; i < a->length; i += 1) {
+        bigton_value_type_t t = a->elementTypes[i];
+        bigton_value_t v = a->elementValues[i];
+        bigtonValRcIncr((bigton_tagged_value_t) { .t = t, .v = v });
+        newElemTypes[i] = t;
+        newElemValues[i] = v;
+    }
+    size_t bDestOffset = a->length;
+    for (size_t i = 0; i < b->length; i += 1) {
+        bigton_value_type_t t = b->elementTypes[i];
+        bigton_value_t v = b->elementValues[i];
+        bigtonValRcIncr((bigton_tagged_value_t) { .t = t, .v = v });
+        size_t di = i + bDestOffset;
+        newElemTypes[di] = t;
+        newElemValues[di] = v;
+    }
+    bigton_array_t *c = bigtonAllocBuff(&r->b, sizeof(bigton_array_t));
+    c->rc = BIGTON_RC_INIT;
+    c->length = newLength;
+    c->capacity = newLength;
+    c->elementTypes = newElemTypes;
+    c->elementValues = newElemValues;
+    MALLOC_VALUE(valueC);
+    valueC->t = BIGTON_ARRAY;
+    valueC->v.a = c;
+    return AS_HANDLE(valueC);
+}
+
+// external fun sliceArray(
+//     handle: Long, startIdx: Int, endIdx: Int, runtimeHandle: Long
+// ): Long
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_sliceArray
+PARAMS(jlong valueHandle, jint startIdx, jint endIdx, jlong runtimeHandle) {
+    UNPACK(valueHandle, bigton_tagged_value_t, value);
+    UNPACK(runtimeHandle, bigton_runtime_state_t, r);
+    bigton_array_t *src = value->v.a;
+    bigton_value_type_t *srcElemTypes = src->elementTypes;
+    bigton_value_t *srcElemValues = src->elementValues;
+    uint32_t resLength = endIdx - startIdx;
+    bigton_value_type_t *resElemTypes = bigtonAllocNullableBuff(
+        &r->b, sizeof(bigton_value_type_t) * resLength
+    );
+    bigton_value_t *resElemValues = bigtonAllocNullableBuff(
+        &r->b, sizeof(bigton_value_t) * resLength
+    );
+    for(size_t di = 0; di < resLength; di += 1) {
+        size_t i = startIdx + di;
+        bigton_value_type_t t = srcElemTypes[i];
+        bigton_value_t v = srcElemValues[i];
+        bigtonValRcIncr((bigton_tagged_value_t) { .t = t, .v = v });
+        resElemTypes[di] = t;
+        resElemValues[di] = v;
+    }
+    bigton_array_t *res = bigtonAllocBuff(&r->b, sizeof(bigton_array_t));
+    res->rc = BIGTON_RC_INIT;
+    res->length = resLength;
+    res->capacity = resLength;
+    res->elementTypes = resElemTypes;
+    res->elementValues = resElemValues;
+    MALLOC_VALUE(resValue);
+    resValue->t = BIGTON_ARRAY;
+    resValue->v.a = res;
+    return AS_HANDLE(resValue);
 }
