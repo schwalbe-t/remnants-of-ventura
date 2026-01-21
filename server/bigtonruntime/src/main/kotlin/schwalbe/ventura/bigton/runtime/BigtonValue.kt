@@ -1,6 +1,10 @@
 
 package schwalbe.ventura.bigton.runtime
 
+data class BigtonConstStr(val handle: Int)
+
+data class BigtonObjectProperty(val handle: Int)
+
 object BigtonValueN {
     /**
      * Mirror of 'bigton_value_type_t'
@@ -32,6 +36,7 @@ object BigtonValueN {
         value: String, runtimeHandle: Long
     ): Long
     @JvmStatic external fun getString(handle: Long): String
+    @JvmStatic external fun getStringLength(handle: Long): Int
     
     @JvmStatic external fun createTuple(
         length: Int, runtimeHandle: Long
@@ -41,8 +46,23 @@ object BigtonValueN {
     )
     @JvmStatic external fun completeTuple(handle: Long)
     @JvmStatic external fun getTupleLength(handle: Long): Int
+    @JvmStatic external fun getTupleFlatLength(handle: Long): Int
     @JvmStatic external fun getTupleAt(handle: Long, index: Int): Long
-    
+
+    @JvmStatic external fun getObjectPropCount(handle: Long): Int
+    @JvmStatic external fun findObjectProp(
+        handle: Long, name: String, runtimeHandle: Long
+    ): Int
+    @JvmStatic external fun getObjectPropName(
+        handle: Long, propHandle: Int, runtimeHandle: Long
+    ): String
+    @JvmStatic external fun getObjectPropValue(
+        handle: Long, propHandle: Int
+    ): Long
+    @JvmStatic external fun setObjectPropValue(
+        handle: Long, propHandle: Int, valueHandle: Long
+    )
+
     @JvmStatic external fun createArray(
         length: Int, runtimeHandle: Long
     ): Long
@@ -102,6 +122,9 @@ class BigtonString  (handle: Long) : BigtonValue(handle) { companion object }
 fun BigtonString.Companion.fromValue(value: String, runtime: BigtonRuntime)
     = BigtonString(BigtonValueN.createString(value, runtime.handle))
 
+val BigtonString.length: Int
+    get() = BigtonValueN.getStringLength(this.handle)
+
 val BigtonString.value: String
     get() = BigtonValueN.getString(this.handle)
 
@@ -122,6 +145,9 @@ fun BigtonTuple.Companion.fromElements(
 val BigtonTuple.length: Int
     get() = BigtonValueN.getTupleLength(this.handle)
 
+val BigtonTuple.flatLength: Int
+    get() = BigtonValueN.getTupleFlatLength(this.handle)
+
 operator fun BigtonTuple.get(index: Int): BigtonValue {
     require(index >= 0 && index < this.length)
     val valueHandle: Long = BigtonValueN.getTupleAt(this.handle, index)
@@ -136,7 +162,43 @@ operator fun BigtonTuple.set(index: Int, value: BigtonValue) {
 
 class BigtonObject  (handle: Long) : BigtonValue(handle) { companion object }
 
-// TODO!
+val BigtonObject.size: Int
+    get() = BigtonValueN.getObjectPropCount(this.handle)
+
+val BigtonObject.properties: Sequence<BigtonObjectProperty>
+    get() = (0..<this.size).asSequence().map(::BigtonObjectProperty)
+
+fun BigtonObject.find(
+    propertyName: String, runtime: BigtonRuntime
+): BigtonObjectProperty? {
+    val propHandle: Int = BigtonValueN.findObjectProp(
+        this.handle, propertyName, runtime.handle
+    )
+    return if (propHandle == -1) { null }
+        else { BigtonObjectProperty(propHandle) }
+}
+
+fun BigtonObject.nameOf(
+    property: BigtonObjectProperty, runtime: BigtonRuntime
+): String {
+    require(property.handle >= 0 && property.handle < this.size)
+    return BigtonValueN.getObjectPropName(
+        this.handle, property.handle, runtime.handle
+    )
+}
+
+operator fun BigtonObject.get(property: BigtonObjectProperty): BigtonValue {
+    require(property.handle >= 0 && property.handle < this.size)
+    val vh: Long = BigtonValueN.getObjectPropValue(this.handle, property.handle)
+    return BigtonValueN.wrapHandle(vh)
+}
+
+operator fun BigtonObject.set(
+    property: BigtonObjectProperty, value: BigtonValue
+) {
+    require(property.handle >= 0 && property.handle < this.size)
+    BigtonValueN.setObjectPropValue(this.handle, property.handle, value.handle)
+}
 
 
 class BigtonArray   (handle: Long) : BigtonValue(handle) { companion object }

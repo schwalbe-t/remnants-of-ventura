@@ -132,12 +132,7 @@ fun main() {
     
     val mainSrc = """
     
-    var n = 0
-    tick {
-        if n >= 100000000 { break }
-        print(n)
-        n = n + 1
-    }
+    print(float("-69"))
     
     """.trimIndent()
     

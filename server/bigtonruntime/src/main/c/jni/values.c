@@ -3,6 +3,7 @@
 #include <bigton/values.h>
 #include <bigton/runtime.h>
 #include <stdlib.h>
+#include <string.h>
 #include "helpers.h"
 
 // external fun free(handle: Long)
@@ -86,6 +87,13 @@ PARAMS(jlong valueHandle) {
     return (*env)->NewString(env, (const jchar *) s->content, (jsize) s->length);
 }
 
+// external fun getStringLength(handle: Long): Int
+JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_getStringLength
+PARAMS(jlong valueHandle) {
+    UNPACK(valueHandle, bigton_tagged_value_t, value);
+    return (jint) value->v.s->length;
+}
+
 // external fun createTuple(length: Int, runtimeHandle: Long): Long
 JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_createTuple
 PARAMS(jint length, jlong runtimeHandle) {
@@ -151,6 +159,13 @@ PARAMS(jlong valueHandle) {
     return (jint) value->v.t->length;
 }
 
+// external fun getTupleFlatLength(handle: Long): Int
+JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_getTupleFlatLength
+PARAMS(jlong valueHandle) {
+    UNPACK(valueHandle, bigton_tagged_value_t, value);
+    return (jint) value->v.t->flatLength;
+}
+
 // external fun getTupleAt(handle: Long, index: Int): Long
 JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_getTupleAt
 PARAMS(jlong valueHandle, jint i) {
@@ -161,6 +176,95 @@ PARAMS(jlong valueHandle, jint i) {
     containedValue->v = t->values[i];
     bigtonValRcIncr(*containedValue);
     return AS_HANDLE(containedValue);
+}
+
+// external fun getObjectPropCount(handle: Long): Int
+JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_getObjectPropCount
+PARAMS(jlong valueHandle) {
+    UNPACK(valueHandle, bigton_tagged_value_t, value);
+    return (jint) value->v.o->shape->propCount;
+}
+
+// external fun findObjectProp(
+//     handle: Long, name: String, runtimeHandle: Long
+// ): Int
+JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_findObjectProp
+PARAMS(jlong valueHandle, jstring jName, jlong runtimeHandle) {
+    UNPACK(valueHandle, bigton_tagged_value_t, value);
+    UNPACK(runtimeHandle, bigton_runtime_state_t, r);
+    if (jName == NULL) { return -1; }
+    jsize nameLength = (*env)->GetStringLength(env, jName);
+    const jchar *nameChars = (*env)->GetStringChars(env, jName, NULL);
+    if (nameChars == NULL) { return -1; }
+
+    bigton_object_t *o = value->v.o;
+    bigton_shape_t shape = *o->shape;
+    jint foundPropId = -1;
+    for (uint32_t propI = 0; propI < shape.propCount; propI += 1) {
+        uint32_t absPropIdx = shape.firstPropOffset + propI;
+        bigton_shape_prop_t prop = r->program.props[absPropIdx];
+        bigton_const_string_t propName = r->program.constStrings[prop.name];
+        const bigton_char_t *propNameChars
+            = r->program.constStringChars + propName.firstOffset;
+        if (propName.charLength != nameLength) { continue; }
+        size_t lenBytes = nameLength * sizeof(bigton_char_t);
+        if (memcmp(nameChars, propNameChars, lenBytes) == 0) {
+            foundPropId = (jint) propI;
+            break;
+        }
+    }
+
+    (*env)->ReleaseStringChars(env, jName, nameChars);
+    return foundPropId;
+}
+
+// external fun getObjectPropName(
+//     handle: Long, propHandle: Int, runtimeHandle: Long
+// ): String
+JNIEXPORT jstring JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_getObjectPropName
+PARAMS(jlong valueHandle, jint propId, jlong runtimeHandle) {
+    UNPACK(valueHandle, bigton_tagged_value_t, value);
+    UNPACK(runtimeHandle, bigton_runtime_state_t, r);
+    bigton_shape_t shape = *value->v.o->shape;
+    bigton_shape_prop_t prop = r->program.props[shape.firstPropOffset + propId];
+    bigton_const_string_t propName = r->program.constStrings[prop.name];
+    const bigton_char_t *propNameChars
+        = r->program.constStringChars + propName.firstOffset;
+    return (*env)->NewString(
+        env, (const jchar *) propNameChars, (jsize) propName.charLength
+    );
+}
+
+// external fun getObjectPropValue(
+//     handle: Long, propHandle: Int
+// ): Long
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_getObjectPropValue
+PARAMS(jlong valueHandle, jint propId) {
+    UNPACK(valueHandle, bigton_tagged_value_t, value);
+    bigton_object_t *o = value->v.o;
+    MALLOC_VALUE(containedValue);
+    containedValue->t = o->memberTypes[propId];
+    containedValue->v = o->memberValues[propId];
+    bigtonValRcIncr(*containedValue);
+    return AS_HANDLE(containedValue);
+}
+
+// external fun setObjectPropValue(
+//     handle: Long, propHandle: Int, valueHandle: Long
+// )
+JNIEXPORT void JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonValueN_setObjectPropValue
+PARAMS(jlong valueHandle, jint propId, jlong containedValueHandle) {
+    UNPACK(valueHandle, bigton_tagged_value_t, value);
+    UNPACK(containedValueHandle, bigton_tagged_value_t, containedValue);
+    bigton_object_t *o = value->v.o;
+    bigton_value_type_t *memTypes = (bigton_value_type_t *) o->memberTypes;
+    bigton_value_t *memValues = (bigton_value_t *) o->memberValues;
+    bigtonValRcDecr((bigton_tagged_value_t) {
+        .t = memTypes[propId], .v = memValues[propId]
+    });
+    bigtonValRcIncr(*containedValue);
+    memTypes[propId] = containedValue->t;
+    memValues[propId] = containedValue->v;
 }
 
 // external fun createArray(length: Int, runtimeHandle: Long): Long
