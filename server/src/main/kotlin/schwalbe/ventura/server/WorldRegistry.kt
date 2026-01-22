@@ -1,12 +1,13 @@
 
 package schwalbe.ventura.server
 
+import schwalbe.ventura.worlds.WorldData
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class WorldRegistry(
     val playerWriter: PlayerWriter,
-    baseWorldCreator: (WorldRegistry) -> World
+    baseWorldData: WorldData
 ) {
 
     private val worlds: MutableMap<Long, World> = mutableMapOf()
@@ -18,21 +19,17 @@ class WorldRegistry(
 
     init {
         val nproc: Int = Runtime.getRuntime().availableProcessors()
-        updatePool = Executors.newFixedThreadPool(nproc)
-        baseWorld = baseWorldCreator(this)
+        this.updatePool = Executors.newFixedThreadPool(nproc)
+        this.baseWorld = this.createWorld(baseWorldData)
     }
 
-    fun allocateWorld(): Long {
+    fun createWorld(data: WorldData): World {
         synchronized(this) {
-            val next: Long = this.nextId
+            val id: Long = this.nextId
             this.nextId += 1
-            return next
-        }
-    }
-
-    fun add(world: World) {
-        synchronized(this) {
+            val world = World(this, id, data)
             this.worlds[world.id] = world
+            return world
         }
     }
 

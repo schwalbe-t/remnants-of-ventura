@@ -2,14 +2,14 @@
 package schwalbe.ventura.server
 
 import schwalbe.ventura.net.*
+import schwalbe.ventura.worlds.WorldData
 import java.util.concurrent.ConcurrentLinkedQueue
 
-abstract class World(val registry: WorldRegistry) {
+class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
 
-    val id: Long = registry.allocateWorld()
     private val incoming = ConcurrentLinkedQueue<Player>()
-    protected val players: MutableMap<String, Player> = mutableMapOf()
-    protected val packetHandler = PacketHandler<Player>()
+    private val players: MutableMap<String, Player> = mutableMapOf()
+    private val packetHandler = PacketHandler<Player>()
 
     init {
         this.packetHandler.onDecodeError = { player, error ->
@@ -29,12 +29,9 @@ abstract class World(val registry: WorldRegistry) {
     @Synchronized
     private fun handleIncomingPlayers() {
         while (true) {
-            val player: Player? = this.incoming.poll()
-            if (player == null) { break }
+            val player: Player = this.incoming.poll() ?: break
             this.players[player.username] = player
-            val addEntry: Boolean = player.data.worlds.size == 0
-                || player.data.worlds.last().worldId != this.id
-            if (addEntry) {
+            if (player.data.worlds.last()?.worldId != this.id) {
                 player.data.worlds.add(this.createPlayerEntry())
             }
             this.registry.playerWriter.add(player)
@@ -48,17 +45,14 @@ abstract class World(val registry: WorldRegistry) {
         }
     }
 
-    open fun updateState() {}
+    fun handlePlayerDisconnect(player: Player) {
+        this.players.remove(player.username)
+    }
 
     @Synchronized
     fun update() {
         this.handleIncomingPlayers()
         this.handlePlayerPackets()
-        this.updateState()
-    }
-
-    fun handlePlayerDisconnect(player: Player) {
-        this.players.remove(player.username)
     }
 
 }
