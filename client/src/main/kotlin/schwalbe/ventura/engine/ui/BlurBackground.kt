@@ -42,11 +42,6 @@ class BlurBackground : GpuUiElement() {
     
     override val children: List<UiElement> = listOf()
 
-    override fun captureInput(context: UiElementContext) {
-        super.captureInput(context)
-        this.invalidate()
-    }
-
     override fun render(context: UiElementContext) {
         this.prepareTarget()
         val background: Texture = context.global.output.color ?: return

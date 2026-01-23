@@ -15,6 +15,7 @@ class UiNavigator(
 ) {
 
     private val screens: MutableList<UiScreen> = mutableListOf()
+    private var disposeQueue: MutableList<UiScreen> = mutableListOf()
 
     val current: UiScreen
         get() = screens.last()
@@ -33,21 +34,29 @@ class UiNavigator(
     fun pop() {
         if (this.screens.size <= 1) { return }
         val removed: UiScreen = this.screens.removeLast()
-        removed.disposeTree()
+        this.disposeQueue.add(removed)
+    }
+
+    fun replace(screen: UiScreenDef) {
+        if (this.screens.isNotEmpty()) { this.pop() }
+        this.push(screen)
     }
 
     fun clear(screen: UiScreenDef) {
-        this.screens.forEach(UiScreen::disposeTree)
+        this.screens.forEach(this.disposeQueue::add)
         this.screens.clear()
         this.push(screen)
     }
 
     fun captureInput() {
-        screens.reversed().forEach(UiScreen::captureInput)
+        val iterated = this.screens.toList()
+        iterated.forEach { it.captureInput() }
     }
 
     fun update() {
         screens.forEach(UiScreen::update)
+        this.disposeQueue.forEach(UiScreen::disposeTree)
+        this.disposeQueue.clear()
     }
 
 }

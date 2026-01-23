@@ -35,13 +35,15 @@ open class Axis(
             val size: Int = entry.size(context).roundToInt()
             val innerRelPxX: Int = dirX * offset
             val innerRelPXY: Int = dirY * offset
-            val innerWidth: Int = dirX * size + orthoX * this.pxWidth
-            val innerHeight: Int = dirY * size + orthoY * this.pxHeight
+            val innerWidth: Int = dirX * size + orthoX * context.parentPxWidth
+            val innerHeight: Int = dirY * size + orthoY * context.parentPxHeight
             entry.elemCtx = context.childContext(
                 this, innerRelPxX, innerRelPXY, innerWidth, innerHeight
             )
             offset += size
         }
+        this.pxWidth = dirX * offset + orthoX * context.parentPxWidth
+        this.pxHeight = dirY * offset + orthoY * context.parentPxHeight
     }
         
     override fun updateChildren(

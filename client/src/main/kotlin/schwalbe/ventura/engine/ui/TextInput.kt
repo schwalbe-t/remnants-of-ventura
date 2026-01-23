@@ -6,6 +6,7 @@ import org.joml.*
 import java.awt.Toolkit;
 import java.awt.datatransfer.*;
 import kotlin.math.roundToInt
+import kotlin.streams.asSequence
 
 private const val EOL: Int = 0x000A // = '\n' (end of line)
 private const val SPACE: Int = 0x0020 // = ' ' (space)
@@ -238,7 +239,9 @@ class TextInput : GpuUiElement(), Focusable {
             this.actualValue = value.toMutableList()
             this.updateDisplayedValue()
         }
-    
+    val valueString: String
+        get() = this.actualValueStr
+
     override val children: List<UiElement>
         get() = listOfNotNull(this.placeholder, this.content)
         
@@ -406,7 +409,7 @@ class TextInput : GpuUiElement(), Focusable {
             this.selection = null
             this.invalidate()
         }
-        if (this.caret != null && mouseInside) {
+        if (mouseInside) {
             Mouse.cursor = Cursor.IBEAM
         }
         if (this.caret != null && !mouseInside && mouseLeftPressed) {
@@ -662,7 +665,7 @@ class TextInput : GpuUiElement(), Focusable {
         this.computeCaretPosition(context)
         this.prepareTarget()
         val placeholder: Text? = this.placeholder
-        if (placeholder != null) {
+        if (placeholder != null && this.value.isEmpty()) {
             blitTexture(
                 placeholder.result, this.target,
                 0, 0, placeholder.pxWidth, placeholder.pxHeight
@@ -693,6 +696,14 @@ class TextInput : GpuUiElement(), Focusable {
     }
     
     fun withoutContent(): TextInput = this.withContent(null)
+
+    fun withValue(value: String): TextInput {
+        this.actualValue.clear()
+        this.actualValue = value.codePoints().asSequence().toMutableList()
+        this.updateDisplayedValue()
+        this.invalidate()
+        return this
+    }
     
     fun withPlaceholder(placeholder: Text?): TextInput {
         this.placeholder = placeholder

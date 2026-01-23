@@ -16,6 +16,7 @@ data class UiElementContext(
 fun UiElementContext.childContext(
     parent: UiElement?, relPxX: Int, relPxY: Int, width: Int, height: Int
 ): UiElementContext {
+    require(width >= 0 && height >= 0)
     val absPxLeft: Int = this.absPxX + maxOf(relPxX, 0)
     val absPxTop: Int = this.absPxY + maxOf(relPxY, 0)
     val absPxRight: Int = absPxLeft + width

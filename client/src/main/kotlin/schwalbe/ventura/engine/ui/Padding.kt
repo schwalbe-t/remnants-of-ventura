@@ -33,6 +33,7 @@ class Padding : GpuUiElement() {
         val bottom: Int = this.paddingBottom(context).roundToInt()
         val innerWidth: Int = this.pxWidth - (left + right)
         val innerHeight: Int = this.pxHeight - (top + bottom)
+        if (innerWidth < 0 || innerHeight < 0) { return }
         val childContext = context.childContext(
             this, left, top, innerWidth, innerHeight
         )

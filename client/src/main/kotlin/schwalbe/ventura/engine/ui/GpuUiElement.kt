@@ -15,14 +15,16 @@ abstract class GpuUiElement : UiElement() {
     
     protected fun prepareTarget() {
         val oldResult: Texture? = this.result
+        val targetWidth: Int = maxOf(this.pxWidth, 16)
+        val targetHeight: Int = maxOf(this.pxHeight, 16)
         val makeNewTex: Boolean = oldResult == null
-            || oldResult.width != this.pxWidth
-            || oldResult.height != this.pxHeight
+            || oldResult.width != targetWidth
+            || oldResult.height != targetHeight
         if (makeNewTex) {
             this.target.attachColor(null)
             this.result?.dispose()
             this.result = Texture(
-                this.pxWidth, this.pxHeight,
+                targetWidth, targetHeight,
                 Texture.Filter.NEAREST, Texture.Format.RGBA8
             )
             this.target.attachColor(this.result)

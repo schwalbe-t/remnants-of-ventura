@@ -142,200 +142,170 @@ suspend fun main() {
 }
 */
 
+//object TestModelVert : VertShaderDef<TestModelVert> {
+//    override val path = "shaders/test.vert.glsl"
+//
+//    val localTransform = mat4("uLocalTransform")
+//    val modelTransform = mat4("uModelTransform")
+//    val viewProjection = mat4("uViewProjection")
+//    val jointTransforms = mat4Arr("uJointTransforms", 64)
+//}
+//
+//object TestModelFrag : FragShaderDef<TestModelFrag> {
+//    override val path = "shaders/test.frag.glsl"
+//
+//    val texture = sampler2D("uTexture")
+//}
+//
+//object TestModelAnim : Animations<TestModelAnim> {
+//    val floss = anim("floss")
+//    val idle = anim("idle")
+//    val ride = anim("ride")
+//    val swim = anim("swim")
+//    val walk = anim("walk")
+//}
+
+//val editorScreen = defineScreen {
+//    val codeSettings = CodeEditingSettings(
+//        paired = listOf(
+//            "()",
+//            "{}",
+//            "\"\""
+//        ),
+//        autoIndent = true
+//    )
+//    it.add(Axis.column()
+//        .add(80.vh, Stack()
+//            .add(BlurBackground().withRadius(20))
+//            .add(FlatBackground()
+//                .withColor(13, 16, 22, 128)
+//            )
+//            .add(TextInput()
+//                .withMultilineInput(true)
+//                .withContent(text("", 16.px).withColor(186, 184, 178))
+//                // .withDisplayedText { value -> "●".repeat(value.length) }
+//                .withDisplayedSpans { text: String ->
+//                    var spans: MutableList<Span> = mutableListOf()
+//                    val keyword = "sigma"
+//                    val keywordColor = Vector4f(0f, 255f, 0f, 255f)
+//                        .div(255f)
+//                    var i = 0
+//                    while (i < text.length) {
+//                        var next = text.indexOf(keyword, i)
+//                        if (next == -1) {
+//                            spans.add(Span(text.substring(i)))
+//                            break
+//                        }
+//                        spans.add(Span(text.substring(i, next)))
+//                        spans.add(Span(keyword, keywordColor))
+//                        i = next + keyword.length
+//                    }
+//                    spans
+//                }
+//                .withCodeTypedHandler(codeSettings)
+//                .withCodeDeletedHandler(codeSettings)
+//                .wrapScrolling()
+//                .pad(20.px)
+//            )
+//            .wrapBorderRadius(20.px)
+//            .pad(5.vmin)
+//        )
+//        .add(20.vh, BlurBackground().withRadius(20))
+//    )
+//}
+
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.ui.*
-import schwalbe.ventura.engine.input.*
+import schwalbe.ventura.client.screens.*
 import org.joml.*
 import kotlin.concurrent.thread
 
-object TestModelVert : VertShaderDef<TestModelVert> {
-    override val path = "shaders/test.vert.glsl"
-    
-    val localTransform = mat4("uLocalTransform")
-    val modelTransform = mat4("uModelTransform")
-    val viewProjection = mat4("uViewProjection")
-    val jointTransforms = mat4Arr("uJointTransforms", 64)
-}
-
-object TestModelFrag : FragShaderDef<TestModelFrag> {
-    override val path = "shaders/test.frag.glsl"
-    
-    val texture = sampler2D("uTexture")
-}
-
-object TestModelAnim : Animations<TestModelAnim> {
-    val floss = anim("floss")
-    val idle = anim("idle")
-    val ride = anim("ride")
-    val swim = anim("swim")
-    val walk = anim("walk")
-}
-
-val gameScreen = defineScreen {}
-
-val editorScreen = defineScreen {
-    val codeSettings = CodeEditingSettings(
-        paired = listOf(
-            "()",
-            "{}",
-            "\"\""
-        ),
-        autoIndent = true
-    )
-    it.add(Axis.column()
-        .add(80.vh, Stack()
-            .add(BlurBackground().withRadius(20))
-            .add(FlatBackground()
-                .withColor(13, 16, 22, 128)
-            )
-            .add(TextInput()
-                .withMultilineInput(true)
-                .withContent(text("", 16.px).withColor(186, 184, 178))
-                // .withDisplayedText { value -> "●".repeat(value.length) }
-                .withDisplayedSpans { text: String ->
-                    var spans: MutableList<Span> = mutableListOf()
-                    val keyword = "sigma"
-                    val keywordColor = Vector4f(0f, 255f, 0f, 255f)
-                        .div(255f)
-                    var i = 0
-                    while (i < text.length) {
-                        var next = text.indexOf(keyword, i)
-                        if (next == -1) {
-                            spans.add(Span(text.substring(i)))
-                            break
-                        }
-                        spans.add(Span(text.substring(i, next)))
-                        spans.add(Span(keyword, keywordColor))
-                        i = next + keyword.length
-                    }
-                    spans
-                }
-                .withCodeTypedHandler(codeSettings)
-                .withCodeDeletedHandler(codeSettings)
-                .wrapScrolling()
-                .pad(20.px)
-            )
-            .wrapBorderRadius(20.px)
-            .pad(5.vmin)
-        )
-        .add(20.vh, BlurBackground().withRadius(20))
-    )
-}
-
 fun main() {
     val config = Config.read()
-    config.servers.add(Config.Server(
-        name = "localhost",
-        address = "localhost",
-        port = 68442
-    ))
-    config.write()
 
     val resLoader = ResourceLoader()
     thread { resLoader.loadQueuedRawLoop() }
     
     loadUiResources(resLoader)
+    submitScreenResources(resLoader)
+    resLoader.submit(localized)
     
     val window = Window("Remnants of Ventura", fullscreen = false)
 
-    val dddOut = Framebuffer()
-    dddOut.attachColor(Texture(
+    val out3d = Framebuffer()
+    out3d.attachColor(Texture(
         16, 16, Texture.Filter.NEAREST, Texture.Format.RGBA8, samples = 4
     ))
-    dddOut.attachDepth(Texture(
+    out3d.attachDepth(Texture(
         16, 16, Texture.Filter.NEAREST, Texture.Format.DEPTH24, samples = 4
     ))
 
-    val uiOut = Framebuffer()
-    uiOut.attachColor(Texture(
+    val outUi = Framebuffer()
+    outUi.attachColor(Texture(
         16, 16, Texture.Filter.NEAREST, Texture.Format.RGBA8
     ))
 
-    val ui = UiNavigator(uiOut, window.inputEvents)
-    ui.clear(gameScreen)
+    val ui = UiNavigator(outUi, window.inputEvents)
     
     var onFrame: (deltaTime: Float) -> Unit = {}
-    
-    val jetbrainsMono: Resource<Font> = Font.loadTtf(
-        "res/fonts/JetBrainsMonoNL-SemiBold.ttf"
-    )
-    val testImage: Resource<Texture> = Texture.loadImage(
-        "res/test2.png", Texture.Filter.LINEAR
-    )
-    resLoader.submitAll(jetbrainsMono, testImage)
 
-    val localized: Resource<Localizations<GameLanguage, LocalKeys>>
-        = Localizations.loadLanguages("res/localizations", GameLanguage.ENGLISH)
-    resLoader.submit(localized)
-
-    val testModelAnim = AnimState(TestModelAnim.idle)
-    val testModel: Resource<Model<TestModelAnim>> = Model.loadFile(
-        "res/test.glb",
-        listOf(
-            Model.Property.POSITION,
-            Model.Property.NORMAL,
-            Model.Property.UV,
-            Model.Property.BONE_IDS_BYTE,
-            Model.Property.BONE_WEIGHTS
-        ),
-        TestModelAnim
-    )
-    val testModelShader: Resource<Shader<TestModelVert, TestModelFrag>>
-        = Shader.loadGlsl(TestModelVert, TestModelFrag)
-    resLoader.submitAll(testModel, testModelShader)
+//    val testModelAnim = AnimState(TestModelAnim.idle)
+//    val testModel: Resource<Model<TestModelAnim>> = Model.loadFile(
+//        "res/test.glb",
+//        listOf(
+//            Model.Property.POSITION,
+//            Model.Property.NORMAL,
+//            Model.Property.UV,
+//            Model.Property.BONE_IDS_BYTE,
+//            Model.Property.BONE_WEIGHTS
+//        ),
+//        TestModelAnim
+//    )
+//    val testModelShader: Resource<Shader<TestModelVert, TestModelFrag>>
+//        = Shader.loadGlsl(TestModelVert, TestModelFrag)
+//    resLoader.submitAll(testModel, testModelShader)
     
     resLoader.submit(Resource.fromCallback {
 
-        localized().changeLanguage(GameLanguage.GERMAN)
-        println(localized()[LocalKeys.GREETING])
-
-        ui.defaultFont = jetbrainsMono()
-        ui.defaultFontSize = 16.px
-        ui.defaultFontColor = Vector4f(0.9f, 0.9f, 0.9f, 1f)
+        configureNavigator(ui)
+        localized().changeLanguage(config.language)
+        ui.clear(serverSelectScreen(config, ui))
 
         onFrame = { deltaTime ->
-            if (!testModelAnim.isTransitioning && Key.W.isPressed) {
-                testModelAnim.transitionTo(TestModelAnim.walk, 0.35f)
-            }
-            if (!testModelAnim.isTransitioning && Key.I.isPressed) {
-                testModelAnim.transitionTo(TestModelAnim.idle, 0.35f)
-            }
-            if (!testModelAnim.isTransitioning && Key.F.isPressed) {
-                testModelAnim.transitionTo(TestModelAnim.floss, 0.5f)
-            }
-            if (!testModelAnim.isTransitioning && Key.S.isPressed) {
-                testModelAnim.transitionTo(TestModelAnim.swim, 0.5f)
-            }
-            testModelAnim.addTimePassed(deltaTime)
+//            if (!testModelAnim.isTransitioning && Key.W.isPressed) {
+//                testModelAnim.transitionTo(TestModelAnim.walk, 0.35f)
+//            }
+//            if (!testModelAnim.isTransitioning && Key.I.isPressed) {
+//                testModelAnim.transitionTo(TestModelAnim.idle, 0.35f)
+//            }
+//            if (!testModelAnim.isTransitioning && Key.F.isPressed) {
+//                testModelAnim.transitionTo(TestModelAnim.floss, 0.5f)
+//            }
+//            if (!testModelAnim.isTransitioning && Key.S.isPressed) {
+//                testModelAnim.transitionTo(TestModelAnim.swim, 0.5f)
+//            }
+//            testModelAnim.addTimePassed(deltaTime)
 
-            if (Key.E.isPressed && ui.current.definedBy == gameScreen) {
-                ui.push(editorScreen)
-            }
-            if (Key.ESCAPE.isPressed && ui.current.definedBy == editorScreen) {
-                ui.pop()
-            }
-            
-            // blitTexture(testImage(), out)
-            val shader: Shader<TestModelVert, TestModelFrag> = testModelShader()
-            shader[TestModelVert.modelTransform] = Matrix4f()
-            shader[TestModelVert.viewProjection] = Matrix4f()
-                .setPerspective(
-                    Math.PI.toFloat() / 2f,
-                    dddOut.width.toFloat() / dddOut.height.toFloat(),
-                    0.1f, 100f
-                )
-                .lookAt(
-                    +1.0f,  +1.0f,  +1.0f,
-                     0.0f,  +1.0f,   0.0f,
-                     0.0f,   1.0f,   0.0f
-                )
-            testModel().render(
-                shader, dddOut,
-                TestModelVert.localTransform, TestModelFrag.texture,
-                TestModelVert.jointTransforms,
-                testModelAnim
-            )
+//            val shader: Shader<TestModelVert, TestModelFrag> = testModelShader()
+//            shader[TestModelVert.modelTransform] = Matrix4f()
+//            shader[TestModelVert.viewProjection] = Matrix4f()
+//                .setPerspective(
+//                    Math.PI.toFloat() / 2f,
+//                    dddOut.width.toFloat() / dddOut.height.toFloat(),
+//                    0.1f, 100f
+//                )
+//                .lookAt(
+//                    +1.0f,  +1.0f,  +1.0f,
+//                     0.0f,  +1.0f,   0.0f,
+//                     0.0f,   1.0f,   0.0f
+//                )
+//            testModel().render(
+//                shader, dddOut,
+//                TestModelVert.localTransform, TestModelFrag.texture,
+//                TestModelVert.jointTransforms,
+//                testModelAnim
+//            )
         }
     })
     
@@ -350,19 +320,19 @@ fun main() {
             .toFloat()
         lastFrameTime = now
         
-        dddOut.resize(window.framebuffer.width, window.framebuffer.height)
-        uiOut.resize(window.framebuffer.width, window.framebuffer.height)
+        out3d.resize(window.framebuffer.width, window.framebuffer.height)
+        outUi.resize(window.framebuffer.width, window.framebuffer.height)
 
         ui.captureInput()
         window.flushInputEvents()
 
-        dddOut.clearColor(Vector4f(0.5f, 0.5f, 0.5f, 1f))
-        dddOut.clearDepth(1f)
+        out3d.clearColor(Vector4f(0.5f, 0.5f, 0.5f, 1f))
+        out3d.clearDepth(1f)
         onFrame(deltaTime)
-        dddOut.blitColorOnto(uiOut)
+        out3d.blitColorOnto(outUi)
 
         ui.update()
-        uiOut.blitColorOnto(window.framebuffer)
+        outUi.blitColorOnto(window.framebuffer)
         
         window.endFrame()
         Thread.sleep(15)

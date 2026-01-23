@@ -1,5 +1,19 @@
 {
     "strings": {
-        "TEST": "Test"
+        "TITLE_SELECT_SERVER": "Select Game Server",
+        "BUTTON_ADD_SERVER": "Add Server",
+        "BUTTON_EDIT_SERVER": "Edit",
+        "BUTTON_DELETE_SERVER": "Delete",
+        "PLACEHOLDER_NO_SERVERS": "You do not have any saved servers. Press \"Add Server\" to add one.",
+
+        "TITLE_EDIT_SERVER": "Edit Server",
+        "LABEL_SERVER_NAME": "Name",
+        "PLACEHOLDER_SERVER_NAME": "Enter Server Name",
+        "LABEL_SERVER_ADDRESS": "Address",
+        "PLACEHOLDER_SERVER_ADDRESS": "Enter Server Address",
+        "LABEL_SERVER_PORT": "Port",
+        "PLACEHOLDER_SERVER_PORT": "Enter Server Port",
+        "BUTTON_SERVER_CONFIRM": "Confirm",
+        "BUTTON_SERVER_DISCARD": "Discard"
     }
 }
