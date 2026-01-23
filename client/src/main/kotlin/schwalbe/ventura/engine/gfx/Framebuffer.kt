@@ -24,7 +24,7 @@ abstract class ConstFramebuffer {
         glClear(GL_DEPTH_BUFFER_BIT)
     }
     
-    internal abstract fun bind()
+    internal abstract fun bind(glTarget: Int = GL_FRAMEBUFFER)
 
 }
 
@@ -82,8 +82,9 @@ class Framebuffer : ConstFramebuffer, Disposable {
 
     fun attachColor(newColor: Texture?): Framebuffer {
         glBindFramebuffer(GL_FRAMEBUFFER, this.getFboId())
+        val target: Int = newColor?.glTarget ?: GL_TEXTURE_2D
         glFramebufferTexture2D(
-            GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+            GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target,
             newColor?.getTexId() ?: 0,
             0
         )
@@ -98,8 +99,9 @@ class Framebuffer : ConstFramebuffer, Disposable {
 
     fun attachDepth(newDepth: Texture?): Framebuffer {
         glBindFramebuffer(GL_FRAMEBUFFER, this.getFboId())
+        val target: Int = newDepth?.glTarget ?: GL_TEXTURE_2D
         glFramebufferTexture2D(
-            GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+            GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, target,
             newDepth?.getTexId() ?: 0,
             0
         )
@@ -117,23 +119,47 @@ class Framebuffer : ConstFramebuffer, Disposable {
         this.attachDepth(null)
         if (oldColor != null) {
             this.attachColor(Texture(
-                newWidth, newHeight, oldColor.filter, oldColor.format
+                newWidth, newHeight, oldColor.filter, oldColor.format,
+                oldColor.samples
             ))
             oldColor.dispose()
         }
         if (oldDepth != null) {
             this.attachDepth(Texture(
-                newWidth, newHeight, oldDepth.filter, oldDepth.format
+                newWidth, newHeight, oldDepth.filter, oldDepth.format,
+                oldDepth.samples
             ))
             oldDepth.dispose()
         }
     }
 
-    override fun bind() {
+    fun blitColorOnto(target: ConstFramebuffer) {
+        val thisColor: Texture? = this.color
+        require(thisColor != null)
+        if (target is Framebuffer) {
+            val destColor: Texture? = target.color
+            require(destColor != null)
+            require(thisColor.format.glIFmt == destColor.format.glIFmt)
+            if (thisColor.samples == 1) { require(destColor.samples == 1) }
+        }
+        if (thisColor.samples > 1) {
+            require(this.width == target.width && this.height == target.height)
+        }
+        this.bind(GL_READ_FRAMEBUFFER)
+        target.bind(GL_DRAW_FRAMEBUFFER)
+        glBlitFramebuffer(
+            0, 0, this.width, this.height,
+            0, 0, target.width, target.height,
+            GL_COLOR_BUFFER_BIT,
+            GL_NEAREST
+        )
+    }
+
+    override fun bind(glTarget: Int) {
         if (!this.complete) {
             throw IllegalStateException("Framebuffer is incomplete")
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, this.getFboId())
+        glBindFramebuffer(glTarget, this.getFboId())
         glViewport(0, 0, this.width, this.height)
     }
 

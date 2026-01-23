@@ -218,6 +218,15 @@ interface Uniforms<S : Uniforms<S>> {
     )
     
     fun sampler2D(name: String) = Uniform<S, Texture>(name) { s, v ->
+        require(v.samples == 1)
+        val loc: Int = s.getUniformLocation(name, ::glGetUniformLocation)
+            ?: return@Uniform
+        val slot: Int = s.textures.allocate(name, v)
+        glUniform1i(loc, slot)
+    }
+
+    fun sampler2DMS(name: String) = Uniform<S, Texture>(name) { s, v ->
+        require(v.samples > 1)
         val loc: Int = s.getUniformLocation(name, ::glGetUniformLocation)
             ?: return@Uniform
         val slot: Int = s.textures.allocate(name, v)
@@ -313,7 +322,7 @@ class Shader<V : VertShaderDef<V>, F : FragShaderDef<F>> : Disposable {
         glUseProgram(this.getProgramId())
         for ((slot, texture) in this.textures.getAll().values) {
             glActiveTexture(GL_TEXTURE0 + slot)
-            glBindTexture(GL_TEXTURE_2D, texture.getTexId())
+            glBindTexture(texture.glTarget, texture.getTexId())
         }
         for ((point, buffer) in this.buffers.getAll().values) {
             glBindBufferBase(GL_UNIFORM_BUFFER, point, buffer.getBufferId())

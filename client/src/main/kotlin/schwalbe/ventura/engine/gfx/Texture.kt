@@ -15,7 +15,7 @@ import java.nio.ByteOrder
 
 class Texture(
     val width: Int, val height: Int,
-    val filter: Filter, val format: Format,
+    val filter: Filter, val format: Format, val samples: Int = 1,
     data: ByteBuffer? = null
 ) : Disposable {
     
@@ -52,24 +52,35 @@ class Texture(
     }
     
     companion object
-    
-    
+
+
+    val glTarget: Int = if (samples == 1) { GL_TEXTURE_2D }
+        else { GL_TEXTURE_2D_MULTISAMPLE }
     var texId: Int? = null
         private set
 
     init {
         require(width >= 1 && height >= 1)
+        require(samples >= 1)
         val id: Int = glGenTextures()
         this.texId = id
         this.bind()
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter.glValue)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter.glValue)
-        glTexImage2D(
-            GL_TEXTURE_2D, 0, format.glIFmt, width, height, 0,
-            format.glFmt, format.glChType, data
-        )
+        glTexParameteri(this.glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(this.glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+        glTexParameteri(this.glTarget, GL_TEXTURE_MIN_FILTER, filter.glValue)
+        glTexParameteri(this.glTarget, GL_TEXTURE_MAG_FILTER, filter.glValue)
+        if (this.samples == 1) {
+            glTexImage2D(
+                this.glTarget, 0, format.glIFmt, width, height, 0,
+                format.glFmt, format.glChType, data
+            )
+        } else {
+            require(data == null)
+            glTexImage2DMultisample(
+                this.glTarget, this.samples, format.glIFmt, width, height,
+                true
+            )
+        }
     }
     
     fun getTexId(): Int
@@ -77,7 +88,7 @@ class Texture(
 
     internal fun bind() {
         glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, this.getTexId())
+        glBindTexture(this.glTarget, this.getTexId())
     }
 
     override fun dispose() {
@@ -98,7 +109,7 @@ fun Texture.Companion.loadBytes(
     val decoded: ByteBuffer? = stbi_load_from_memory(data, w, h, ch, 4)
     require(decoded != null) { "Image file from '$path' could not be decoded" }
     val format = Texture.Format.RGBA8
-    val texture = Texture(w[0], h[0], filter, format, decoded)
+    val texture = Texture(w[0], h[0], filter, format, 1, decoded)
     stbi_image_free(decoded)
     return texture
 }
@@ -121,7 +132,7 @@ fun Texture.Companion.loadImage(
     require(decoded != null) { "Image file '$path' could not be read" }
     return@Resource {
         val format = Texture.Format.RGBA8
-        val texture = Texture(width, height, filter, format, decoded)
+        val texture = Texture(width, height, filter, format, 1, decoded)
         stbi_image_free(decoded)
         texture
     }
@@ -146,6 +157,6 @@ fun Texture.Companion.fromBufferedImage(
     }
     buffer.flip()
     return Texture(
-        image.width, image.height, filter, Texture.Format.RGBA8, buffer
+        image.width, image.height, filter, Texture.Format.RGBA8, 1, buffer
     )
 }

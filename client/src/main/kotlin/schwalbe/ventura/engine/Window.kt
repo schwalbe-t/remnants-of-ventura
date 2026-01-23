@@ -21,8 +21,8 @@ private class WindowFramebuffer(val window: Window) : ConstFramebuffer() {
     override val height: Int
         get() = this.window.height
     
-    override fun bind() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+    override fun bind(glTarget: Int) {
+        glBindFramebuffer(glTarget, 0)
         glViewport(0, 0, this.width, this.height)
     }
 }

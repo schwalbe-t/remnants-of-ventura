@@ -180,26 +180,31 @@ fun main() {
     loadUiResources(resLoader)
     
     val window = Window("Remnants of Ventura", fullscreen = false)
-    
-    val out = Framebuffer()
-    out.attachColor(
-        Texture(16, 16, Texture.Filter.NEAREST, Texture.Format.RGBA8)
-    )
-    out.attachDepth(
-        Texture(16, 16, Texture.Filter.NEAREST, Texture.Format.DEPTH24)
-    )
-    
-    val ui = UiContext(out, window.inputEvents)
+
+    val dddOut = Framebuffer()
+    dddOut.attachColor(Texture(
+        16, 16, Texture.Filter.NEAREST, Texture.Format.RGBA8, samples = 4
+    ))
+    dddOut.attachDepth(Texture(
+        16, 16, Texture.Filter.NEAREST, Texture.Format.DEPTH24, samples = 4
+    ))
+
+    val uiOut = Framebuffer()
+    uiOut.attachColor(Texture(
+        16, 16, Texture.Filter.NEAREST, Texture.Format.RGBA8
+    ))
+
+    val ui = UiContext(uiOut, window.inputEvents)
     
     var onFrame: (deltaTime: Float) -> Unit = {}
     
-    // val jetbrainsMono: Resource<Font> = Font.loadTtf(
-    //     "res/fonts/JetBrainsMonoNL-SemiBold.ttf"
-    // )
-    // val testImage: Resource<Texture> = Texture.loadImage(
-    //     "res/test2.png", Texture.Filter.LINEAR
-    // )
-    // resLoader.submitAll(jetbrainsMono, testImage)
+    val jetbrainsMono: Resource<Font> = Font.loadTtf(
+        "res/fonts/JetBrainsMonoNL-SemiBold.ttf"
+    )
+    val testImage: Resource<Texture> = Texture.loadImage(
+        "res/test2.png", Texture.Filter.LINEAR
+    )
+    resLoader.submitAll(jetbrainsMono, testImage)
     
     val testModelAnim = AnimState(TestModelAnim.idle)
     val testModel: Resource<Model<TestModelAnim>> = Model.loadFile(
@@ -219,62 +224,70 @@ fun main() {
     
     resLoader.submit(Resource.fromCallback {
         
-        // ui.defaultFont = jetbrainsMono()
-        // ui.defaultFontSize = 16.px
-        // ui.defaultFontColor = Vector4f(0.9f, 0.9f, 0.9f, 1f)
-        // val copypasta = "Crazy? I Was Crazy Once. They Locked Me In A Room. A Rubber Room. A Rubber Room With Rats. And Rats Make Me Crazy. "
-        //     .repeat(40)
-        // val codeSettings = CodeEditingSettings(
-        //     paired = listOf(
-        //         "()",
-        //         "{}",
-        //         "\"\""
-        //     ),
-        //     autoIndent = true
-        // )
-        // ui.add(Axis.column()
-        //     .add(80.vh, Stack()
-        //         .add(FlatBackground()
-        //             .withColor(13, 16, 22)
-        //         )
-        //         .add(TextInput()
-        //             .withMultilineInput(true)
-        //             .withContent(text("", 16.px).withColor(186, 184, 178))
-        //             // .withDisplayedText { value -> "●".repeat(value.length) }
-        //             .withDisplayedSpans { text: String ->
-        //                 var spans: MutableList<Span> = mutableListOf()
-        //                 val keyword = "sigma"
-        //                 val keywordColor = Vector4f(0f, 255f, 0f, 255f)
-        //                     .div(255f)
-        //                 var i = 0
-        //                 while (i < text.length) {
-        //                     var next = text.indexOf(keyword, i)
-        //                     if (next == -1) {
-        //                         spans.add(Span(text.substring(i)))
-        //                         break
-        //                     }
-        //                     spans.add(Span(text.substring(i, next)))
-        //                     spans.add(Span(keyword, keywordColor))
-        //                     i = next + keyword.length
-        //                 }
-        //                 spans
-        //             }
-        //             .withCodeTypedHandler(codeSettings)
-        //             .withCodeDeletedHandler(codeSettings)
-        //             .wrapScrolling()
-        //             .pad(20.px)
-        //         )
-        //         .wrapBorderRadius(20.px)
-        //         .pad(5.vmin)
-        //     )
-        //     .add(20.vh, BlurBackground().withRadius(20))
-        // )
+        ui.defaultFont = jetbrainsMono()
+        ui.defaultFontSize = 16.px
+        ui.defaultFontColor = Vector4f(0.9f, 0.9f, 0.9f, 1f)
+        val copypasta = "Crazy? I Was Crazy Once. They Locked Me In A Room. A Rubber Room. A Rubber Room With Rats. And Rats Make Me Crazy. "
+            .repeat(40)
+        val codeSettings = CodeEditingSettings(
+            paired = listOf(
+                "()",
+                "{}",
+                "\"\""
+            ),
+            autoIndent = true
+        )
+        ui.add(Axis.column()
+            .add(80.vh, Stack()
+                .add(BlurBackground().withRadius(20))
+                .add(FlatBackground()
+                    .withColor(13, 16, 22, 128)
+                )
+                .add(TextInput()
+                    .withMultilineInput(true)
+                    .withContent(text("", 16.px).withColor(186, 184, 178))
+                    // .withDisplayedText { value -> "●".repeat(value.length) }
+                    .withDisplayedSpans { text: String ->
+                        var spans: MutableList<Span> = mutableListOf()
+                        val keyword = "sigma"
+                        val keywordColor = Vector4f(0f, 255f, 0f, 255f)
+                            .div(255f)
+                        var i = 0
+                        while (i < text.length) {
+                            var next = text.indexOf(keyword, i)
+                            if (next == -1) {
+                                spans.add(Span(text.substring(i)))
+                                break
+                            }
+                            spans.add(Span(text.substring(i, next)))
+                            spans.add(Span(keyword, keywordColor))
+                            i = next + keyword.length
+                        }
+                        spans
+                    }
+                    .withCodeTypedHandler(codeSettings)
+                    .withCodeDeletedHandler(codeSettings)
+                    .wrapScrolling()
+                    .pad(20.px)
+                )
+                .wrapBorderRadius(20.px)
+                .pad(5.vmin)
+            )
+            .add(20.vh, BlurBackground().withRadius(20))
+        )
+
         onFrame = { deltaTime ->
             if (!testModelAnim.isTransitioning && Key.W.isPressed) {
                 testModelAnim.transitionTo(TestModelAnim.walk, 0.35f)
             }
             if (!testModelAnim.isTransitioning && Key.I.isPressed) {
                 testModelAnim.transitionTo(TestModelAnim.idle, 0.35f)
+            }
+            if (!testModelAnim.isTransitioning && Key.F.isPressed) {
+                testModelAnim.transitionTo(TestModelAnim.floss, 0.5f)
+            }
+            if (!testModelAnim.isTransitioning && Key.S.isPressed) {
+                testModelAnim.transitionTo(TestModelAnim.swim, 0.5f)
             }
             testModelAnim.addTimePassed(deltaTime)
             
@@ -284,16 +297,16 @@ fun main() {
             shader[TestModelVert.viewProjection] = Matrix4f()
                 .setPerspective(
                     Math.PI.toFloat() / 2f,
-                    out.width.toFloat() / out.height.toFloat(),
+                    dddOut.width.toFloat() / dddOut.height.toFloat(),
                     0.1f, 100f
                 )
                 .lookAt(
-                    +3.0f,  +3.0f,  +3.0f,
+                    +1.0f,  +1.0f,  +1.0f,
                      0.0f,  +1.0f,   0.0f,
                      0.0f,   1.0f,   0.0f
                 )
             testModel().render(
-                shader, out,
+                shader, dddOut,
                 TestModelVert.localTransform, TestModelFrag.texture,
                 TestModelVert.jointTransforms,
                 testModelAnim
@@ -312,17 +325,19 @@ fun main() {
             .toFloat()
         lastFrameTime = now
         
-        out.resize(window.framebuffer.width, window.framebuffer.height)
-        
-        out.clearColor(Vector4f(0.5f, 0.5f, 0.5f, 1f))
-        out.clearDepth(1f)
-        
+        dddOut.resize(window.framebuffer.width, window.framebuffer.height)
+        uiOut.resize(window.framebuffer.width, window.framebuffer.height)
+
         ui.captureInput()
         window.flushInputEvents()
+
+        dddOut.clearColor(Vector4f(0.5f, 0.5f, 0.5f, 1f))
+        dddOut.clearDepth(1f)
         onFrame(deltaTime)
+        dddOut.blitColorOnto(uiOut)
+
         ui.update()
-        
-        blitTexture(out.color, window.framebuffer)
+        uiOut.blitColorOnto(window.framebuffer)
         
         window.endFrame()
         Thread.sleep(15)

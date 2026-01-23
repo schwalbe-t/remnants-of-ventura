@@ -4,12 +4,11 @@ package schwalbe.ventura.engine.ui
 import schwalbe.ventura.engine.gfx.Framebuffer
 import schwalbe.ventura.engine.gfx.Texture
 import org.joml.*
-import kotlin.math.roundToInt
 
 abstract class GpuUiElement : UiElement() {
     
     companion object {
-        private val clearColor: Vector4fc = Vector4f(0f, 0f, 0f, 0f)
+        val clearColor: Vector4fc = Vector4f(0f, 0f, 0f, 0f)
     }
     
     protected val target = Framebuffer()

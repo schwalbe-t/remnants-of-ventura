@@ -40,9 +40,13 @@ void main() {
     vec2 fPosRelUv = fTexCoords - 0.5; // -0.5..+0.5, origin = center
     vec2 dCenter = abs(fPosRelUv * uDestSizePx);
     vec2 insideDCenter = (uDestSizePx / 2.0) - radius;
-    bool isInside = dCenter.x <= insideDCenter.x
-        || dCenter.y <= insideDCenter.y
-        || length(dCenter - insideDCenter) <= radius;
-    oColor = isInside ? texture(uTexture, fTexCoords)
-        : vec4(0.0, 0.0, 0.0, 0.0);
+    bool fullyInside = dCenter.x <= insideDCenter.x
+        || dCenter.y <= insideDCenter.y;
+    if (fullyInside) {
+        oColor = texture(uTexture, fTexCoords);
+    } else {
+        float bDist = length(dCenter - insideDCenter) - radius;
+        float alpha = 1.0 - smoothstep(0.0, 1.0, bDist);
+        oColor = texture(uTexture, fTexCoords) * alpha;
+    }
 }
