@@ -8,31 +8,33 @@ import schwalbe.ventura.engine.gfx.Texture
 import schwalbe.ventura.engine.input.InputEventQueue
 import org.joml.*
 
-class UiContext(
+data class UiScreenDef(
+    val defaultFont: Font?,
+    val defaultFontSize: UiSize?,
+    val defaultFontColor: Vector4fc?,
+    val builder: (UiScreen) -> Unit
+)
+
+fun defineScreen(
+    defaultFont: Font? = null,
+    defaultFontSize: UiSize? = null,
+    defaultFontColor: Vector4fc? = null,
+    creator: (UiScreen) -> Unit
+): UiScreenDef = UiScreenDef(
+    defaultFont, defaultFontSize, defaultFontColor,
+    creator
+)
+
+class UiScreen(
+    val definedBy: UiScreenDef,
     val output: Framebuffer,
     val input: InputEventQueue,
-    defaultFont: Font = Font.default,
-    defaultFontSize: UiSize = 16.px,
-    defaultFontColor: Vector4fc = Vector4f(0f, 0f, 0f, 1f)
+    val defaultFont: Font = Font.default,
+    val defaultFontSize: UiSize = 16.px,
+    val defaultFontColor: Vector4fc = Vector4f(0f, 0f, 0f, 1f)
 ) {
     
     private data class BaseElement(val element: UiElement, val layer: Int)
-    
-    var defaultFont: Font = defaultFont
-        set(value) {
-            field = value
-            this.invalidate()
-        }
-    var defaultFontSize: UiSize = defaultFontSize
-        set(value) {
-            field = value
-            this.invalidate()
-        }
-    var defaultFontColor: Vector4fc = Vector4f(defaultFontColor)
-        set(value) {
-            field = Vector4f(value)
-            this.invalidate()
-        }
         
     var currentlyInFocus: Focusable? = null
         set(value) {
@@ -104,6 +106,11 @@ class UiContext(
     
     fun invalidate() {
         this.elements.forEach { it.element.invalidate() }
+    }
+
+    fun disposeTree() {
+        this.elements.forEach { it.element.disposeTree() }
+        this.elements.clear()
     }
 
 }

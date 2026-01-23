@@ -6,7 +6,7 @@ import schwalbe.ventura.engine.gfx.Texture
 import kotlin.math.roundToInt
 
 data class UiElementContext(
-    val global: UiContext, val parent: UiElement?,
+    val global: UiScreen, val parent: UiElement?,
     val absPxX: Int, val absPxY: Int,
     val parentPxWidth: Int, val parentPxHeight: Int,
     val visibleAbsLeft: Int, val visibleAbsTop: Int,
