@@ -1,6 +1,21 @@
 
 package schwalbe.ventura.client
 
+import schwalbe.ventura.engine.*
+import schwalbe.ventura.client.screens.*
+
+fun main() {
+    val client = Client()
+    client.loadResources()
+    client.resLoader.submit(Resource.fromCallback {
+        configureNavigator(client.nav)
+        localized().changeLanguage(client.config.language)
+        client.nav.clear(serverSelectScreen(client))
+    })
+    client.gameloop()
+    client.dispose()
+}
+
 /*
 import schwalbe.ventura.net.*
 import kotlinx.coroutines.*
@@ -214,42 +229,6 @@ suspend fun main() {
 //    )
 //}
 
-import schwalbe.ventura.engine.*
-import schwalbe.ventura.engine.gfx.*
-import schwalbe.ventura.engine.ui.*
-import schwalbe.ventura.client.screens.*
-import org.joml.*
-import kotlin.concurrent.thread
-
-fun main() {
-    val config = Config.read()
-
-    val resLoader = ResourceLoader()
-    thread { resLoader.loadQueuedRawLoop() }
-    
-    loadUiResources(resLoader)
-    submitScreenResources(resLoader)
-    resLoader.submit(localized)
-    
-    val window = Window("Remnants of Ventura", fullscreen = false)
-
-    val out3d = Framebuffer()
-    out3d.attachColor(Texture(
-        16, 16, Texture.Filter.NEAREST, Texture.Format.RGBA8, samples = 4
-    ))
-    out3d.attachDepth(Texture(
-        16, 16, Texture.Filter.NEAREST, Texture.Format.DEPTH24, samples = 4
-    ))
-
-    val outUi = Framebuffer()
-    outUi.attachColor(Texture(
-        16, 16, Texture.Filter.NEAREST, Texture.Format.RGBA8
-    ))
-
-    val ui = UiNavigator(outUi, window.inputEvents)
-    
-    var onFrame: (deltaTime: Float) -> Unit = {}
-
 //    val testModelAnim = AnimState(TestModelAnim.idle)
 //    val testModel: Resource<Model<TestModelAnim>> = Model.loadFile(
 //        "res/test.glb",
@@ -265,14 +244,7 @@ fun main() {
 //    val testModelShader: Resource<Shader<TestModelVert, TestModelFrag>>
 //        = Shader.loadGlsl(TestModelVert, TestModelFrag)
 //    resLoader.submitAll(testModel, testModelShader)
-    
-    resLoader.submit(Resource.fromCallback {
 
-        configureNavigator(ui)
-        localized().changeLanguage(config.language)
-        ui.clear(serverSelectScreen(config, ui))
-
-        onFrame = { deltaTime ->
 //            if (!testModelAnim.isTransitioning && Key.W.isPressed) {
 //                testModelAnim.transitionTo(TestModelAnim.walk, 0.35f)
 //            }
@@ -306,37 +278,3 @@ fun main() {
 //                TestModelVert.jointTransforms,
 //                testModelAnim
 //            )
-        }
-    })
-    
-    var lastFrameTime: Long = System.nanoTime()
-    while (!window.shouldClose()) {
-        window.beginFrame()
-        resLoader.loadQueuedFully()
-        
-        val now: Long = System.nanoTime()
-        val deltaTimeNanos: Long = now - lastFrameTime
-        val deltaTime: Float = (deltaTimeNanos.toDouble() * 0.000_000_001)
-            .toFloat()
-        lastFrameTime = now
-        
-        out3d.resize(window.framebuffer.width, window.framebuffer.height)
-        outUi.resize(window.framebuffer.width, window.framebuffer.height)
-
-        ui.captureInput()
-        window.flushInputEvents()
-
-        out3d.clearColor(Vector4f(0.5f, 0.5f, 0.5f, 1f))
-        out3d.clearDepth(1f)
-        onFrame(deltaTime)
-        out3d.blitColorOnto(outUi)
-
-        ui.update()
-        outUi.blitColorOnto(window.framebuffer)
-        
-        window.endFrame()
-        Thread.sleep(15)
-    }
-    window.dispose()
-    resLoader.submit(ResourceLoader.stop)
-}

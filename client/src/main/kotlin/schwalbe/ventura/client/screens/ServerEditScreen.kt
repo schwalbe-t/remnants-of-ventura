@@ -1,10 +1,9 @@
 
 package schwalbe.ventura.client.screens
 
-import schwalbe.ventura.client.Config
-import schwalbe.ventura.client.localized
-import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.engine.ui.*
+import schwalbe.ventura.client.*
+import schwalbe.ventura.client.LocalKeys.*
 
 private fun addSetting(
     axis: Axis, name: String, placeholder: String, value: String
@@ -23,10 +22,9 @@ private fun addSetting(
 
 fun serverEditScreen(
     server: Config.Server?,
-    config: Config, nav: UiNavigator,
+    client: Client,
     result: (Config.Server) -> Unit
-): UiScreenDef
-= defineScreen(
+): UiScreenDef = defineScreen(
     defaultFontColor = BASE_FONT_COLOR
 ) {
     val l = localized()
@@ -53,7 +51,7 @@ fun serverEditScreen(
                     nameInput.valueString, addrInput.valueString,
                     parsedPort
                 ))
-                nav.clear(serverSelectScreen(config, nav))
+                client.nav.clear(serverSelectScreen(client))
             }
         )
         .pad(top = 2.vmin, left = 30.pw, right = 30.pw)
@@ -61,7 +59,7 @@ fun serverEditScreen(
     settings.add(5.vmin,
         createTextButton(
             content = l[BUTTON_SERVER_DISCARD],
-            handler = { nav.clear(serverSelectScreen(config, nav)) }
+            handler = { client.nav.clear(serverSelectScreen(client)) }
         )
         .pad(top = 1.vmin, left = 30.pw, right = 30.pw)
     )

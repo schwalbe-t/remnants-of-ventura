@@ -1,14 +1,12 @@
 
 package schwalbe.ventura.client.screens
 
-import schwalbe.ventura.client.Config
-import schwalbe.ventura.client.LocalKeys.*
-import schwalbe.ventura.client.localized
-import schwalbe.ventura.client.write
 import schwalbe.ventura.engine.ui.*
+import schwalbe.ventura.client.*
+import schwalbe.ventura.client.LocalKeys.*
 
 private fun createServerOption(
-    server: Config.Server, i: Int, config: Config, nav: UiNavigator
+    server: Config.Server, i: Int, client: Client
 ): UiElement = Axis.row()
     .add(80.pw, createButton(
         content = Axis.column()
@@ -24,18 +22,21 @@ private fun createServerOption(
             )
             .pad(1.vmin),
         handler = {
-            // TODO!
-            println("CONNECT TO '${server.address}:${server.port}'")
+            // TODO! connect to server (logic in 'Client')
+            client.nav.replace(serverConnectingScreen(
+                name = "${server.address}:${server.port}",
+                client
+            ))
         }
     ))
     .add(20.pw - 5.vmin, Axis.column()
         .add(50.ph - 0.5.vmin, createTextButton(
             content = localized()[BUTTON_EDIT_SERVER],
             handler = {
-                val edited = config.servers[i]
-                nav.clear(serverEditScreen(edited, config, nav) { result ->
-                    config.servers[i] = result
-                    config.write()
+                val edited = client.config.servers[i]
+                client.nav.clear(serverEditScreen(edited, client) { r ->
+                    client.config.servers[i] = r
+                    client.config.write()
                 })
             }
         ))
@@ -43,9 +44,9 @@ private fun createServerOption(
         .add(50.ph - 0.5.vmin, createTextButton(
             content = localized()[BUTTON_DELETE_SERVER],
             handler = {
-                config.servers.removeAt(i)
-                config.write()
-                nav.replace(serverSelectScreen(config, nav))
+                client.config.servers.removeAt(i)
+                client.config.write()
+                client.nav.replace(serverSelectScreen(client))
             }
         ))
         .pad(left = 1.vmin)
@@ -54,39 +55,39 @@ private fun createServerOption(
         .add(50.ph - 0.5.vmin, createTextButton(
             content = "↑",
             handler = {
-                val moved = config.servers.removeAt(i)
-                val destI: Int = if (i >= 1) { i - 1 }
-                    else { config.servers.size }
-                config.servers.add(destI, moved)
-                config.write()
-                nav.replace(serverSelectScreen(config, nav))
+                val servers = client.config.servers
+                val moved = servers.removeAt(i)
+                val destI: Int = if (i >= 1) { i - 1 } else { servers.size }
+                servers.add(destI, moved)
+                client.config.write()
+                client.nav.replace(serverSelectScreen(client))
             }
         ))
         .add(1.vmin, Stack())
         .add(50.ph - 0.5.vmin, createTextButton(
             content = "↓",
             handler = {
-                val moved = config.servers.removeAt(i)
-                val destI: Int = if (i + 1 <= config.servers.size) { i + 1 }
-                    else { 0 }
-                config.servers.add(destI, moved)
-                config.write()
-                nav.replace(serverSelectScreen(config, nav))
+                val servers = client.config.servers
+                val moved = servers.removeAt(i)
+                val destI: Int = if (i + 1 <= servers.size) { i + 1 } else { 0 }
+                servers.add(destI, moved)
+                client.config.write()
+                client.nav.replace(serverSelectScreen(client))
             }
         ))
         .pad(left = 1.vmin)
     )
     .pad(bottom = 1.5.vmin)
 
-fun serverSelectScreen(config: Config, nav: UiNavigator): UiScreenDef
+fun serverSelectScreen(client: Client): UiScreenDef
 = defineScreen(
     defaultFontColor = BASE_FONT_COLOR
 ) {
     val serverList = Axis.column()
-    for ((i, server) in config.servers.withIndex()) {
-        serverList.add(9.5.vmin, createServerOption(server, i, config, nav))
+    for ((i, server) in client.config.servers.withIndex()) {
+        serverList.add(9.5.vmin, createServerOption(server, i, client))
     }
-    if (config.servers.isEmpty()) {
+    if (client.config.servers.isEmpty()) {
         serverList.add(5.vmin, Text()
             .withText(localized()[PLACEHOLDER_NO_SERVERS])
             .withSize(2.vmin)
@@ -105,9 +106,9 @@ fun serverSelectScreen(config: Config, nav: UiNavigator): UiScreenDef
             .add(15.pw, createTextButton(
                 content = localized()[BUTTON_ADD_SERVER],
                 handler = {
-                    nav.replace(serverEditScreen(null, config, nav) { result ->
-                        config.servers.add(result)
-                        config.write()
+                    client.nav.replace(serverEditScreen(null, client) { r ->
+                        client.config.servers.add(r)
+                        client.config.write()
                     })
                 }
             ))

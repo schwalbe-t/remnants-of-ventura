@@ -29,7 +29,10 @@ enum class LocalKeys {
     LABEL_SERVER_PORT,
     PLACEHOLDER_SERVER_PORT,
     BUTTON_SERVER_CONFIRM,
-    BUTTON_SERVER_DISCARD
+    BUTTON_SERVER_DISCARD,
+
+    TITLE_CONNECTING_TO_SERVER,
+    BUTTON_CANCEL_CONNECTION
 }
 
 val localized: Resource<Localizations<GameLanguage, LocalKeys>>

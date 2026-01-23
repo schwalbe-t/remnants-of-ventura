@@ -4,11 +4,13 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import schwalbe.ventura.engine.findSystemLanguage
 import java.io.File
+import kotlin.uuid.Uuid
 
 @Serializable
 data class Config(
     var language: GameLanguage,
-    val servers: MutableList<Server>
+    val servers: MutableList<Server> = mutableListOf(),
+    val sessions: MutableMap<String, Uuid> = mutableMapOf()
 ) {
     @Serializable
     data class Server(
@@ -24,9 +26,7 @@ data class Config(
 
 fun Config.Companion.makeDefault(): Config {
     val language = findSystemLanguage(GameLanguage.ENGLISH)
-    return Config(
-        language, mutableListOf()
-    )
+    return Config(language)
 }
 
 fun Config.Companion.read(): Config {

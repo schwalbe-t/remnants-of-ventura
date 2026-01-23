@@ -14,6 +14,9 @@
         "LABEL_SERVER_PORT": "Port",
         "PLACEHOLDER_SERVER_PORT": "Enter Server Port",
         "BUTTON_SERVER_CONFIRM": "Confirm",
-        "BUTTON_SERVER_DISCARD": "Discard"
+        "BUTTON_SERVER_DISCARD": "Discard",
+
+        "TITLE_CONNECTING_TO_SERVER": "Connecting to Server",
+        "BUTTON_CANCEL_CONNECTION": "Cancel"
     }
 }
