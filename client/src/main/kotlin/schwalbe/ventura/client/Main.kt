@@ -172,17 +172,6 @@ object TestModelAnim : Animations<TestModelAnim> {
     val walk = anim("walk")
 }
 
-enum class GameLanguage(override val id: String) : Language<GameLanguage> {
-    GERMAN("de"),
-    ENGLISH("en"),
-    BULGARIAN("bg");
-}
-
-enum class GameLocalKeys {
-    TEST,
-    GREETING
-}
-
 val gameScreen = defineScreen {}
 
 val editorScreen = defineScreen {
@@ -235,6 +224,14 @@ val editorScreen = defineScreen {
 }
 
 fun main() {
+    val config = Config.read()
+    config.servers.add(Config.Server(
+        name = "localhost",
+        address = "localhost",
+        port = 68442
+    ))
+    config.write()
+
     val resLoader = ResourceLoader()
     thread { resLoader.loadQueuedRawLoop() }
     
@@ -268,7 +265,7 @@ fun main() {
     )
     resLoader.submitAll(jetbrainsMono, testImage)
 
-    val localized: Resource<Localizations<GameLanguage, GameLocalKeys>>
+    val localized: Resource<Localizations<GameLanguage, LocalKeys>>
         = Localizations.loadLanguages("res/localizations", GameLanguage.ENGLISH)
     resLoader.submit(localized)
 
@@ -291,7 +288,7 @@ fun main() {
     resLoader.submit(Resource.fromCallback {
 
         localized().changeLanguage(GameLanguage.GERMAN)
-        println(localized()[GameLocalKeys.GREETING])
+        println(localized()[LocalKeys.GREETING])
 
         ui.defaultFont = jetbrainsMono()
         ui.defaultFontSize = 16.px

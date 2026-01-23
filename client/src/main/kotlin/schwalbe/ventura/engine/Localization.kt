@@ -3,12 +3,32 @@ package schwalbe.ventura.engine
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.decodeFromString
 import java.io.File
 import java.nio.file.Paths
+import java.util.Locale
 
 interface Language<L : Language<L>> {
+    /**
+     * The ISO 639-1 language code, e.g. 'en', 'bg', 'de', 'fr', ...
+     */
     val id: String
+}
+
+/**
+ * Attempts to find a language in the given language enum that has an ID
+ * matching that of the current system locale. This requires that the ID
+ * is a ISO 639-1 language code (e.g. 'en', 'fr').
+ * @param default The language to return if the current system language matches
+ * none of the languages present in the enum
+ * @return The found language or the default
+ */
+inline fun <reified L> findSystemLanguage(default: L): L
+    where L : Enum<L>, L : Language<L> {
+    val locale = Locale.getDefault()
+    val sysId: String = locale.language
+    return enumValues<L>()
+        .firstOrNull { it.id == sysId }
+        ?: default
 }
 
 class Localizations<L : Language<L>, K : Enum<K>>(
