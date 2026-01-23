@@ -172,6 +172,17 @@ object TestModelAnim : Animations<TestModelAnim> {
     val walk = anim("walk")
 }
 
+enum class GameLanguage(override val id: String) : Language<GameLanguage> {
+    GERMAN("de"),
+    ENGLISH("en"),
+    BULGARIAN("bg");
+}
+
+enum class GameLocalKeys {
+    TEST,
+    GREETING
+}
+
 val gameScreen = defineScreen {}
 
 val editorScreen = defineScreen {
@@ -256,7 +267,11 @@ fun main() {
         "res/test2.png", Texture.Filter.LINEAR
     )
     resLoader.submitAll(jetbrainsMono, testImage)
-    
+
+    val localized: Resource<Localizations<GameLanguage, GameLocalKeys>>
+        = Localizations.loadLanguages("res/localizations", GameLanguage.ENGLISH)
+    resLoader.submit(localized)
+
     val testModelAnim = AnimState(TestModelAnim.idle)
     val testModel: Resource<Model<TestModelAnim>> = Model.loadFile(
         "res/test.glb",
@@ -274,7 +289,10 @@ fun main() {
     resLoader.submitAll(testModel, testModelShader)
     
     resLoader.submit(Resource.fromCallback {
-        
+
+        localized().changeLanguage(GameLanguage.GERMAN)
+        println(localized()[GameLocalKeys.GREETING])
+
         ui.defaultFont = jetbrainsMono()
         ui.defaultFontSize = 16.px
         ui.defaultFontColor = Vector4f(0.9f, 0.9f, 0.9f, 1f)

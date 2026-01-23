@@ -33,6 +33,7 @@ subprojects {
         implementation(kotlin("stdlib"))
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$serialVersion")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:$serialVersion")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialVersion")
 
         implementation("io.ktor:ktor-server-netty:$ktorVersion")
         implementation("io.ktor:ktor-server-websockets:$ktorVersion")
