@@ -117,6 +117,7 @@ class Window : Disposable {
             this.prevCursor = Mouse.cursor
         }
         glfwSwapBuffers(windowId)
+        Keyboard.onFrameEnd()
     }
 
     fun close() {

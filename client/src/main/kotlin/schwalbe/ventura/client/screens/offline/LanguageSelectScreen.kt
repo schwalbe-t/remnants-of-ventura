@@ -1,23 +1,26 @@
 
-package schwalbe.ventura.client.screens
+package schwalbe.ventura.client.screens.offline
 
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
+import schwalbe.ventura.client.screens.*
 
 private fun createLanguageOption(
     language: GameLanguage, client: Client
 ): UiElement = createButton(
     content = Axis.column()
-        .add(60.ph, Text()
-            .withFont(googleSansSb())
-            .withText(language.nativeName)
-            .withSize(70.ph)
+        .add(
+            60.ph, Text()
+                .withFont(googleSansSb())
+                .withText(language.nativeName)
+                .withSize(70.ph)
         )
-        .add(40.ph, Text()
-            .withText(language.englishName)
-            .withSize(70.ph)
-            .withColor(SECONDARY_FONT_COLOR)
+        .add(
+            40.ph, Text()
+                .withText(language.englishName)
+                .withSize(70.ph)
+                .withColor(SECONDARY_FONT_COLOR)
         )
         .pad(1.5.vmin),
     handler = {

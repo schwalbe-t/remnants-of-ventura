@@ -1,11 +1,13 @@
 
-package schwalbe.ventura.client.screens
+package schwalbe.ventura.client.screens.online
 
 import schwalbe.ventura.ACCOUNT_NAME_MAX_LEN
 import schwalbe.ventura.ACCOUNT_PASSWORD_MAX_LEN
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
+import schwalbe.ventura.client.screens.*
+import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.net.*
 import schwalbe.ventura.net.PacketType.*
 
@@ -61,7 +63,7 @@ fun serverAuthenticationScreen(
         }
         .onPacket<Unit>(DOWN_LOGIN_SESSION_SUCCESS) { _, _ ->
             println("Logged in as user '$username'")
-            client.nav.replace(serverAuthenticatedScreen(client))
+            client.nav.replace(controllingPlayerScreen(client))
         }
     val screen = GameScreen(
         render = renderGridBackground(client),
@@ -103,9 +105,11 @@ fun serverAuthenticationScreen(
                 username = loginUsername.valueString.trim()
                 password = loginPassword.valueString
                 println("Logging in as user '$username'")
-                client.network.outPackets?.send(Packet.serialize(
-                    UP_CREATE_SESSION, AccountCredPacket(username, password)
-                ))
+                client.network.outPackets?.send(
+                    Packet.serialize(
+                        UP_CREATE_SESSION, AccountCredPacket(username, password)
+                    )
+                )
             }
         ).pad(top = 2.vmin, left = 30.pw, right = 30.pw)
     )
@@ -138,9 +142,11 @@ fun serverAuthenticationScreen(
                     return@signUp
                 }
                 println("Creating account with username '$username'")
-                client.network.outPackets?.send(Packet.serialize(
-                    UP_CREATE_ACCOUNT, AccountCredPacket(username, password)
-                ))
+                client.network.outPackets?.send(
+                    Packet.serialize(
+                        UP_CREATE_ACCOUNT, AccountCredPacket(username, password)
+                    )
+                )
             }
         ).pad(top = 2.vmin, left = 30.pw, right = 30.pw)
     )

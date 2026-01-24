@@ -1,9 +1,10 @@
 
-package schwalbe.ventura.client.screens
+package schwalbe.ventura.client.screens.offline
 
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
+import schwalbe.ventura.client.screens.*
 
 fun serverConnectionFailedScreen(
     reason: String, client: Client

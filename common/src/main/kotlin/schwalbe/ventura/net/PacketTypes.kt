@@ -2,6 +2,8 @@
 package schwalbe.ventura.net
 
 import kotlinx.serialization.Serializable
+import schwalbe.ventura.worlds.ChunkData
+import schwalbe.ventura.worlds.ChunkRef
 import kotlin.uuid.Uuid
 
 @Serializable
@@ -14,7 +16,14 @@ enum class PacketType {
     UP_CREATE_SESSION,              // AccountCredPacket
     DOWN_CREATE_SESSION_SUCCESS,    // SessionTokenPacket
     UP_LOGIN_SESSION,               // SessionCredPacket
-    DOWN_LOGIN_SESSION_SUCCESS      // Unit
+    DOWN_LOGIN_SESSION_SUCCESS,     // Unit
+
+    DOWN_CHANGED_WORLD,             // Unit
+    UP_REQUEST_WORLD_INFO,          // Unit
+    DOWN_CONST_WORLD_INFO,          // ConstWorldInfo
+    UP_REQUEST_CHUNK_CONTENTS,      // RequestedChunksPacket
+    DOWN_CHUNK_CONTENTS,            // ChunkContentsPacket
+    UP_REQUEST_WORLD_CHANGE,        // WorldChangePacket
 }
 
 @Serializable
@@ -35,6 +44,7 @@ enum class TaggedErrorPacket {
     ACCOUNT_ALREADY_ONLINE
 }
 
+
 @Serializable
 data class AccountCredPacket(val username: String, val password: String)
 
@@ -43,3 +53,13 @@ data class SessionTokenPacket(val token: Uuid)
 
 @Serializable
 data class SessionCredPacket(val username: String, val token: Uuid)
+
+
+@Serializable
+data class RequestedChunksPacket(val chunks: List<ChunkRef>)
+
+@Serializable
+data class ChunkContentsPacket(val chunks: List<Pair<ChunkRef, ChunkData>>)
+
+@Serializable
+data class WorldChangePacket(val worldId: Long)

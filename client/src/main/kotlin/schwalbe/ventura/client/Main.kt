@@ -3,6 +3,7 @@ package schwalbe.ventura.client
 
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.client.screens.*
+import schwalbe.ventura.client.screens.offline.mainScreen
 
 fun main() {
     val client = Client()

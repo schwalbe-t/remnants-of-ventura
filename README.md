@@ -51,4 +51,4 @@ The client can be built and run using Gradle:
 ```
 
 The client can be configured using the following environmental variables:
-- `VENTURA_TRUST_ALL_CERTS` - (if set to `1`) Makes the client trusts ALL certificates. ONLY USE FOR TESTING!
+- `VENTURA_TRUST_ALL_CERTS` - (if set to `true`) Makes the client trusts ALL certificates. ONLY USE FOR TESTING!
