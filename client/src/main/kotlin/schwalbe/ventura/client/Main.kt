@@ -10,7 +10,7 @@ fun main() {
     client.resLoader.submit(Resource.fromCallback {
         configureNavigator(client.nav)
         localized().changeLanguage(client.config.language)
-        client.nav.clear(serverSelectScreen(client))
+        client.nav.clear(mainScreen(client))
     })
     client.gameloop()
     client.dispose()

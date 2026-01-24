@@ -5,8 +5,11 @@ import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 
+const val DEFAULT_SERVER_PORT: Int = 443
+
 private fun addSetting(
-    axis: Axis, name: String, placeholder: String, value: String
+    axis: Axis, name: String, placeholder: String, value: String,
+    font: Font
 ): TextInput {
     val input = TextInput()
     axis.add(3.vmin, Text()
@@ -14,7 +17,7 @@ private fun addSetting(
         .withSize(2.vmin)
         .pad(bottom = 0.5.vmin, left = 1.vmin)
     )
-    axis.add(7.vmin, createTextInput(input, placeholder, value)
+    axis.add(7.vmin, createTextInput(input, placeholder, value, font)
         .pad(bottom = 2.vmin)
     )
     return input
@@ -27,31 +30,33 @@ fun serverEditScreen(
 ): UiScreenDef = defineScreen(
     defaultFontColor = BASE_FONT_COLOR
 ) {
+    client.onFrame = renderGridBackground(client)
     val l = localized()
     val settings = Axis.column()
     val nameInput = addSetting(
         settings, l[LABEL_SERVER_NAME], l[PLACEHOLDER_SERVER_NAME],
-        server?.name ?: ""
+        server?.name ?: "", googleSansR()
     )
     val addrInput = addSetting(
         settings, l[LABEL_SERVER_ADDRESS], l[PLACEHOLDER_SERVER_ADDRESS],
-        server?.address ?: ""
+        server?.address ?: "", jetbrainsMonoSb()
     )
     val portInput = addSetting(
         settings, l[LABEL_SERVER_PORT], l[PLACEHOLDER_SERVER_PORT],
-        server?.port?.toString() ?: ""
+        server?.port?.toString() ?: "", jetbrainsMonoSb()
     )
     settings.add(6.vmin,
         createTextButton(
             content = l[BUTTON_SERVER_CONFIRM],
             handler = handler@{
-                val parsedPort: Int = portInput.valueString.toIntOrNull()
-                    ?: return@handler
+                val port: String = portInput.valueString
+                val parsedPort: Int = if (port.isEmpty()) DEFAULT_SERVER_PORT
+                    else { port.toIntOrNull() ?: return@handler }
+                client.nav.pop()
                 result(Config.Server(
                     nameInput.valueString, addrInput.valueString,
                     parsedPort
                 ))
-                client.nav.clear(serverSelectScreen(client))
             }
         )
         .pad(top = 2.vmin, left = 30.pw, right = 30.pw)
@@ -59,15 +64,15 @@ fun serverEditScreen(
     settings.add(5.vmin,
         createTextButton(
             content = l[BUTTON_SERVER_DISCARD],
-            handler = { client.nav.clear(serverSelectScreen(client)) }
+            handler = {
+                client.nav.pop()
+            }
         )
         .pad(top = 1.vmin, left = 30.pw, right = 30.pw)
     )
-    it.add(layer = -1, element = FlatBackground()
-        .withColor(BACKGROUND_COLOR)
-    )
     it.add(layer = 0, element = Axis.column()
         .add(7.ph, Text()
+            .withFont(googleSansSb())
             .withText(l[TITLE_EDIT_SERVER])
             .withSize(2.5.vmin)
         )

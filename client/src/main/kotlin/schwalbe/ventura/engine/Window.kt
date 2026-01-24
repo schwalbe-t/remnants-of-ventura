@@ -118,6 +118,10 @@ class Window : Disposable {
         }
         glfwSwapBuffers(windowId)
     }
+
+    fun close() {
+        glfwSetWindowShouldClose(this.getWindowId(), true)
+    }
     
     override fun dispose() {
         val windowId: Long = this.windowId ?: return

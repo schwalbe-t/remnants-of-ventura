@@ -8,13 +8,23 @@ import schwalbe.ventura.engine.Resource
 import schwalbe.ventura.engine.loadLanguages
 
 @Serializable
-enum class GameLanguage(override val id: String) : Language<GameLanguage> {
-    GERMAN("de"),
-    ENGLISH("en"),
-    BULGARIAN("bg");
+enum class GameLanguage(
+    override val id: String, val nativeName: String, val englishName: String
+) : Language<GameLanguage> {
+    ENGLISH     ("en", "English",   "English"   ),
+    GERMAN      ("de", "Deutsch",   "German"    ),
+    BULGARIAN   ("bg", "Български", "Bulgarian" );
 }
 
 enum class LocalKeys {
+    BUTTON_GO_BACK,
+
+    BUTTON_PLAY,
+    BUTTON_CHANGE_LANGUAGE,
+    BUTTON_EXIT,
+
+    TITLE_SELECT_LANGUAGE,
+
     TITLE_SELECT_SERVER,
     BUTTON_ADD_SERVER,
     BUTTON_EDIT_SERVER,

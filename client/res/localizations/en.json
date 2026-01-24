@@ -1,5 +1,13 @@
 {
     "strings": {
+        "BUTTON_GO_BACK": "Go Back",
+
+        "BUTTON_PLAY": "Play",
+        "BUTTON_CHANGE_LANGUAGE": "Change Language",
+        "BUTTON_EXIT": "Exit",
+
+        "TITLE_SELECT_LANGUAGE": "Select Language",
+
         "TITLE_SELECT_SERVER": "Select Game Server",
         "BUTTON_ADD_SERVER": "Add Server",
         "BUTTON_EDIT_SERVER": "Edit",
@@ -11,7 +19,7 @@
         "PLACEHOLDER_SERVER_NAME": "Enter Server Name",
         "LABEL_SERVER_ADDRESS": "Address",
         "PLACEHOLDER_SERVER_ADDRESS": "Enter Server Address",
-        "LABEL_SERVER_PORT": "Port",
+        "LABEL_SERVER_PORT": "Port (leave empty for default)",
         "PLACEHOLDER_SERVER_PORT": "Enter Server Port",
         "BUTTON_SERVER_CONFIRM": "Confirm",
         "BUTTON_SERVER_DISCARD": "Discard",

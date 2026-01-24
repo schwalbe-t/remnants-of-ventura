@@ -5,32 +5,34 @@ import org.joml.Vector4fc
 import org.joml.Vector4f
 import schwalbe.ventura.engine.ui.*
 
-val BASE_FONT_COLOR: Vector4fc      = Vector4f(240f, 240f, 240f, 255f).div(255f)
-val DARK_FONT_COLOR: Vector4fc      = Vector4f(128f, 128f, 128f, 255f).div(255f)
-val BACKGROUND_COLOR: Vector4fc     = Vector4f(10f, 10f, 10f, 255f).div(255f)
-val BUTTON_COLOR: Vector4fc         = Vector4f(25f, 25f, 25f, 255f).div(255f)
-val BUTTON_HOVER_COLOR: Vector4fc   = Vector4f(50f, 50f, 50f, 255f).div(255f)
+val BASE_FONT_COLOR: Vector4fc      = Vector4f(15f, 15f, 15f, 255f).div(255f)
+val SECONDARY_FONT_COLOR: Vector4fc = Vector4f(128f, 128f, 128f, 255f).div(255f)
+val BUTTON_COLOR: Vector4fc         = Vector4f(25f, 25f, 25f, 25f).div(255f)
+val BUTTON_HOVER_COLOR: Vector4fc   = Vector4f(255f, 255f, 255f, 128f).div(255f)
 val INPUT_COLOR: Vector4fc = BUTTON_COLOR
 
 fun createTextInput(
-    input: TextInput, placeholder: String, value: String
+    input: TextInput, placeholder: String, value: String,
+    font: Font? = null
 ): UiElement = Stack()
+    .add(BlurBackground().withRadius(5))
     .add(FlatBackground().withColor(INPUT_COLOR))
     .add(input
         .withContent(Text()
+            .withFont(font)
             .withSize(70.ph)
         )
         .withValue(value)
         .withPlaceholder(Text()
             .withSize(70.ph)
-            .withColor(DARK_FONT_COLOR)
+            .withColor(SECONDARY_FONT_COLOR)
             .withText(placeholder)
         )
         .wrapScrolling()
         .withBarsEnabled(horiz = true, vert = false)
         .pad(1.25.vmin)
     )
-    .wrapBorderRadius(1.vmin)
+    .wrapBorderRadius(0.75.vmin)
 
 fun createTextButton(
     content: String,
@@ -40,7 +42,7 @@ fun createTextButton(
         .withText(content)
         .withSize(70.ph)
         .withAlignment(Text.Alignment.CENTER)
-        .pad(0.5.vmin),
+        .pad(0.75.vmin),
     handler
 )
 
@@ -48,10 +50,13 @@ fun createButton(
     content: UiElement,
     handler: () -> Unit
 ): UiElement = Stack()
+    .add(BlurBackground()
+        .withRadius(5)
+    )
     .add(FlatBackground()
         .withColor(BUTTON_COLOR)
         .withHoverColor(BUTTON_HOVER_COLOR)
     )
     .add(content)
     .add(ClickArea().withHandler(handler))
-    .wrapBorderRadius(1.vmin)
+    .wrapBorderRadius(0.75.vmin)

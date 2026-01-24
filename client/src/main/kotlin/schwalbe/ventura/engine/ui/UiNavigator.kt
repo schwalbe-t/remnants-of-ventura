@@ -49,12 +49,15 @@ class UiNavigator(
     }
 
     fun captureInput() {
-        val iterated = this.screens.toList()
-        iterated.forEach { it.captureInput() }
+        if (this.screens.isNotEmpty()) {
+            this.screens.last().captureInput()
+        }
     }
 
     fun update() {
-        screens.forEach(UiScreen::update)
+        if (this.screens.isNotEmpty()) {
+            this.screens.last().update()
+        }
         this.disposeQueue.forEach(UiScreen::disposeTree)
         this.disposeQueue.clear()
     }

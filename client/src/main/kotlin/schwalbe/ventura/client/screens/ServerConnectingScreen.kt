@@ -10,9 +10,7 @@ fun serverConnectingScreen(
 ): UiScreenDef = defineScreen(
     defaultFontColor = BASE_FONT_COLOR
 ) {
-    it.add(layer = -1, element = FlatBackground()
-        .withColor(BACKGROUND_COLOR)
-    )
+    client.onFrame = renderGridBackground(client)
     val contSize: UiSize = 20.vmin
     it.add(layer = 0, element = Axis.column()
         .add(50.ph - (contSize / 2), Stack())
@@ -24,7 +22,8 @@ fun serverConnectingScreen(
             )
             .add(3.vmin, Text()
                 .withText(name)
-                .withColor(DARK_FONT_COLOR)
+                .withFont(jetbrainsMonoSb())
+                .withColor(SECONDARY_FONT_COLOR)
                 .withSize(70.ph)
                 .withAlignment(Text.Alignment.CENTER)
             )
@@ -34,7 +33,7 @@ fun serverConnectingScreen(
                     content = localized()[BUTTON_CANCEL_CONNECTION],
                     handler = {
                         // TODO! cancel connection to server (logic in 'Client')
-                        client.nav.clear(serverSelectScreen(client))
+                        client.nav.pop()
                     }
                 ).pad(left = 30.pw, right = 30.pw)
             )
