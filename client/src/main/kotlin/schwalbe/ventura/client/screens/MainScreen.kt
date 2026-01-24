@@ -5,13 +5,15 @@ import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 
-fun mainScreen(client: Client): UiScreenDef = defineScreen(
-    defaultFontColor = BASE_FONT_COLOR
-) {
-    client.onFrame = renderGridBackground(client)
+fun mainScreen(client: Client): GameScreen {
+    val screen = GameScreen(
+        render = renderGridBackground(client),
+        networkState = noNetworkConnections(client),
+        navigator = client.nav
+    )
     val contSize: UiSize = 17.vmin
-    it.add(layer = 0, element = Axis.column()
-        .add(50.ph - (contSize / 2), Stack())
+    screen.add(layer = 0, element = Axis.column()
+        .add(50.ph - (contSize / 2), Space())
         .add(contSize, Axis.column()
             .add(5.vmin, createTextButton(
                 content = localized()[BUTTON_PLAY],
@@ -19,14 +21,14 @@ fun mainScreen(client: Client): UiScreenDef = defineScreen(
                     client.nav.push(serverSelectScreen(client))
                 }
             ))
-            .add(1.vmin, Stack())
+            .add(1.vmin, Space())
             .add(5.vmin, createTextButton(
                 content = localized()[BUTTON_CHANGE_LANGUAGE],
                 handler = {
                     client.nav.push(languageSelectScreen(client))
                 }
             ))
-            .add(1.vmin, Stack())
+            .add(1.vmin, Space())
             .add(5.vmin, createTextButton(
                 content = localized()[BUTTON_EXIT],
                 handler = {
@@ -35,6 +37,7 @@ fun mainScreen(client: Client): UiScreenDef = defineScreen(
             ))
             .pad(left = 30.pw, right = 30.pw)
         )
-        .add(50.ph - (contSize / 2), Stack())
+        .add(50.ph - (contSize / 2), Space())
     )
+    return screen
 }

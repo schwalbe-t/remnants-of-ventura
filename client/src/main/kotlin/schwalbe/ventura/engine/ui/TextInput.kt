@@ -399,7 +399,7 @@ class TextInput : GpuUiElement(), Focusable {
             context.visibleAbsLeft, context.visibleAbsTop,
             context.visibleAbsRight, context.visibleAbsBottom
         )
-        val mouseLeftPressed: Boolean = context.global.input
+        val mouseLeftPressed: Boolean = context.global.nav.input
             .remainingOfType<MButtonDown>()
             .any { it.button == MButton.LEFT }
         if (this.caret == null && mouseInside && mouseLeftPressed) {
@@ -423,7 +423,7 @@ class TextInput : GpuUiElement(), Focusable {
                 this.selection = caret
                     .updatedSelection(oldOffset, this.selection)
             }
-            for (e in context.global.input.remaining()) {
+            for (e in context.global.nav.input.remaining()) {
                 val oldCaretPos: Int = caret.offset
                 val oldSelection: IntRange? = this.selection
                 this.edits.clear()
@@ -567,7 +567,7 @@ class TextInput : GpuUiElement(), Focusable {
                     }
                     else -> continue
                 }
-                context.global.input.remove(e)
+                context.global.nav.input.remove(e)
                 if (edits.isNotEmpty()) {
                     this.history.add(Modification(
                         oldCaretPos, oldSelection,

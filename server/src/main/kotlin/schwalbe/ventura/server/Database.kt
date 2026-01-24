@@ -2,9 +2,9 @@
 package schwalbe.ventura.server.database
 
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
+import schwalbe.ventura.ACCOUNT_NAME_MAX_LEN
 
 
 fun initDatabase() {
@@ -46,7 +46,6 @@ object ServersTable : Table("servers") {
     override val primaryKey = PrimaryKey(id)
 }
 
-const val ACCOUNT_NAME_MAX_LEN: Int = 32
 const val ACCOUNT_SALT_MAX_LEN: Int = 16
 const val ACCOUNT_HASH_MAX_LEN: Int = 32
 

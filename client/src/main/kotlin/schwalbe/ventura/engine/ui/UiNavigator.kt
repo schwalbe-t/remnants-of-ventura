@@ -6,7 +6,7 @@ import org.joml.Vector4fc
 import schwalbe.ventura.engine.gfx.Framebuffer
 import schwalbe.ventura.engine.input.InputEventQueue
 
-class UiNavigator(
+class UiNavigator<S : UiScreen<S>>(
     val output: Framebuffer,
     val input: InputEventQueue,
     var defaultFont: Font = Font.default,
@@ -14,35 +14,30 @@ class UiNavigator(
     var defaultFontColor: Vector4fc = Vector4f(0f, 0f, 0f, 1f)
 ) {
 
-    private val screens: MutableList<UiScreen> = mutableListOf()
-    private var disposeQueue: MutableList<UiScreen> = mutableListOf()
+    private val screens: MutableList<S> = mutableListOf()
+    private var disposeQueue: MutableList<S> = mutableListOf()
 
-    val current: UiScreen
-        get() = screens.last()
+    val current: S
+        get() = this.screens.last()
+    val currentOrNull: S?
+        get() = this.screens.lastOrNull()
 
-    fun push(screen: UiScreenDef) {
-        val s = UiScreen(
-            screen, output, input,
-            screen.defaultFont ?: this.defaultFont,
-            screen.defaultFontSize ?: this.defaultFontSize,
-            screen.defaultFontColor ?: this.defaultFontColor
-        )
-        screen.builder(s)
-        this.screens.add(s)
+    fun push(screen: S) {
+        this.screens.add(screen)
     }
 
     fun pop() {
         if (this.screens.size <= 1) { return }
-        val removed: UiScreen = this.screens.removeLast()
+        val removed: S = this.screens.removeLast()
         this.disposeQueue.add(removed)
     }
 
-    fun replace(screen: UiScreenDef) {
+    fun replace(screen: S) {
         if (this.screens.isNotEmpty()) { this.pop() }
         this.push(screen)
     }
 
-    fun clear(screen: UiScreenDef) {
+    fun clear(screen: S) {
         this.screens.forEach(this.disposeQueue::add)
         this.screens.clear()
         this.push(screen)
@@ -58,7 +53,7 @@ class UiNavigator(
         if (this.screens.isNotEmpty()) {
             this.screens.last().update()
         }
-        this.disposeQueue.forEach(UiScreen::disposeTree)
+        this.disposeQueue.forEach(UiScreen<S>::disposeTree)
         this.disposeQueue.clear()
     }
 

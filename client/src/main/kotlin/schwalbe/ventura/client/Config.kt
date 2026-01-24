@@ -10,13 +10,19 @@ import kotlin.uuid.Uuid
 data class Config(
     var language: GameLanguage,
     val servers: MutableList<Server> = mutableListOf(),
-    val sessions: MutableMap<String, Uuid> = mutableMapOf()
+    val sessions: MutableMap<String, Session> = mutableMapOf()
 ) {
     @Serializable
     data class Server(
         val name: String,
         val address: String,
         val port: Int
+    )
+
+    @Serializable
+    data class Session(
+        val username: String,
+        val token: Uuid
     )
 
     companion object {

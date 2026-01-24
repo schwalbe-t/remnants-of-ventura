@@ -4,6 +4,10 @@ package schwalbe.ventura.client.screens
 import org.joml.Vector4fc
 import org.joml.Vector4f
 import schwalbe.ventura.engine.ui.*
+import schwalbe.ventura.net.GenericErrorPacket
+import schwalbe.ventura.net.PacketHandler
+import schwalbe.ventura.net.PacketType
+import schwalbe.ventura.net.TaggedErrorPacket
 
 val BASE_FONT_COLOR: Vector4fc      = Vector4f(15f, 15f, 15f, 255f).div(255f)
 val SECONDARY_FONT_COLOR: Vector4fc = Vector4f(128f, 128f, 128f, 255f).div(255f)
@@ -13,7 +17,9 @@ val INPUT_COLOR: Vector4fc = BUTTON_COLOR
 
 fun createTextInput(
     input: TextInput, placeholder: String, value: String,
-    font: Font? = null
+    font: Font? = null,
+    disp: (String) -> String = { it },
+    maxLength: Int = Int.MAX_VALUE
 ): UiElement = Stack()
     .add(BlurBackground().withRadius(5))
     .add(FlatBackground().withColor(INPUT_COLOR))
@@ -28,11 +34,36 @@ fun createTextInput(
             .withColor(SECONDARY_FONT_COLOR)
             .withText(placeholder)
         )
+        .withDisplayedText(disp)
+        .withTypedText {
+            if (input.value.size >= maxLength) { return@withTypedText }
+            input.writeText(it)
+        }
         .wrapScrolling()
         .withBarsEnabled(horiz = true, vert = false)
         .pad(1.25.vmin)
     )
     .wrapBorderRadius(0.75.vmin)
+
+fun addLabelledInput(
+    axis: Axis, name: String, placeholder: String, value: String,
+    font: Font,
+    disp: (String) -> String = { it },
+    maxLength: Int = Int.MAX_VALUE
+): TextInput {
+    val input = TextInput()
+    axis.add(3.vmin, Text()
+        .withText(name)
+        .withSize(2.vmin)
+        .pad(bottom = 0.5.vmin, left = 1.vmin)
+    )
+    axis.add(7.vmin,
+        createTextInput(
+            input, placeholder, value, font, disp, maxLength
+        ).pad(bottom = 2.vmin)
+    )
+    return input
+}
 
 fun createTextButton(
     content: String,
@@ -60,3 +91,11 @@ fun createButton(
     .add(content)
     .add(ClickArea().withHandler(handler))
     .wrapBorderRadius(0.75.vmin)
+
+fun createPacketHandler(): PacketHandler<Unit> = PacketHandler<Unit>()
+    .onPacket<GenericErrorPacket>(PacketType.DOWN_GENERIC_ERROR) { p, _ ->
+        println("[error] ${p.message}")
+    }
+    .onPacket<TaggedErrorPacket>(PacketType.DOWN_TAGGED_ERROR) { p, _ ->
+        println("[error] ${p.name}")
+    }

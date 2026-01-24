@@ -6,15 +6,16 @@ import org.bouncycastle.crypto.generators.Argon2BytesGenerator
 import org.bouncycastle.crypto.params.Argon2Parameters
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import kotlinx.datetime.*
+import schwalbe.ventura.ACCOUNT_NAME_MAX_LEN
+import schwalbe.ventura.ACCOUNT_PASSWORD_MAX_LEN
 import java.security.SecureRandom
 
 class Account {
     companion object {
-        val SESSION_CREATION_COOLDOWN = DateTimePeriod(minutes = 1)
+        val SESSION_CREATION_COOLDOWN = DateTimePeriod(seconds = 5) // TODO! revert to minutes = 1
     }
 }
 
@@ -43,6 +44,8 @@ private fun generatePasswordHash(password: String, salt: ByteArray): ByteArray {
 fun Account.Companion.create(
     username: String, password: String, playerData: ByteArray
 ): Boolean {
+    if (username.length > ACCOUNT_NAME_MAX_LEN) { return false }
+    if (password.length > ACCOUNT_PASSWORD_MAX_LEN) { return false }
     val salt: ByteArray = generateAccountSalt()
     val hash: ByteArray = generatePasswordHash(password, salt)
     val now: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.UTC)
@@ -73,6 +76,8 @@ private fun hashesEqual(a: ByteArray, b: ByteArray): Boolean {
 fun Account.Companion.hasMatchingPassword(
     username: String, password: String
 ): Boolean {
+    if (username.length > ACCOUNT_NAME_MAX_LEN) { return false }
+    if (password.length > ACCOUNT_PASSWORD_MAX_LEN) { return false }
     val (salt, reqHash) = transaction { AccountsTable
         .select(AccountsTable.salt, AccountsTable.hash)
         .where { AccountsTable.username eq username }

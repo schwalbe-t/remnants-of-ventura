@@ -28,15 +28,17 @@ private fun createLanguageOption(
     }
 ).pad(bottom = 1.5.vmin)
 
-fun languageSelectScreen(client: Client): UiScreenDef = defineScreen(
-    defaultFontColor = BASE_FONT_COLOR
-) {
-    client.onFrame = renderGridBackground(client)
+fun languageSelectScreen(client: Client): GameScreen {
+    val screen = GameScreen(
+        render = renderGridBackground(client),
+        networkState = noNetworkConnections(client),
+        navigator = client.nav
+    )
     val languageList = Axis.column()
     for (language in GameLanguage.entries) {
         languageList.add(9.5.vmin, createLanguageOption(language, client))
     }
-    it.add(layer = 0, element = Axis.column()
+    screen.add(layer = 0, element = Axis.column()
         .add(7.ph, Text()
             .withFont(googleSansSb())
             .withText(localized()[TITLE_SELECT_LANGUAGE])
@@ -53,4 +55,5 @@ fun languageSelectScreen(client: Client): UiScreenDef = defineScreen(
         ).pad(top = 1.vmin, right = 100.pw - 30.vmin))
         .pad(5.vmin)
     )
+    return screen
 }

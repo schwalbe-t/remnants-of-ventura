@@ -13,13 +13,13 @@ class ClickArea : UiElement() {
     override val children: List<UiElement> = listOf()
     
     override fun captureInput(context: UiElementContext) {
-        for (e in context.global.input.remainingOfType<MButtonUp>()) {
+        for (e in context.global.nav.input.remainingOfType<MButtonUp>()) {
             if (e.button != MButton.LEFT) { continue }
             if (!Mouse.isInsideArea(
                 context.visibleAbsLeft, context.visibleAbsTop,
                 context.visibleAbsRight, context.visibleAbsBottom
             )) { continue }
-            context.global.input.remove(e)
+            context.global.nav.input.remove(e)
             this.onClick()
         }
     }

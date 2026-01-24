@@ -4,7 +4,7 @@ plugins {
     kotlin("plugin.serialization") version "2.2.21"
 }
 
-allprojects {
+subprojects {
 
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jetbrains.kotlin.plugin.serialization")
@@ -17,10 +17,6 @@ allprojects {
             optIn.add("kotlin.uuid.ExperimentalUuidApi")
         }
     }
-
-}
-
-subprojects {
 
     repositories {
         mavenCentral()

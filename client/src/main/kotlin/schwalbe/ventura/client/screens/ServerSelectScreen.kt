@@ -6,7 +6,9 @@ import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 
 private fun createServerOption(
-    server: Config.Server, i: Int, client: Client
+    server: Config.Server, i: Int,
+    addrName: String, loggedUsername: String?,
+    client: Client
 ): UiElement = Axis.row()
     .add(80.pw, createButton(
         content = Axis.column()
@@ -16,18 +18,32 @@ private fun createServerOption(
                 .withSize(70.ph)
             )
             .add(40.ph, Text()
-                .withFont(jetbrainsMonoSb())
-                .withText("${server.address}:${server.port}")
+                .withText(listOf(
+                    Span(
+                        text = addrName,
+                        font = jetbrainsMonoSb()
+                    ),
+                    Span(
+                        text = if (loggedUsername == null) { "" }
+                            else { "    ${localized()[LABEL_LOGGED_IN_AS]} " }
+                    ),
+                    Span(
+                        text = loggedUsername ?: "",
+                        font = googleSansSb()
+                    )
+                ))
                 .withSize(70.ph)
                 .withColor(SECONDARY_FONT_COLOR)
             )
             .pad(1.5.vmin),
         handler = {
-            // TODO! connect to server (logic in 'Client')
             client.nav.push(serverConnectingScreen(
                 name = "${server.address}:${server.port}",
                 client
             ))
+            client.network.connect(
+                server.address, server.port
+            )
         }
     ))
     .add(20.pw - 5.vmin, Axis.column()
@@ -42,7 +58,7 @@ private fun createServerOption(
                 })
             }
         ))
-        .add(1.vmin, Stack())
+        .add(1.vmin, Space())
         .add(50.ph - 0.5.vmin, createTextButton(
             content = localized()[BUTTON_DELETE_SERVER],
             handler = {
@@ -65,7 +81,7 @@ private fun createServerOption(
                 client.nav.replace(serverSelectScreen(client))
             }
         ))
-        .add(1.vmin, Stack())
+        .add(1.vmin, Space())
         .add(50.ph - 0.5.vmin, createTextButton(
             content = "↓",
             handler = {
@@ -81,13 +97,19 @@ private fun createServerOption(
     )
     .pad(bottom = 1.5.vmin)
 
-fun serverSelectScreen(client: Client): UiScreenDef = defineScreen(
-    defaultFontColor = BASE_FONT_COLOR
-) {
-    client.onFrame = renderGridBackground(client)
+fun serverSelectScreen(client: Client): GameScreen {
+    val screen = GameScreen(
+        render = renderGridBackground(client),
+        networkState = noNetworkConnections(client),
+        navigator = client.nav
+    )
     val serverList = Axis.column()
     for ((i, server) in client.config.servers.withIndex()) {
-        serverList.add(9.5.vmin, createServerOption(server, i, client))
+        val addrName = "${server.address}:${server.port}"
+        val loggedUsername = client.config.sessions[addrName]?.username
+        serverList.add(9.5.vmin, createServerOption(
+            server, i, addrName, loggedUsername, client
+        ))
     }
     if (client.config.servers.isEmpty()) {
         serverList.add(5.vmin, Text()
@@ -96,7 +118,7 @@ fun serverSelectScreen(client: Client): UiScreenDef = defineScreen(
             .withColor(SECONDARY_FONT_COLOR)
         )
     }
-    it.add(layer = 0, element = Axis.column()
+    screen.add(layer = 0, element = Axis.column()
         .add(7.ph, Axis.row()
             .add(100.pw - 30.vmin, Text()
                 .withFont(googleSansSb())
@@ -126,4 +148,5 @@ fun serverSelectScreen(client: Client): UiScreenDef = defineScreen(
         ).pad(top = 1.vmin, right = 100.pw - 30.vmin))
         .pad(5.vmin)
     )
+    return screen
 }

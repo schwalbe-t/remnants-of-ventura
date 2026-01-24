@@ -44,7 +44,7 @@ class BlurBackground : GpuUiElement() {
 
     override fun render(context: UiElementContext) {
         this.prepareTarget()
-        val background: Texture = context.global.output.color ?: return
+        val background: Texture = context.global.nav.output.color ?: return
         val kernelWeights: Texture = this.kernelWeights.color ?: return
         val shader: Shader<FullBuffer, BlurBg> = blurBgShader()
         shader[BlurBg.background] = background

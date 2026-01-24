@@ -13,7 +13,7 @@ class PacketHandler<C> {
 
     inline fun<reified T> onPacket(
         packetType: PacketType, crossinline handler: (T, C) -> Unit
-    ) {
+    ): PacketHandler<C> {
         val err: (C, String) -> Unit = this.onDecodeError
         this.handlers[packetType] = handler@{ payload: ByteArray, context: C ->
             val value: T
@@ -31,6 +31,7 @@ class PacketHandler<C> {
                 e.printStackTrace()
             }
         }
+        return this
     }
 
     fun handlePacket(packet: Packet, context: C) {

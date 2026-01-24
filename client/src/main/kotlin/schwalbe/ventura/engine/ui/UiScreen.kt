@@ -1,41 +1,15 @@
 
 package schwalbe.ventura.engine.ui
 
-import schwalbe.ventura.engine.gfx.Framebuffer
 import schwalbe.ventura.engine.gfx.DepthTesting
 import schwalbe.ventura.engine.gfx.Shader
 import schwalbe.ventura.engine.gfx.Texture
-import schwalbe.ventura.engine.input.InputEventQueue
 import org.joml.*
 
-data class UiScreenDef(
-    val defaultFont: Font?,
-    val defaultFontSize: UiSize?,
-    val defaultFontColor: Vector4fc?,
-    val builder: (UiScreen) -> Unit
-)
-
-fun defineScreen(
-    defaultFont: Font? = null,
-    defaultFontSize: UiSize? = null,
-    defaultFontColor: Vector4fc? = null,
-    creator: (UiScreen) -> Unit
-): UiScreenDef = UiScreenDef(
-    defaultFont, defaultFontSize, defaultFontColor,
-    creator
-)
-
-class UiScreen(
-    val definedBy: UiScreenDef,
-    val output: Framebuffer,
-    val input: InputEventQueue,
-    val defaultFont: Font = Font.default,
-    val defaultFontSize: UiSize = 16.px,
-    val defaultFontColor: Vector4fc = Vector4f(0f, 0f, 0f, 1f)
-) {
+open class UiScreen<S : UiScreen<S>>(val nav: UiNavigator<S>) {
     
     private data class BaseElement(val element: UiElement, val layer: Int)
-        
+
     var currentlyInFocus: Focusable? = null
         set(value) {
             if (field !== value) {
@@ -58,8 +32,8 @@ class UiScreen(
     fun captureInput() {
         val childContext = UiElementContext(
             this, null,
-            0, 0, this.output.width, this.output.height,
-            0, 0, this.output.width, this.output.height
+            0, 0, this.nav.output.width, this.nav.output.height,
+            0, 0, this.nav.output.width, this.nav.output.height
         )
         this.elements.forEach { it.element.captureInput(childContext) }
     }
@@ -68,17 +42,18 @@ class UiScreen(
     private var lastOutputHeight: Int = 0
     
     fun update() {
-        val outputSizeChanged: Boolean = this.output.width != this.lastOutputWidth
-            || this.output.height != this.lastOutputHeight
+        val outputSizeChanged: Boolean =
+            this.nav.output.width != this.lastOutputWidth ||
+            this.nav.output.height != this.lastOutputHeight
         if (outputSizeChanged) {
-            this.lastOutputWidth = this.output.width
-            this.lastOutputHeight = this.output.height
+            this.lastOutputWidth = this.nav.output.width
+            this.lastOutputHeight = this.nav.output.height
             this.invalidate()
         }
         val childContext = UiElementContext(
             this, null,
-            0, 0, this.output.width, this.output.height,
-            0, 0, this.output.width, this.output.height
+            0, 0, this.nav.output.width, this.nav.output.height,
+            0, 0, this.nav.output.width, this.nav.output.height
         )
         for (e in this.elements) {
             e.element.update(childContext)
@@ -89,7 +64,7 @@ class UiScreen(
     private fun render() {
         val shader: Shader<PxPos, Blit> = blitShader()
         shader[PxPos.bufferSizePx] = Vector2f(
-            this.output.width.toFloat(), this.output.height.toFloat()
+            this.nav.output.width.toFloat(), this.nav.output.height.toFloat()
         )
         shader[PxPos.destTopLeftPx] = Vector2f(0f, 0f)
         for (e in this.elements) {
@@ -99,7 +74,7 @@ class UiScreen(
             )
             shader[Blit.texture] = texture
             quad().render(
-                shader, this.output, depthTesting = DepthTesting.DISABLED
+                shader, this.nav.output, depthTesting = DepthTesting.DISABLED
             )
         }
     }

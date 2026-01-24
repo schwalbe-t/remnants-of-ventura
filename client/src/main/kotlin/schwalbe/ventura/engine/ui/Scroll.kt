@@ -202,10 +202,10 @@ class Scroll : GpuUiElement() {
         
     override fun captureInput(context: UiElementContext) {
         this.scrollOffsetX += this.horizBar?.updateThumb(
-            context.absPxX, context.absPxY, 1, 0, this, context.global.input
+            context.absPxX, context.absPxY, 1, 0, this, context.global.nav.input
         ) ?: 0f
         this.scrollOffsetY += this.vertBar?.updateThumb(
-            context.absPxX, context.absPxY, 0, 1, this, context.global.input
+            context.absPxX, context.absPxY, 0, 1, this, context.global.nav.input
         ) ?: 0f
         this.updateChildren(context, UiElement::captureInput)
         val inside: UiElement = this.inside ?: return
@@ -217,15 +217,15 @@ class Scroll : GpuUiElement() {
             context.closestVisibleY(rawAbsBottom)
         )
         if (isInside) {
-            val lineHeight: Float = context.global.defaultFontSize(context)
-            for (e in context.global.input.remainingOfType<MouseScroll>()) {
+            val lineHeight: Float = context.global.nav.defaultFontSize(context)
+            for (e in context.global.nav.input.remainingOfType<MouseScroll>()) {
                 if (this.shouldShowHorizBar) {
                     this.scrollOffsetX -= e.offset.x() * lineHeight
                 }
                 if (this.shouldShowVertBar) {
                     this.scrollOffsetY -= e.offset.y() * lineHeight
                 }
-                context.global.input.remove(e)
+                context.global.nav.input.remove(e)
                 this.invalidate()
             }
         }

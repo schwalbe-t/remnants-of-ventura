@@ -201,12 +201,12 @@ class Text : UiElement(), Colored {
     
     override fun updateLayout(context: UiElementContext) {
         val fontSize: UiSize = this.fontSize
-            ?: context.global.defaultFontSize
+            ?: context.global.nav.defaultFontSize
         val fontSizePx: Float = fontSize(context)
         val defaultFont: Font = this.font
-            ?: context.global.defaultFont
+            ?: context.global.nav.defaultFont
         val defaultColor: Vector4fc = this.color
-            ?: context.global.defaultFontColor
+            ?: context.global.nav.defaultFontColor
         val fm: FontMetrics = Text.baseGraphics.getFontMetrics(
             defaultFont.baseFont.deriveFont(fontSizePx)
         )

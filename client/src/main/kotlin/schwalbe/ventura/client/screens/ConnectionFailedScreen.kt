@@ -5,21 +5,12 @@ import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 
-fun serverConnectingScreen(
-    name: String, client: Client
+fun serverConnectionFailedScreen(
+    reason: String, client: Client
 ): GameScreen {
     val screen = GameScreen(
         render = renderGridBackground(client),
-        networkState = establishNetworkConnection(
-            client,
-            onSuccess = {
-                client.nav.replace(serverAuthenticationScreen(name, client))
-            },
-            onFail = { reason ->
-                client.nav.replace(serverConnectionFailedScreen(reason, client))
-                client.network.clearError()
-            }
-        ),
+        networkState = noNetworkConnections(client),
         navigator = client.nav
     )
     val contSize: UiSize = 20.vmin
@@ -27,12 +18,12 @@ fun serverConnectingScreen(
         .add(50.ph - (contSize / 2), Space())
         .add(contSize, Axis.column()
             .add(5.vmin, Text()
-                .withText(localized()[TITLE_CONNECTING_TO_SERVER])
+                .withText(localized()[TITLE_CONNECTION_TO_SERVER_FAILED])
                 .withSize(70.ph)
                 .withAlignment(Text.Alignment.CENTER)
             )
             .add(3.vmin, Text()
-                .withText(name)
+                .withText(reason)
                 .withFont(jetbrainsMonoSb())
                 .withColor(SECONDARY_FONT_COLOR)
                 .withSize(70.ph)
@@ -41,7 +32,7 @@ fun serverConnectingScreen(
             .add(7.vmin, Space())
             .add(5.vmin,
                 createTextButton(
-                    content = localized()[BUTTON_CANCEL_CONNECTION],
+                    content = localized()[BUTTON_GO_BACK],
                     handler = {
                         client.nav.pop()
                     }
