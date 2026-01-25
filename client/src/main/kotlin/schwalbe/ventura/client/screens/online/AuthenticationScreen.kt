@@ -2,7 +2,9 @@
 package schwalbe.ventura.client.screens.online
 
 import schwalbe.ventura.ACCOUNT_NAME_MAX_LEN
+import schwalbe.ventura.ACCOUNT_NAME_MIN_LEN
 import schwalbe.ventura.ACCOUNT_PASSWORD_MAX_LEN
+import schwalbe.ventura.ACCOUNT_PASSWORD_MIN_LEN
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
@@ -137,6 +139,14 @@ fun serverAuthenticationScreen(
             handler = signUp@{
                 username = signUpUsername.valueString.trim()
                 password = signUpPassword.valueString
+                if (username.length < ACCOUNT_NAME_MIN_LEN) {
+                    statusText.withText(l[ERROR_USERNAME_TOO_SHORT])
+                    return@signUp
+                }
+                if (password.length < ACCOUNT_PASSWORD_MIN_LEN) {
+                    statusText.withText(l[ERROR_PASSWORD_TOO_SHORT])
+                    return@signUp
+                }
                 if (signUpPasswordRepeat.valueString != password) {
                     statusText.withText(l[ERROR_PASSWORDS_DONT_MATCH])
                     return@signUp

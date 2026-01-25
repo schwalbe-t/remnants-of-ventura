@@ -47,6 +47,8 @@
         "ERROR_SESSION_CREATION_COOLDOWN": "Please wait a moment before attempting to log in again.",
         "ERROR_INVALID_SESSION_CREDS": "Failed to log in automatically",
         "ERROR_ACCOUNT_ALREADY_ONLINE": "The account is already online on another device",
-        "ERROR_PASSWORDS_DONT_MATCH": "Passwords don't match"
+        "ERROR_PASSWORDS_DONT_MATCH": "Passwords don't match",
+        "ERROR_USERNAME_TOO_SHORT": "Username too short",
+        "ERROR_PASSWORD_TOO_SHORT": "Password too short"
     }
 }
