@@ -8,7 +8,7 @@ import schwalbe.ventura.client.screens.*
 
 fun serverConnectionFailedScreen(
     reason: String, client: Client
-): GameScreen {
+): () -> GameScreen = {
     val screen = GameScreen(
         render = renderGridBackground(client),
         networkState = noNetworkConnections(client),
@@ -43,5 +43,5 @@ fun serverConnectionFailedScreen(
         .add(50.ph - (contSize / 2), Space())
         .pad(5.vmin)
     )
-    return screen
+    screen
 }

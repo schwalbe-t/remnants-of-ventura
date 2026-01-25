@@ -8,8 +8,10 @@ import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.online.serverAuthenticationScreen
 
 fun serverConnectingScreen(
-    name: String, client: Client
-): GameScreen {
+    address: String, port: Int, client: Client
+): () -> GameScreen = {
+    client.network.connect(address, port)
+    val name = "$address:$port"
     val screen = GameScreen(
         render = renderGridBackground(client),
         networkState = establishNetworkConnection(
@@ -53,5 +55,5 @@ fun serverConnectingScreen(
         .add(50.ph - (contSize / 2), Space())
         .pad(5.vmin)
     )
-    return screen
+    screen
 }

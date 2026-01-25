@@ -31,7 +31,7 @@ private fun createLanguageOption(
     }
 ).pad(bottom = 1.5.vmin)
 
-fun languageSelectScreen(client: Client): GameScreen {
+fun languageSelectScreen(client: Client): () -> GameScreen = {
     val screen = GameScreen(
         render = renderGridBackground(client),
         networkState = noNetworkConnections(client),
@@ -58,5 +58,5 @@ fun languageSelectScreen(client: Client): GameScreen {
         ).pad(top = 1.vmin, right = 100.pw - 30.vmin))
         .pad(5.vmin)
     )
-    return screen
+    screen
 }

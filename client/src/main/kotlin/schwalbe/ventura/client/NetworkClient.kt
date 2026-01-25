@@ -56,6 +56,8 @@ class NetworkClient {
     object Idle : State
     object Connecting : State
     class Connected(
+        val address: String,
+        val port: Int,
         val session: DefaultClientWebSocketSession,
         val inPackets: PacketInStream,
         val outPackets: PacketOutStream
@@ -104,7 +106,7 @@ fun NetworkClient.connect(targetAddress: String, targetPort: Int) {
                 val inPackets = PacketInStream(MAX_PACKET_PAYLOAD_SIZE)
                 val outPackets = PacketOutStream(this, socketScope)
                 nc.state = NetworkClient.Connected(
-                    this, inPackets, outPackets
+                    targetAddress, targetPort, this, inPackets, outPackets
                 )
 
                 for(frame in incoming) {
@@ -141,4 +143,9 @@ fun NetworkClient.handlePackets(handler: PacketHandler<Unit>?) {
     val s = this.state
     if (s !is NetworkClient.Connected) { return }
     handler.handleAll(s.inPackets, Unit)
+}
+
+fun NetworkClient.dispose() {
+    this.disconnect()
+    this.http.close()
 }

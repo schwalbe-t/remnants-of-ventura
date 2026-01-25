@@ -222,23 +222,14 @@ private fun Server.onSessionLoginPacket(
     }
     val playerData: PlayerData = this.decodePlayerData(data.username)
         ?: this.createPlayerData()
-    var world: World? = null
-    while (playerData.worlds.size > 0) {
-        val found: World? = this.worlds.get(playerData.worlds.last().worldId)
-        if (found != null) {
-            world = found
-            break
-        }
-        playerData.worlds.removeLast()
-    }
-    if (world == null) {
-        world = this.worlds.baseWorld
-        playerData.worlds.add(world.createPlayerEntry())
-    }
     val player = Player(data.username, playerData, conn)
-    world.transfer(player)
     this.authorized[conn.id] = player
     conn.outgoing.send(Packet.serialize(
         PacketType.DOWN_LOGIN_SESSION_SUCCESS, Unit
     ))
+    val world: World = player.getCurrentWorld(this.worlds)
+    conn.outgoing.send(Packet.serialize(
+        PacketType.DOWN_BEGIN_WORLD_CHANGE, Unit
+    ))
+    world.transfer(player)
 }

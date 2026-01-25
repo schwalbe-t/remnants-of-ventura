@@ -8,7 +8,10 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.datetime.*
+import org.joml.Vector3f
 import schwalbe.ventura.bigton.runtime.loadBigtonRuntime
+import schwalbe.ventura.net.*
+import schwalbe.ventura.worlds.*
 import kotlin.system.exitProcess
 
 const val DEFAULT_KEYSTORE_PATH: String = "dev-keystore.p12"
@@ -46,7 +49,18 @@ fun main() {
     loadBigtonRuntime("bigtonruntime", "bigtonruntime")
     initDatabase()
 
-    val baseWorld = schwalbe.ventura.worlds.TestWorld()
+    val baseWorld = WorldData(
+        ConstWorldInfo(
+            rendererConfig = RendererConfig(
+                groundToSun = SerVector3.fromVector3f(
+                    Vector3f(1.134f, 1f, -0.85f).normalize()
+                ),
+                baseColorFactor = SerVector3(1f, 1f, 1f),
+                shadowColorFactor = SerVector3(0.7f, 0.85f, 1.1f)
+            )
+        ),
+        mapOf()
+    )
 
     val playerWriter = PlayerWriter()
     val worlds = WorldRegistry(playerWriter, baseWorld)

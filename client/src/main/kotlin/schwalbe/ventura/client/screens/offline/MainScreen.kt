@@ -6,7 +6,7 @@ import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.screens.*
 
-fun mainScreen(client: Client): GameScreen {
+fun mainScreen(client: Client): () -> GameScreen = {
     val screen = GameScreen(
         render = renderGridBackground(client),
         networkState = noNetworkConnections(client),
@@ -40,5 +40,5 @@ fun mainScreen(client: Client): GameScreen {
         )
         .add(50.ph - (contSize / 2), Space())
     )
-    return screen
+    screen
 }

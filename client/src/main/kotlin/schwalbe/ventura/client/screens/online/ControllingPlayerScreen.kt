@@ -5,8 +5,9 @@ import schwalbe.ventura.client.*
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.engine.input.*
+import schwalbe.ventura.net.PacketType.*
 
-fun controllingPlayerScreen(client: Client): GameScreen {
+fun controllingPlayerScreen(client: Client): () -> GameScreen = {
     val screen = GameScreen(
         render = {
             if (Key.ESCAPE.wasPressed) {
@@ -17,9 +18,15 @@ fun controllingPlayerScreen(client: Client): GameScreen {
             client.nav.replace(serverConnectionFailedScreen(reason, client))
             client.network.clearError()
         }),
-        packets = createPacketHandler(),
+        packets = createPacketHandler()
+            .onPacket(DOWN_BEGIN_WORLD_CHANGE) { _: Unit, _ ->
+                println("Started world change")
+            }
+            .onPacket(DOWN_COMPLETE_WORLD_CHANGE) { _: Unit, _ ->
+                println("Complete world change")
+            },
         navigator = client.nav
     )
-    return screen
+    screen
 }
 

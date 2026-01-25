@@ -2,13 +2,13 @@
 package schwalbe.ventura.worlds
 
 import kotlinx.serialization.Serializable
-import org.joml.Vector3fc
+import schwalbe.ventura.net.SerVector3
 
 @Serializable
 class RendererConfig(
-    val groundToSun: Vector3fc,
-    val baseColorFactor: Vector3fc,
-    val shadowColorFactor: Vector3fc
+    val groundToSun: SerVector3,
+    val baseColorFactor: SerVector3,
+    val shadowColorFactor: SerVector3
 )
 
 @Serializable

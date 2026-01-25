@@ -2,7 +2,7 @@
 package schwalbe.ventura.worlds
 
 import kotlinx.serialization.Serializable
-import org.joml.Vector3fc
+import schwalbe.ventura.net.SerVector3
 
 @Serializable
 enum class ObjectType(
@@ -21,8 +21,8 @@ sealed interface ObjectParam {
 @Serializable
 data class ObjectInstance(
     val type: ObjectType,
-    val position: Vector3fc,
-    val rotation: Vector3fc,
-    val scale: Vector3fc,
+    val position: SerVector3,
+    val rotation: SerVector3,
+    val scale: SerVector3,
     val param: ObjectParam = ObjectParam.None
 )

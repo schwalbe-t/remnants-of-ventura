@@ -86,4 +86,5 @@ fun Client.gameloop() {
 fun Client.dispose() {
     this.window.dispose()
     this.resLoader.submit(ResourceLoader.stop)
+    this.network.dispose()
 }

@@ -39,7 +39,7 @@ class WorldRegistry(
         }
     }
 
-    fun get(worldId: Long): World? {
+    operator fun get(worldId: Long): World? {
         synchronized(this) {
             return this.worlds.getOrDefault(worldId, null)
         }

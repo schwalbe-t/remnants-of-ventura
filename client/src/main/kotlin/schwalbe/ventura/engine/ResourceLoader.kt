@@ -74,11 +74,11 @@ class ResourceLoader {
                     this.hasQueued.await()
                 }
                 queued = this.queued
-                this.queued = mutableListOf<Resource<*>>()
+                this.queued = mutableListOf()
             }
             try {
                 queued.forEach(Resource<*>::loadRaw)
-            } catch (s: StopException) {
+            } catch (_: StopException) {
                 break
             }
             this.lock.withLock {

@@ -13,13 +13,13 @@ import schwalbe.ventura.net.PacketType.*
 
 fun serverAuthenticationScreen(
     name: String, client: Client
-): GameScreen {
+): () -> GameScreen = {
     val l = localized()
     val statusText = Text()
     var username: String = ""
     var password: String = ""
     val packets = createPacketHandler()
-        .onPacket<TaggedErrorPacket>(DOWN_TAGGED_ERROR) { p, _ ->
+        .onPacket(DOWN_TAGGED_ERROR) { p: TaggedErrorPacket, _ ->
             when (p) {
                 TaggedErrorPacket.INVALID_ACCOUNT_PARAMS -> {
                     statusText.withText(l[ERROR_INVALID_ACCOUNT_PARAMS])
@@ -44,14 +44,14 @@ fun serverAuthenticationScreen(
             client.config.sessions.remove(name)
             client.config.write()
         }
-        .onPacket<Unit>(DOWN_CREATE_ACCOUNT_SUCCESS) { _, _ ->
+        .onPacket(DOWN_CREATE_ACCOUNT_SUCCESS) { _: Unit, _ ->
             println("Created account with username '$username'")
             println("Logging in as user '$username'")
             client.network.outPackets?.send(Packet.serialize(
                 UP_CREATE_SESSION, AccountCredPacket(username, password)
             ))
         }
-        .onPacket<SessionTokenPacket>(DOWN_CREATE_SESSION_SUCCESS) { p, _ ->
+        .onPacket(DOWN_CREATE_SESSION_SUCCESS) { p: SessionTokenPacket, _ ->
             println("Created session for user '$username'")
             client.config.sessions[name] = Config.Session(
                 username, token = p.token
@@ -61,7 +61,7 @@ fun serverAuthenticationScreen(
                 UP_LOGIN_SESSION, SessionCredPacket(username, p.token)
             ))
         }
-        .onPacket<Unit>(DOWN_LOGIN_SESSION_SUCCESS) { _, _ ->
+        .onPacket(DOWN_LOGIN_SESSION_SUCCESS) { _: Unit, _ ->
             println("Logged in as user '$username'")
             client.nav.replace(controllingPlayerScreen(client))
         }
@@ -169,5 +169,5 @@ fun serverAuthenticationScreen(
         ).pad(top = 1.vmin, right = 100.pw - 30.vmin))
         .pad(5.vmin)
     )
-    return screen
+    screen
 }

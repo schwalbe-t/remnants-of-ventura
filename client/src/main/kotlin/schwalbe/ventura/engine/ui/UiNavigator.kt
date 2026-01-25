@@ -14,45 +14,48 @@ class UiNavigator<S : UiScreen<S>>(
     var defaultFontColor: Vector4fc = Vector4f(0f, 0f, 0f, 1f)
 ) {
 
-    private val screens: MutableList<S> = mutableListOf()
+    private val screens: MutableList<() -> S> = mutableListOf()
     private var disposeQueue: MutableList<S> = mutableListOf()
 
-    val current: S
-        get() = this.screens.last()
-    val currentOrNull: S?
-        get() = this.screens.lastOrNull()
+    var currentOrNull: S? = null
+        private set
 
-    fun push(screen: S) {
+    private fun disposeCurrent() {
+        val current: S = this.currentOrNull ?: return
+        this.disposeQueue.add(current)
+        this.currentOrNull = null
+    }
+
+    fun push(screen: () -> S) {
+        this.disposeCurrent()
         this.screens.add(screen)
+        this.currentOrNull = screen()
     }
 
     fun pop() {
-        if (this.screens.size <= 1) { return }
-        val removed: S = this.screens.removeLast()
-        this.disposeQueue.add(removed)
+        if (this.screens.size < 2) { return }
+        this.disposeCurrent()
+        this.screens.removeLast()
+        this.currentOrNull = this.screens.last().invoke()
     }
 
-    fun replace(screen: S) {
+    fun replace(screen: () -> S) {
         if (this.screens.isNotEmpty()) { this.pop() }
         this.push(screen)
     }
 
-    fun clear(screen: S) {
-        this.screens.forEach(this.disposeQueue::add)
+    fun clear(screen: () -> S) {
+        this.disposeCurrent()
         this.screens.clear()
         this.push(screen)
     }
 
     fun captureInput() {
-        if (this.screens.isNotEmpty()) {
-            this.screens.last().captureInput()
-        }
+        this.currentOrNull?.captureInput()
     }
 
     fun update() {
-        if (this.screens.isNotEmpty()) {
-            this.screens.last().update()
-        }
+        this.currentOrNull?.update()
         this.disposeQueue.forEach(UiScreen<S>::disposeTree)
         this.disposeQueue.clear()
     }

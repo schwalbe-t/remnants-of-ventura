@@ -18,12 +18,13 @@ enum class PacketType {
     UP_LOGIN_SESSION,               // SessionCredPacket
     DOWN_LOGIN_SESSION_SUCCESS,     // Unit
 
-    DOWN_CHANGED_WORLD,             // Unit
+    DOWN_BEGIN_WORLD_CHANGE,
+    DOWN_COMPLETE_WORLD_CHANGE,     // Unit
     UP_REQUEST_WORLD_INFO,          // Unit
     DOWN_CONST_WORLD_INFO,          // ConstWorldInfo
     UP_REQUEST_CHUNK_CONTENTS,      // RequestedChunksPacket
     DOWN_CHUNK_CONTENTS,            // ChunkContentsPacket
-    UP_REQUEST_WORLD_CHANGE,        // WorldChangePacket
+    UP_REQUEST_WORLD_LEAVE          // Unit
 }
 
 @Serializable
@@ -41,7 +42,10 @@ enum class TaggedErrorPacket {
     // invalid username/token
     INVALID_SESSION_CREDS,
     // account already online
-    ACCOUNT_ALREADY_ONLINE
+    ACCOUNT_ALREADY_ONLINE,
+
+    // chunk data request asked for too many chunks
+    TOO_MANY_CHUNKS_REQUESTED
 }
 
 
