@@ -2,6 +2,7 @@
 package schwalbe.ventura.client.screens.online
 
 import schwalbe.ventura.client.*
+import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectingScreen
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
@@ -43,19 +44,18 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
     )
     val areaSize: UiSize = (3 * 7.5 + 2).vmin
     val options = Axis.column()
-    addOption(options, "Back To Game", action = {
+    addOption(options, localized()[BUTTON_BACK_TO_GAME], action = {
         client.nav.pop()
     })
-    addOption(options, "Log Out", action = {
+    addOption(options, localized()[BUTTON_LOG_OUT], action = {
         val s: NetworkClient.State = client.network.state
         if (s !is NetworkClient.Connected) { return@addOption }
-        client.network.disconnect()
-        client.config.sessions.remove("${s.address}:${s.port}")
-        client.config.write()
         client.nav.pop()
         client.nav.replace(serverConnectingScreen(s.address, s.port, client))
+        client.config.sessions.remove("${s.address}:${s.port}")
+        client.config.write()
     })
-    addOption(options, "Disconnect", action = {
+    addOption(options, localized()[BUTTON_DISCONNECT], action = {
         client.nav.pop()
         client.nav.pop()
     })

@@ -92,9 +92,13 @@ const val MAX_PACKET_PAYLOAD_SIZE: Int = 1024 * 1024 // 1 Mib
 
 fun NetworkClient.connect(targetAddress: String, targetPort: Int) {
     val nc: NetworkClient = this
+    val oldState = nc.state
     nc.state = NetworkClient.Connecting
     this.socketScope.launch {
         try {
+            if (oldState is NetworkClient.Connected) {
+                oldState.session.close()
+            }
             nc.http.webSocket(request = {
                 url {
                     protocol = URLProtocol.WSS
@@ -105,9 +109,10 @@ fun NetworkClient.connect(targetAddress: String, targetPort: Int) {
             }) {
                 val inPackets = PacketInStream(MAX_PACKET_PAYLOAD_SIZE)
                 val outPackets = PacketOutStream(this, socketScope)
-                nc.state = NetworkClient.Connected(
+                val connection = NetworkClient.Connected(
                     targetAddress, targetPort, this, inPackets, outPackets
                 )
+                nc.state = connection
 
                 for(frame in incoming) {
                     inPackets.handleBinaryFrame(frame)
@@ -116,7 +121,11 @@ fun NetworkClient.connect(targetAddress: String, targetPort: Int) {
                     }
                 }
 
-                nc.state = NetworkClient.Idle
+                synchronized(nc) {
+                    if (nc.state == connection) {
+                        nc.state = NetworkClient.Idle
+                    }
+                }
             }
         } catch (e: Exception) {
             nc.state = NetworkClient.ExceptionError(e)

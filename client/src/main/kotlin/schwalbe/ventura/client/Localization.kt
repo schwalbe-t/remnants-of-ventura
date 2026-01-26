@@ -66,7 +66,10 @@ enum class LocalKeys {
     ERROR_ACCOUNT_ALREADY_ONLINE,
     ERROR_PASSWORDS_DONT_MATCH,
     ERROR_USERNAME_TOO_SHORT,
-    ERROR_PASSWORD_TOO_SHORT
+    ERROR_PASSWORD_TOO_SHORT,
+
+    BUTTON_BACK_TO_GAME,
+    BUTTON_LOG_OUT
 }
 
 val localized: Resource<Localizations<GameLanguage, LocalKeys>>
