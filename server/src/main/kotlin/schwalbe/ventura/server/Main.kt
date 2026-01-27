@@ -50,15 +50,7 @@ fun main() {
     initDatabase()
 
     val baseWorld = WorldData(
-        ConstWorldInfo(
-            rendererConfig = RendererConfig(
-                groundToSun = SerVector3.fromVector3f(
-                    Vector3f(1.134f, 1f, -0.85f).normalize()
-                ),
-                baseColorFactor = SerVector3(1f, 1f, 1f),
-                shadowColorFactor = SerVector3(0.7f, 0.85f, 1.1f)
-            )
-        ),
+        ConstWorldInfo(rendererConfig = RendererConfig.default),
         mapOf()
     )
 

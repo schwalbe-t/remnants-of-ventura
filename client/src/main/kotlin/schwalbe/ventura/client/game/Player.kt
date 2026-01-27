@@ -43,11 +43,8 @@ class Player {
         const val MODEL_SCALE: Float = 1/5.5f
         val modelNoRotationDir: Vector3fc = Vector3f(0f, 0f, +1f)
 
-        val cameraEyeOffset: Vector3fc = Vector3f(0f, +3f, +2f)
-        val cameraLookAtOffset: Vector3fc = Vector3f(0f, +1f, 0f)
-
         const val WALK_SPEED: Float = 3f
-        const val ROTATION_SPEED: Float = 2f * PI.toFloat() // radians per second
+        const val ROTATION_SPEED: Float = 2f * PI.toFloat() * 1.5f // radians per second
     }
 
     private var wasMoving: Boolean = false
@@ -80,9 +77,6 @@ class Player {
             this.anim.transitionTo(PlayerAnim.idle, 0.25f)
             this.wasMoving = false
         }
-        val camera = client.renderer.camera
-        camera.position.set(this.position).add(Player.cameraEyeOffset)
-        camera.lookAt.set(this.position).add(Player.cameraLookAtOffset)
         this.anim.addTimePassed(client.deltaTime)
     }
 
@@ -91,10 +85,13 @@ class Player {
             .translate(this.position)
             .rotateY(this.rotation)
             .scale(Player.MODEL_SCALE)
-        client.renderer.render(
-            playerModel(),
-            geometryShader(), GeometryVert.renderer, GeometryFrag.renderer,
-            this.anim, listOf(transf)
+        val instances = listOf(transf)
+        client.renderer.renderOutline(
+            playerModel(), 0.075f, this.anim, instances,
+            renderedMeshes = listOf("body", "hair")
+        )
+        client.renderer.renderGeometry(
+            playerModel(), this.anim, instances
         )
     }
 

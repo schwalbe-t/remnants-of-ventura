@@ -3,13 +3,27 @@ package schwalbe.ventura.worlds
 
 import kotlinx.serialization.Serializable
 import schwalbe.ventura.net.SerVector3
+import schwalbe.ventura.net.fromVector3f
+import org.joml.Vector3f
 
 @Serializable
 class RendererConfig(
     val groundToSun: SerVector3,
     val baseColorFactor: SerVector3,
-    val shadowColorFactor: SerVector3
-)
+    val shadowColorFactor: SerVector3,
+    val outlineColorFactor: SerVector3
+) {
+    companion object {
+        val default = RendererConfig(
+            groundToSun = SerVector3.fromVector3f(
+                Vector3f(1.134f, 1f, 0f).normalize()
+            ),
+            baseColorFactor = SerVector3(1f, 1f, 1f),
+            shadowColorFactor = SerVector3(0.7f, 0.85f, 1.1f),
+            outlineColorFactor = SerVector3(0.55f, 0.65f, 0.75f)
+        )
+    }
+}
 
 @Serializable
 data class ConstWorldInfo(

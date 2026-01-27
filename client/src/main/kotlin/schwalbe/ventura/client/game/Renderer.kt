@@ -8,6 +8,8 @@ import schwalbe.ventura.client.computeViewProj
 import schwalbe.ventura.engine.Resource
 import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.engine.gfx.*
+import schwalbe.ventura.net.toVector3f
+import schwalbe.ventura.worlds.RendererConfig
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -31,6 +33,10 @@ class RendererFrag<S : FragShaderDef<S>> : FragShaderDef<S> {
     override val path = "shaders/common/renderer.frag.glsl"
 
     val texture = sampler2D("uTexture")
+    val baseFactor = vec3("uBaseFactor")
+    val shadowFactor = vec3("uShadowFactor")
+    val outlineFactor = vec3("uOutlineFactor")
+    val groundToSun = vec3("uGroundToSun")
 }
 
 
@@ -47,7 +53,24 @@ object GeometryFrag : FragShaderDef<GeometryFrag> {
 }
 
 val geometryShader: Resource<Shader<GeometryVert, GeometryFrag>>
-    = Shader.loadGlsl(GeometryVert, GeometryFrag)
+        = Shader.loadGlsl(GeometryVert, GeometryFrag)
+
+
+object OutlineVert : VertShaderDef<OutlineVert> {
+    override val path: String = "shaders/outline.vert.glsl"
+
+    val renderer = RendererVert<OutlineVert>()
+    val outlineThickness = float("uOutlineThickness")
+}
+
+object OutlineFrag : FragShaderDef<OutlineFrag> {
+    override val path: String = "shaders/outline.frag.glsl"
+
+    val renderer = RendererFrag<OutlineFrag>()
+}
+
+val outlineShader: Resource<Shader<OutlineVert, OutlineFrag>>
+        = Shader.loadGlsl(OutlineVert, OutlineFrag)
 
 
 class Renderer(val dest: ConstFramebuffer) {
@@ -69,13 +92,15 @@ class Renderer(val dest: ConstFramebuffer) {
         )
 
         fun submitResources(loader: ResourceLoader) = loader.submitAll(
-            geometryShader
+            geometryShader, outlineShader
         )
     }
 
 
     val camera = Camera()
     val sun = Camera()
+
+    var config: RendererConfig = RendererConfig.default
 
     private var viewProj: Matrix4fc = Matrix4f()
 
@@ -91,6 +116,40 @@ class Renderer(val dest: ConstFramebuffer) {
         this.viewProj = this.camera.computeViewProj(this.dest)
     }
 
+    fun <A : Animations<A>> renderGeometry(
+        model: Model<A>,
+        animState: AnimState<A>? = null,
+        instances: Iterable<Matrix4fc> = listOf(Matrix4f()),
+        faceCulling: FaceCulling = FaceCulling.DISABLED,
+        depthTesting: DepthTesting = DepthTesting.ENABLED,
+        renderedMeshes: Collection<String>? = null
+    ) {
+        this.render(
+            model,
+            geometryShader(), GeometryVert.renderer, GeometryFrag.renderer,
+            animState, instances, faceCulling, depthTesting, renderedMeshes
+        )
+    }
+
+    fun <A : Animations<A>> renderOutline(
+        model: Model<A>,
+        outlineThickness: Float = 0.1f,
+        animState: AnimState<A>? = null,
+        instances: Iterable<Matrix4fc> = listOf(Matrix4f()),
+        depthTesting: DepthTesting = DepthTesting.ENABLED,
+        renderedMeshes: Collection<String>? = null
+    ) {
+        val shader = outlineShader()
+        shader[OutlineVert.outlineThickness] = outlineThickness
+        this.render(
+            model,
+            shader, OutlineVert.renderer, OutlineFrag.renderer,
+            animState, instances,
+            FaceCulling.FRONT,
+            depthTesting, renderedMeshes
+        )
+    }
+
     fun <V : VertShaderDef<V>, F : FragShaderDef<F>, A : Animations<A>> render(
         model: Model<A>,
         shader: Shader<V, F>,
@@ -102,7 +161,12 @@ class Renderer(val dest: ConstFramebuffer) {
         depthTesting: DepthTesting = DepthTesting.ENABLED,
         renderedMeshes: Collection<String>? = null
     ) {
+        val cfg = this.config
         shader[vertShader.viewProjection] = this.viewProj
+        shader[fragShader.baseFactor] = cfg.baseColorFactor.toVector3f()
+        shader[fragShader.shadowFactor] = cfg.shadowColorFactor.toVector3f()
+        shader[fragShader.outlineFactor] = cfg.outlineColorFactor.toVector3f()
+        shader[fragShader.groundToSun] = cfg.groundToSun.toVector3f()
         var remaining: MutableList<Matrix4fc> = instances.toMutableList()
         while (remaining.isNotEmpty()) {
             val batchSize: Int
