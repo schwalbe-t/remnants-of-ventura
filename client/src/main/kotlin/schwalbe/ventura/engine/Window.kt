@@ -118,6 +118,7 @@ class Window : Disposable {
         }
         glfwSwapBuffers(windowId)
         Keyboard.onFrameEnd()
+        Mouse.onFrameEnd()
     }
 
     fun close() {

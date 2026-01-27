@@ -2,9 +2,7 @@
 package schwalbe.ventura.engine.gfx
 
 import schwalbe.ventura.engine.Resource
-import org.lwjgl.system.MemoryUtil.NULL
 import org.lwjgl.PointerBuffer
-import org.lwjgl.assimp.Assimp.Functions.*
 import org.lwjgl.assimp.Assimp.*
 import org.lwjgl.assimp.*
 import org.joml.*
@@ -90,11 +88,13 @@ class Model<A : Animations<A>>(
                     shader[texture] = mesh.texture
                 }
                 if (jointTransforms != null) {
-                    shader[jointTransforms] = mesh.bones.map { bone ->
-                        val n: Matrix4fc = nodeTransforms[bone.name]
-                            ?: return@map Matrix4f()
-                        return@map n.mul(bone.inverseBind, Matrix4f())
-                    }
+                    shader[jointTransforms] = mesh.bones
+                        .map { bone ->
+                            val n: Matrix4fc = nodeTransforms[bone.name]
+                                ?: return@map Matrix4f()
+                            return@map n.mul(bone.inverseBind, Matrix4f())
+                        }
+                        .ifEmpty { listOf(Matrix4f()) }
                 }
                 mesh.geometry.render(
                     shader, framebuffer, instanceCount,
@@ -197,19 +197,23 @@ private fun createRawMeshGeometry(
         .allocateDirect(numVertices * stride)
         .order(ByteOrder.nativeOrder())
     for (vertexI in 0..<numVertices) {
-        val boneWeights: List<Pair<Int, Float>> = bones.asSequence()
+        val boneWeights: MutableList<Pair<Int, Float>> = bones.asSequence()
             .withIndex()
             .map { (boneI, bone) -> boneI to (bone.weights[vertexI] ?: 0f) }
-            .filter { (boneI, weight) -> weight > 0f }
-            .sortedByDescending { (boneI, weight) -> weight }
+            .filter { (_, weight) -> weight > 0f }
+            .sortedByDescending { (_, weight) -> weight }
             .plus(List(4) { 0 to 0f })
-            .take(4).toList()
-        val weightSum: Float = boneWeights
+            .take(4).toMutableList()
+        var weightSum: Float = boneWeights
             .sumOf { (_, weight) -> weight.toDouble() }.toFloat()
-        check(weightSum > 0.0) {
+        check(weightSum >= 0.0) {
             "Sum of weights for vertex [$vertexI] in mesh" +
                 " '${mesh.mName().dataString()}' in model '${sceneInfo.path}'" +
-                " is not greater than 0"
+                " is not greater than or equal to 0"
+        }
+        if (weightSum == 0f) {
+            boneWeights[0] = 0 to 1f
+            weightSum = 1f
         }
         for (prop in sceneInfo.properties) { when (prop) {
             Model.Property.POSITION -> {

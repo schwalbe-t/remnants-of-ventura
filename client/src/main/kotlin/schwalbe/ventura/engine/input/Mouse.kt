@@ -23,13 +23,21 @@ object Mouse {
     val position: Vector2fc = this.actualPosition
     
     var cursor: Cursor = Cursor.ARROW
+
+    private val actualScrollOffset = Vector2f(0f, 0f)
+    val scrollOffset: Vector2fc = this.actualScrollOffset
     
     fun handleEvent(e: InputEvent) { when(e) {
         is MButtonDown -> this.buttonsDown.add(e.button)
         is MButtonUp -> this.buttonsDown.remove(e.button)
         is MouseMove -> this.actualPosition.set(e.newPosition)
+        is MouseScroll -> this.actualScrollOffset.add(e.offset)
         else -> {}
     } }
+
+    fun onFrameEnd() {
+        this.actualScrollOffset.set(0f, 0f)
+    }
 
 }
 

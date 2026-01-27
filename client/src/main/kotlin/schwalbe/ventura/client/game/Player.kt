@@ -87,7 +87,7 @@ class Player {
             .scale(Player.MODEL_SCALE)
         val instances = listOf(transf)
         client.renderer.renderOutline(
-            playerModel(), 0.075f, this.anim, instances,
+            playerModel(), 0.015f, this.anim, instances,
             renderedMeshes = listOf("body", "hair")
         )
         client.renderer.renderGeometry(

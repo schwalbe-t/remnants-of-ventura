@@ -14,6 +14,7 @@ fun submitResources(resLoader: ResourceLoader) {
     resLoader.submit(localized)
     Renderer.submitResources(resLoader)
     Player.submitResources(resLoader)
+    World.submitResources(resLoader)
 }
 
 fun main() {

@@ -6,7 +6,7 @@ import schwalbe.ventura.net.SerVector3
 
 @Serializable
 enum class ObjectType(
-    val filePath: String
+    val filePath: String, val renderOutline: Boolean = true
 ) {
     ROCK(
         filePath = "res/objects/rock.glb"
