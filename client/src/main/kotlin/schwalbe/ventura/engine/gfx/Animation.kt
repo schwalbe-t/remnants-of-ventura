@@ -149,6 +149,10 @@ class AnimState<A : Animations<A>>(initial: AnimationRef<A>) {
         this.updateEntries(deltaTime)
         this.updateTransitions(deltaTime)
     }
+
+    fun flushTransitions() {
+        this.updateTransitions(Float.POSITIVE_INFINITY)
+    }
     
 }
 

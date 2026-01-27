@@ -1,8 +1,9 @@
 
 package schwalbe.ventura.client
 
-import schwalbe.ventura.client.screens.submitScreenResources
 import schwalbe.ventura.client.screens.GameScreen
+import schwalbe.ventura.client.game.World
+import schwalbe.ventura.client.game.Renderer
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.engine.*
@@ -39,14 +40,13 @@ class Client {
 
     val network = NetworkClient()
 
+    val renderer = Renderer(this.out3d)
+    var world: World? = World()
+
 }
 
 fun Client.loadResources() {
     thread { this.resLoader.loadQueuedRawLoop() }
-
-    loadUiResources(this.resLoader)
-    submitScreenResources(this.resLoader)
-    this.resLoader.submit(localized)
 }
 
 fun Client.gameloop() {

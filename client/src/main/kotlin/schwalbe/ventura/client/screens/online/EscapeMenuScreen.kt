@@ -3,6 +3,7 @@ package schwalbe.ventura.client.screens.online
 
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
+import schwalbe.ventura.client.game.renderGameworld
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectingScreen
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
@@ -29,11 +30,13 @@ private fun addOption(
 }
 
 fun escapeMenuScreen(client: Client): () -> GameScreen = {
+    val renderWorld = renderGameworld(client)
     val screen = GameScreen(
         render = {
             if (Key.ESCAPE.wasPressed) {
                 client.nav.pop()
             }
+            renderWorld()
         },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
             client.nav.replace(serverConnectionFailedScreen(reason, client))

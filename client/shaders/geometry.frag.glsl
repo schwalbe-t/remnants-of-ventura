@@ -1,8 +1,8 @@
 
+#include "common/renderer.frag.glsl"
+
 in vec3 fNormal;
 in vec2 fTexCoords;
-
-uniform sampler2D uTexture;
 
 out vec4 oColor;
 
