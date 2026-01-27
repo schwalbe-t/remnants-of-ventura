@@ -41,3 +41,6 @@ out/
 
 ### PostgreSQL Database Data ###
 .postgresql
+
+### Environment Variables ###
+.env

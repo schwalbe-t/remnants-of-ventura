@@ -1,7 +1,15 @@
 
+import java.util.Properties
+
 plugins {
     kotlin("jvm") version "2.2.21"
     kotlin("plugin.serialization") version "2.2.21"
+}
+
+fun loadEnv(): Map<String, String> {
+    val props = Properties()
+    file(".env").inputStream().use { props.load(it) }
+    return props.entries.associate { it.key.toString() to it.value.toString() }
 }
 
 subprojects {
@@ -40,6 +48,10 @@ subprojects {
 
 
         implementation("org.joml:joml:1.10.5")
+    }
+
+    tasks.withType<JavaExec> {
+        environment(loadEnv())
     }
 
 }

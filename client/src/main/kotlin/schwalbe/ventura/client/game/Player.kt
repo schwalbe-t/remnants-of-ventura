@@ -26,6 +26,13 @@ private fun xzVectorAngle(a: Vector3fc, b: Vector3fc): Float
         (a.x() * b.x()) + (a.z() * b.z())
     )
 
+private fun wrapAngle(angle: Float): Float {
+    var a = angle
+    while (a > PI)  a -= (2f * PI.toFloat())
+    while (a < -PI) a += (2f * PI.toFloat())
+    return a
+}
+
 class Player {
 
     companion object {
@@ -35,7 +42,6 @@ class Player {
 
         const val MODEL_SCALE: Float = 1/5.5f
         val modelNoRotationDir: Vector3fc = Vector3f(0f, 0f, +1f)
-        val up: Vector3fc = Vector3f(0f, +1f, 0f)
 
         val cameraEyeOffset: Vector3fc = Vector3f(0f, +3f, +2f)
         val cameraLookAtOffset: Vector3fc = Vector3f(0f, +1f, 0f)
@@ -48,7 +54,7 @@ class Player {
     val anim = AnimState(PlayerAnim.idle)
 
     val position: Vector3f = Vector3f()
-    val direction: Vector3f = Vector3f(Player.modelNoRotationDir)
+    var rotation: Float = 0f
 
     fun update(client: Client) {
         val velocity = Vector3f()
@@ -57,18 +63,13 @@ class Player {
         if (Key.A.isPressed) { velocity.x -= 1f; }
         if (Key.D.isPressed) { velocity.x += 1f; }
         if (velocity.length() != 0f) {
-            val newDir: Vector3f = velocity.normalize(Vector3f())
-            velocity.set(newDir).mul(Player.WALK_SPEED).mul(client.deltaTime)
+            velocity.normalize()
+            var targetRot = xzVectorAngle(Player.modelNoRotationDir, velocity)
+            velocity.mul(Player.WALK_SPEED).mul(client.deltaTime)
             this.position.add(velocity)
-            var rotationDiff = xzVectorAngle(this.direction, newDir)
-            val remTime: Float = abs(rotationDiff) / Player.ROTATION_SPEED
-            if (client.deltaTime <= remTime) {
-                this.direction
-                    .lerp(newDir, client.deltaTime / remTime)
-                    .normalize()
-            } else {
-                this.direction.set(newDir)
-            }
+            val rToTarget: Float = wrapAngle(targetRot - this.rotation)
+            val rotDist: Float = Player.ROTATION_SPEED * client.deltaTime
+            this.rotation += sign(rToTarget) * minOf(abs(rToTarget), rotDist)
             if (!this.wasMoving) {
                 this.anim.flushTransitions()
                 this.anim.transitionTo(PlayerAnim.walk, 0.25f)
@@ -86,10 +87,9 @@ class Player {
     }
 
     fun render(client: Client) {
-        var rotation = xzVectorAngle(Player.modelNoRotationDir, this.direction)
         val transf = Matrix4f()
             .translate(this.position)
-            .rotateY(rotation)
+            .rotateY(this.rotation)
             .scale(Player.MODEL_SCALE)
         client.renderer.render(
             playerModel(),
