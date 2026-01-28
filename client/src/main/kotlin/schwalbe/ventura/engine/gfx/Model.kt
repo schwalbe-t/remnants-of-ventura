@@ -1,7 +1,7 @@
 
 package schwalbe.ventura.engine.gfx
 
-import schwalbe.ventura.engine.Resource
+import schwalbe.ventura.engine.*
 import org.lwjgl.PointerBuffer
 import org.lwjgl.assimp.Assimp.*
 import org.lwjgl.assimp.*
@@ -40,6 +40,7 @@ class Model<A : Animations<A>>(
     data class Mesh(
         val name: String,
         val geometry: Geometry,
+        val bounds: AxisAlignedBox,
         val texture: Texture,
         val bones: List<Bone>
     )
@@ -277,6 +278,18 @@ private fun createRawMeshGeometry(
     return RawGeometry(vertexBuffer, indexBuffer)
 }
 
+private fun computeMeshBounds(mesh: AIMesh): AxisAlignedBox {
+    val bounds = MutableAxisAlignedBox()
+    val numVertices: Int = mesh.mNumVertices()
+    val currentPos = Vector3f()
+    for (vertexI in 0..<numVertices) {
+        val pos: AIVector3D = mesh.mVertices()[vertexI]
+        currentPos.set(pos.x(), pos.y(), pos.z())
+        bounds.add(currentPos)
+    }
+    return bounds
+}
+
 private fun getMaterialName(material: AIMaterial, index: Int): String {
     val rawName = AIString.calloc()
     val result = aiGetMaterialString(
@@ -342,6 +355,7 @@ private fun loadMeshTexture(mesh: AIMesh, sceneInfo: SceneInfo): ByteBuffer {
 private data class RawMesh(
     val name: String,
     val geometry: RawGeometry,
+    val bounds: AxisAlignedBox,
     val texture: ByteBuffer,
     val bones: List<Model.Bone>
 )
@@ -357,8 +371,9 @@ private fun createRawMesh(mesh: AIMesh, sceneInfo: SceneInfo): RawMesh {
         BoneInfo(Model.Bone(boneName, inverseBind), weights)
     }
     val geometry: RawGeometry = createRawMeshGeometry(mesh, bones, sceneInfo)
+    val bounds: AxisAlignedBox = computeMeshBounds(mesh)
     val texture: ByteBuffer = loadMeshTexture(mesh, sceneInfo)
-    return RawMesh(name, geometry, texture, bones.map(BoneInfo::bone))
+    return RawMesh(name, geometry, bounds, texture, bones.map(BoneInfo::bone))
 }
 
 private fun completeRawMesh(mesh: RawMesh, sceneInfo: SceneInfo): Model.Mesh {
@@ -374,7 +389,7 @@ private fun completeRawMesh(mesh: RawMesh, sceneInfo: SceneInfo): Model.Mesh {
     }
     val texture = Texture
         .loadBytes(mesh.texture, sceneInfo.textureFilter, sceneInfo.path)
-    return Model.Mesh(mesh.name, geometry, texture, mesh.bones)
+    return Model.Mesh(mesh.name, geometry, mesh.bounds, texture, mesh.bones)
 }
 
 private fun <A : Animations<A>> loadAnimation(

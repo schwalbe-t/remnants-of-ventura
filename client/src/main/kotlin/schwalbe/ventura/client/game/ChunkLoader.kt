@@ -1,18 +1,18 @@
 
 package schwalbe.ventura.client.game
 
-import org.joml.Matrix4f
-import org.joml.Matrix4fc
-import org.joml.Vector3fc
 import schwalbe.ventura.MAX_NUM_REQUESTED_CHUNKS
 import schwalbe.ventura.net.*
 import schwalbe.ventura.net.PacketType.*
 import schwalbe.ventura.worlds.*
 import schwalbe.ventura.client.Client
-import schwalbe.ventura.engine.Resource
-import schwalbe.ventura.engine.ResourceLoader
+import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
 import kotlin.collections.asSequence
+import org.joml.Matrix4f
+import org.joml.Matrix4fc
+import org.joml.Vector3f
+import org.joml.Vector3fc
 
 private val objectModels: List<Resource<Model<StaticAnim>>> = ObjectType.entries
     .map {
@@ -23,7 +23,50 @@ private val objectModels: List<Resource<Model<StaticAnim>>> = ObjectType.entries
         )
     }
 
+private fun computeChunkInstances(
+    data: ChunkData
+): List<ChunkLoader.LoadedInstance>
+    = data.instances.map { inst ->
+        val transform = Matrix4f()
+            .translate(inst.position.x, inst.position.y, inst.position.z)
+            .rotateXYZ(inst.rotation.x, inst.rotation.y, inst.rotation.z)
+            .scale(inst.scale.x, inst.scale.y, inst.scale.z)
+        ChunkLoader.LoadedInstance(inst, transform)
+    }
+
+private fun computeChunkColliders(
+    instances: List<ChunkLoader.LoadedInstance>
+): List<AxisAlignedBox> {
+    val colliders = mutableListOf<AxisAlignedBox>()
+    for (instance in instances) {
+        if (!instance.obj.type.applyColliders) { continue }
+        val model: Model<StaticAnim> = objectModels
+            .getOrNull(instance.obj.type.ordinal)?.invoke()
+            ?: continue
+        model.forEachNode { node ->
+            for (meshI in node.meshes) {
+                val mesh = model.meshes.getOrNull(meshI) ?: continue
+                val collider = mesh.bounds.toMutableAxisBox()
+                    .transform(node.localTransform)
+                    .transform(instance.transform)
+                colliders.add(collider)
+            }
+        }
+    }
+    return colliders
+}
+
 class ChunkLoader {
+
+    class LoadedInstance(
+        val obj: ObjectInstance,
+        val transform: Matrix4fc
+    )
+
+    class LoadedChunkData(
+        val instances: List<LoadedInstance>,
+        val colliders: List<AxisAlignedBox>
+    )
 
     companion object {
         const val LOAD_RADIUS: Int = 5
@@ -42,11 +85,13 @@ class ChunkLoader {
     var centerZ: Int = 0
         private set
     val requested: MutableSet<ChunkRef> = mutableSetOf()
-    val loaded: MutableMap<ChunkRef, ChunkData> = mutableMapOf()
+    val loaded: MutableMap<ChunkRef, LoadedChunkData> = mutableMapOf()
 
     fun handleReceivedChunks(contents: ChunkContentsPacket) {
         for ((ref, data) in contents.chunks) {
-            this.loaded[ref] = data
+            val instances = computeChunkInstances(data)
+            val colliders = computeChunkColliders(instances)
+            this.loaded[ref] = LoadedChunkData(instances, colliders)
         }
     }
 
@@ -85,17 +130,29 @@ class ChunkLoader {
         this.requestChunkData(missing, client)
     }
 
-    private fun renderChunk(data: ChunkData, client: Client) {
+    fun intersectsAnyLoaded(b: AxisAlignedBox): Boolean {
+        val minChunkX: Int = b.min.x().unitsToChunkIdx() - 1
+        val minChunkZ: Int = b.min.z().unitsToChunkIdx() - 1
+        val maxChunkX: Int = b.max.x().unitsToChunkIdx() + 1
+        val maxChunkZ: Int = b.max.z().unitsToChunkIdx() + 1
+        for (chunkX in minChunkX..maxChunkX) {
+            for (chunkZ in minChunkZ..maxChunkZ) {
+                val chunk = this.loaded[ChunkRef(chunkX, chunkZ)] ?: continue
+                if (chunk.colliders.any { it.intersects(b) }) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private fun renderChunk(data: LoadedChunkData, client: Client) {
         val groupedInstances: MutableMap<ObjectType, MutableList<Matrix4fc>>
             = mutableMapOf()
         for (inst in data.instances) {
             val group: MutableList<Matrix4fc> = groupedInstances
-                .getOrPut(inst.type) { mutableListOf() }
-            group.add(Matrix4f()
-                .translate(inst.position.x, inst.position.y, inst.position.z)
-                .rotateXYZ(inst.rotation.x, inst.rotation.y, inst.rotation.z)
-                .scale(inst.scale.x, inst.scale.y, inst.scale.z)
-            )
+                .getOrPut(inst.obj.type) { mutableListOf() }
+            group.add(inst.transform)
         }
         for ((type, instances) in groupedInstances) {
             val model: Model<StaticAnim> = objectModels
@@ -115,7 +172,7 @@ class ChunkLoader {
 
     fun render(client: Client) {
         for (chunk in this.chunksInRange(ChunkLoader.RENDER_RADIUS)) {
-            val data: ChunkData = this.loaded[chunk] ?: continue
+            val data: LoadedChunkData = this.loaded[chunk] ?: continue
             this.renderChunk(data, client)
         }
     }

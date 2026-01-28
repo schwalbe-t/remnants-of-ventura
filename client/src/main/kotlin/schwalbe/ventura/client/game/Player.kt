@@ -47,6 +47,11 @@ class Player {
         const val ROTATION_SPEED: Float = 2f * PI.toFloat() * 1.5f // radians per second
 
         const val OUTLINE_THICKNESS: Float = 0.015f
+
+        val relCollider: AxisAlignedBox = axisBoxOf(
+            Vector3f(-0.125f, 0f, -0.125f),
+            Vector3f(+0.125f, 1f, +0.125f)
+        )
     }
 
     private var wasMoving: Boolean = false
@@ -56,6 +61,9 @@ class Player {
     var rotation: Float = 0f
 
     fun update(client: Client) {
+        val world: World = client.world ?: return
+        val collidingBefore: Boolean = world.chunks
+            .intersectsAnyLoaded(Player.relCollider.translate(this.position))
         val velocity = Vector3f()
         if (Key.W.isPressed) { velocity.z -= 1f; }
         if (Key.S.isPressed) { velocity.z += 1f; }
@@ -65,7 +73,18 @@ class Player {
             velocity.normalize()
             var targetRot = xzVectorAngle(Player.modelNoRotationDir, velocity)
             velocity.mul(Player.WALK_SPEED).mul(client.deltaTime)
-            this.position.add(velocity)
+            val newPosX = this.position.add(velocity.x(), 0f, 0f, Vector3f())
+            val newPosZ = this.position.add(0f, 0f, velocity.z(), Vector3f())
+            val collidingAfterX: Boolean = world.chunks
+                .intersectsAnyLoaded(Player.relCollider.translate(newPosX))
+            val collidingAfterZ: Boolean = world.chunks
+                .intersectsAnyLoaded(Player.relCollider.translate(newPosZ))
+            if (!collidingAfterX || collidingBefore) {
+                this.position.add(velocity.x(), 0f, 0f)
+            }
+            if (!collidingAfterZ || collidingBefore) {
+                this.position.add(0f, 0f, velocity.z())
+            }
             val rToTarget: Float = wrapAngle(targetRot - this.rotation)
             val rotDist: Float = Player.ROTATION_SPEED * client.deltaTime
             this.rotation += sign(rToTarget) * minOf(abs(rToTarget), rotDist)
