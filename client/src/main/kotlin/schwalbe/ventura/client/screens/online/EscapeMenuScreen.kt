@@ -3,12 +3,13 @@ package schwalbe.ventura.client.screens.online
 
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
-import schwalbe.ventura.client.game.renderGameworld
+import schwalbe.ventura.client.game.*
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectingScreen
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.engine.ui.*
+import schwalbe.ventura.net.PacketHandler
 
 private fun addOption(
     options: Axis, name: String, action: () -> Unit
@@ -42,7 +43,9 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
             client.nav.replace(serverConnectionFailedScreen(reason, client))
             client.network.clearError()
         }),
-        packets = createPacketHandler(),
+        packets = PacketHandler<Unit>()
+            .addErrorLogging()
+            .addWorldHandling(client),
         navigator = client.nav
     )
     val areaSize: UiSize = (3 * 7.5 + 2).vmin

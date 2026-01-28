@@ -1,47 +1,33 @@
 
 package schwalbe.ventura.client.game
 
-import org.joml.Matrix4f
-import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.client.Client
-import schwalbe.ventura.worlds.ObjectType
-
-
-val objectModels: List<Resource<Model<StaticAnim>>> = ObjectType.entries
-    .map {
-        Model.loadFile(
-            it.filePath,
-            Renderer.meshProperties,
-            textureFilter = Texture.Filter.LINEAR
-        )
-    }
-
 
 class World {
 
     companion object {
-        fun submitResources(loader: ResourceLoader) {
-            objectModels.forEach(loader::submit)
+        fun submitResources(resLoader: ResourceLoader) {
+            Player.submitResources(resLoader)
+            ChunkLoader.submitResources(resLoader)
         }
     }
 
 
     val camController = CameraController()
     val player = Player()
+    val chunks = ChunkLoader()
 
 }
 
 fun World.update(client: Client) {
     this.player.update(client)
     this.camController.update(this.player, client.renderer.camera)
+    this.chunks.update(client, this.player.position)
 }
 
 fun World.render(client: Client) {
-    val rockModel = objectModels[ObjectType.ROCK.ordinal]()
-    val rockInstances = listOf(Matrix4f().rotateY(0.5f))
-    client.renderer.renderOutline(rockModel, 0.015f, null, rockInstances)
-    client.renderer.renderGeometry(rockModel, null, rockInstances)
+    this.chunks.render(client)
     this.player.render(client)
 }
 

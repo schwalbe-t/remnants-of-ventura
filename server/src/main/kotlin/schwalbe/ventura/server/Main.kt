@@ -8,8 +8,8 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.datetime.*
-import org.joml.Vector2f
 import org.joml.Vector3f
+import org.joml.Vector3fc
 import schwalbe.ventura.bigton.runtime.loadBigtonRuntime
 import schwalbe.ventura.net.*
 import schwalbe.ventura.worlds.*
@@ -51,13 +51,17 @@ fun main() {
     initDatabase()
 
     val baseWorldChunks: Map<ChunkRef, ChunkData>
-        = (-5..5).flatMap { chunkX -> (-5..5).map { chunkZ ->
+        = (-20..20).flatMap { chunkX -> (-20..20).map { chunkZ ->
             ChunkRef(chunkX, chunkZ) to ChunkData(listOf(
                 ObjectInstance(
                     ObjectType.ROCK,
-                    Vector3f(chunkX + 0.5f, 0f, chunkZ + 0.5f)
-                        .chunksToUnits().toSerVector3(),
-                    SerVector3(0f, 0f, 0f),
+                    Vector3f(
+                        chunkX + Math.random().toFloat(), 0f,
+                        chunkZ + Math.random().toFloat()
+                    ).chunksToUnits().toSerVector3(),
+                    SerVector3(
+                        0f, (Math.random() * 2 * kotlin.math.PI).toFloat(), 0f
+                    ),
                     SerVector3(1f, 1f, 1f)
                 )
             ))

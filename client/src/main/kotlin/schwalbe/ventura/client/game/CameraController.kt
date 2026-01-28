@@ -14,7 +14,7 @@ class CameraController {
         const val MAX_DISTANCE: Float = 20f
         const val ZOOM_SPEED: Float = 2f // distance per scrolled notch
 
-        val cameraEyeOffsetDir: Vector3fc = Vector3f(0f, +2f, +2f).normalize()
+        val cameraEyeOffsetDir: Vector3fc = Vector3f(0f, +1.75f, +2f).normalize()
         val cameraLookAtOffset: Vector3fc = Vector3f(0f, +1.5f, 0f)
         const val CAMERA_FOV: Float = PI.toFloat() / 4f // 45 degrees
     }
@@ -32,6 +32,7 @@ class CameraController {
         camera.position
             .set(CameraController.cameraEyeOffsetDir)
             .mul(this.distance)
+            .add(CameraController.cameraLookAtOffset)
             .add(player.position)
         camera.lookAt
             .set(CameraController.cameraLookAtOffset)

@@ -77,9 +77,10 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
                 ))
             }
             val chunks: List<Pair<ChunkRef, ChunkData>> = r.chunks.mapNotNull {
-                val d: ChunkData? = this.data.chunks[it]
-                if (d == null) { null } else { it to d }
+                val data = this.data.chunks[it] ?: return@mapNotNull null
+                it to data
             }
+            if (chunks.isEmpty()) { return@onPacket }
             pl.connection.outgoing.send(Packet.serialize(
                 DOWN_CHUNK_CONTENTS, ChunkContentsPacket(chunks)
             ))

@@ -45,6 +45,8 @@ class Player {
 
         const val WALK_SPEED: Float = 3f
         const val ROTATION_SPEED: Float = 2f * PI.toFloat() * 1.5f // radians per second
+
+        const val OUTLINE_THICKNESS: Float = 0.015f
     }
 
     private var wasMoving: Boolean = false
@@ -87,7 +89,7 @@ class Player {
             .scale(Player.MODEL_SCALE)
         val instances = listOf(transf)
         client.renderer.renderOutline(
-            playerModel(), 0.015f, this.anim, instances,
+            playerModel(), Player.OUTLINE_THICKNESS, this.anim, instances,
             renderedMeshes = listOf("body", "hair")
         )
         client.renderer.renderGeometry(

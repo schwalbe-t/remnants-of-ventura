@@ -13,7 +13,6 @@ fun submitResources(resLoader: ResourceLoader) {
     submitScreenResources(resLoader)
     resLoader.submit(localized)
     Renderer.submitResources(resLoader)
-    Player.submitResources(resLoader)
     World.submitResources(resLoader)
 }
 

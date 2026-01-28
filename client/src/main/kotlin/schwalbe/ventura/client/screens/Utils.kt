@@ -91,11 +91,3 @@ fun createButton(
     .add(content)
     .add(ClickArea().withHandler(handler))
     .wrapBorderRadius(0.75.vmin)
-
-fun createPacketHandler(): PacketHandler<Unit> = PacketHandler<Unit>()
-    .onPacket<GenericErrorPacket>(PacketType.DOWN_GENERIC_ERROR) { p, _ ->
-        println("[error] ${p.message}")
-    }
-    .onPacket<TaggedErrorPacket>(PacketType.DOWN_TAGGED_ERROR) { p, _ ->
-        println("[error] ${p.name}")
-    }

@@ -8,6 +8,7 @@ import schwalbe.ventura.ACCOUNT_PASSWORD_MIN_LEN
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
+import schwalbe.ventura.client.game.addErrorLogging
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.net.*
@@ -20,7 +21,8 @@ fun serverAuthenticationScreen(
     val statusText = Text()
     var username: String = ""
     var password: String = ""
-    val packets = createPacketHandler()
+    val packets = PacketHandler<Unit>()
+        .addErrorLogging()
         .onPacket(DOWN_TAGGED_ERROR) { p: TaggedErrorPacket, _ ->
             when (p) {
                 TaggedErrorPacket.INVALID_ACCOUNT_PARAMS -> {

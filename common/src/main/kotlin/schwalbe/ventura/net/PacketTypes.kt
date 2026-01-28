@@ -18,7 +18,7 @@ enum class PacketType {
     UP_LOGIN_SESSION,               // SessionCredPacket
     DOWN_LOGIN_SESSION_SUCCESS,     // Unit
 
-    DOWN_BEGIN_WORLD_CHANGE,
+    DOWN_BEGIN_WORLD_CHANGE,        // Unit
     DOWN_COMPLETE_WORLD_CHANGE,     // Unit
     UP_REQUEST_WORLD_INFO,          // Unit
     DOWN_CONST_WORLD_INFO,          // ConstWorldInfo
