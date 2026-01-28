@@ -22,7 +22,9 @@ class World {
 
 fun World.update(client: Client) {
     this.player.update(client)
-    this.camController.update(this.player, client.renderer.camera)
+    this.camController.update(
+        this.player, client.renderer.camera, client.deltaTime
+    )
     this.chunks.update(client, this.player.position)
 }
 

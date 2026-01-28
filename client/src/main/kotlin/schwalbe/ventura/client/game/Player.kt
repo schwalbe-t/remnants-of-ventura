@@ -89,16 +89,17 @@ class Player {
             val rotDist: Float = Player.ROTATION_SPEED * client.deltaTime
             this.rotation += sign(rToTarget) * minOf(abs(rToTarget), rotDist)
             if (!this.wasMoving) {
-                this.anim.flushTransitions()
                 this.anim.transitionTo(PlayerAnim.walk, 0.25f)
                 this.wasMoving = true
             }
         } else if (this.wasMoving) {
-            this.anim.flushTransitions()
             this.anim.transitionTo(PlayerAnim.idle, 0.25f)
             this.wasMoving = false
         }
         this.anim.addTimePassed(client.deltaTime)
+        this.anim.addTransitionTimePassed(
+            client.deltaTime * this.anim.numQueuedTransitions
+        )
     }
 
     fun render(client: Client) {

@@ -120,6 +120,9 @@ class AnimState<A : Animations<A>>(initial: AnimationRef<A>) {
         get() = this.transitionQueue.getOrNull(0)
     val isTransitioning: Boolean
         get() = this.transition != null
+
+    val numQueuedTransitions: Int
+        get() = maxOf(this.transitionQueue.size - 1, 0)
     
     fun transitionTo(
         anim: AnimationRef<A>, transitionSecs: Float = 0.0f
@@ -127,14 +130,14 @@ class AnimState<A : Animations<A>>(initial: AnimationRef<A>) {
         this.transitionQueue.add(Transition(Entry(anim), transitionSecs))
     }
     
-    private fun updateEntries(deltaTime: Float) {
+    fun addAnimationTimePassed(deltaTime: Float) {
         this.current.addTimePassed(deltaTime)
         this.transitionQueue.forEach {
             it.entry.addTimePassed(deltaTime)
         }
     }
     
-    private fun updateTransitions(deltaTime: Float) {
+    fun addTransitionTimePassed(deltaTime: Float) {
         var remTransTime: Float = deltaTime
         while (remTransTime > 0f) {
             val trans: Transition<A> = this.transition ?: break
@@ -146,12 +149,8 @@ class AnimState<A : Animations<A>>(initial: AnimationRef<A>) {
     }
     
     fun addTimePassed(deltaTime: Float) {
-        this.updateEntries(deltaTime)
-        this.updateTransitions(deltaTime)
-    }
-
-    fun flushTransitions() {
-        this.updateTransitions(Float.POSITIVE_INFINITY)
+        this.addAnimationTimePassed(deltaTime)
+        this.addTransitionTimePassed(deltaTime)
     }
     
 }
