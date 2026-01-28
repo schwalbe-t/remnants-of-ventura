@@ -28,7 +28,7 @@ void main(void) {
     vec4 posWorld = instance * uLocalTransform * posSkinned;
     vec3 normWorldRaw = mat3(instance) * mat3(uLocalTransform) * normalSkinned;
     vec3 normWorld = normalize(normWorldRaw);
-    vec4 posOffset = posWorld + vec4(normWorld * uOutlineThickness, 0f);
+    vec4 posOffset = posWorld + vec4(normWorld * uOutlineThickness, 0.0);
     gl_Position = uViewProjection * posOffset;
     fTexCoords = vTexCoords;
     fNormal = normWorld;

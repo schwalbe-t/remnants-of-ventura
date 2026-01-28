@@ -8,6 +8,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.datetime.*
+import org.joml.Vector2f
 import org.joml.Vector3f
 import schwalbe.ventura.bigton.runtime.loadBigtonRuntime
 import schwalbe.ventura.net.*
@@ -49,9 +50,22 @@ fun main() {
     loadBigtonRuntime("bigtonruntime", "bigtonruntime")
     initDatabase()
 
+    val baseWorldChunks: Map<ChunkRef, ChunkData>
+        = (-5..5).flatMap { chunkX -> (-5..5).map { chunkZ ->
+            ChunkRef(chunkX, chunkZ) to ChunkData(listOf(
+                ObjectInstance(
+                    ObjectType.ROCK,
+                    Vector3f(chunkX + 0.5f, 0f, chunkZ + 0.5f)
+                        .chunksToUnits().toSerVector3(),
+                    SerVector3(0f, 0f, 0f),
+                    SerVector3(1f, 1f, 1f)
+                )
+            ))
+        } }
+        .associateBy({ it.first }, { it.second })
     val baseWorld = WorldData(
         ConstWorldInfo(rendererConfig = RendererConfig.default),
-        mapOf()
+        baseWorldChunks
     )
 
     val playerWriter = PlayerWriter()
