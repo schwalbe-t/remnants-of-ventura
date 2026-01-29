@@ -127,14 +127,12 @@ class Player {
         val now: Long = System.currentTimeMillis()
         if (now < this.nextPacketSendTime) { return }
         this.nextPacketSendTime = now + Player.PACKET_SEND_INTERVAL_MS
-        val currentAnim = this.anim.transition?.entry?.anim
-            ?: this.anim.current.anim
         client.network.outPackets?.send(Packet.serialize(
             UP_PLAYER_STATE,
             SharedPlayerInfo(
                 this.position.toSerVector3(),
                 this.rotation,
-                currentAnim.toSharedAnim()
+                this.anim.latestAnim.toSharedAnim()
             )
         ))
     }

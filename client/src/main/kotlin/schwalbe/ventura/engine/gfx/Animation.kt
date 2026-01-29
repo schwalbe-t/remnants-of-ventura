@@ -123,7 +123,10 @@ class AnimState<A : Animations<A>>(initial: AnimationRef<A>) {
 
     val numQueuedTransitions: Int
         get() = maxOf(this.transitionQueue.size - 1, 0)
-    
+
+    val latestAnim: AnimationRef<A>
+        get() = this.transition?.entry?.anim ?: this.current.anim
+
     fun transitionTo(
         anim: AnimationRef<A>, transitionSecs: Float = 0.0f
     ) {

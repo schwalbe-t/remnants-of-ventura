@@ -56,9 +56,9 @@ class WorldState {
     ) {
         before.position.toVector3f()
             .lerp(after.position.toVector3f(), n, dest.position)
-        dest.rotation = after.rotation + (before.rotation - after.rotation) * n
+        dest.rotation = before.rotation + (after.rotation - before.rotation) * n
         val newAnim = PlayerAnim.fromSharedAnim(after.animation)
-        if (dest.animation.current.anim != newAnim) {
+        if (dest.animation.latestAnim != newAnim) {
             dest.animation.transitionTo(newAnim, 0.25f)
         }
     }

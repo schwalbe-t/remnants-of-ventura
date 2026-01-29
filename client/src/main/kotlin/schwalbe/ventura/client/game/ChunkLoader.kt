@@ -114,7 +114,6 @@ class ChunkLoader {
             val batchSize: Int = minOf(numRemaining, MAX_NUM_REQUESTED_CHUNKS)
             val batch: List<ChunkRef> = chunks
                 .subList(numRequested, numRequested + batchSize)
-            println("Requesting data for $batchSize chunk(s)")
             client.network.outPackets?.send(Packet.serialize(
                 UP_REQUEST_CHUNK_CONTENTS, RequestedChunksPacket(batch)
             ))
