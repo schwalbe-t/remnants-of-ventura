@@ -4,6 +4,7 @@ package schwalbe.ventura.server
 import schwalbe.ventura.MAX_NUM_REQUESTED_CHUNKS
 import schwalbe.ventura.net.*
 import schwalbe.ventura.net.PacketType.*
+import schwalbe.ventura.net.SharedPlayerInfo.Animation
 import schwalbe.ventura.worlds.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -17,10 +18,14 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
         this.incoming.add(player)
     }
 
-    open fun createPlayerEntry(): PlayerData.WorldEntry
+    fun createPlayerEntry(): PlayerData.WorldEntry
         = PlayerData.WorldEntry(
             worldId = this.id,
-            position = SerVector3(0f, 0f, 0f)
+            state = SharedPlayerInfo(
+                position = SerVector3(0f, 0f, 0f),
+                rotation = 0f,
+                animation = SharedPlayerInfo.Animation.IDLE
+            )
         )
 
     @Synchronized
@@ -35,7 +40,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             player.connection.outgoing.send(Packet.serialize(
                 DOWN_COMPLETE_WORLD_CHANGE,
                 WorldEntryPacket(
-                    position = player.data.worlds.last().position
+                    position = player.data.worlds.last().state.position
                 )
             ))
         }
@@ -60,9 +65,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
 
     private fun sendWorldStatePacket() {
         val players = this.players.map { (name, pl) ->
-                name to WorldStatePacket.PlayerInfo(
-                    pl.data.worlds.last().position
-                )
+                name to pl.data.worlds.last().state
             }.toMap()
         val p = Packet.serialize(
             DOWN_WORLD_STATE,
@@ -112,8 +115,8 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
         ph.onPacket(UP_REQUEST_WORLD_LEAVE) { _: Unit, pl ->
             pl.popWorld(this.registry)
         }
-        ph.onPacket(UP_PLAYER_POSITION) { pos: PositionUpdatePacket, pl ->
-            pl.data.worlds.last().position = pos.position
+        ph.onPacket(UP_PLAYER_STATE) { pi: SharedPlayerInfo, pl ->
+            pl.data.worlds.last().state = pi
         }
     }
 

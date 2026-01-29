@@ -16,6 +16,19 @@ object PlayerAnim : Animations<PlayerAnim> {
     val squat = anim("squat")
 }
 
+fun PlayerAnim.fromSharedAnim(a: SharedPlayerInfo.Animation) = when (a) {
+    SharedPlayerInfo.Animation.IDLE     -> PlayerAnim.idle
+    SharedPlayerInfo.Animation.WALK     -> PlayerAnim.walk
+    SharedPlayerInfo.Animation.SQUAT    -> PlayerAnim.squat
+}
+
+fun AnimationRef<PlayerAnim>.toSharedAnim() = when (this) {
+    PlayerAnim.idle     -> SharedPlayerInfo.Animation.IDLE
+    PlayerAnim.walk     -> SharedPlayerInfo.Animation.WALK
+    PlayerAnim.squat    -> SharedPlayerInfo.Animation.SQUAT
+    else -> SharedPlayerInfo.Animation.IDLE
+}
+
 val playerModel: Resource<Model<PlayerAnim>> = Model.loadFile(
     "res/player.glb",
     Renderer.meshProperties, PlayerAnim,
@@ -114,9 +127,15 @@ class Player {
         val now: Long = System.currentTimeMillis()
         if (now < this.nextPacketSendTime) { return }
         this.nextPacketSendTime = now + Player.PACKET_SEND_INTERVAL_MS
+        val currentAnim = this.anim.transition?.entry?.anim
+            ?: this.anim.current.anim
         client.network.outPackets?.send(Packet.serialize(
-            UP_PLAYER_POSITION,
-            PositionUpdatePacket(this.position.toSerVector3())
+            UP_PLAYER_STATE,
+            SharedPlayerInfo(
+                this.position.toSerVector3(),
+                this.rotation,
+                currentAnim.toSharedAnim()
+            )
         ))
     }
 
@@ -128,18 +147,24 @@ class Player {
     }
 
     fun render(client: Client) {
-        val transf = Matrix4f()
-            .translate(this.position)
-            .rotateY(this.rotation)
-            .scale(Player.MODEL_SCALE)
-        val instances = listOf(transf)
-        client.renderer.renderOutline(
-            playerModel(), Player.OUTLINE_THICKNESS, this.anim, instances,
-            renderedMeshes = listOf("body", "hair")
-        )
-        client.renderer.renderGeometry(
-            playerModel(), this.anim, instances
-        )
+        Player.render(client, this.position, this.rotation, this.anim)
     }
 
+}
+
+fun Player.Companion.render(
+    client: Client, pos: Vector3fc, rot: Float, anim: AnimState<PlayerAnim>
+) {
+    val transf = Matrix4f()
+        .translate(pos)
+        .rotateY(rot)
+        .scale(Player.MODEL_SCALE)
+    val instances = listOf(transf)
+    client.renderer.renderOutline(
+        playerModel(), Player.OUTLINE_THICKNESS, anim, instances,
+        renderedMeshes = listOf("body", "hair")
+    )
+    client.renderer.renderGeometry(
+        playerModel(), anim, instances
+    )
 }

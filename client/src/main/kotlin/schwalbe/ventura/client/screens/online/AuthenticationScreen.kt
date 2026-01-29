@@ -67,6 +67,7 @@ fun serverAuthenticationScreen(
         }
         .onPacket(DOWN_LOGIN_SESSION_SUCCESS) { _: Unit, _ ->
             println("Logged in as user '$username'")
+            client.username = username
             client.nav.replace(controllingPlayerScreen(client))
         }
     val screen = GameScreen(

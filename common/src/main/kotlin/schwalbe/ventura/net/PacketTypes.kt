@@ -26,7 +26,7 @@ enum class PacketType {
     DOWN_CHUNK_CONTENTS,            // ChunkContentsPacket
     UP_REQUEST_WORLD_LEAVE,         // Unit
 
-    UP_PLAYER_POSITION,             // PositionUpdatePacket
+    UP_PLAYER_STATE,                // SharedPlayerInfo
     DOWN_WORLD_STATE,               // WorldStatePacket
 }
 
@@ -73,14 +73,18 @@ data class ChunkContentsPacket(val chunks: List<Pair<ChunkRef, ChunkData>>)
 
 
 @Serializable
-data class PositionUpdatePacket(val position: SerVector3)
+data class SharedPlayerInfo(
+    val position: SerVector3,
+    val rotation: Float,
+    val animation: Animation
+) {
+    @Serializable
+    enum class Animation {
+        IDLE, WALK, SQUAT
+    }
+}
 
 @Serializable
 data class WorldStatePacket(
-    val players: Map<String, PlayerInfo>
-) {
-    @Serializable
-    data class PlayerInfo(
-        val position: SerVector3
-    )
-}
+    val players: Map<String, SharedPlayerInfo>
+)

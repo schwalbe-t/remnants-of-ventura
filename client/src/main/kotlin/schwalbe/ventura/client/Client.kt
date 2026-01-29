@@ -16,7 +16,7 @@ class Client {
 
     val resLoader = ResourceLoader()
 
-    val window = Window("Remnants of Ventura", fullscreen = true)
+    val window = Window("Remnants of Ventura", fullscreen = false)
 
     init {
         this.window.setVsyncEnabled(enabled = true)
@@ -41,6 +41,7 @@ class Client {
     val network = NetworkClient()
 
     val renderer = Renderer(this.out3d)
+    var username: String = ""
     var world: World? = World()
 
 }

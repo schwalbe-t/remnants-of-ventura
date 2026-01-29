@@ -31,3 +31,7 @@ fun PacketHandler<Unit>.addWorldHandling(client: Client) = this
         val world: World = client.world ?: return@onPacket
         world.chunks.handleReceivedChunks(c)
     }
+    .onPacket(DOWN_WORLD_STATE) { s: WorldStatePacket, _ ->
+        val world: World = client.world ?: return@onPacket
+        world.state.handleReceivedState(s)
+    }

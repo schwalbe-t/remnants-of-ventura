@@ -17,6 +17,7 @@ class World {
     val camController = CameraController()
     val player = Player()
     val chunks = ChunkLoader()
+    val state = WorldState()
 
 }
 
@@ -26,10 +27,12 @@ fun World.update(client: Client) {
         this.player, client.renderer.camera, client.deltaTime
     )
     this.chunks.update(client, this.player.position)
+    this.state.update(client)
 }
 
 fun World.render(client: Client) {
     this.chunks.render(client)
+    this.state.render(client)
     this.player.render(client)
 }
 
