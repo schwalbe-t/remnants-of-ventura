@@ -25,7 +25,7 @@ class WorldState {
     }
 
     companion object {
-        const val DISPLAY_DELAY_MS: Long = 100L
+        const val DISPLAY_DELAY_MS: Long = 200L
     }
 
 
@@ -83,7 +83,7 @@ class WorldState {
         val n: Float = if (timeDiffMs == 0L) { 0f } else {
             (this.displayedTime - before.time).toFloat() / timeDiffMs.toFloat()
         }
-        for (username in this.interpolated.players.keys) {
+        for (username in this.interpolated.players.keys.toList()) {
             if (before.state.players.containsKey(username)) { continue }
             if (after.state.players.containsKey(username)) { continue }
             this.interpolated.players.remove(username)
