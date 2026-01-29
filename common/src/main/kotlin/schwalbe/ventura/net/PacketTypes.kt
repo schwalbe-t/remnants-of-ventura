@@ -19,12 +19,15 @@ enum class PacketType {
     DOWN_LOGIN_SESSION_SUCCESS,     // Unit
 
     DOWN_BEGIN_WORLD_CHANGE,        // Unit
-    DOWN_COMPLETE_WORLD_CHANGE,     // Unit
+    DOWN_COMPLETE_WORLD_CHANGE,     // WorldEntryPacket
     UP_REQUEST_WORLD_INFO,          // Unit
     DOWN_CONST_WORLD_INFO,          // ConstWorldInfo
     UP_REQUEST_CHUNK_CONTENTS,      // RequestedChunksPacket
     DOWN_CHUNK_CONTENTS,            // ChunkContentsPacket
-    UP_REQUEST_WORLD_LEAVE          // Unit
+    UP_REQUEST_WORLD_LEAVE,         // Unit
+
+    UP_PLAYER_POSITION,             // PositionUpdatePacket
+    DOWN_WORLD_STATE,               // WorldStatePacket
 }
 
 @Serializable
@@ -60,10 +63,24 @@ data class SessionCredPacket(val username: String, val token: Uuid)
 
 
 @Serializable
+data class WorldEntryPacket(val position: SerVector3)
+
+@Serializable
 data class RequestedChunksPacket(val chunks: List<ChunkRef>)
 
 @Serializable
 data class ChunkContentsPacket(val chunks: List<Pair<ChunkRef, ChunkData>>)
 
+
 @Serializable
-data class WorldChangePacket(val worldId: Long)
+data class PositionUpdatePacket(val position: SerVector3)
+
+@Serializable
+data class WorldStatePacket(
+    val players: Map<String, PlayerInfo>
+) {
+    @Serializable
+    data class PlayerInfo(
+        val position: SerVector3
+    )
+}

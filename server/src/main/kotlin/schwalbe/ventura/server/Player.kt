@@ -1,9 +1,10 @@
 
 package schwalbe.ventura.server
 
-import kotlinx.serialization.Serializable
 import schwalbe.ventura.net.Packet
 import schwalbe.ventura.net.PacketType
+import kotlinx.serialization.Serializable
+import schwalbe.ventura.net.SerVector3
 
 @Serializable
 data class PlayerData(
@@ -14,7 +15,8 @@ data class PlayerData(
 
     @Serializable
     data class WorldEntry(
-        val worldId: Long
+        val worldId: Long,
+        var position: SerVector3
     )
 
 }

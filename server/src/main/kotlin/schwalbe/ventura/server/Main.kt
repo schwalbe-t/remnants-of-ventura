@@ -66,7 +66,7 @@ fun main() {
                 )
             ))
         } }
-        .associateBy({ it.first }, { it.second })
+        .toMap()
     val baseWorld = WorldData(
         ConstWorldInfo(rendererConfig = RendererConfig.default),
         baseWorldChunks
@@ -78,9 +78,7 @@ fun main() {
     val port: Int = getPort()
     val createPlayerData = {
         val pd = PlayerData(ArrayDeque())
-        pd.worlds.add(PlayerData.WorldEntry(
-            worlds.baseWorld.id
-        ))
+        pd.worlds.add(worlds.baseWorld.createPlayerEntry())
         pd
     }
     val server = Server(

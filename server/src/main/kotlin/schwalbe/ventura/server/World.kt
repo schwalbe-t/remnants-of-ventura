@@ -18,7 +18,10 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
     }
 
     open fun createPlayerEntry(): PlayerData.WorldEntry
-        = PlayerData.WorldEntry(this.id)
+        = PlayerData.WorldEntry(
+            worldId = this.id,
+            position = SerVector3(0f, 0f, 0f)
+        )
 
     @Synchronized
     private fun handleIncomingPlayers() {
@@ -30,7 +33,10 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             }
             this.registry.playerWriter.add(player)
             player.connection.outgoing.send(Packet.serialize(
-                DOWN_COMPLETE_WORLD_CHANGE, Unit
+                DOWN_COMPLETE_WORLD_CHANGE,
+                WorldEntryPacket(
+                    position = player.data.worlds.last().position
+                )
             ))
         }
     }
@@ -42,18 +48,36 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
         }
     }
 
+    @Synchronized
     fun handlePlayerDisconnect(player: Player) {
         this.players.remove(player.username)
     }
 
+    @Synchronized
     fun handlePlayerLeaving(player: Player) {
         this.players.remove(player.username)
+    }
+
+    private fun sendWorldStatePacket() {
+        val players = this.players.map { (name, pl) ->
+                name to WorldStatePacket.PlayerInfo(
+                    pl.data.worlds.last().position
+                )
+            }.toMap()
+        val p = Packet.serialize(
+            DOWN_WORLD_STATE,
+            WorldStatePacket(players)
+        )
+        this.players.values.forEach {
+            it.connection.outgoing.send(p)
+        }
     }
 
     @Synchronized
     fun update() {
         this.handleIncomingPlayers()
         this.handlePlayerPackets()
+        this.sendWorldStatePacket()
     }
 
     private val constWorldInfo: Packet
@@ -85,8 +109,11 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
                 DOWN_CHUNK_CONTENTS, ChunkContentsPacket(chunks)
             ))
         }
-        ph.onPacket(UP_REQUEST_WORLD_LEAVE) { r: WorldChangePacket, pl ->
+        ph.onPacket(UP_REQUEST_WORLD_LEAVE) { _: Unit, pl ->
             pl.popWorld(this.registry)
+        }
+        ph.onPacket(UP_PLAYER_POSITION) { pos: PositionUpdatePacket, pl ->
+            pl.data.worlds.last().position = pos.position
         }
     }
 
