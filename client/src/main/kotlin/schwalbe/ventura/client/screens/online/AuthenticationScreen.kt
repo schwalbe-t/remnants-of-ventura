@@ -172,7 +172,7 @@ fun serverAuthenticationScreen(
         .add(3.vmin, statusText
             .withFont(googleSansSb())
             .withSize(2.vmin)
-            .withAlignment(Text.Alignment.CENTER)
+            .alignCenter()
         )
         .add(5.vmin, createTextButton(
             content = localized()[BUTTON_DISCONNECT],

@@ -8,25 +8,26 @@ import schwalbe.ventura.engine.gfx.loadGlsl
 import schwalbe.ventura.engine.ui.Font
 import schwalbe.ventura.engine.ui.loadTtf
 
-val jetbrainsMonoSb: Resource<Font> = Font.loadTtf(
-    "res/fonts/JetBrainsMonoNL-SemiBold.ttf"
-)
-val jetbrainsMonoB: Resource<Font> = Font.loadTtf(
-    "res/fonts/JetBrainsMonoNL-Bold.ttf"
-)
+private fun fontPathOf(name: String, variant: String): String
+    = "res/fonts/$name-$variant.ttf"
 
-val googleSansR: Resource<Font> = Font.loadTtf(
-    "res/fonts/GoogleSans-Regular.ttf"
-)
-val googleSansSb: Resource<Font> = Font.loadTtf(
-    "res/fonts/GoogleSans-SemiBold.ttf"
-)
+val jetbrainsMonoSb: Resource<Font>
+    = Font.loadTtf(fontPathOf("JetBrainsMonoNL", "SemiBold"))
+val jetbrainsMonoB: Resource<Font>
+    = Font.loadTtf(fontPathOf("JetBrainsMonoNL", "Bold"))
+
+val googleSansR: Resource<Font>
+    = Font.loadTtf(fontPathOf("GoogleSans", "Regular"))
+val googleSansSb: Resource<Font>
+    = Font.loadTtf(fontPathOf("GoogleSans", "SemiBold"))
+val googleSansI: Resource<Font>
+    = Font.loadTtf(fontPathOf("GoogleSans", "Italic"))
 
 val gridShader: Resource<Shader<GridVert, GridFrag>>
     = Shader.loadGlsl(GridVert, GridFrag)
 
 fun submitScreenResources(loader: ResourceLoader) = loader.submitAll(
     jetbrainsMonoSb, jetbrainsMonoB,
-    googleSansR, googleSansSb,
+    googleSansR, googleSansSb, googleSansI,
     gridShader, gridQuad
 )

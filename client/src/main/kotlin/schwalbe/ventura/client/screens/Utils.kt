@@ -72,7 +72,7 @@ fun createTextButton(
     content = Text()
         .withText(content)
         .withSize(70.ph)
-        .withAlignment(Text.Alignment.CENTER)
+        .alignCenter()
         .pad(0.75.vmin),
     handler
 )

@@ -1,6 +1,7 @@
 
 package schwalbe.ventura.client.game
 
+import org.joml.Vector4f
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.client.Client
 
@@ -23,14 +24,13 @@ class World {
 
 fun World.update(client: Client) {
     this.player.update(client)
-    this.camController.update(
-        this.player, client.renderer.camera, client.deltaTime
-    )
+    this.camController.update(client.renderer.camera, client, this)
     this.chunks.update(client, this.player.position)
     this.state.update(client)
 }
 
 fun World.render(client: Client) {
+    client.renderer.dest.clearColor(Vector4f(151f, 134f, 111f, 255f).div(255f))
     this.chunks.render(client)
     this.state.render(client)
     this.player.render(client)

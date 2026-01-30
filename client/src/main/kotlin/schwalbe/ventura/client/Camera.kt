@@ -11,13 +11,16 @@ data class Camera(
     val up: Vector3f = Vector3f(0f, 1f, 0f),
 
     var fov: Float = Math.PI.toFloat() / 2f,
+    var offsetAngleX: Float = 0f,
+    var offsetAngleY: Float = 0f,
     var near: Float = 0.1f,
     var far: Float = 100f
 )
 
 fun Camera.computeViewProj(viewport: ConstFramebuffer): Matrix4f = Matrix4f()
-    .setPerspective(
+    .setPerspectiveOffCenter(
         this.fov,
+        this.offsetAngleX, this.offsetAngleY,
         viewport.width.toFloat() / viewport.height.toFloat(),
         this.near, this.far
     )

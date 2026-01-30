@@ -31,13 +31,18 @@ private fun addOption(
 }
 
 fun escapeMenuScreen(client: Client): () -> GameScreen = {
+    client.world?.camController?.mode = CameraController.Mode.PLAYER_AT_CENTER
     val renderWorld = renderGameworld(client)
+    val background = BlurBackground()
+        .withRadius(3)
+        .withSpread(5)
     val screen = GameScreen(
         render = {
             if (Key.ESCAPE.wasPressed) {
                 client.nav.pop()
             }
             renderWorld()
+            background.invalidate()
         },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
             client.nav.replace(serverConnectionFailedScreen(reason, client))
@@ -65,9 +70,7 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
         client.nav.pop()
         client.nav.pop()
     })
-    screen.add(layer = -1, element = BlurBackground()
-        .withRadius(10)
-    )
+    screen.add(layer = -1, element = background)
     screen.add(layer = 0, element = Axis.column()
         .add(50.ph - (areaSize / 2), Space())
         .add(areaSize, options

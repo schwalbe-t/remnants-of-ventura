@@ -45,6 +45,7 @@ object BlurBg : FragShaderDef<BlurBg> {
     val absOffsetPx = vec2("uAbsOffsetPx")
     
     val kernelRadius = int("uKernelRadius")
+    val kernelSpread = int("uKernelSpread")
     val kernelWeights = sampler2D("uKernelWeights")
 }
 

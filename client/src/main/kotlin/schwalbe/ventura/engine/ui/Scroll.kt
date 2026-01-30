@@ -2,7 +2,6 @@
 package schwalbe.ventura.engine.ui
 
 import schwalbe.ventura.engine.gfx.Texture
-import schwalbe.ventura.engine.gfx.Shader
 import schwalbe.ventura.engine.gfx.ConstFramebuffer
 import schwalbe.ventura.engine.input.*
 import org.joml.*
@@ -22,9 +21,12 @@ private class ScrollBar(
 ) {
     
     companion object {
-        val trackColor: Vector4fc = Vector4f(0f, 0f, 0f, 0f)
-        val thumbColor: Vector4fc = Vector4f(0.5f, 0.5f, 0.5f, 0.5f)
-        val thumbHoverColor: Vector4fc = Vector4f(0.75f, 0.75f, 0.75f, 0.5f)
+        val defaultTrackColor: Vector4fc
+            = Vector4f(0f, 0f, 0f, 0f)
+        val defaultThumbColor: Vector4fc
+            = Vector4f(0.5f, 0.5f, 0.5f, 0.5f)
+        val defaultThumbHoverColor: Vector4fc
+            = Vector4f(0.75f, 0.75f, 0.75f, 0.5f)
         
         val defaultWidth: UiSize = 1.vmin
     }
@@ -91,13 +93,17 @@ private class ScrollBar(
         return 0f
     }
     
-    fun render(target: ConstFramebuffer) {
+    fun render(
+        target: ConstFramebuffer,
+        trackColor: Vector4fc,
+        thumbColor: Vector4fc, thumbHoverColor: Vector4fc
+    ) {
         fillColor(
-            ScrollBar.trackColor, target,
+            trackColor, target,
             this.track.x, this.track.y, this.track.w, this.track.h
         )
-        val thumbColor = if (!this.thumbHover) { ScrollBar.thumbColor }
-            else { ScrollBar.thumbHoverColor }
+        val thumbColor = if (!this.thumbHover) { thumbColor }
+            else { thumbHoverColor }
         fillColor(
             thumbColor, target,
             this.thumb.x, this.thumb.y, this.thumb.w, this.thumb.h
@@ -128,6 +134,21 @@ class Scroll : GpuUiElement() {
     var scrollBarWidth: UiSize = ScrollBar.defaultWidth
         set(value) {
             field = value
+            this.invalidate()
+        }
+    var trackColor: Vector4fc = ScrollBar.defaultTrackColor
+        set(value) {
+            field = Vector4f(value)
+            this.invalidate()
+        }
+    var thumbColor: Vector4fc = ScrollBar.defaultThumbColor
+        set(value) {
+            field = Vector4f(value)
+            this.invalidate()
+        }
+    var thumbHoverColor: Vector4fc = ScrollBar.defaultThumbHoverColor
+        set(value) {
+            field = Vector4f(value)
             this.invalidate()
         }
     var showHorizBar: Boolean = true
@@ -257,8 +278,12 @@ class Scroll : GpuUiElement() {
             -this.scrollOffsetY.roundToInt(),
             inside.pxWidth, inside.pxHeight
         )
-        this.horizBar?.render(this.target)
-        this.vertBar?.render(this.target)
+        this.horizBar?.render(
+            this.target, this.trackColor, this.thumbColor, this.thumbHoverColor
+        )
+        this.vertBar?.render(
+            this.target, this.trackColor, this.thumbColor, this.thumbHoverColor
+        )
     }
     
     fun requestVisible(relPosX: Int, relPosY: Int, padding: Int = 0) {
@@ -295,6 +320,21 @@ class Scroll : GpuUiElement() {
     fun withoutContent(): Scroll {
         this.inside = null
         this.invalidate()
+        return this
+    }
+
+    fun withTrackColor(trackColor: Vector4fc): Scroll {
+        this.trackColor = trackColor
+        return this
+    }
+
+    fun withThumbColor(thumbColor: Vector4fc): Scroll {
+        this.thumbColor = thumbColor
+        return this
+    }
+
+    fun withThumbHoverColor(thumbHoverColor: Vector4fc): Scroll {
+        this.thumbHoverColor = thumbHoverColor
         return this
     }
     

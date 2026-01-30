@@ -7,6 +7,7 @@ uniform vec2 uBufferSizePx;
 uniform vec2 uAbsOffsetPx;
 
 uniform int uKernelRadius;
+uniform int uKernelSpread;
 uniform sampler2D uKernelWeights;
 
 out vec4 oColor;
@@ -35,7 +36,8 @@ void main() {
     for (int rx = -uKernelRadius; rx <= uKernelRadius; rx += 1)
     for (int ry = -uKernelRadius; ry <= uKernelRadius; ry += 1) {
         float weight = blurWeightAt(rx, ry);
-        vec2 posUv = pxToUv(absPosPx + ivec2(rx, ry), uBackgroundSizePx);
+        ivec2 samplePos = absPosPx + ivec2(rx, ry) * uKernelSpread;
+        vec2 posUv = pxToUv(samplePos, uBackgroundSizePx);
         colorSum += weight * texture(uBackground, posUv);
         weightSum += weight;
     }

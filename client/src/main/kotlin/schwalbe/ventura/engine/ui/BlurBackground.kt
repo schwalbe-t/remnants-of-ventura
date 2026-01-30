@@ -4,10 +4,7 @@ package schwalbe.ventura.engine.ui
 import schwalbe.ventura.engine.gfx.Shader
 import schwalbe.ventura.engine.gfx.Texture
 import org.joml.*
-import schwalbe.ventura.engine.gfx.BufferWriteFreq
 import schwalbe.ventura.engine.gfx.Framebuffer
-import schwalbe.ventura.engine.gfx.UniformBuffer
-import kotlin.math.exp
 
 class BlurBackground : GpuUiElement() {
     
@@ -35,9 +32,21 @@ class BlurBackground : GpuUiElement() {
             require(value in 0..maxValue) {
                 "Blur radius $value is not between 0 and $maxValue"
             }
-            field = value
-            this.computeKernelWeights()
-            this.invalidate()
+            if (field != value) {
+                field = value
+                this.computeKernelWeights()
+                this.invalidate()
+            }
+        }
+    private var spread: Int = 1
+        set(value) {
+            require(value >= 1) {
+                "Blur spread distance must be greater or equal to 1"
+            }
+            if (field != value) {
+                field = value
+                this.invalidate()
+            }
         }
     
     override val children: List<UiElement> = listOf()
@@ -58,6 +67,7 @@ class BlurBackground : GpuUiElement() {
             context.absPxX.toFloat(), context.absPxY.toFloat()
         )
         shader[BlurBg.kernelRadius] = this.radius
+        shader[BlurBg.kernelSpread] = this.spread
         shader[BlurBg.kernelWeights] = kernelWeights
         quad().render(shader, this.target)
     }
@@ -70,6 +80,11 @@ class BlurBackground : GpuUiElement() {
     
     fun withRadius(radius: Int): BlurBackground {
         this.radius = radius
+        return this
+    }
+
+    fun withSpread(spread: Int): BlurBackground {
+        this.spread = spread
         return this
     }
     
