@@ -1,7 +1,7 @@
 
 package schwalbe.ventura.server
 
-import schwalbe.ventura.worlds.WorldData
+import schwalbe.ventura.data.WorldData
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 

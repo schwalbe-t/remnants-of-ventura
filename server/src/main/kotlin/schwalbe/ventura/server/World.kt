@@ -4,8 +4,7 @@ package schwalbe.ventura.server
 import schwalbe.ventura.MAX_NUM_REQUESTED_CHUNKS
 import schwalbe.ventura.net.*
 import schwalbe.ventura.net.PacketType.*
-import schwalbe.ventura.net.SharedPlayerInfo.Animation
-import schwalbe.ventura.worlds.*
+import schwalbe.ventura.data.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {

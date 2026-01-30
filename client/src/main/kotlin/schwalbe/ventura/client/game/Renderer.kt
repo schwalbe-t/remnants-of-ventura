@@ -9,7 +9,7 @@ import schwalbe.ventura.engine.Resource
 import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.net.toVector3f
-import schwalbe.ventura.worlds.RendererConfig
+import schwalbe.ventura.data.RendererConfig
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer

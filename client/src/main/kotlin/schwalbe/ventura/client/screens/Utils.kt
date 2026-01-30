@@ -4,15 +4,13 @@ package schwalbe.ventura.client.screens
 import org.joml.Vector4fc
 import org.joml.Vector4f
 import schwalbe.ventura.engine.ui.*
-import schwalbe.ventura.net.GenericErrorPacket
-import schwalbe.ventura.net.PacketHandler
-import schwalbe.ventura.net.PacketType
-import schwalbe.ventura.net.TaggedErrorPacket
 
-val BASE_FONT_COLOR: Vector4fc      = Vector4f(15f, 15f, 15f, 255f).div(255f)
-val SECONDARY_FONT_COLOR: Vector4fc = Vector4f(128f, 128f, 128f, 255f).div(255f)
-val BUTTON_COLOR: Vector4fc         = Vector4f(25f, 25f, 25f, 25f).div(255f)
-val BUTTON_HOVER_COLOR: Vector4fc   = Vector4f(255f, 255f, 255f, 128f).div(255f)
+val BASE_FONT_COLOR: Vector4fc              = Vector4f(15f, 15f, 15f, 255f).div(255f)
+val SECONDARY_FONT_COLOR: Vector4fc         = Vector4f(128f, 128f, 128f, 255f).div(255f)
+val BRIGHT_FONT_COLOR: Vector4fc            = Vector4f(0.9f, 0.9f, 0.9f, 1f)
+val SECONDARY_BRIGHT_FONT_COLOR: Vector4fc  = Vector4f(0.75f, 0.75f, 0.75f, 1f)
+val BUTTON_COLOR: Vector4fc                 = Vector4f(25f, 25f, 25f, 25f).div(255f)
+val BUTTON_HOVER_COLOR: Vector4fc           = Vector4f(255f, 255f, 255f, 128f).div(255f)
 val INPUT_COLOR: Vector4fc = BUTTON_COLOR
 
 fun createTextInput(
@@ -67,10 +65,12 @@ fun addLabelledInput(
 
 fun createTextButton(
     content: String,
-    handler: () -> Unit
+    handler: () -> Unit,
+    textColor: Vector4fc = BASE_FONT_COLOR
 ): UiElement = createButton(
     content = Text()
         .withText(content)
+        .withColor(textColor)
         .withSize(70.ph)
         .alignCenter()
         .pad(0.75.vmin),

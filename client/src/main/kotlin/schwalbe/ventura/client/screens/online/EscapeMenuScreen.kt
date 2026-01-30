@@ -21,6 +21,7 @@ private fun addOption(
         )
         .add(Text()
             .withText(name)
+            .withColor(BRIGHT_FONT_COLOR)
             .withSize(80.ph)
             .pad(2.vmin)
         )

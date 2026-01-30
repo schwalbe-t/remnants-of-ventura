@@ -24,6 +24,7 @@ class CameraController {
 
     enum class Mode(
         val lookAt: (Renderer, World, CameraController) -> Vector3f,
+        fovDegrees: Float,
         val offsetAngleX: (Renderer, Float, Float) -> Float = { _, _, _ -> 0f },
         val offsetAngleY: (Renderer, Float, Float) -> Float = { _, _, _ -> 0f },
         val distance: (CameraController) -> Float = { c -> c.distance }
@@ -32,22 +33,26 @@ class CameraController {
             lookAt = { _, w, _ -> Vector3f()
                 .add(w.player.position)
                 .add(0f, +1.5f, 0f)
-            }
+            },
+            fovDegrees = 45f
         ),
         PLAYER_ON_SIDE(
             lookAt = { _, w, _ -> Vector3f()
                 .add(w.player.position)
                 .add(0f, +1.5f, 0f)
             },
+            fovDegrees = 20f,
             offsetAngleX = { _, hh, _ -> atan(tan(hh) * -2f/3f) },
             distance = { _ -> 10f }
         );
+
+        val fovRadians: Float = fovDegrees * PI.toFloat() / 180f
 
         private fun computeOffsetAngle(
             renderer: Renderer, f: (Renderer, Float, Float) -> Float
         ): Float {
             val aspect: Float = computeAspect(renderer.dest)
-            val halfVert: Float = computeHalfVert(CameraController.CAMERA_FOV)
+            val halfVert: Float = computeHalfVert(this.fovRadians)
             val halfHoriz: Float = computeHalfHoriz(halfVert, aspect)
             return f(renderer, halfHoriz, halfVert)
         }
@@ -65,7 +70,6 @@ class CameraController {
         const val ZOOM_SPEED: Float = 2f // distance per scrolled notch
 
         val cameraEyeOffsetDir: Vector3fc = Vector3f(0f, +1.75f, +2f).normalize()
-        const val CAMERA_FOV: Float = PI.toFloat() / 4f // 45 degrees
 
         const val FOLLOW_SPEED: Float = 15f // (distance per second) / distance
     }
@@ -81,7 +85,6 @@ class CameraController {
         this.distance = this.distance.coerceIn(
             CameraController.MIN_DISTANCE, CameraController.MAX_DISTANCE
         )
-        camera.fov = CAMERA_FOV
         val targetLookAt: Vector3f
             = this.mode.lookAt(client.renderer, world, this)
         val currPosition: Vector3f = this.position ?: Vector3f(targetLookAt)
@@ -99,6 +102,7 @@ class CameraController {
             .set(CameraController.cameraEyeOffsetDir)
             .mul(dispDistance)
             .add(camera.lookAt)
+        camera.fov = this.mode.fovRadians
         camera.offsetAngleX = this.mode.computeOffsetAngleX(client.renderer)
         camera.offsetAngleY = this.mode.computeOffsetAngleY(client.renderer)
     }

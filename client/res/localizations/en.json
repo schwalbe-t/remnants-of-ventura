@@ -52,6 +52,14 @@
         "ERROR_PASSWORD_TOO_SHORT": "Password too short",
 
         "BUTTON_BACK_TO_GAME": "Back to Game",
-        "BUTTON_LOG_OUT": "Log Out"
+        "BUTTON_LOG_OUT": "Log Out",
+
+
+        "ITEM_CATEGORY_NAME/MISCELLANEOUS": "Miscellaneous",
+
+        "ITEM_TYPE_NAME/TEST": "Test Item",
+        "ITEM_TYPE_DESC/TEST": "An item used for testing the game inventory system.",
+
+        "ITEM_VARIANT_NAME/TEST_RED_HOODIE": "Red"
     }
 }

@@ -2,8 +2,8 @@
 package schwalbe.ventura.net
 
 import kotlinx.serialization.Serializable
-import schwalbe.ventura.worlds.ChunkData
-import schwalbe.ventura.worlds.ChunkRef
+import schwalbe.ventura.data.ChunkData
+import schwalbe.ventura.data.ChunkRef
 import kotlin.uuid.Uuid
 
 @Serializable

@@ -4,20 +4,19 @@ package schwalbe.ventura.client.game
 import schwalbe.ventura.MAX_NUM_REQUESTED_CHUNKS
 import schwalbe.ventura.net.*
 import schwalbe.ventura.net.PacketType.*
-import schwalbe.ventura.worlds.*
+import schwalbe.ventura.data.*
 import schwalbe.ventura.client.Client
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
 import kotlin.collections.asSequence
 import org.joml.Matrix4f
 import org.joml.Matrix4fc
-import org.joml.Vector3f
 import org.joml.Vector3fc
 
 private val objectModels: List<Resource<Model<StaticAnim>>> = ObjectType.entries
     .map {
         Model.loadFile(
-            it.filePath,
+            it.modelPath,
             Renderer.meshProperties,
             textureFilter = Texture.Filter.LINEAR
         )

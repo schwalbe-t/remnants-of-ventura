@@ -1,5 +1,5 @@
 
-package schwalbe.ventura.worlds
+package schwalbe.ventura.data
 
 import kotlinx.serialization.Serializable
 import schwalbe.ventura.net.SerVector3

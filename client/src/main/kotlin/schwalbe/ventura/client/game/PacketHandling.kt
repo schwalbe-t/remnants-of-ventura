@@ -4,7 +4,7 @@ package schwalbe.ventura.client.game
 import schwalbe.ventura.client.Client
 import schwalbe.ventura.net.*
 import schwalbe.ventura.net.PacketType.*
-import schwalbe.ventura.worlds.ConstWorldInfo
+import schwalbe.ventura.data.ConstWorldInfo
 
 fun PacketHandler<Unit>.addErrorLogging() = this
     .onPacket(DOWN_GENERIC_ERROR) { e: GenericErrorPacket, _ ->

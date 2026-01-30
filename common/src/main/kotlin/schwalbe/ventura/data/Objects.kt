@@ -1,17 +1,17 @@
 
-package schwalbe.ventura.worlds
+package schwalbe.ventura.data
 
 import kotlinx.serialization.Serializable
 import schwalbe.ventura.net.SerVector3
 
 @Serializable
 enum class ObjectType(
-    val filePath: String,
+    val modelPath: String,
     val renderOutline: Boolean = true,
     val applyColliders: Boolean = true
 ) {
     ROCK(
-        filePath = "res/objects/rock.glb"
+        modelPath = "res/objects/rock.glb"
     )
 }
 
