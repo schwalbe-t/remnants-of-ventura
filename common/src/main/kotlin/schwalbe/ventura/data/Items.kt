@@ -2,23 +2,30 @@
 package schwalbe.ventura.data
 
 import kotlinx.serialization.Serializable
+import org.joml.Vector3fc
+import org.joml.Vector3f
 
 @Serializable
 enum class ItemCategory {
-    MISCELLANEOUS;
+    DEVELOPMENT_ITEM;
 
     val localNameKey: String
         get() = "ITEM_CATEGORY_NAME/${this.name}"
 }
 
+
 @Serializable
 enum class ItemType(
     val category: ItemCategory,
-    val modelPath: String
+    val modelPath: String,
+    val modelCenter: Vector3fc,
+    val modelSize: Float
 ) {
     TEST(
-        category = ItemCategory.MISCELLANEOUS,
-        modelPath = "res/player.glb"
+        category = ItemCategory.DEVELOPMENT_ITEM,
+        modelPath = "res/player.glb",
+        modelCenter = Vector3f(0f, 5.5f, 0f),
+        modelSize = 11f
     );
 
     val localNameKey: String
@@ -27,17 +34,26 @@ enum class ItemType(
         get() = "ITEM_TYPE_DESC/${this.name}"
 }
 
+
+private fun String.overrides(
+    vararg meshNames: String
+): Map<String, String>
+        = meshNames.associateBy({ it }, { this })
+
 @Serializable
 enum class ItemVariant(
-    val texturePath: String
+    val meshOverrideTexturePaths: Map<String, String> = mapOf()
 ) {
     TEST_RED_HOODIE(
-        texturePath = "res/player_red.png"
+        meshOverrideTexturePaths =
+            "res/player_red.png"
+                .overrides("body", "hair", "eyebrows", "skull")
     );
 
     val localNameKey: String
         get() = "ITEM_VARIANT_NAME/${this.name}"
 }
+
 
 @Serializable
 data class Item(

@@ -34,6 +34,13 @@ class Stack : GpuUiElement() {
         this.invalidate()
         return this
     }
+
+    fun withoutContent(): Stack {
+        this.inside.forEach(UiElement::disposeTree)
+        this.inside.clear()
+        this.invalidate()
+        return this
+    }
     
     fun map(f: (UiElement) -> UiElement): Stack {
         this.inside = this.inside

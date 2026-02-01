@@ -6,6 +6,7 @@ import schwalbe.ventura.net.*
 import schwalbe.ventura.net.PacketType.*
 import schwalbe.ventura.data.*
 import schwalbe.ventura.client.Client
+import schwalbe.ventura.client.Renderer
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
 import kotlin.collections.asSequence
@@ -14,13 +15,11 @@ import org.joml.Matrix4fc
 import org.joml.Vector3fc
 
 private val objectModels: List<Resource<Model<StaticAnim>>> = ObjectType.entries
-    .map {
-        Model.loadFile(
-            it.modelPath,
-            Renderer.meshProperties,
-            textureFilter = Texture.Filter.LINEAR
-        )
-    }
+    .map { Model.loadFile(
+        it.modelPath,
+        Renderer.meshProperties,
+        textureFilter = Texture.Filter.LINEAR
+    ) }
 
 private fun computeChunkInstances(
     data: ChunkData

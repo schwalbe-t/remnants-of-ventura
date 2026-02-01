@@ -89,6 +89,7 @@ class Padding : GpuUiElement() {
     }
     
     fun withoutContent(): Padding {
+        this.inside?.disposeTree()
         this.inside = null
         this.invalidate()
         return this

@@ -70,7 +70,8 @@ class Model<A : Animations<A>>(
         instanceCount: Int = 1,
         faceCulling: FaceCulling = FaceCulling.DISABLED,
         depthTesting: DepthTesting = DepthTesting.ENABLED,
-        renderedMeshes: Collection<String>? = null
+        renderedMeshes: Collection<String>? = null,
+        meshTextureOverrides: Map<String, Texture>? = null
     ) {
         val nodeTransforms: Map<String, Matrix4fc>
             = animState?.computeJointTransforms(this) ?: mapOf()
@@ -86,7 +87,8 @@ class Model<A : Animations<A>>(
                         else { node.localTransform }
                 }
                 if (texture != null) {
-                    shader[texture] = mesh.texture
+                    shader[texture] = meshTextureOverrides?.get(mesh.name)
+                        ?: mesh.texture
                 }
                 if (jointTransforms != null) {
                     shader[jointTransforms] = mesh.bones

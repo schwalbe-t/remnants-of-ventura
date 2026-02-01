@@ -1,6 +1,7 @@
 
 package schwalbe.ventura.client.screens
 
+import schwalbe.ventura.client.screens.online.ItemDisplay
 import schwalbe.ventura.engine.Resource
 import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.engine.gfx.Shader
@@ -26,8 +27,11 @@ val googleSansI: Resource<Font>
 val gridShader: Resource<Shader<GridVert, GridFrag>>
     = Shader.loadGlsl(GridVert, GridFrag)
 
-fun submitScreenResources(loader: ResourceLoader) = loader.submitAll(
-    jetbrainsMonoSb, jetbrainsMonoB,
-    googleSansR, googleSansSb, googleSansI,
-    gridShader, gridQuad
-)
+fun submitScreenResources(loader: ResourceLoader) {
+    loader.submitAll(
+        jetbrainsMonoSb, jetbrainsMonoB,
+        googleSansR, googleSansSb, googleSansI,
+        gridShader, gridQuad
+    )
+    ItemDisplay.submitResources(loader)
+}

@@ -3,7 +3,6 @@ package schwalbe.ventura.client
 
 import schwalbe.ventura.client.screens.GameScreen
 import schwalbe.ventura.client.game.World
-import schwalbe.ventura.client.game.Renderer
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.engine.*

@@ -1,15 +1,16 @@
 
 package schwalbe.ventura.client.game
 
-import org.joml.Vector3f
-import org.joml.Vector3fc
 import schwalbe.ventura.client.Camera
 import schwalbe.ventura.client.Client
+import schwalbe.ventura.client.Renderer
 import schwalbe.ventura.engine.gfx.ConstFramebuffer
 import schwalbe.ventura.engine.input.Mouse
 import kotlin.math.PI
 import kotlin.math.atan
 import kotlin.math.tan
+import org.joml.Vector3f
+import org.joml.Vector3fc
 
 private fun computeAspect(fb: ConstFramebuffer): Float
     = fb.width.toFloat() / fb.height.toFloat()

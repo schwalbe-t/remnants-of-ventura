@@ -9,7 +9,6 @@ layout(location = 4) in vec4 vBoneWeights;
 
 uniform float uOutlineThickness;
 
-out vec3 fNormal;
 out vec2 fTexCoords;
 
 void main(void) {
@@ -26,10 +25,9 @@ void main(void) {
         + (mat3(uJointTransforms[vBoneIds[2]]) * vNormal) * vBoneWeights[2]
         + (mat3(uJointTransforms[vBoneIds[3]]) * vNormal) * vBoneWeights[3];
     vec4 posWorld = instance * uLocalTransform * posSkinned;
-    vec3 normWorldRaw = mat3(instance) * mat3(uLocalTransform) * normalSkinned;
-    vec3 normWorld = normalize(normWorldRaw);
-    vec4 posOffset = posWorld + vec4(normWorld * uOutlineThickness, 0.0);
+    vec3 normWorld = mat3(instance) * mat3(uLocalTransform) * normalSkinned;
+    vec3 normWorldNorm = normalize(normWorld);
+    vec4 posOffset = posWorld + vec4(normWorldNorm * uOutlineThickness, 0.0);
     gl_Position = uViewProjection * posOffset;
     fTexCoords = vTexCoords;
-    fNormal = normWorld;
 }

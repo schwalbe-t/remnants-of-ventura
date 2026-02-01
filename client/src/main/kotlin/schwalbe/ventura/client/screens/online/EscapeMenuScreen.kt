@@ -71,7 +71,10 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
         client.nav.pop()
         client.nav.pop()
     })
-    screen.add(layer = -1, element = background)
+    screen.add(layer = -1, element = Stack()
+        .add(background)
+        .add(FlatBackground().withColor(PANEL_BACKGROUND))
+    )
     screen.add(layer = 0, element = Axis.column()
         .add(50.ph - (areaSize / 2), Space())
         .add(areaSize, options

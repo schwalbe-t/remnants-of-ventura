@@ -1,15 +1,13 @@
 
-package schwalbe.ventura.client.game
+package schwalbe.ventura.client
 
-import org.joml.Matrix4f
-import org.joml.Matrix4fc
-import schwalbe.ventura.client.Camera
-import schwalbe.ventura.client.computeViewProj
 import schwalbe.ventura.engine.Resource
 import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.net.toVector3f
 import schwalbe.ventura.data.RendererConfig
+import org.joml.Matrix4f
+import org.joml.Matrix4fc
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -98,7 +96,6 @@ class Renderer(val dest: ConstFramebuffer) {
 
 
     val camera = Camera()
-    val sun = Camera()
 
     var config: RendererConfig = RendererConfig.default
 
@@ -122,12 +119,15 @@ class Renderer(val dest: ConstFramebuffer) {
         instances: Iterable<Matrix4fc> = listOf(Matrix4f()),
         faceCulling: FaceCulling = FaceCulling.DISABLED,
         depthTesting: DepthTesting = DepthTesting.ENABLED,
-        renderedMeshes: Collection<String>? = null
+        renderedMeshes: Collection<String>? = null,
+        meshTextureOverrides: Map<String, Texture>? = null
     ) {
         this.render(
             model,
             geometryShader(), GeometryVert.renderer, GeometryFrag.renderer,
-            animState, instances, faceCulling, depthTesting, renderedMeshes
+            animState, instances,
+            faceCulling, depthTesting,
+            renderedMeshes, meshTextureOverrides
         )
     }
 
@@ -137,7 +137,8 @@ class Renderer(val dest: ConstFramebuffer) {
         animState: AnimState<A>? = null,
         instances: Iterable<Matrix4fc> = listOf(Matrix4f()),
         depthTesting: DepthTesting = DepthTesting.ENABLED,
-        renderedMeshes: Collection<String>? = null
+        renderedMeshes: Collection<String>? = null,
+        meshTextureOverrides: Map<String, Texture>? = null
     ) {
         val shader = outlineShader()
         shader[OutlineVert.outlineThickness] = outlineThickness
@@ -145,8 +146,8 @@ class Renderer(val dest: ConstFramebuffer) {
             model,
             shader, OutlineVert.renderer, OutlineFrag.renderer,
             animState, instances,
-            FaceCulling.FRONT,
-            depthTesting, renderedMeshes
+            FaceCulling.FRONT, depthTesting,
+            renderedMeshes, meshTextureOverrides
         )
     }
 
@@ -159,7 +160,8 @@ class Renderer(val dest: ConstFramebuffer) {
         instances: Iterable<Matrix4fc> = listOf(Matrix4f()),
         faceCulling: FaceCulling = FaceCulling.DISABLED,
         depthTesting: DepthTesting = DepthTesting.ENABLED,
-        renderedMeshes: Collection<String>? = null
+        renderedMeshes: Collection<String>? = null,
+        meshTextureOverrides: Map<String, Texture>? = null
     ) {
         val cfg = this.config
         shader[vertShader.viewProjection] = this.viewProj
@@ -186,7 +188,8 @@ class Renderer(val dest: ConstFramebuffer) {
                 vertShader.jointTransforms,
                 animState,
                 instanceCount = batchSize,
-                faceCulling, depthTesting, renderedMeshes
+                faceCulling, depthTesting,
+                renderedMeshes, meshTextureOverrides
             )
             batch.clear()
         }
