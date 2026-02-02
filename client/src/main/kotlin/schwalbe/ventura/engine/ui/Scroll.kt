@@ -4,6 +4,7 @@ package schwalbe.ventura.engine.ui
 import schwalbe.ventura.engine.gfx.Texture
 import schwalbe.ventura.engine.gfx.ConstFramebuffer
 import schwalbe.ventura.engine.input.*
+import schwalbe.ventura.engine.*
 import org.joml.*
 import kotlin.math.roundToInt
 
@@ -113,23 +114,20 @@ private class ScrollBar(
 }
 
 class Scroll : GpuUiElement() {
-    
+
+    companion object {
+        const val SCROLL_SPEED: Float = 1f / 10f // viewportsize / notch
+        const val SCROLL_RESPONSE: Float = 15f
+    }
+
+
     var inside: UiElement? = null
         private set
     
     override val children: List<UiElement>
         get() = listOfNotNull(this.inside)
-    
-    var scrollOffsetX: Float = 0f
-        set(value) {
-            if (field != value) { this.invalidate() }
-            field = value
-        }
-    var scrollOffsetY: Float = 0f
-        set(value) {
-            if (field != value) { this.invalidate() }
-            field = value
-        }
+
+    var scrollOffset: SmoothedVector2f = Vector2f().smoothed(SCROLL_RESPONSE)
     
     var scrollBarWidth: UiSize = ScrollBar.defaultWidth
         set(value) {
@@ -167,13 +165,24 @@ class Scroll : GpuUiElement() {
     
     private var barWidth: Int = 0
     private var hBarHeight: Int = 0
+        set(value) {
+            if (field != value) { this.inside?.invalidate() }
+            field = value
+        }
     private var vBarWidth: Int = 0
+        set(value) {
+            if (field != value) { this.inside?.invalidate() }
+            field = value
+        }
     
     private var horizBar: ScrollBar? = null
     private var vertBar: ScrollBar? = null
     
     private fun updateDimensions(context: UiElementContext) {
         val inside: UiElement = this.inside ?: return
+        inside.update(context.childContext(
+            this, 0, 0, this.pxWidth, this.pxHeight
+        ))
         val bw: Int = this.scrollBarWidth(context).roundToInt()
         this.barWidth = bw
         // bar display and widths
@@ -192,7 +201,7 @@ class Scroll : GpuUiElement() {
         this.horizBar?.updateLayout(
             0, this.pxHeight - this.barWidth, bw, horizLength,
             dirX = 1, dirY = 0, orthoX = 0, orthoY = 1,
-            this.scrollOffsetX.roundToInt(), inside.pxWidth
+            this.scrollOffset.value.x().roundToInt(), inside.pxWidth
         )
         val showVert: Boolean = this.shouldShowVertBar
         if (showVert != (this.vertBar != null)) {
@@ -202,7 +211,7 @@ class Scroll : GpuUiElement() {
         this.vertBar?.updateLayout(
             this.pxWidth - this.barWidth, 0, bw, vertLength,
             dirX = 0, dirY = 1, orthoX = 1, orthoY = 0,
-            this.scrollOffsetY.roundToInt(), inside.pxHeight
+            this.scrollOffset.value.y().roundToInt(), inside.pxHeight
         )
     }
     
@@ -215,21 +224,20 @@ class Scroll : GpuUiElement() {
             = maxOf(inside.pxWidth - this.pxWidth + this.vBarWidth, 0)
         val vertScrollLimit: Int
             = maxOf(inside.pxHeight - this.pxHeight + this.hBarHeight, 0)
-        this.scrollOffsetX = this.scrollOffsetX
+        this.scrollOffset.target.x = this.scrollOffset.target.x()
             .coerceIn(0f, horizScrollLimit.toFloat())
-        this.scrollOffsetY = this.scrollOffsetY
+        this.scrollOffset.target.y = this.scrollOffset.target.y()
             .coerceIn(0f, vertScrollLimit.toFloat())
     }
-        
+
     override fun captureInput(context: UiElementContext) {
-        this.scrollOffsetX += this.horizBar?.updateThumb(
+        this.scrollOffset.target.x += this.horizBar?.updateThumb(
             context.absPxX, context.absPxY, 1, 0, this, context.global.nav.input
         ) ?: 0f
-        this.scrollOffsetY += this.vertBar?.updateThumb(
+        this.scrollOffset.target.y += this.vertBar?.updateThumb(
             context.absPxX, context.absPxY, 0, 1, this, context.global.nav.input
         ) ?: 0f
         this.updateChildren(context, UiElement::captureInput)
-        val inside: UiElement = this.inside ?: return
         val rawAbsRight: Int = context.absPxX + this.pxWidth - this.vBarWidth
         val rawAbsBottom: Int = context.absPxY + this.pxHeight - this.hBarHeight
         val isInside: Boolean = Mouse.isInsideArea(
@@ -238,19 +246,24 @@ class Scroll : GpuUiElement() {
             context.closestVisibleY(rawAbsBottom)
         )
         if (isInside) {
-            val lineHeight: Float = context.global.nav.defaultFontSize(context)
             for (e in context.global.nav.input.remainingOfType<MouseScroll>()) {
                 if (this.shouldShowHorizBar) {
-                    this.scrollOffsetX -= e.offset.x() * lineHeight
+                    val step: Float = this.pxWidth * SCROLL_SPEED
+                    this.scrollOffset.target.x -= e.offset.x() * step
                 }
                 if (this.shouldShowVertBar) {
-                    this.scrollOffsetY -= e.offset.y() * lineHeight
+                    val step: Float = this.pxHeight * SCROLL_SPEED
+                    this.scrollOffset.target.y -= e.offset.y() * step
                 }
                 context.global.nav.input.remove(e)
                 this.invalidate()
             }
         }
         this.limitScrollOffsets()
+        this.scrollOffset.update()
+        if (!this.scrollOffset.isResting) {
+            this.invalidate()
+        }
     }
     
     override fun updateChildren(
@@ -259,8 +272,8 @@ class Scroll : GpuUiElement() {
         val inside: UiElement = this.inside ?: return
         val childContext = context.childContext(
             this,
-            -this.scrollOffsetX.roundToInt(),
-            -this.scrollOffsetY.roundToInt(),
+            -this.scrollOffset.value.x().roundToInt(),
+            -this.scrollOffset.value.y().roundToInt(),
             this.pxWidth - this.vBarWidth,
             this.pxHeight - this.hBarHeight
         )
@@ -274,8 +287,8 @@ class Scroll : GpuUiElement() {
         this.prepareTarget()
         blitTexture(
             insideTex, this.target,
-            -this.scrollOffsetX.roundToInt(),
-            -this.scrollOffsetY.roundToInt(),
+            -this.scrollOffset.value.x().roundToInt(),
+            -this.scrollOffset.value.y().roundToInt(),
             inside.pxWidth, inside.pxHeight
         )
         this.horizBar?.render(
@@ -287,17 +300,18 @@ class Scroll : GpuUiElement() {
     }
     
     fun requestVisible(relPosX: Int, relPosY: Int, padding: Int = 0) {
-        val outerX: Int = relPosX - this.scrollOffsetX.roundToInt()
-        val outerY: Int = relPosY - this.scrollOffsetY.roundToInt()
+        val outerX: Int = relPosX - this.scrollOffset.target.x().roundToInt()
+        val outerY: Int = relPosY - this.scrollOffset.target.y().roundToInt()
         val deltaLeft = 0 - (outerX - padding)
         val deltaTop = 0 - (outerY - padding)
         val deltaRight = (outerX + padding) - (this.pxWidth - this.vBarWidth)
         val deltaBottom = (outerY + padding) - (this.pxHeight - this.hBarHeight)
-        if (deltaLeft > 0) { this.scrollOffsetX -= deltaLeft }
-        if (deltaRight > 0) { this.scrollOffsetX += deltaRight }
-        if (deltaTop > 0) { this.scrollOffsetY -= deltaTop }
-        if (deltaBottom > 0) { this.scrollOffsetY += deltaBottom }
+        if (deltaLeft > 0) { this.scrollOffset.target.x -= deltaLeft }
+        if (deltaRight > 0) { this.scrollOffset.target.x += deltaRight }
+        if (deltaTop > 0) { this.scrollOffset.target.y -= deltaTop }
+        if (deltaBottom > 0) { this.scrollOffset.target.y += deltaBottom }
         this.limitScrollOffsets()
+        this.scrollOffset.snapToTarget()
     }
     
     fun withBarsEnabled(horiz: Boolean = true, vert: Boolean = true): Scroll {
@@ -343,8 +357,7 @@ class Scroll : GpuUiElement() {
 fun UiElement.wrapScrolling(
     horiz: Boolean = true, vert: Boolean = true,
     barWidth: UiSize = ScrollBar.defaultWidth
-): Scroll
-    = Scroll()
-        .withBarsEnabled(horiz, vert)
-        .withBarWidth(barWidth)
-        .withContent(this)
+): Scroll = Scroll()
+    .withBarsEnabled(horiz, vert)
+    .withBarWidth(barWidth)
+    .withContent(this)

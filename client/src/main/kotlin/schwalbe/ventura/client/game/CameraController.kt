@@ -11,6 +11,9 @@ import kotlin.math.atan
 import kotlin.math.tan
 import org.joml.Vector3f
 import org.joml.Vector3fc
+import schwalbe.ventura.engine.SmoothedFloat
+import schwalbe.ventura.engine.SmoothedVector3f
+import schwalbe.ventura.engine.smoothed
 
 private fun computeAspect(fb: ConstFramebuffer): Float
     = fb.width.toFloat() / fb.height.toFloat()
@@ -28,7 +31,7 @@ class CameraController {
         fovDegrees: Float,
         val offsetAngleX: (Renderer, Float, Float) -> Float = { _, _, _ -> 0f },
         val offsetAngleY: (Renderer, Float, Float) -> Float = { _, _, _ -> 0f },
-        val distance: (CameraController) -> Float = { c -> c.distance }
+        val distance: (CameraController) -> Float = { c -> c.userDistance }
     ) {
         PLAYER_AT_CENTER(
             lookAt = { _, w, _ -> Vector3f()
@@ -68,44 +71,56 @@ class CameraController {
     companion object {
         const val MIN_DISTANCE: Float = 4f
         const val MAX_DISTANCE: Float = 20f
+        const val START_DISTANCE: Float = 12f
         const val ZOOM_SPEED: Float = 2f // distance per scrolled notch
-
-        val cameraEyeOffsetDir: Vector3fc = Vector3f(0f, +1.75f, +2f).normalize()
-
-        const val FOLLOW_SPEED: Float = 15f // (distance per second) / distance
+        val CAMERA_EYE_OFFSET_DIR: Vector3fc
+            = Vector3f(0f, +1.75f, +2f).normalize()
+        const val POSITION_RESPONSE: Float = 15f
+        const val POSITION_EPSILON: Float = 0.01f
     }
 
 
     var mode: Mode = Mode.PLAYER_AT_CENTER
-    var distance: Float = CameraController.MIN_DISTANCE +
-        (CameraController.MAX_DISTANCE - CameraController.MIN_DISTANCE) / 2f
-    var position: Vector3f? = null
+    var userDistance: Float = START_DISTANCE
+
+    var lookAt: SmoothedVector3f? = null
+    val distance: SmoothedFloat = START_DISTANCE
+        .smoothed(response = 10f, epsilon = 0.01f)
+    val fov: SmoothedFloat = this.mode.fovRadians
+        .smoothed(response = 10f, epsilon = 0.0001f)
+    val offsetAngleX: SmoothedFloat = 0f
+        .smoothed(response = 10f, epsilon = 0.0001f)
+    val offsetAngleY: SmoothedFloat = 0f
+        .smoothed(response = 10f, epsilon = 0.0001f)
 
     fun update(camera: Camera, client: Client, world: World) {
-        this.distance -= Mouse.scrollOffset.y() * CameraController.ZOOM_SPEED
-        this.distance = this.distance.coerceIn(
-            CameraController.MIN_DISTANCE, CameraController.MAX_DISTANCE
-        )
-        val targetLookAt: Vector3f
-            = this.mode.lookAt(client.renderer, world, this)
-        val currPosition: Vector3f = this.position ?: Vector3f(targetLookAt)
-        this.position = currPosition
-        val toTarget = targetLookAt.sub(currPosition)
-        val remDist: Float = toTarget.length()
-        if (remDist > 0f) {
-            val currSpeed: Float = CameraController.FOLLOW_SPEED * remDist
-            val movedDist: Float = minOf(remDist, client.deltaTime * currSpeed)
-            currPosition.add(toTarget.normalize().mul(movedDist))
-        }
-        val dispDistance: Float = this.mode.distance(this)
-        camera.lookAt.set(currPosition)
+        this.userDistance -= Mouse.scrollOffset.y() * ZOOM_SPEED
+        this.userDistance = this.userDistance
+            .coerceIn(MIN_DISTANCE, MAX_DISTANCE)
+        val m: Mode = this.mode
+        val targetLookAt: Vector3f = m.lookAt(client.renderer, world, this)
+        val lookAt: SmoothedVector3f = this.lookAt
+            ?: Vector3f(targetLookAt)
+                .smoothed(POSITION_RESPONSE, POSITION_EPSILON)
+        this.lookAt = lookAt
+        lookAt.target.set(targetLookAt)
+        this.distance.target = m.distance(this)
+        this.fov.target = m.fovRadians
+        this.offsetAngleX.target = m.computeOffsetAngleX(client.renderer)
+        this.offsetAngleY.target = m.computeOffsetAngleY(client.renderer)
+        lookAt.update()
+        this.distance.update()
+        this.fov.update()
+        this.offsetAngleX.update()
+        this.offsetAngleY.update()
+        camera.lookAt.set(lookAt.value)
         camera.position
-            .set(CameraController.cameraEyeOffsetDir)
-            .mul(dispDistance)
+            .set(CAMERA_EYE_OFFSET_DIR)
+            .mul(this.distance.value)
             .add(camera.lookAt)
-        camera.fov = this.mode.fovRadians
-        camera.offsetAngleX = this.mode.computeOffsetAngleX(client.renderer)
-        camera.offsetAngleY = this.mode.computeOffsetAngleY(client.renderer)
+        camera.fov = this.fov.value
+        camera.offsetAngleX = this.offsetAngleX.value
+        camera.offsetAngleY = this.offsetAngleY.value
     }
 
 }
