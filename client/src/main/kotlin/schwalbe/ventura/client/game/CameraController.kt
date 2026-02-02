@@ -76,7 +76,7 @@ class CameraController {
     }
 
 
-    var mode: Mode = Mode.PLAYER_ON_SIDE
+    var mode: Mode = Mode.PLAYER_AT_CENTER
     var distance: Float = CameraController.MIN_DISTANCE +
         (CameraController.MAX_DISTANCE - CameraController.MIN_DISTANCE) / 2f
     var position: Vector3f? = null

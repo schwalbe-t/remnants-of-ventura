@@ -32,7 +32,7 @@ open class Axis(
     override fun updateLayout(context: UiElementContext) {
         var offset = 0
         for (entry in this.inside) {
-            val size: Int = entry.size(context).roundToInt()
+            val size: Int = maxOf(entry.size(context).roundToInt(), 0)
             val innerRelPxX: Int = dirX * offset
             val innerRelPXY: Int = dirY * offset
             val innerWidth: Int = dirX * size + orthoX * context.parentPxWidth

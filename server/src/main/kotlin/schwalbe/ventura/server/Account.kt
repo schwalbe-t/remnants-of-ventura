@@ -17,7 +17,7 @@ import java.security.SecureRandom
 
 class Account {
     companion object {
-        val SESSION_CREATION_COOLDOWN = DateTimePeriod(seconds = 5) // TODO! revert to minutes = 1
+        val SESSION_CREATION_COOLDOWN = DateTimePeriod(minutes = 1)
     }
 }
 

@@ -43,6 +43,7 @@
         "BUTTON_SIGN_UP": "Create Account",
 
         "TITLE_INVENTORY": "Inventory",
+        "PLACEHOLDER_INVENTORY_EMPTY": "Your inventory is empty.",
 
         "ERROR_INVALID_ACCOUNT_PARAMS": "Username already exists",
         "ERROR_INVALID_ACCOUNT_CREDS": "Username or password is invalid",
@@ -61,6 +62,8 @@
 
         "ITEM_TYPE_NAME/TEST": "Test Item",
         "ITEM_TYPE_DESC/TEST": "An item used for testing the game inventory system. It has a fairly long description to make sure the inventory UI can deal with displaying all of it. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed maximus faucibus elit, in rhoncus elit. Aliquam eleifend nec ligula at tempor. Quisque molestie sem nec turpis vestibulum, et eleifend est tincidunt. Praesent velit ipsum, auctor et ornare et, volutpat vitae turpis. Vivamus sed urna lobortis, posuere nisi sed, molestie lorem. Donec eros augue, luctus eget velit ut, ultricies pulvinar ipsum. Mauris tincidunt felis non risus aliquet, sit amet euismod mauris fringilla. Nam sit amet volutpat erat. Ut eu blandit libero. Cras vulputate elit ante, ornare elementum ex ornare nec. Nulla eu maximus metus. Donec dapibus sollicitudin tellus, eget congue orci pulvinar sed. Nulla facilisi. Maecenas molestie scelerisque risus, vitae elementum velit posuere et. Aliquam erat volutpat. Curabitur volutpat venenatis ante et egestas. Vivamus eleifend sagittis ligula, vitae convallis lorem sollicitudin ac. Aliquam convallis sapien risus, eu interdum elit luctus facilisis. Morbi ac lorem ornare, tincidunt ipsum quis, finibus massa. Sed dapibus vestibulum dui, vel interdum lorem blandit ut. Mauris non enim lectus. Nulla et lectus ut lorem imperdiet mollis ac ut odio.",
+        "ITEM_TYPE_NAME/ROCK": "Rock",
+        "ITEM_TYPE_DESC/ROCK": "Literally just a rock",
 
         "ITEM_VARIANT_NAME/TEST_RED_HOODIE": "Red"
     }

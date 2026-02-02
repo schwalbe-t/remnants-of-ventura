@@ -75,18 +75,12 @@ fun main() {
     val worlds = WorldRegistry(playerWriter, baseWorld)
 
     val port: Int = getPort()
-    val createPlayerData = {
-        val pd = PlayerData(ArrayDeque())
-        pd.worlds.add(worlds.baseWorld.createPlayerEntry())
-        pd
-    }
     val server = Server(
         getKeyStorePath(),
         getKeyStoreAlias(),
         getKeyStorePass(),
         port,
-        worlds,
-        createPlayerData
+        worlds
     )
     println("Listening on port $port")
 

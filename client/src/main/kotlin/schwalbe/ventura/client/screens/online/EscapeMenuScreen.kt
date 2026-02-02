@@ -49,7 +49,7 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
             client.nav.replace(serverConnectionFailedScreen(reason, client))
             client.network.clearError()
         }),
-        packets = PacketHandler<Unit>()
+        packets = PacketHandler.receiveDownPackets<Unit>()
             .addErrorLogging()
             .addWorldHandling(client),
         navigator = client.nav

@@ -26,6 +26,12 @@ enum class ItemType(
         modelPath = "res/player.glb",
         modelCenter = Vector3f(0f, 5.5f, 0f),
         modelSize = 11f
+    ),
+    ROCK(
+        category = ItemCategory.DEVELOPMENT_ITEM,
+        modelPath = "res/objects/rock.glb",
+        modelCenter = Vector3f(0f, 1.5f, 0f),
+        modelSize = 4.5f
     );
 
     val localNameKey: String

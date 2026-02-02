@@ -12,7 +12,7 @@ import kotlinx.serialization.serializer
  * `PacketHandler` may be used to deserialize and handle different packet types.
  * `PacketOutStream` may be used to send sockets into a socket.
  */
-class Packet(val type: PacketType, val payload: ByteArray) {
+class Packet(val type: Short, val payload: ByteArray) {
     
     companion object {
         
@@ -22,9 +22,11 @@ class Packet(val type: PacketType, val payload: ByteArray) {
          * @param T the type of the unserialized payload
          * @return the created packet
          */
-        inline fun<reified T> serialize(type: PacketType, payload: T): Packet {
-            val bytes = Cbor.encodeToByteArray(serializer<T>(), payload)
-            return Packet(type, bytes)
+        inline fun <reified P> serialize(
+            type: PacketType<P>, payload: P
+        ): Packet {
+            val bytes = Cbor.encodeToByteArray(serializer<P>(), payload)
+            return Packet(type.ordinal.toShort(), bytes)
         }
     
     }

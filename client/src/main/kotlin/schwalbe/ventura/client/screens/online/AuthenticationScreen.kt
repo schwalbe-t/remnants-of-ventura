@@ -12,7 +12,6 @@ import schwalbe.ventura.client.game.addErrorLogging
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.net.*
-import schwalbe.ventura.net.PacketType.*
 
 fun serverAuthenticationScreen(
     name: String, client: Client
@@ -21,9 +20,9 @@ fun serverAuthenticationScreen(
     val statusText = Text()
     var username: String = ""
     var password: String = ""
-    val packets = PacketHandler<Unit>()
+    val packets = PacketHandler.receiveDownPackets<Unit>()
         .addErrorLogging()
-        .onPacket(DOWN_TAGGED_ERROR) { p: TaggedErrorPacket, _ ->
+        .onPacket(PacketType.TAGGED_ERROR) { p: TaggedErrorPacket, _ ->
             when (p) {
                 TaggedErrorPacket.INVALID_ACCOUNT_PARAMS -> {
                     statusText.withText(l[ERROR_INVALID_ACCOUNT_PARAMS])
@@ -48,24 +47,26 @@ fun serverAuthenticationScreen(
             client.config.sessions.remove(name)
             client.config.write()
         }
-        .onPacket(DOWN_CREATE_ACCOUNT_SUCCESS) { _: Unit, _ ->
+        .onPacket(PacketType.CREATE_ACCOUNT_SUCCESS) { _, _ ->
             println("Created account with username '$username'")
             println("Logging in as user '$username'")
             client.network.outPackets?.send(Packet.serialize(
-                UP_CREATE_SESSION, AccountCredPacket(username, password)
+                PacketType.CREATE_SESSION,
+                AccountCredPacket(username, password)
             ))
         }
-        .onPacket(DOWN_CREATE_SESSION_SUCCESS) { p: SessionTokenPacket, _ ->
+        .onPacket(PacketType.CREATE_SESSION_SUCCESS) { token, _ ->
             println("Created session for user '$username'")
             client.config.sessions[name] = Config.Session(
-                username, token = p.token
+                username, token = token.token
             )
             client.config.write()
             client.network.outPackets?.send(Packet.serialize(
-                UP_LOGIN_SESSION, SessionCredPacket(username, p.token)
+                PacketType.LOGIN_SESSION,
+                SessionCredPacket(username, token.token)
             ))
         }
-        .onPacket(DOWN_LOGIN_SESSION_SUCCESS) { _: Unit, _ ->
+        .onPacket(PacketType.LOGIN_SESSION_SUCCESS) { _, _ ->
             println("Logged in as user '$username'")
             client.username = username
             client.nav.replace(controllingPlayerScreen(client))
@@ -84,7 +85,7 @@ fun serverAuthenticationScreen(
         username = savedSession.username
         println("Using saved session for user '${savedSession.username}'")
         client.network.outPackets?.send(Packet.serialize(
-            UP_LOGIN_SESSION,
+            PacketType.LOGIN_SESSION,
             SessionCredPacket(savedSession.username, savedSession.token)
         ))
     }
@@ -110,11 +111,10 @@ fun serverAuthenticationScreen(
                 username = loginUsername.valueString.trim()
                 password = loginPassword.valueString
                 println("Logging in as user '$username'")
-                client.network.outPackets?.send(
-                    Packet.serialize(
-                        UP_CREATE_SESSION, AccountCredPacket(username, password)
-                    )
-                )
+                client.network.outPackets?.send(Packet.serialize(
+                    PacketType.CREATE_SESSION,
+                    AccountCredPacket(username, password)
+                ))
             }
         ).pad(top = 2.vmin, left = 30.pw, right = 30.pw)
     )
@@ -155,11 +155,10 @@ fun serverAuthenticationScreen(
                     return@signUp
                 }
                 println("Creating account with username '$username'")
-                client.network.outPackets?.send(
-                    Packet.serialize(
-                        UP_CREATE_ACCOUNT, AccountCredPacket(username, password)
-                    )
-                )
+                client.network.outPackets?.send(Packet.serialize(
+                    PacketType.CREATE_ACCOUNT,
+                    AccountCredPacket(username, password)
+                ))
             }
         ).pad(top = 2.vmin, left = 30.pw, right = 30.pw)
     )

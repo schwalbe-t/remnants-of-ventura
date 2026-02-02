@@ -4,31 +4,57 @@ package schwalbe.ventura.net
 import kotlinx.serialization.Serializable
 import schwalbe.ventura.data.ChunkData
 import schwalbe.ventura.data.ChunkRef
+import schwalbe.ventura.data.ConstWorldInfo
+import schwalbe.ventura.data.Item
 import kotlin.uuid.Uuid
 
-@Serializable
-enum class PacketType {
-    DOWN_GENERIC_ERROR,             // GenericErrorPacket
-    DOWN_TAGGED_ERROR,              // TaggedErrorPacket
+enum class PacketDirection { UP, DOWN }
 
-    UP_CREATE_ACCOUNT,              // AccountCredPacket 
-    DOWN_CREATE_ACCOUNT_SUCCESS,    // Unit
-    UP_CREATE_SESSION,              // AccountCredPacket
-    DOWN_CREATE_SESSION_SUCCESS,    // SessionTokenPacket
-    UP_LOGIN_SESSION,               // SessionCredPacket
-    DOWN_LOGIN_SESSION_SUCCESS,     // Unit
+data class PacketType<P>(
+    val ordinal: Int, val direction: PacketDirection
+) { companion object {
 
-    DOWN_BEGIN_WORLD_CHANGE,        // Unit
-    DOWN_COMPLETE_WORLD_CHANGE,     // WorldEntryPacket
-    UP_REQUEST_WORLD_INFO,          // Unit
-    DOWN_CONST_WORLD_INFO,          // ConstWorldInfo
-    UP_REQUEST_CHUNK_CONTENTS,      // RequestedChunksPacket
-    DOWN_CHUNK_CONTENTS,            // ChunkContentsPacket
-    UP_REQUEST_WORLD_LEAVE,         // Unit
+    private var nextId: Int = 0
+    private fun pollNextPacketId(): Int {
+        this.nextId += 1
+        return this.nextId - 1
+    }
 
-    UP_PLAYER_STATE,                // SharedPlayerInfo
-    DOWN_WORLD_STATE,               // WorldStatePacket
-}
+    private fun <P> up() = PacketType<P>(
+        this.pollNextPacketId(), PacketDirection.UP
+    )
+    private fun <P> down() = PacketType<P>(
+        this.pollNextPacketId(), PacketDirection.DOWN
+    )
+
+
+    val GENERIC_ERROR               = down<GenericErrorPacket>()
+    val TAGGED_ERROR                = down<TaggedErrorPacket>()
+
+    val CREATE_ACCOUNT              = up<AccountCredPacket>()
+    val CREATE_ACCOUNT_SUCCESS      = down<Unit>()
+    val CREATE_SESSION              = up<AccountCredPacket>()
+    val CREATE_SESSION_SUCCESS      = down<SessionTokenPacket>()
+    val LOGIN_SESSION               = up<SessionCredPacket>()
+    val LOGIN_SESSION_SUCCESS       = down<Unit>()
+
+    val BEGIN_WORLD_CHANGE          = down<Unit>()
+    val COMPLETE_WORLD_CHANGE       = down<WorldEntryPacket>()
+    val REQUEST_WORLD_INFO          = up<Unit>()
+    val CONST_WORLD_INFO            = down<ConstWorldInfo>()
+    val REQUEST_CHUNK_CONTENTS      = up<RequestedChunksPacket>()
+    val CHUNK_CONTENTS              = down<ChunkContentsPacket>()
+    val REQUEST_WORLD_LEAVE         = up<Unit>()
+
+    val PLAYER_STATE                = up<SharedPlayerInfo>()
+    val WORLD_STATE                 = down<WorldStatePacket>()
+
+    val REQUEST_INVENTORY_CONTENTS  = up<Unit>()
+    val INVENTORY_CONTENTS          = down<InventoryContentsPacket>()
+
+    val NUM_PACKET_TYPES: Int = this.pollNextPacketId()
+
+} }
 
 @Serializable
 data class GenericErrorPacket(val message: String)
@@ -87,4 +113,10 @@ data class SharedPlayerInfo(
 @Serializable
 data class WorldStatePacket(
     val players: Map<String, SharedPlayerInfo>
+)
+
+
+@Serializable
+data class InventoryContentsPacket(
+    val itemCounts: Map<Item, Int>
 )

@@ -3,7 +3,6 @@ package schwalbe.ventura.client.game
 
 import schwalbe.ventura.MAX_NUM_REQUESTED_CHUNKS
 import schwalbe.ventura.net.*
-import schwalbe.ventura.net.PacketType.*
 import schwalbe.ventura.data.*
 import schwalbe.ventura.client.Client
 import schwalbe.ventura.client.Renderer
@@ -113,7 +112,8 @@ class ChunkLoader {
             val batch: List<ChunkRef> = chunks
                 .subList(numRequested, numRequested + batchSize)
             client.network.outPackets?.send(Packet.serialize(
-                UP_REQUEST_CHUNK_CONTENTS, RequestedChunksPacket(batch)
+                PacketType.REQUEST_CHUNK_CONTENTS,
+                RequestedChunksPacket(batch)
             ))
             batch.forEach(this.requested::add)
             numRequested += batchSize

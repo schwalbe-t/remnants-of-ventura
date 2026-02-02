@@ -3,7 +3,6 @@ package schwalbe.ventura.server
 
 import schwalbe.ventura.MAX_NUM_REQUESTED_CHUNKS
 import schwalbe.ventura.net.*
-import schwalbe.ventura.net.PacketType.*
 import schwalbe.ventura.data.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -11,7 +10,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
 
     private val incoming = ConcurrentLinkedQueue<Player>()
     private val players: MutableMap<String, Player> = mutableMapOf()
-    private val packetHandler = PacketHandler<Player>()
+    private val packetHandler = PacketHandler.receiveUpPackets<Player>()
 
     fun transfer(player: Player) {
         this.incoming.add(player)
@@ -37,7 +36,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             }
             this.registry.playerWriter.add(player)
             player.connection.outgoing.send(Packet.serialize(
-                DOWN_COMPLETE_WORLD_CHANGE,
+                PacketType.COMPLETE_WORLD_CHANGE,
                 WorldEntryPacket(
                     position = player.data.worlds.last().state.position
                 )
@@ -67,7 +66,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
                 name to pl.data.worlds.last().state
             }.toMap()
         val p = Packet.serialize(
-            DOWN_WORLD_STATE,
+            PacketType.WORLD_STATE,
             WorldStatePacket(players)
         )
         this.players.values.forEach {
@@ -83,22 +82,22 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
     }
 
     private val constWorldInfo: Packet
-        = Packet.serialize(DOWN_CONST_WORLD_INFO, data.info)
+        = Packet.serialize(PacketType.CONST_WORLD_INFO, data.info)
 
     init {
         val ph = this.packetHandler
         ph.onDecodeError = { player, error ->
             player.connection.outgoing.send(Packet.serialize(
-                DOWN_GENERIC_ERROR, GenericErrorPacket(error)
+                PacketType.GENERIC_ERROR, GenericErrorPacket(error)
             ))
         }
-        ph.onPacket(UP_REQUEST_WORLD_INFO) { _: Unit, pl ->
+        ph.onPacket(PacketType.REQUEST_WORLD_INFO) { _, pl ->
             pl.connection.outgoing.send(this.constWorldInfo)
         }
-        ph.onPacket(UP_REQUEST_CHUNK_CONTENTS) { r: RequestedChunksPacket, pl ->
+        ph.onPacket(PacketType.REQUEST_CHUNK_CONTENTS) { r, pl ->
             if (r.chunks.size > MAX_NUM_REQUESTED_CHUNKS) {
                 return@onPacket pl.connection.outgoing.send(Packet.serialize(
-                    DOWN_TAGGED_ERROR,
+                    PacketType.TAGGED_ERROR,
                     TaggedErrorPacket.TOO_MANY_CHUNKS_REQUESTED
                 ))
             }
@@ -108,14 +107,20 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             }
             if (chunks.isEmpty()) { return@onPacket }
             pl.connection.outgoing.send(Packet.serialize(
-                DOWN_CHUNK_CONTENTS, ChunkContentsPacket(chunks)
+                PacketType.CHUNK_CONTENTS, ChunkContentsPacket(chunks)
             ))
         }
-        ph.onPacket(UP_REQUEST_WORLD_LEAVE) { _: Unit, pl ->
+        ph.onPacket(PacketType.REQUEST_WORLD_LEAVE) { _, pl ->
             pl.popWorld(this.registry)
         }
-        ph.onPacket(UP_PLAYER_STATE) { pi: SharedPlayerInfo, pl ->
+        ph.onPacket(PacketType.PLAYER_STATE) { pi, pl ->
             pl.data.worlds.last().state = pi
+        }
+        ph.onPacket(PacketType.REQUEST_INVENTORY_CONTENTS) { _, pl ->
+            pl.connection.outgoing.send(Packet.serialize(
+                PacketType.INVENTORY_CONTENTS,
+                InventoryContentsPacket(pl.data.inventoryItemCounts)
+            ))
         }
     }
 

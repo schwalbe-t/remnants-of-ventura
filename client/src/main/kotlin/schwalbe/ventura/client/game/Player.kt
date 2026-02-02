@@ -128,7 +128,7 @@ class Player {
         if (now < this.nextPacketSendTime) { return }
         this.nextPacketSendTime = now + Player.PACKET_SEND_INTERVAL_MS
         client.network.outPackets?.send(Packet.serialize(
-            UP_PLAYER_STATE,
+            PacketType.PLAYER_STATE,
             SharedPlayerInfo(
                 this.position.toSerVector3(),
                 this.rotation,

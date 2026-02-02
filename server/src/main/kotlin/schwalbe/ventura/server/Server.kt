@@ -25,11 +25,10 @@ class Server(
     keyStoreAlias: String,
     keyStorePassword: String,
     port: Int,
-    val worlds: WorldRegistry,
-    val createPlayerData: () -> PlayerData
+    val worlds: WorldRegistry
 ) {
 
-    companion object {}
+    companion object;
 
     data class Connection(
         val id: Uuid,
@@ -103,24 +102,24 @@ class Server(
 
     private fun onDisconnect(connection: Connection) {
         this.connected.remove(connection.id)
-        val player = this.authorized.remove(connection.id)
-        if (player == null) { return }
+        val player = this.authorized.remove(connection.id) ?: return
         this.worlds.handlePlayerDisconnect(player)
         ServerNetwork.releaseAccount(player.username)
     }
 
-    private val unauthorizedHandler = PacketHandler<Connection>()
+    private val unauthorizedHandler: PacketHandler<Connection>
+        = PacketHandler.receiveUpPackets<Connection>()
 
     init {
         val h: PacketHandler<Connection> = this.unauthorizedHandler
         h.onDecodeError = { c, error ->
             c.outgoing.send(Packet.serialize(
-                PacketType.DOWN_GENERIC_ERROR, GenericErrorPacket(error)
+                PacketType.GENERIC_ERROR, GenericErrorPacket(error)
             ))
         }
-        h.onPacket(PacketType.UP_CREATE_ACCOUNT, this::onAccountCreatePacket)
-        h.onPacket(PacketType.UP_CREATE_SESSION, this::onSessionCreatePacket)
-        h.onPacket(PacketType.UP_LOGIN_SESSION, this::onSessionLoginPacket)
+        h.onPacket(PacketType.CREATE_ACCOUNT, this::onAccountCreatePacket)
+        h.onPacket(PacketType.CREATE_SESSION, this::onSessionCreatePacket)
+        h.onPacket(PacketType.LOGIN_SESSION, this::onSessionLoginPacket)
     }
 
     fun updateUnauthorized() {
@@ -139,20 +138,20 @@ private fun Server.onAccountCreatePacket(
     data: AccountCredPacket, conn: Server.Connection
 ) {
     val playerData: ByteArray = Cbor.encodeToByteArray(
-        serializer<PlayerData>(), this.createPlayerData()
+        serializer<PlayerData>(), PlayerData.createStartingData(this.worlds)
     )
     val didCreate: Boolean = Account.create(
         data.username, data.password, playerData
     )
     if (!didCreate) {
         conn.outgoing.send(Packet.serialize(
-            PacketType.DOWN_TAGGED_ERROR,
+            PacketType.TAGGED_ERROR,
             TaggedErrorPacket.INVALID_ACCOUNT_PARAMS
         ))
         return
     }
     conn.outgoing.send(Packet.serialize(
-        PacketType.DOWN_CREATE_ACCOUNT_SUCCESS, Unit
+        PacketType.CREATE_ACCOUNT_SUCCESS, Unit
     ))
 }
 
@@ -164,7 +163,7 @@ private fun Server.onSessionCreatePacket(
     )
     if (!valid) {
         conn.outgoing.send(Packet.serialize(
-            PacketType.DOWN_TAGGED_ERROR,
+            PacketType.TAGGED_ERROR,
             TaggedErrorPacket.INVALID_ACCOUNT_CREDS
         ))
         return
@@ -172,7 +171,7 @@ private fun Server.onSessionCreatePacket(
     val mayLogin: Boolean = Account.tryApplyLoginCooldown(data.username)
     if (!mayLogin) {
         conn.outgoing.send(Packet.serialize(
-            PacketType.DOWN_TAGGED_ERROR,
+            PacketType.TAGGED_ERROR,
             TaggedErrorPacket.SESSION_CREATION_COOLDOWN
         ))
         return
@@ -182,24 +181,22 @@ private fun Server.onSessionCreatePacket(
         token = Session.create(data.username)
     } while (token == null)
     conn.outgoing.send(Packet.serialize(
-        PacketType.DOWN_CREATE_SESSION_SUCCESS,
+        PacketType.CREATE_SESSION_SUCCESS,
         SessionTokenPacket(token)
     ))
 }
 
 private fun Server.decodePlayerData(username: String): PlayerData? {
-    val rawPlayerData: ByteArray? = Account.fetchPlayerData(username)
-    if (rawPlayerData == null) { return null }
-    val playerData: PlayerData
+    val rawPlayerData: ByteArray = Account.fetchPlayerData(username)
+        ?: return null
     try {
-        playerData = Cbor.decodeFromByteArray(
+        return Cbor.decodeFromByteArray(
             serializer<PlayerData>(), rawPlayerData
         )
     } catch (e: Exception) {
         e.printStackTrace()
         return null
     }
-    return playerData
 }
 
 private fun Server.onSessionLoginPacket(
@@ -208,28 +205,28 @@ private fun Server.onSessionLoginPacket(
     val expUser: String? = Session.getSessionUser(data.token)
     if (expUser == null || expUser != data.username) {
         conn.outgoing.send(Packet.serialize(
-            PacketType.DOWN_TAGGED_ERROR,
+            PacketType.TAGGED_ERROR,
             TaggedErrorPacket.INVALID_SESSION_CREDS
         ))
         return
     }
     if (!ServerNetwork.tryAcquireAccount(data.username)) {
         conn.outgoing.send(Packet.serialize(
-            PacketType.DOWN_TAGGED_ERROR,
+            PacketType.TAGGED_ERROR,
             TaggedErrorPacket.ACCOUNT_ALREADY_ONLINE
         ))
         return
     }
     val playerData: PlayerData = this.decodePlayerData(data.username)
-        ?: this.createPlayerData()
+        ?: PlayerData.createStartingData(this.worlds)
     val player = Player(data.username, playerData, conn)
     this.authorized[conn.id] = player
     conn.outgoing.send(Packet.serialize(
-        PacketType.DOWN_LOGIN_SESSION_SUCCESS, Unit
+        PacketType.LOGIN_SESSION_SUCCESS, Unit
     ))
     val world: World = player.getCurrentWorld(this.worlds)
     conn.outgoing.send(Packet.serialize(
-        PacketType.DOWN_BEGIN_WORLD_CHANGE, Unit
+        PacketType.BEGIN_WORLD_CHANGE, Unit
     ))
     world.transfer(player)
 }

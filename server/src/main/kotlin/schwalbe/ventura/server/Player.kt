@@ -1,17 +1,21 @@
 
 package schwalbe.ventura.server
 
+import schwalbe.ventura.data.Item
+import schwalbe.ventura.data.ItemType
 import schwalbe.ventura.net.Packet
 import schwalbe.ventura.net.PacketType
-import kotlinx.serialization.Serializable
 import schwalbe.ventura.net.SharedPlayerInfo
+import kotlinx.serialization.Serializable
+import schwalbe.ventura.data.ItemVariant
 
 @Serializable
 data class PlayerData(
-    val worlds: MutableList<WorldEntry>
+    val worlds: MutableList<WorldEntry>,
+    val inventoryItemCounts: MutableMap<Item, Int>
 ) {
     
-    companion object {}
+    companion object;
 
     @Serializable
     data class WorldEntry(
@@ -21,11 +25,23 @@ data class PlayerData(
 
 }
 
+fun PlayerData.Companion.createStartingData(
+    worlds: WorldRegistry
+) = PlayerData(
+    worlds = mutableListOf(worlds.baseWorld.createPlayerEntry()),
+    inventoryItemCounts = mutableMapOf(
+        Item(ItemType.TEST, null) to 12,
+        Item(ItemType.TEST, ItemVariant.TEST_RED_HOODIE) to 1,
+        Item(ItemType.ROCK, null) to 5023
+    )
+)
+
+
 class Player(
     val username: String,
     val data: PlayerData,
     val connection: Server.Connection
-) {}
+)
 
 fun Player.getCurrentWorld(worlds: WorldRegistry): World {
     var world: World? = null
@@ -54,7 +70,7 @@ fun Player.pushWorld(newWorldId: Long, worlds: WorldRegistry): Boolean {
         currentWorld?.handlePlayerLeaving(this)
     }
     this.connection.outgoing.send(Packet.serialize(
-        PacketType.DOWN_BEGIN_WORLD_CHANGE, Unit
+        PacketType.BEGIN_WORLD_CHANGE, Unit
     ))
     newWorld.transfer(this)
     return true
@@ -68,7 +84,7 @@ fun Player.popWorld(worlds: WorldRegistry) {
     }
     val current: World = this.getCurrentWorld(worlds)
     this.connection.outgoing.send(Packet.serialize(
-        PacketType.DOWN_BEGIN_WORLD_CHANGE, Unit
+        PacketType.BEGIN_WORLD_CHANGE, Unit
     ))
     current.transfer(this)
 }

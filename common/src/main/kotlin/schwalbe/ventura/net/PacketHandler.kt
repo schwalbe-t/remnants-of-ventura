@@ -3,30 +3,39 @@ package schwalbe.ventura.net
 
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.serializer
-import kotlinx.serialization.DeserializationStrategy
 
-class PacketHandler<C> {
+class PacketHandler<C>(val receivingDir: PacketDirection) {
 
-    val handlers: MutableMap<PacketType, (ByteArray, C) -> Unit>
+    companion object {
+        fun <C> receiveUpPackets() = PacketHandler<C>(PacketDirection.UP)
+        fun <C> receiveDownPackets() = PacketHandler<C>(PacketDirection.DOWN)
+    }
+
+
+    val handlers: MutableMap<Short, (ByteArray, C) -> Unit>
         = mutableMapOf()
     var onDecodeError: (C, String) -> Unit = { _, _ -> }
 
-    inline fun<reified T> onPacket(
-        packetType: PacketType, crossinline handler: (T, C) -> Unit
+    inline fun <reified P> onPacket(
+        packetType: PacketType<P>, crossinline handler: (P, C) -> Unit
     ): PacketHandler<C> {
+        require(packetType.direction == this.receivingDir) {
+            "Packet handler was configured to receive packets of direction " +
+            "'${this.receivingDir.name}', but a packet type with direction " +
+            "'${packetType.direction.name}' was attempted to be registered"
+        }
         val err: (C, String) -> Unit = this.onDecodeError
-        this.handlers[packetType] = handler@{ payload: ByteArray, context: C ->
-            val value: T
+        val packetTypeId: Short = packetType.ordinal.toShort()
+        this.handlers[packetTypeId] = handler@{ rpl: ByteArray, ctx: C ->
+            val decPayload: P
             try {
-                value = Cbor.decodeFromByteArray<T>(
-                    serializer<T>(), payload
-                )
+                decPayload = Cbor.decodeFromByteArray(serializer<P>(), rpl)
             } catch (e: Exception) {
-                err(context, e.message ?: "")
+                err(ctx, e.message ?: "")
                 return@handler
             }
             try {
-                handler(value, context)
+                handler(decPayload, ctx)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -35,16 +44,14 @@ class PacketHandler<C> {
     }
 
     fun handlePacket(packet: Packet, context: C) {
-        val handler = this.handlers[packet.type]
-        if (handler == null) { return }
+        val handler = this.handlers[packet.type] ?: return
         handler(packet.payload, context)
     }
 
     fun handleAll(packets: PacketInStream, context: C) {
         try {
             while (true) {
-                val p: Packet? = packets.tryRead()
-                if (p == null) { break }
+                val p: Packet = packets.tryRead() ?: break
                 this.handlePacket(p, context)
             }
         } catch (e: Exception) {

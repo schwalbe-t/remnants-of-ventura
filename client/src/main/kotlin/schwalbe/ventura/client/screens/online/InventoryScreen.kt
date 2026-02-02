@@ -6,13 +6,10 @@ import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.game.*
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
-import schwalbe.ventura.data.Item
-import schwalbe.ventura.data.ItemType
-import schwalbe.ventura.data.ItemVariant
+import schwalbe.ventura.data.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.engine.ui.*
-import schwalbe.ventura.net.PacketHandler
-import kotlin.math.PI
+import schwalbe.ventura.net.*
 
 fun createInventoryItemTitle(item: Item, count: Int): List<Span> {
     val l = localized()
@@ -77,41 +74,64 @@ fun addInventoryItem(
     items.add(1.vmin, Space())
 }
 
-private fun createItemListSection(onItemSelect: (Item, Int) -> Unit): Axis {
-    val items = Axis.column()
-    // TODO! replace hardcoded entries with dynamic inventory contents
-    //       (request from server, then add when received; how to reg. handler?)
-    for (i in 0..10) {
-        addInventoryItem(
-            items,
-            Item(ItemType.TEST, ItemVariant.TEST_RED_HOODIE),
-            count = 1,
-            onItemSelect
-        )
+private fun createItemListSection(
+    client: Client, packetHandler: PacketHandler<Unit>,
+    onItemSelect: (Item, Int) -> Unit
+): Axis {
+    val l = localized()
+    val itemList = Axis.column()
+    packetHandler.onPacket(PacketType.INVENTORY_CONTENTS) { inventory, _ ->
+        val itemCounts = inventory.itemCounts
+            .asSequence().filter { (_, c) -> c > 0 }.toList()
+            .sortedBy { (i, _) -> l[i.type.localNameKey] }
+        for ((item, count) in itemCounts) {
+            addInventoryItem(itemList, item, count, onItemSelect)
+        }
+        if (itemCounts.isEmpty()) {
+            itemList.add(2.vmin, Text()
+                .withText(l[PLACEHOLDER_INVENTORY_EMPTY])
+                .withSize(85.ph)
+                .withFont(googleSansI())
+                .withColor(BRIGHT_FONT_COLOR)
+                .pad(left = 2.5.vmin, right = 2.5.vmin)
+            )
+        }
+        itemList.add(50.ph, Space())
     }
-    for (i in 0..10) {
-        addInventoryItem(
-            items,
-            Item(ItemType.TEST),
-            count = 123,
-            onItemSelect
-        )
-    }
-    items.add(50.ph, Space())
+    client.network.outPackets?.send(Packet.serialize(
+        PacketType.REQUEST_INVENTORY_CONTENTS, Unit
+    ))
     return Axis.column()
         .add(8.vmin, Text()
-            .withText(localized()[TITLE_INVENTORY])
+            .withText(l[TITLE_INVENTORY])
             .withColor(BRIGHT_FONT_COLOR)
             .withFont(googleSansSb())
             .withSize(85.ph)
             .pad(2.5.vmin)
         )
-        .add(100.ph - 8.vmin, items
+        .add(100.ph - 8.vmin, itemList
             .wrapScrolling()
             .withThumbColor(BUTTON_COLOR)
             .withThumbHoverColor(BUTTON_HOVER_COLOR)
         )
 }
+
+private fun createInventoryItemActionButton(
+    content: String, handler: () -> Unit
+): UiElement = Stack()
+    .add(FlatBackground()
+        .withColor(BUTTON_COLOR)
+        .withHoverColor(BUTTON_HOVER_COLOR)
+    )
+    .add(Text()
+        .withText(content)
+        .withColor(BRIGHT_FONT_COLOR)
+        .withSize(70.ph)
+        .alignCenter()
+        .pad(0.75.vmin)
+    )
+    .add(ClickArea().withHandler(handler))
+    .wrapBorderRadius(0.75.vmin)
 
 private fun createSelectedItemSection(
     item: Item, count: Int, itemDisplay: MsaaRenderDisplay
@@ -130,20 +150,21 @@ private fun createSelectedItemSection(
             )
             .pad(1.5.vmin)
         )
-        .add(100.ph - 8.vmin - 5.vmin - 20.ph, itemDisplay
+        .add(100.ph - 8.vmin - 5.vmin - 20.ph, Axis.column()
+            .add((100.ph - 100.pmin) / 2, Space())
+            .add(100.pmin, itemDisplay)
+            .add((100.ph - 100.pmin) / 2, Space())
             .pad(3.vmin)
         )
         .add(5.vmin, Axis.row()
             .add(1.vmin, Space())
-            .add(50.pw - 1.vmin - 0.5.vmin, createTextButton(
+            .add(50.pw - 1.vmin - 0.5.vmin, createInventoryItemActionButton(
                 content = "Action 1",
-                textColor = BRIGHT_FONT_COLOR,
                 handler = {}
             ))
             .add(1.vmin, Space())
-            .add(50.pw - 1.vmin - 0.5.vmin, createTextButton(
+            .add(50.pw - 1.vmin - 0.5.vmin, createInventoryItemActionButton(
                 content = "Action 2",
-                textColor = BRIGHT_FONT_COLOR,
                 handler = {}
             ))
             .add(1.vmin, Space())
@@ -166,6 +187,9 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
         .withRadius(3)
         .withSpread(5)
     var selectedItemDisplay: MsaaRenderDisplay? = null
+    val packets = PacketHandler.receiveDownPackets<Unit>()
+        .addErrorLogging()
+        .addWorldHandling(client)
     val screen = GameScreen(
         render = {
             if (Key.ESCAPE.wasPressed || Key.TAB.wasPressed) {
@@ -179,9 +203,7 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
             client.nav.replace(serverConnectionFailedScreen(reason, client))
             client.network.clearError()
         }),
-        packets = PacketHandler<Unit>()
-            .addErrorLogging()
-            .addWorldHandling(client),
+        packets = packets,
         navigator = client.nav
     )
     val selectedItemSection = Stack()
@@ -190,17 +212,20 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
             .add(background)
             .add(FlatBackground().withColor(PANEL_BACKGROUND))
             .add(Axis.row()
-                .add(50.pw, createItemListSection { item, count ->
-                    selectedItemDisplay = ItemDisplay.createDisplay(
-                        item,
-                        msaaSamples = 4,
-                        fixedAngle = null // null = rotates over time
-                    )
-                    selectedItemSection.withoutContent()
-                    selectedItemSection.add(createSelectedItemSection(
-                        item, count, selectedItemDisplay
-                    ))
-                })
+                .add(50.pw, createItemListSection(
+                    client, packets,
+                    onItemSelect = { item, count ->
+                        selectedItemDisplay = ItemDisplay.createDisplay(
+                            item,
+                            msaaSamples = 4,
+                            fixedAngle = null // null = rotates over time
+                        )
+                        selectedItemSection.withoutContent()
+                        selectedItemSection.add(createSelectedItemSection(
+                            item, count, selectedItemDisplay
+                        ))
+                    }
+                ))
                 .add(50.pw, selectedItemSection)
             )
         )

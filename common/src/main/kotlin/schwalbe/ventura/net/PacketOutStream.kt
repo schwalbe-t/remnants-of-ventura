@@ -6,13 +6,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.Frame
-import io.ktor.websocket.send
 
 class PacketOutStream(val socket: WebSocketSession, val scope: CoroutineScope) {
 
     fun send(packet: Packet) {
         val buffer = ByteBuffer.allocate(2 + 4 + packet.payload.size)
-        buffer.putShort(packet.type.ordinal.toShort())
+        buffer.putShort(packet.type)
         buffer.putInt(packet.payload.size)
         buffer.put(packet.payload)
         buffer.flip()

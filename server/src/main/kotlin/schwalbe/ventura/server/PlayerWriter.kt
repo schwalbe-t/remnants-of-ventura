@@ -1,9 +1,7 @@
 
 package schwalbe.ventura.server
 
-import schwalbe.ventura.server.database.AccountsTable
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlinx.serialization.serializer
 import kotlinx.serialization.cbor.Cbor
