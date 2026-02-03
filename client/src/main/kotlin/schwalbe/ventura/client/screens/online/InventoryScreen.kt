@@ -208,6 +208,11 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
                 client.nav.pop()
             }
             client.world?.update(client, captureInput = false)
+            client.world?.player?.facePoint(
+                client.renderer.camera
+                    .castRay(client.renderer.dest, Mouse.position)
+                    .afterDistance(7.5f)
+            )
             client.world?.render(client)
             background.invalidate()
             selectedItemDisplay?.invalidate()

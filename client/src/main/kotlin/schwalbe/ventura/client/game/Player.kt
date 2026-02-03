@@ -6,9 +6,9 @@ import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.net.*
-import schwalbe.ventura.net.PacketType.*
 import kotlin.math.*
 import org.joml.*
+import schwalbe.ventura.client.game.Player.Companion.MODEL_NO_ROTATION_DIR
 
 object PlayerAnim : Animations<PlayerAnim> {
     val idle = anim("idle")
@@ -48,6 +48,30 @@ private fun wrapAngle(angle: Float): Float {
     return a
 }
 
+private fun rotateTowardsPoint(
+    baseDir: Vector3fc, targetPoint: Vector3fc, axisFactors: Vector3fc,
+    localToWorld: Matrix4fc, weight: () -> Float
+): (Matrix4f, Matrix4fc) -> Matrix4f = { jointToParent, parentToLocal ->
+    val jointToWorld: Matrix4f = Matrix4f(localToWorld)
+        .mul(parentToLocal)
+        .mul(jointToParent)
+    val headPosWorld = jointToWorld.getTranslation(Vector3f(0f, 0f, 0f))
+    val toTargetWorld = Vector3f(targetPoint).sub(headPosWorld).normalize()
+    val headRotInv = jointToWorld.get3x3(Matrix3f()).invert()
+    val toTargetLocal = headRotInv.transform(toTargetWorld).normalize()
+    val forwardWorld = localToWorld
+        .transformDirection(Vector3f(baseDir))
+        .normalize()
+    val forwardLocal = headRotInv
+        .transform(Vector3f(forwardWorld))
+        .normalize()
+    val deltaRot = Quaternionf().rotationTo(forwardLocal, toTargetLocal)
+    val deltaRotWeighted = Quaternionf().identity().slerp(deltaRot, weight())
+    val deltaRotEuler = deltaRotWeighted
+        .getEulerAnglesXYZ(Vector3f()).mul(axisFactors)
+    jointToParent.rotateXYZ(deltaRotEuler)
+}
+
 class Player {
 
     companion object {
@@ -56,7 +80,7 @@ class Player {
         )
 
         const val MODEL_SCALE: Float = 1/5.5f
-        val modelNoRotationDir: Vector3fc = Vector3f(0f, 0f, +1f)
+        val MODEL_NO_ROTATION_DIR: Vector3fc = Vector3f(0f, 0f, +1f)
 
         const val WALK_SPEED: Float = 3f
         const val ROTATION_SPEED: Float = 2f * PI.toFloat() * 1.5f // radians per second
@@ -76,6 +100,8 @@ class Player {
 
     val position: Vector3f = Vector3f()
     var rotation: Float = 0f
+    var animInjectWeight: SmoothedFloat = 0f
+        .smoothed(response = 10f, epsilon = 0.01f)
 
     private fun move(world: World, client: Client): Boolean {
         val collidingBefore: Boolean = world.chunks
@@ -87,7 +113,7 @@ class Player {
         if (Key.D.isPressed) { velocity.x += 1f; }
         if (velocity.length() == 0f) { return false }
         velocity.normalize()
-        var targetRot = xzVectorAngle(Player.modelNoRotationDir, velocity)
+        var targetRot = xzVectorAngle(Player.MODEL_NO_ROTATION_DIR, velocity)
         velocity.mul(Player.WALK_SPEED).mul(client.deltaTime)
         val newPosX = this.position.add(velocity.x(), 0f, 0f, Vector3f())
         val newPosZ = this.position.add(0f, 0f, velocity.z(), Vector3f())
@@ -141,23 +167,48 @@ class Player {
         val world: World = client.world ?: return
         val moving: Boolean = if (!captureInput) { false }
             else { this.move(world, client) }
+        this.animInjectWeight.target = 0f
+        if (this.animInjectWeight.value == 0f) {
+            this.anim.injections.clear()
+        }
         this.updateAnimations(moving, client.deltaTime)
         this.sendPositionUpdatePacket(client)
     }
 
+    fun facePoint(target: Vector3fc) {
+        this.animInjectWeight.target = 1f
+        val localToWorld: Matrix4f = Player
+            .modelTransform(this.position, this.rotation)
+        val axisFactors = Vector3f(0.5f, 1f, 1f)
+        fun rotateTowardsTarget(weight: Float) = rotateTowardsPoint(
+            MODEL_NO_ROTATION_DIR, target, axisFactors, localToWorld,
+            weight = { weight * this.animInjectWeight.value }
+        )
+        this.anim.injections["head"] = rotateTowardsTarget(0.5f)
+        this.anim.injections["neck"] = rotateTowardsTarget(0.3f)
+        this.anim.injections["body_upper"] = rotateTowardsTarget(0.2f)
+        this.anim.injections["shoulder_left"] = rotateTowardsTarget(0.2f)
+        this.anim.injections["shoulder_right"] = rotateTowardsTarget(0.2f)
+    }
+
     fun render(client: Client) {
+        this.animInjectWeight.update()
         Player.render(client, this.position, this.rotation, this.anim)
     }
 
 }
 
+fun Player.Companion.modelTransform(
+    pos: Vector3fc, rotY: Float
+): Matrix4f = Matrix4f()
+    .translate(pos)
+    .rotateY(rotY)
+    .scale(Player.MODEL_SCALE)
+
 fun Player.Companion.render(
-    client: Client, pos: Vector3fc, rot: Float, anim: AnimState<PlayerAnim>
+    client: Client, pos: Vector3fc, rotY: Float, anim: AnimState<PlayerAnim>
 ) {
-    val transf = Matrix4f()
-        .translate(pos)
-        .rotateY(rot)
-        .scale(Player.MODEL_SCALE)
+    val transf = Player.modelTransform(pos, rotY)
     val instances = listOf(transf)
     client.renderer.renderOutline(
         playerModel(), Player.OUTLINE_THICKNESS, anim, instances,

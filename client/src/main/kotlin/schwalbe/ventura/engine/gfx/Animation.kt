@@ -2,7 +2,6 @@
 package schwalbe.ventura.engine.gfx
 
 import org.joml.*
-import kotlin.math.roundToInt
 
 data class AnimationRef<A : Animations<A>>(
     val name: String, val speed: Float
@@ -121,6 +120,9 @@ class AnimState<A : Animations<A>>(initial: AnimationRef<A>) {
     val isTransitioning: Boolean
         get() = this.transition != null
 
+    var injections: MutableMap<String, (t: Matrix4f, p: Matrix4fc) -> Matrix4f>
+        = mutableMapOf()
+
     val numQueuedTransitions: Int
         get() = maxOf(this.transitionQueue.size - 1, 0)
 
@@ -187,9 +189,13 @@ private fun <A : Animations<A>> AnimState<A>.collectNodeTransforms(
     model: Model<A>, node: Model.Node, parentTransform: Matrix4fc,
     out: MutableMap<String, Matrix4fc>
 ) {
-    val transform: Matrix4f
+    var transform: Matrix4f
         = this.channelValue(model, node.name)?.toTransform()
         ?: Matrix4f(node.localTransform)
+    val injection = this.injections[node.name]
+    if (injection != null) {
+        transform = injection(transform, parentTransform)
+    }
     parentTransform.mul(transform, transform)
     out[node.name] = transform
     node.children.forEach {

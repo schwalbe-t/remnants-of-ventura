@@ -1,7 +1,6 @@
 
 package schwalbe.ventura.client.screens.online
 
-import org.joml.Vector3f
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.game.*
@@ -11,6 +10,7 @@ import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.net.PacketHandler
+import org.joml.Vector3f
 import kotlin.math.atan
 import kotlin.math.tan
 
@@ -55,6 +55,11 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
                 client.nav.pop()
             }
             client.world?.update(client, captureInput = false)
+            client.world?.player?.facePoint(
+                client.renderer.camera
+                    .castRay(client.renderer.dest, Mouse.position)
+                    .afterDistance(7.5f)
+            )
             client.world?.render(client)
             background.invalidate()
         },
