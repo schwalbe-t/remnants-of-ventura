@@ -137,9 +137,10 @@ class Player {
         ))
     }
 
-    fun update(client: Client) {
+    fun update(client: Client, captureInput: Boolean) {
         val world: World = client.world ?: return
-        val moving: Boolean = this.move(world, client)
+        val moving: Boolean = if (!captureInput) { false }
+            else { this.move(world, client) }
         this.updateAnimations(moving, client.deltaTime)
         this.sendPositionUpdatePacket(client)
     }

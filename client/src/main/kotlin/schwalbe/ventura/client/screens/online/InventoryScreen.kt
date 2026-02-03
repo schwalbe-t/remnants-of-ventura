@@ -10,6 +10,9 @@ import schwalbe.ventura.data.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.net.*
+import org.joml.Vector3f
+import kotlin.math.atan
+import kotlin.math.tan
 
 fun createInventoryItemTitle(item: Item, count: Int): List<Span> {
     val l = localized()
@@ -180,9 +183,18 @@ private fun createSelectedItemSection(
         )
 }
 
+val PLAYER_IN_RIGHT_THIRD = CameraController.Mode(
+    lookAt = { _, w, _ -> Vector3f()
+        .add(w.player.position)
+        .add(0f, +1.5f, 0f)
+    },
+    fovDegrees = 20f,
+    offsetAngleX = { _, hh, _ -> atan(tan(hh) * -2f/3f) },
+    distance = { _ -> 10f }
+)
+
 fun inventoryMenuScreen(client: Client): () -> GameScreen = {
-    client.world?.camController?.mode = CameraController.Mode.PLAYER_ON_SIDE
-    val renderWorld = renderGameworld(client)
+    client.world?.camController?.mode = PLAYER_IN_RIGHT_THIRD
     val background = BlurBackground()
         .withRadius(3)
         .withSpread(5)
@@ -195,7 +207,8 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
             if (Key.ESCAPE.wasPressed || Key.TAB.wasPressed) {
                 client.nav.pop()
             }
-            renderWorld()
+            client.world?.update(client, captureInput = false)
+            client.world?.render(client)
             background.invalidate()
             selectedItemDisplay?.invalidate()
         },

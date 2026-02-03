@@ -9,8 +9,7 @@ import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.net.PacketHandler
 
 fun controllingPlayerScreen(client: Client): () -> GameScreen = {
-    client.world?.camController?.mode = CameraController.Mode.PLAYER_AT_CENTER
-    val renderWorld = renderGameworld(client)
+    client.world?.camController?.mode = CameraController.PLAYER_AT_CENTER
     val screen = GameScreen(
         render = {
             if (Key.ESCAPE.wasPressed) {
@@ -19,7 +18,8 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             if (Key.TAB.wasPressed) {
                 client.nav.push(inventoryMenuScreen(client))
             }
-            renderWorld()
+            client.world?.update(client, captureInput = true)
+            client.world?.render(client)
         },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
             client.nav.replace(serverConnectionFailedScreen(reason, client))

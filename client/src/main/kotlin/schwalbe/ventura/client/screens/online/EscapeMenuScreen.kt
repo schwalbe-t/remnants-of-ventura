@@ -1,6 +1,7 @@
 
 package schwalbe.ventura.client.screens.online
 
+import org.joml.Vector3f
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.game.*
@@ -10,6 +11,8 @@ import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.net.PacketHandler
+import kotlin.math.atan
+import kotlin.math.tan
 
 private fun addOption(
     options: Axis, name: String, action: () -> Unit
@@ -27,13 +30,22 @@ private fun addOption(
         )
         .add(ClickArea().withHandler(action))
         .wrapBorderRadius(0.75.vmin)
-        .pad(bottom = 1.vmin, right = 50.pw)
+        .pad(bottom = 1.vmin)
     )
 }
 
+val PLAYER_IN_RIGHT_HALF = CameraController.Mode(
+    lookAt = { _, w, _ -> Vector3f()
+        .add(w.player.position)
+        .add(0f, +1.5f, 0f)
+    },
+    fovDegrees = 20f,
+    offsetAngleX = { _, hh, _ -> atan(tan(hh) * -1f/2f) },
+    distance = { _ -> 10f }
+)
+
 fun escapeMenuScreen(client: Client): () -> GameScreen = {
-    client.world?.camController?.mode = CameraController.Mode.PLAYER_AT_CENTER
-    val renderWorld = renderGameworld(client)
+    client.world?.camController?.mode = PLAYER_IN_RIGHT_HALF
     val background = BlurBackground()
         .withRadius(3)
         .withSpread(5)
@@ -42,7 +54,8 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
             if (Key.ESCAPE.wasPressed) {
                 client.nav.pop()
             }
-            renderWorld()
+            client.world?.update(client, captureInput = false)
+            client.world?.render(client)
             background.invalidate()
         },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
@@ -71,16 +84,18 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
         client.nav.pop()
         client.nav.pop()
     })
-    screen.add(layer = -1, element = Stack()
-        .add(background)
-        .add(FlatBackground().withColor(PANEL_BACKGROUND))
-    )
-    screen.add(layer = 0, element = Axis.column()
-        .add(50.ph - (areaSize / 2), Space())
-        .add(areaSize, options
-            .pad(left = 5.vmin, right = 5.vmin)
+    screen.add(Axis.row()
+        .add(50.vw, Stack()
+            .add(background)
+            .add(FlatBackground().withColor(PANEL_BACKGROUND))
+            .add(Axis.column()
+                .add(50.ph - (areaSize / 2), Space())
+                .add(areaSize, options
+                    .pad(left = 5.vmin, right = 5.vmin)
+                )
+                .add(50.ph - (areaSize / 2), Space())
+            )
         )
-        .add(50.ph - (areaSize / 2), Space())
     )
     screen
 }

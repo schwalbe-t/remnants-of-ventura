@@ -22,22 +22,19 @@ class World {
 
 }
 
-fun World.update(client: Client) {
-    this.player.update(client)
-    this.camController.update(client.renderer.camera, client, this)
+fun World.update(client: Client, captureInput: Boolean) {
+    this.player.update(client, captureInput)
+    this.camController.update(
+        client.renderer.camera, client, this, captureInput
+    )
     this.chunks.update(client, this.player.position)
     this.state.update(client)
 }
 
 fun World.render(client: Client) {
+    client.renderer.update()
     client.renderer.dest.clearColor(Vector4f(151f, 134f, 111f, 255f).div(255f))
     this.chunks.render(client)
     this.state.render(client)
     this.player.render(client)
-}
-
-fun renderGameworld(client: Client): () -> Unit = {
-    client.renderer.update()
-    client.world?.update(client)
-    client.world?.render(client)
 }
