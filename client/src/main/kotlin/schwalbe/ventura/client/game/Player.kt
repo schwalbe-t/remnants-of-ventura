@@ -8,7 +8,6 @@ import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.net.*
 import kotlin.math.*
 import org.joml.*
-import schwalbe.ventura.client.game.Player.Companion.MODEL_NO_ROTATION_DIR
 
 object PlayerAnim : Animations<PlayerAnim> {
     val idle = anim("idle")
@@ -179,16 +178,22 @@ class Player {
         this.animInjectWeight.target = 1f
         val localToWorld: Matrix4f = Player
             .modelTransform(this.position, this.rotation)
-        val axisFactors = Vector3f(0.5f, 1f, 1f)
-        fun rotateTowardsTarget(weight: Float) = rotateTowardsPoint(
-            MODEL_NO_ROTATION_DIR, target, axisFactors, localToWorld,
-            weight = { weight * this.animInjectWeight.value }
+        fun rotateTowardsTarget(
+            all: Float, x: Float, y: Float, z: Float
+        ) = rotateTowardsPoint(
+            MODEL_NO_ROTATION_DIR, target, Vector3f(x, y, z), localToWorld,
+            weight = { all * this.animInjectWeight.value }
         )
-        this.anim.injections["head"] = rotateTowardsTarget(0.5f)
-        this.anim.injections["neck"] = rotateTowardsTarget(0.3f)
-        this.anim.injections["body_upper"] = rotateTowardsTarget(0.2f)
-        this.anim.injections["shoulder_left"] = rotateTowardsTarget(0.2f)
-        this.anim.injections["shoulder_right"] = rotateTowardsTarget(0.2f)
+        this.anim.injections["head"] =
+            rotateTowardsTarget(all = 0.5f, x = 1.00f, y = 1f, z = 0.50f)
+        this.anim.injections["neck"] =
+            rotateTowardsTarget(all = 0.3f, x = 0.50f, y = 1f, z = 0.25f)
+        this.anim.injections["body_upper"] =
+            rotateTowardsTarget(all = 0.2f, x = 0.25f, y = 1f, z = 0.00f)
+        this.anim.injections["shoulder_left"] =
+            rotateTowardsTarget(all = 0.2f, x = 0.00f, y = 1f, z = 0.00f)
+        this.anim.injections["shoulder_right"] =
+            rotateTowardsTarget(all = 0.2f, x = 0.00f, y = 1f, z = 0.00f)
     }
 
     fun render(client: Client) {
