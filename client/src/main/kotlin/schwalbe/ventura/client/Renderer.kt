@@ -99,7 +99,8 @@ class Renderer(val dest: ConstFramebuffer) {
 
     var config: RendererConfig = RendererConfig.default
 
-    private var viewProj: Matrix4fc = Matrix4f()
+    var viewProj: Matrix4fc = Matrix4f()
+        private set
 
     private val instances = UniformBuffer(BufferWriteFreq.EVERY_FRAME)
     private val instanceBuff

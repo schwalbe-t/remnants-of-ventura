@@ -1,6 +1,8 @@
 
 package schwalbe.ventura.engine.ui
 
+import kotlin.math.*
+
 typealias UiSize = (ctx: UiElementContext) -> Float
 
 /** Size of a pixel */
@@ -83,6 +85,15 @@ inline fun UiSize.clamp(
     crossinline minVal: UiSize, crossinline maxVal: UiSize
 ): UiSize
     = { ctx -> this(ctx).coerceIn(minVal(ctx), maxVal(ctx)) }
+
+inline fun floor(crossinline x: UiSize): UiSize
+    = { ctx -> floor(x(ctx)) }
+
+inline fun ceil(crossinline x: UiSize): UiSize
+    = { ctx -> ceil(x(ctx)) }
+
+inline fun round(crossinline x: UiSize): UiSize
+    = { ctx -> round(x(ctx)) }
 
 val Int.px: UiSize      get() = this * schwalbe.ventura.engine.ui.px
 val Int.vw: UiSize      get() = this * schwalbe.ventura.engine.ui.vw

@@ -12,23 +12,14 @@ abstract class GpuUiElement : UiElement() {
     }
     
     protected val target = Framebuffer()
+        .attachColor(Texture(
+            16, 16,
+            Texture.Filter.NEAREST, Texture.Format.RGBA8
+        ))
     
     protected fun prepareTarget() {
-        val oldResult: Texture? = this.result
-        val targetWidth: Int = maxOf(this.pxWidth, 16)
-        val targetHeight: Int = maxOf(this.pxHeight, 16)
-        val makeNewTex: Boolean = oldResult == null
-            || oldResult.width != targetWidth
-            || oldResult.height != targetHeight
-        if (makeNewTex) {
-            this.target.attachColor(null)
-            this.result?.dispose()
-            this.result = Texture(
-                targetWidth, targetHeight,
-                Texture.Filter.NEAREST, Texture.Format.RGBA8
-            )
-            this.target.attachColor(this.result)
-        }
+        this.target.resize(maxOf(this.pxWidth, 16), maxOf(this.pxHeight, 16))
+        this.result = this.target.color
         this.target.clearColor(GpuUiElement.clearColor)
     }
     

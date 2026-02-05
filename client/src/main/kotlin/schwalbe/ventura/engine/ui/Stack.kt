@@ -35,6 +35,12 @@ class Stack : GpuUiElement() {
         return this
     }
 
+    fun without(element: UiElement): Stack {
+        this.inside.remove(element)
+        this.invalidate()
+        return this
+    }
+
     fun withoutContent(): Stack {
         this.inside.forEach(UiElement::disposeTree)
         this.inside.clear()

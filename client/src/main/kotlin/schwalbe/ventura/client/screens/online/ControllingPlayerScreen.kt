@@ -6,10 +6,13 @@ import schwalbe.ventura.client.game.*
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.engine.input.*
+import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.net.PacketHandler
 
 fun controllingPlayerScreen(client: Client): () -> GameScreen = {
     client.world?.camController?.mode = CameraController.PLAYER_AT_CENTER
+    val playerNames: UiElement = client.world?.state?.createPlayerNameDisplay()
+        ?: Space()
     val screen = GameScreen(
         render = {
             if (Key.ESCAPE.wasPressed) {
@@ -30,6 +33,7 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             .addWorldHandling(client),
         navigator = client.nav
     )
+    screen.add(layer = 0, element = playerNames)
     screen
 }
 

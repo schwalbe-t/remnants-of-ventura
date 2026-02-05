@@ -1,12 +1,15 @@
 
 package schwalbe.ventura.client.game
 
-import org.joml.Vector3f
+import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.client.Client
 import schwalbe.ventura.engine.gfx.AnimState
 import schwalbe.ventura.net.SharedPlayerInfo
 import schwalbe.ventura.net.WorldStatePacket
 import schwalbe.ventura.net.toVector3f
+import org.joml.Vector3f
+import org.joml.Vector3fc
+import schwalbe.ventura.client.screens.online.NameDisplay
 
 class WorldState {
 
@@ -20,12 +23,14 @@ class WorldState {
         class Player(
             val position: Vector3f = Vector3f(),
             var rotation: Float = 0f,
-            val animation: AnimState<PlayerAnim> = AnimState(PlayerAnim.idle)
+            val animation: AnimState<PlayerAnim> = AnimState(PlayerAnim.idle),
+            var nameDisplay: Padding? = null
         )
     }
 
     companion object {
         const val DISPLAY_DELAY_MS: Long = 200L
+        val PLAYER_NAME_OFFSET: Vector3fc = Vector3f(0f, +2.25f, 0f)
     }
 
 
@@ -34,9 +39,49 @@ class WorldState {
     var displayedTime: Long = System.currentTimeMillis()
     val interpolated = Interpolated()
 
+    var activePlayerNameDisplay: Stack? = null
+        private set
+
+    fun createPlayerNameDisplay(): UiElement {
+        for (player in this.interpolated.players.values) {
+            player.nameDisplay = null
+        }
+        val layer = Stack()
+        this.activePlayerNameDisplay = layer
+        return layer
+    }
+
     fun handleReceivedState(state: WorldStatePacket) {
         val now: Long = System.currentTimeMillis()
         this.received.add(ReceivedPacket(now, state))
+    }
+
+    fun updatePlayerNameDisplays(client: Client) {
+        for ((username, player) in this.interpolated.players) {
+            if (username == client.username) { continue }
+            var nameDisplay: UiElement? = player.nameDisplay
+            if (nameDisplay == null || nameDisplay.wasDisposed) {
+                nameDisplay = NameDisplay.createDisplay(username)
+                    .pad()
+                player.nameDisplay = nameDisplay
+                this.activePlayerNameDisplay?.add(nameDisplay)
+            }
+            val display: UiElement = nameDisplay.children[0]
+            val posWorld = Vector3f(player.position).add(PLAYER_NAME_OFFSET)
+            val screenNdc: Vector3f = client.renderer.viewProj
+                .transformProject(posWorld)
+            val screenNormX: Float = (screenNdc.x() + 1f) / 2f
+            val screenNormY: Float = 1f - ((screenNdc.y() + 1f) / 2f)
+            val screenPxX: Float = (screenNormX * client.renderer.dest.width) -
+                (display.pxWidth / 2f)
+            val screenPxY: Float = (screenNormY * client.renderer.dest.height) -
+                display.pxHeight
+            player.nameDisplay?.withPadding(
+                left = screenPxX.px, top = screenPxY.px,
+                bottom = 0.px, right = 0.px
+            )
+            NameDisplay.updateDisplay(display)
+        }
     }
 
     fun update(client: Client) {
@@ -48,6 +93,7 @@ class WorldState {
         val firstNotDispIdx: Int = this.received
             .indexOfFirst { it.time > this.displayedTime }
         this.received.subList(0, maxOf(firstNotDispIdx - 1, 0)).clear()
+        this.updatePlayerNameDisplays(client)
     }
 
     private fun interpolatePlayerState(
@@ -86,7 +132,12 @@ class WorldState {
         for (username in this.interpolated.players.keys.toList()) {
             if (before.state.players.containsKey(username)) { continue }
             if (after.state.players.containsKey(username)) { continue }
-            this.interpolated.players.remove(username)
+            val player = this.interpolated.players.remove(username) ?: continue
+            val nameDisplay: Padding? = player.nameDisplay
+            if (nameDisplay != null) {
+                this.activePlayerNameDisplay?.without(nameDisplay)
+                nameDisplay.disposeTree()
+            }
         }
         for ((username, plAfter) in after.state.players) {
             val plBefore = before.state.players[username] ?: plAfter

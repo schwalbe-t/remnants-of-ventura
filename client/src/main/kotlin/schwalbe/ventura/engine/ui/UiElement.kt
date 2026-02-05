@@ -37,6 +37,8 @@ fun UiElementContext.closestVisibleY(absY: Int): Int
 abstract class UiElement : Disposable {
     
     private var isDirty: Boolean = true
+    var wasDisposed: Boolean = false
+        private set
     
     var width: UiSize = fpw
         set(value) {
@@ -99,6 +101,7 @@ abstract class UiElement : Disposable {
     
     override fun dispose() {
         this.result?.dispose()
+        this.wasDisposed = true
     }
     
     fun disposeTree() {

@@ -5,14 +5,12 @@ import schwalbe.ventura.engine.gfx.Texture
 import schwalbe.ventura.engine.gfx.fromBufferedImage
 import org.joml.*
 import java.awt.*
-import java.awt.Font as AwtFont
 import java.awt.font.*
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 import java.text.AttributedCharacterIterator
 import java.text.AttributedString
 import kotlin.math.ceil
-import kotlin.math.roundToInt
 
 data class Span(
     val text: String, 
@@ -47,7 +45,7 @@ fun Iterable<Span>.splitLines(): List<List<Span>> {
 class Text : UiElement(), Colored {
     
     enum class Alignment(val xPosOf: (max: Float, line: Float) -> Float) {
-        LEFT({ max, line -> 0f }),
+        LEFT({ _, _ -> 0f }),
         CENTER({ max, line -> (max - line) / 2f }),
         RIGHT({ max, line -> max - line })
     }
@@ -198,6 +196,11 @@ class Text : UiElement(), Colored {
     private var renderState: RenderState? = null
     var lineHeightPx: Float = 0f
         private set
+
+    var pxTextWidth: Int = 0
+        private set
+    var pxTextHeight: Int = 0
+        private set
     
     override fun updateLayout(context: UiElementContext) {
         val fontSize: UiSize = this.fontSize
@@ -221,18 +224,16 @@ class Text : UiElement(), Colored {
             ) }
             .toList()
         val lines: List<Line> = paragraphs.flatMap(SplitLines::lines)
-        this.pxWidth = maxOf(
-            this.pxWidth, paragraphs.maxOf { p -> p.maxWidth }
-        )
-        this.pxHeight = maxOf(
-            this.pxHeight, paragraphs.sumOf { p -> p.maxHeight }
-        )
+        this.pxTextWidth = paragraphs.maxOf { p -> p.maxWidth }
+        this.pxTextHeight = paragraphs.sumOf { p -> p.maxHeight }
+        this.pxWidth = maxOf(this.pxWidth, this.pxTextWidth)
+        this.pxHeight = maxOf(this.pxHeight, this.pxTextHeight)
         this.renderIsDirty = this.renderIsDirty
-            || this.lastPxWidth != this.pxWidth
-            || this.lastPxHeight != this.pxHeight
+            || this.lastPxWidth != this.pxTextWidth
+            || this.lastPxHeight != this.pxTextHeight
         if (!this.renderIsDirty) { return }
-        this.lastPxWidth = this.pxWidth
-        this.lastPxHeight = this.pxHeight
+        this.lastPxWidth = this.pxTextWidth
+        this.lastPxHeight = this.pxTextHeight
         val image: BufferedImage
         val g: Graphics2D
         val oldState: RenderState? = this.renderState
