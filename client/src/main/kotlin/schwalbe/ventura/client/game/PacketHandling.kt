@@ -1,6 +1,7 @@
 
 package schwalbe.ventura.client.game
 
+import org.joml.Vector4f
 import schwalbe.ventura.client.Client
 import schwalbe.ventura.net.*
 import schwalbe.ventura.data.ConstWorldInfo
@@ -27,6 +28,8 @@ fun PacketHandler<Unit>.addWorldHandling(client: Client) = this
     }
     .onPacket(PacketType.CONST_WORLD_INFO) { i: ConstWorldInfo, _ ->
         client.renderer.config = i.rendererConfig
+        client.world?.groundColor =
+            Vector4f(i.rendererConfig.groundColor.toVector3f(), 1f)
     }
     .onPacket(PacketType.CHUNK_CONTENTS) { c: ChunkContentsPacket, _ ->
         val world: World = client.world ?: return@onPacket

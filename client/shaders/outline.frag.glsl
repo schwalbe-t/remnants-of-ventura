@@ -1,12 +1,13 @@
 
 #include "common/renderer.frag.glsl"
+#include "common/shading.frag.glsl"
 
 in vec2 fTexCoords;
 
 out vec4 oColor;
 
 void main(void) {
-    oColor = texture(uTexture, fTexCoords);
-    if (oColor.a == 0.0) { discard; }
-    oColor.rgb *= uBaseFactor * uOutlineFactor;
+    vec4 texColor = texture(uTexture, fTexCoords);
+    if (texColor.a == 0.0) { discard; }
+    oColor = outlineColor(texColor);
 }

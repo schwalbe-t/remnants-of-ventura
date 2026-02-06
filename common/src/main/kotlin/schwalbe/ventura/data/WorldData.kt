@@ -11,14 +11,16 @@ class RendererConfig(
     val groundToSun: SerVector3,
     val baseColorFactor: SerVector3,
     val shadowColorFactor: SerVector3,
-    val outlineColorFactor: SerVector3
+    val outlineColorFactor: SerVector3,
+    val groundColor: SerVector3
 ) {
     companion object {
         val default = RendererConfig(
             groundToSun = Vector3f(1.134f, 1f, 0f).normalize().toSerVector3(),
             baseColorFactor = SerVector3(1f, 1f, 1f),
             shadowColorFactor = SerVector3(0.7f, 0.85f, 1.1f),
-            outlineColorFactor = SerVector3(0.55f, 0.65f, 0.75f)
+            outlineColorFactor = SerVector3(0.55f, 0.65f, 0.75f),
+            groundColor = Vector3f(151f, 134f, 111f).div(255f).toSerVector3()
         )
     }
 }
