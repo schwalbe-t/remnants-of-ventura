@@ -43,3 +43,39 @@ object NameDisplay {
     }
 
 }
+
+
+data class NameDisplayManager(
+    val container: Stack = Stack(),
+    val nameDisplays: MutableMap<String, Padding> = mutableMapOf()
+)
+
+fun NameDisplayManager.add(username: String) {
+    if (username in this.nameDisplays.keys) { return }
+    val padding = NameDisplay.createDisplay(username)
+        .pad()
+    this.nameDisplays[username] = padding
+    this.container.add(padding)
+}
+
+fun NameDisplayManager.remove(username: String) {
+    val removed: Padding = this.nameDisplays.remove(username) ?: return
+    this.container.without(removed)
+    removed.disposeTree()
+}
+
+fun NameDisplayManager.removeIf(f: (String) -> Boolean) {
+    this.nameDisplays.keys.filter(f).forEach(this::remove)
+}
+
+fun NameDisplayManager.update(username: String, anchorX: Float, anchorY: Float) {
+    val padding: Padding = this.nameDisplays[username] ?: return
+    if (padding.wasDisposed) { return this.remove(username) }
+    val display: UiElement = padding.children[0]
+    padding.withPadding(
+        left = (anchorX - (display.pxWidth / 2)).px,
+        top = (anchorY - display.pxHeight).px,
+        bottom = 0.px, right = 0.px
+    )
+    NameDisplay.updateDisplay(display)
+}

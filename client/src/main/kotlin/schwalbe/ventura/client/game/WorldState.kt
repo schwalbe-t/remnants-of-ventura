@@ -1,16 +1,17 @@
 
 package schwalbe.ventura.client.game
 
-import schwalbe.ventura.engine.ui.*
-import schwalbe.ventura.client.Client
+import schwalbe.ventura.client.screens.online.*
 import schwalbe.ventura.engine.gfx.AnimState
+import schwalbe.ventura.client.Client
 import schwalbe.ventura.net.SharedPlayerInfo
 import schwalbe.ventura.net.WorldStatePacket
 import schwalbe.ventura.net.toVector3f
 import org.joml.Vector3f
 import org.joml.Vector3fc
-import schwalbe.ventura.client.screens.online.NameDisplay
 
+// The server automatically only sends the world state in a specific radius,
+// so there is no reason for any logic to limit rendering / updating here
 class WorldState {
 
     data class ReceivedPacket(
@@ -23,8 +24,7 @@ class WorldState {
         class Player(
             val position: Vector3f = Vector3f(),
             var rotation: Float = 0f,
-            val animation: AnimState<PlayerAnim> = AnimState(PlayerAnim.idle),
-            var nameDisplay: Padding? = null
+            val animation: AnimState<PlayerAnim> = AnimState(PlayerAnim.idle)
         )
     }
 
@@ -39,17 +39,7 @@ class WorldState {
     var displayedTime: Long = System.currentTimeMillis()
     val interpolated = Interpolated()
 
-    var activePlayerNameDisplay: Stack? = null
-        private set
-
-    fun createPlayerNameDisplay(): UiElement {
-        for (player in this.interpolated.players.values) {
-            player.nameDisplay = null
-        }
-        val layer = Stack()
-        this.activePlayerNameDisplay = layer
-        return layer
-    }
+    var activeNameDisplays: NameDisplayManager? = null
 
     fun handleReceivedState(state: WorldStatePacket) {
         val now: Long = System.currentTimeMillis()
@@ -57,37 +47,26 @@ class WorldState {
     }
 
     fun updatePlayerNameDisplays(client: Client) {
+        val displays = this.activeNameDisplays ?: return
+        displays.removeIf { it !in this.interpolated.players.keys }
         for ((username, player) in this.interpolated.players) {
             if (username == client.username) { continue }
-            var nameDisplay: UiElement? = player.nameDisplay
-            if (nameDisplay == null || nameDisplay.wasDisposed) {
-                nameDisplay = NameDisplay.createDisplay(username)
-                    .pad()
-                player.nameDisplay = nameDisplay
-                this.activePlayerNameDisplay?.add(nameDisplay)
-            }
-            val display: UiElement = nameDisplay.children[0]
+            displays.add(username)
             val posWorld = Vector3f(player.position).add(PLAYER_NAME_OFFSET)
             val screenNdc: Vector3f = client.renderer.viewProj
                 .transformProject(posWorld)
             val screenNormX: Float = (screenNdc.x() + 1f) / 2f
             val screenNormY: Float = 1f - ((screenNdc.y() + 1f) / 2f)
-            val screenPxX: Float = (screenNormX * client.renderer.dest.width) -
-                (display.pxWidth / 2f)
-            val screenPxY: Float = (screenNormY * client.renderer.dest.height) -
-                display.pxHeight
-            player.nameDisplay?.withPadding(
-                left = screenPxX.px, top = screenPxY.px,
-                bottom = 0.px, right = 0.px
-            )
-            NameDisplay.updateDisplay(display)
+            val screenPxX: Float = screenNormX * client.renderer.dest.width
+            val screenPxY: Float = screenNormY * client.renderer.dest.height
+            displays.update(username, screenPxX, screenPxY)
         }
     }
 
     fun update(client: Client) {
         if (this.received.isEmpty()) { return }
         this.displayedTime = System.currentTimeMillis()
-        this.displayedTime -= WorldState.DISPLAY_DELAY_MS
+        this.displayedTime -= DISPLAY_DELAY_MS
         this.displayedTime = this.displayedTime
             .coerceIn(this.received.first().time, this.received.last().time)
         val firstNotDispIdx: Int = this.received
@@ -132,12 +111,8 @@ class WorldState {
         for (username in this.interpolated.players.keys.toList()) {
             if (before.state.players.containsKey(username)) { continue }
             if (after.state.players.containsKey(username)) { continue }
-            val player = this.interpolated.players.remove(username) ?: continue
-            val nameDisplay: Padding? = player.nameDisplay
-            if (nameDisplay != null) {
-                this.activePlayerNameDisplay?.without(nameDisplay)
-                nameDisplay.disposeTree()
-            }
+            this.interpolated.players.remove(username) ?: continue
+            this.activeNameDisplays?.remove(username)
         }
         for ((username, plAfter) in after.state.players) {
             val plBefore = before.state.players[username] ?: plAfter

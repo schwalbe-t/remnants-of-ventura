@@ -2,9 +2,14 @@
 package schwalbe.ventura.server
 
 import schwalbe.ventura.MAX_NUM_REQUESTED_CHUNKS
+import schwalbe.ventura.WORLD_STATE_CONTENT_RADIUS
 import schwalbe.ventura.net.*
 import schwalbe.ventura.data.*
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.math.abs
+
+private fun insideSquareRadiusXZ(p: SerVector3, center: SerVector3, r: Float)
+    = maxOf(abs(p.x - center.x), abs(p.y - center.y)) <= r
 
 class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
 
@@ -62,15 +67,19 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
     }
 
     private fun sendWorldStatePacket() {
-        val players = this.players.map { (name, pl) ->
+        val playerStates = this.players.map { (name, pl) ->
                 name to pl.data.worlds.last().state
             }.toMap()
-        val p = Packet.serialize(
-            PacketType.WORLD_STATE,
-            WorldStatePacket(players)
-        )
-        this.players.values.forEach {
-            it.connection.outgoing.send(p)
+        fun worldStateAt(observer: SerVector3): WorldStatePacket {
+            val r: Float = WORLD_STATE_CONTENT_RADIUS
+            val fPlayerStates = playerStates
+                .filterValues { insideSquareRadiusXZ(it.position, observer, r) }
+            return WorldStatePacket(fPlayerStates)
+        }
+        for (player in this.players.values) {
+            val pos: SerVector3 = player.data.worlds.last().state.position
+            val ws = Packet.serialize(PacketType.WORLD_STATE, worldStateAt(pos))
+            player.connection.outgoing.send(ws)
         }
     }
 
