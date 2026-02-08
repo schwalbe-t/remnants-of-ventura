@@ -9,6 +9,7 @@ import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.game.addErrorLogging
+import schwalbe.ventura.client.game.addWorldHandling
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.net.*
@@ -22,6 +23,7 @@ fun serverAuthenticationScreen(
     var password: String = ""
     val packets = PacketHandler.receiveDownPackets<Unit>()
         .addErrorLogging()
+        .addWorldHandling(client)
         .onPacket(PacketType.TAGGED_ERROR) { p: TaggedErrorPacket, _ ->
             when (p) {
                 TaggedErrorPacket.INVALID_ACCOUNT_PARAMS -> {
