@@ -2,9 +2,7 @@
 package schwalbe.ventura.client.game
 
 import schwalbe.ventura.engine.*
-import schwalbe.ventura.client.Client
-import schwalbe.ventura.client.RendererFrag
-import schwalbe.ventura.client.RendererVert
+import schwalbe.ventura.client.*
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.ui.quad
 import org.joml.*
@@ -54,23 +52,27 @@ fun World.update(client: Client, captureInput: Boolean) {
     this.state.update(client)
 }
 
-private fun World.renderGround(client: Client) {
+private fun World.renderGround(pass: RenderPass) {
     val instance = Matrix4f()
         .translate(this.player.position)
         .scale(64f) // diameter
     val shader = groundShader()
     shader[GroundFrag.groundColor] = this.groundColor
-    client.renderer.render(
+    pass.render(
         quad(), shader, GroundVert.renderer, GroundFrag.renderer,
         listOf(instance)
     )
 }
 
 fun World.render(client: Client) {
-    client.renderer.update()
-    client.renderer.dest.clearColor(Vector4f(0.2f, 0.2f, 0.2f, 1.0f))
-    this.chunks.render(client)
-    this.state.render(client)
-    this.player.render(client)
-    this.renderGround(client)
+    client.renderer.sunDiameter = this.camController.distance.value
+    val sunTarget = Vector3f(0f, 0f, -this.camController.distance.value * 0.2f)
+        .add(this.player.position)
+    client.renderer.update(sunTarget)
+    client.renderer.forEachPass { pass ->
+        this.chunks.render(pass)
+        this.state.render(client, pass)
+        this.player.render(pass)
+        this.renderGround(pass)
+    }
 }

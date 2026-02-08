@@ -9,6 +9,7 @@ import schwalbe.ventura.net.WorldStatePacket
 import schwalbe.ventura.net.toVector3f
 import org.joml.Vector3f
 import org.joml.Vector3fc
+import schwalbe.ventura.client.RenderPass
 
 // The server automatically only sends the world state in a specific radius,
 // so there is no reason for any logic to limit rendering / updating here
@@ -53,7 +54,7 @@ class WorldState {
             if (username == client.username) { continue }
             displays.add(username)
             val posWorld = Vector3f(player.position).add(PLAYER_NAME_OFFSET)
-            val screenNdc: Vector3f = client.renderer.viewProj
+            val screenNdc: Vector3f = client.renderer.camViewProj
                 .transformProject(posWorld)
             val screenNormX: Float = (screenNdc.x() + 1f) / 2f
             val screenNormY: Float = 1f - ((screenNdc.y() + 1f) / 2f)
@@ -123,12 +124,12 @@ class WorldState {
         this.updateInterpolatedState(client.deltaTime)
     }
 
-    fun render(client: Client) {
+    fun render(client: Client, pass: RenderPass) {
         this.interpolateWorldState(client)
         for ((username, player) in this.interpolated.players) {
             if (username == client.username) { continue }
             Player.render(
-                client, player.position, player.rotation, player.animation
+                pass, player.position, player.rotation, player.animation
             )
         }
     }

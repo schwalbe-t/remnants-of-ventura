@@ -133,16 +133,19 @@ class Framebuffer : ConstFramebuffer, Disposable {
         }
     }
 
-    fun blitColorOnto(target: ConstFramebuffer) {
-        val thisColor: Texture? = this.color
-        require(thisColor != null)
+    private fun blitOnto(
+        target: ConstFramebuffer,
+        getTexture: (Framebuffer) -> Texture?, glComp: Int
+    ) {
+        val thisTex: Texture? = getTexture(this)
+        require(thisTex != null)
         if (target is Framebuffer) {
-            val destColor: Texture? = target.color
-            require(destColor != null)
-            require(thisColor.format.glIFmt == destColor.format.glIFmt)
-            if (thisColor.samples == 1) { require(destColor.samples == 1) }
+            val targetTex: Texture? = getTexture(target)
+            require(targetTex != null)
+            require(thisTex.format.glIFmt == targetTex.format.glIFmt)
+            if (thisTex.samples == 1) { require(targetTex.samples == 1) }
         }
-        if (thisColor.samples > 1) {
+        if (thisTex.samples > 1) {
             require(this.width == target.width && this.height == target.height)
         }
         this.bind(GL_READ_FRAMEBUFFER)
@@ -150,10 +153,15 @@ class Framebuffer : ConstFramebuffer, Disposable {
         glBlitFramebuffer(
             0, 0, this.width, this.height,
             0, 0, target.width, target.height,
-            GL_COLOR_BUFFER_BIT,
-            GL_NEAREST
+            glComp, GL_NEAREST
         )
     }
+
+    fun blitColorOnto(target: ConstFramebuffer)
+        = this.blitOnto(target, Framebuffer::color, GL_COLOR_BUFFER_BIT)
+
+    fun blitDepthOnto(target: ConstFramebuffer)
+        = this.blitOnto(target, Framebuffer::depth, GL_DEPTH_BUFFER_BIT)
 
     override fun bind(glTarget: Int) {
         if (!this.complete) {

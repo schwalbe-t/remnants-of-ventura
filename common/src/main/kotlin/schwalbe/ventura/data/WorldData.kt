@@ -12,7 +12,8 @@ class RendererConfig(
     val baseColorFactor: SerVector3,
     val shadowColorFactor: SerVector3,
     val outlineColorFactor: SerVector3,
-    val groundColor: SerVector3
+    val groundColor: SerVector3,
+    val defaultLit: Boolean
 ) {
     companion object {
         val default = RendererConfig(
@@ -20,7 +21,8 @@ class RendererConfig(
             baseColorFactor = SerVector3(1f, 1f, 1f),
             shadowColorFactor = SerVector3(0.7f, 0.85f, 1.1f),
             outlineColorFactor = SerVector3(0.55f, 0.65f, 0.75f),
-            groundColor = Vector3f(151f, 134f, 111f).div(255f).toSerVector3()
+            groundColor = Vector3f(151f, 134f, 111f).div(255f).toSerVector3(),
+            defaultLit = true
         )
     }
 }

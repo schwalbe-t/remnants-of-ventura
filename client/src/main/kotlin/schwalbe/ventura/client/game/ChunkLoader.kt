@@ -12,6 +12,7 @@ import kotlin.collections.asSequence
 import org.joml.Matrix4f
 import org.joml.Matrix4fc
 import org.joml.Vector3fc
+import schwalbe.ventura.client.RenderPass
 
 private val objectModels: List<Resource<Model<StaticAnim>>> = ObjectType.entries
     .map { Model.loadFile(
@@ -143,7 +144,7 @@ class ChunkLoader {
         return false
     }
 
-    private fun renderChunk(data: LoadedChunkData, client: Client) {
+    private fun renderChunk(data: LoadedChunkData, pass: RenderPass) {
         val groupedInstances: MutableMap<ObjectType, MutableList<Matrix4fc>>
             = mutableMapOf()
         for (inst in data.instances) {
@@ -156,21 +157,21 @@ class ChunkLoader {
                 .getOrNull(type.ordinal)?.invoke()
                 ?: continue
             if (type.renderOutline) {
-                client.renderer.renderOutline(
+                pass.renderOutline(
                     model, ChunkLoader.OUTLINE_THICKNESS,
                     animState = null, instances
                 )
             }
-            client.renderer.renderGeometry(
+            pass.renderGeometry(
                 model, animState = null, instances
             )
         }
     }
 
-    fun render(client: Client) {
+    fun render(pass: RenderPass) {
         for (chunk in this.chunksInRange(ChunkLoader.RENDER_RADIUS)) {
             val data: LoadedChunkData = this.loaded[chunk] ?: continue
-            this.renderChunk(data, client)
+            this.renderChunk(data, pass)
         }
     }
 

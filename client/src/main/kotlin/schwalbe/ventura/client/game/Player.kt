@@ -196,9 +196,9 @@ class Player {
             rotateTowardsTarget(all = 0.2f, x = 0.00f, y = 1f, z = 0.00f)
     }
 
-    fun render(client: Client) {
+    fun render(pass: RenderPass) {
         this.animInjectWeight.update()
-        Player.render(client, this.position, this.rotation, this.anim)
+        Player.render(pass, this.position, this.rotation, this.anim)
     }
 
 }
@@ -211,15 +211,15 @@ fun Player.Companion.modelTransform(
     .scale(Player.MODEL_SCALE)
 
 fun Player.Companion.render(
-    client: Client, pos: Vector3fc, rotY: Float, anim: AnimState<PlayerAnim>
+    pass: RenderPass, pos: Vector3fc, rotY: Float, anim: AnimState<PlayerAnim>
 ) {
     val transf = Player.modelTransform(pos, rotY)
     val instances = listOf(transf)
-    client.renderer.renderOutline(
+    pass.renderOutline(
         playerModel(), Player.OUTLINE_THICKNESS, anim, instances,
         renderedMeshes = listOf("body", "hair")
     )
-    client.renderer.renderGeometry(
+    pass.renderGeometry(
         playerModel(), anim, instances
     )
 }

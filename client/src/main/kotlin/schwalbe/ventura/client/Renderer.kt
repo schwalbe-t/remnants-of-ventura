@@ -6,12 +6,11 @@ import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.net.toVector3f
 import schwalbe.ventura.data.RendererConfig
-import org.joml.Matrix4f
-import org.joml.Matrix4fc
+import kotlin.collections.toMutableList
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
-import kotlin.collections.toMutableList
+import org.joml.*
 
 class RendererVert<S : VertShaderDef<S>> : VertShaderDef<S> {
     companion object {
@@ -36,6 +35,12 @@ class RendererFrag<S : FragShaderDef<S>> : FragShaderDef<S> {
     val shadowFactor = vec3("uShadowFactor")
     val outlineFactor = vec3("uOutlineFactor")
     val groundToSun = vec3("uGroundToSun")
+    val sunViewProjection = mat4("uSunViewProjection")
+    val shadowMap = sampler2DMS("uShadowMap")
+    val shadowMapSamples = int("uShadowMapSamples")
+    val depthBias = float("uDepthBias")
+    val normalOffset = float("uNormalOffset")
+    val defaultLit = bool("uDefaultLit")
 }
 
 
@@ -52,7 +57,7 @@ object GeometryFrag : FragShaderDef<GeometryFrag> {
 }
 
 val geometryShader: Resource<Shader<GeometryVert, GeometryFrag>>
-        = Shader.loadGlsl(GeometryVert, GeometryFrag)
+    = Shader.loadGlsl(GeometryVert, GeometryFrag)
 
 
 object OutlineVert : VertShaderDef<OutlineVert> {
@@ -69,7 +74,26 @@ object OutlineFrag : FragShaderDef<OutlineFrag> {
 }
 
 val outlineShader: Resource<Shader<OutlineVert, OutlineFrag>>
-        = Shader.loadGlsl(OutlineVert, OutlineFrag)
+    = Shader.loadGlsl(OutlineVert, OutlineFrag)
+
+
+object DepthOnlyFrag : FragShaderDef<DepthOnlyFrag> {
+    override val path: String = "shaders/depth.frag.glsl"
+
+    val renderer = RendererFrag<DepthOnlyFrag>()
+}
+
+val depthOnlyGeometryShader: Resource<Shader<GeometryVert, DepthOnlyFrag>>
+    = Shader.loadGlsl(GeometryVert, DepthOnlyFrag)
+
+object DiscardFrag : FragShaderDef<DiscardFrag> {
+    override val path: String = "shaders/discard.frag.glsl"
+
+    val renderer = RendererFrag<DiscardFrag>()
+}
+
+val discardOutlineShader: Resource<Shader<OutlineVert, DiscardFrag>>
+    = Shader.loadGlsl(OutlineVert, DiscardFrag)
 
 
 class Renderer(val dest: ConstFramebuffer) {
@@ -91,28 +115,122 @@ class Renderer(val dest: ConstFramebuffer) {
         )
 
         fun submitResources(loader: ResourceLoader) = loader.submitAll(
-            geometryShader, outlineShader
+            geometryShader, outlineShader,
+            depthOnlyGeometryShader, discardOutlineShader
         )
+
+        const val SUN_NEAR: Float = 1f
+        const val SUN_FAR: Float = 200f
+        const val SUN_DISTANCE: Float = 100f
+        val SUN_UP: Vector3fc = Vector3f(0f, +1f, 0f)
+        const val DEPTH_BIAS: Float = 0.00075f
+        const val NORMAL_OFFSET: Float = 0.01f
+
+        const val SHADOW_MAP_RES: Int = 2048
+        const val SHADOW_MAP_SAMPLES: Int = 4
     }
 
 
     val camera = Camera()
+    var sunDiameter: Float = 32f
 
     var config: RendererConfig = RendererConfig.default
 
-    var viewProj: Matrix4fc = Matrix4f()
-        private set
+    private var mutCamViewProj = Matrix4f()
+    private var mutSunViewProj = Matrix4f()
+    val camViewProj: Matrix4fc = this.mutCamViewProj
+    val sunViewProj: Matrix4fc = this.mutSunViewProj
 
-    private val instances = UniformBuffer(BufferWriteFreq.EVERY_FRAME)
-    private val instanceBuff
+    val shadowMapTex = Texture(
+        SHADOW_MAP_RES, SHADOW_MAP_RES,
+        Texture.Filter.NEAREST, Texture.Format.DEPTH32,
+        SHADOW_MAP_SAMPLES
+    )
+    val shadowMap: ConstFramebuffer = Framebuffer()
+        .attachDepth(this.shadowMapTex)
+
+    val instances = UniformBuffer(BufferWriteFreq.EVERY_FRAME)
+    val instanceBuff: ByteBuffer
         = ByteBuffer.allocateDirect(
-            RendererVert.MAX_NUM_INSTANCES *
-                    16 /* num floats in mat4 */ * 4 /* sizeof(float) */
+            RendererVert.MAX_NUM_INSTANCES * 4*4 * Geometry.Type.FLOAT.numBytes
         )
         .order(ByteOrder.nativeOrder())
 
-    fun update() {
-        this.viewProj = this.camera.computeViewProj(this.dest)
+    fun update(sunTarget: Vector3fc) {
+        this.mutCamViewProj.set(this.camera.computeViewProj(this.dest))
+        val sunPos: Vector3fc = this.config.groundToSun.toVector3f()
+            .mul(SUN_DISTANCE)
+            .add(sunTarget)
+        this.mutSunViewProj
+            .setOrthoSymmetric(
+                this.sunDiameter, this.sunDiameter, SUN_NEAR, SUN_FAR
+            )
+            .lookAt(sunPos, sunTarget, SUN_UP)
+    }
+
+    fun beginShadowPass(): RenderPass {
+        this.shadowMap.clearDepth(1f)
+        return TypedRenderPass(
+            this,
+            this.mutSunViewProj,
+            depthOnlyGeometryShader, DepthOnlyFrag.renderer,
+            discardOutlineShader, DiscardFrag.renderer,
+            this.shadowMap
+        )
+    }
+
+    fun beginGeometryPass(): RenderPass {
+        this.dest.clearColor(Vector4f(0.0f, 0.0f, 0.0f, 0.0f))
+        this.dest.clearDepth(1f)
+        return TypedRenderPass(
+            this,
+            this.mutCamViewProj,
+            geometryShader, GeometryFrag.renderer,
+            outlineShader, OutlineFrag.renderer,
+            this.dest
+        )
+    }
+
+    inline fun forEachPass(crossinline f: (RenderPass) -> Unit) {
+        f(this.beginShadowPass())
+        f(this.beginGeometryPass())
+    }
+
+}
+
+
+typealias RenderPass = TypedRenderPass<*, *>
+
+class TypedRenderPass<
+    FGeometry : FragShaderDef<FGeometry>,
+    FOutline : FragShaderDef<FOutline>
+>(
+    val renderer: Renderer,
+    val viewProj: Matrix4fc,
+    val geometryShader: Resource<Shader<GeometryVert, FGeometry>>,
+    val geometryFragShader: RendererFrag<FGeometry>,
+    val outlineShader: Resource<Shader<OutlineVert, FOutline>>,
+    val outlineFragShader: RendererFrag<FOutline>,
+    val dest: ConstFramebuffer
+) {
+
+    fun <V : VertShaderDef<V>, F : FragShaderDef<F>> configureShader(
+        shader: Shader<V, F>,
+        vertShader: RendererVert<V>,
+        fragShader: RendererFrag<F>
+    ) {
+        val cfg = this.renderer.config
+        shader[vertShader.viewProjection] = this.viewProj
+        shader[fragShader.baseFactor] = cfg.baseColorFactor.toVector3f()
+        shader[fragShader.shadowFactor] = cfg.shadowColorFactor.toVector3f()
+        shader[fragShader.outlineFactor] = cfg.outlineColorFactor.toVector3f()
+        shader[fragShader.groundToSun] = cfg.groundToSun.toVector3f()
+        shader[fragShader.sunViewProjection] = this.renderer.sunViewProj
+        shader[fragShader.shadowMap] = this.renderer.shadowMapTex
+        shader[fragShader.shadowMapSamples] = Renderer.SHADOW_MAP_SAMPLES
+        shader[fragShader.depthBias] = Renderer.DEPTH_BIAS
+        shader[fragShader.normalOffset] = Renderer.NORMAL_OFFSET
+        shader[fragShader.defaultLit] = cfg.defaultLit
     }
 
     fun <A : Animations<A>> renderGeometry(
@@ -126,7 +244,8 @@ class Renderer(val dest: ConstFramebuffer) {
     ) {
         this.render(
             model,
-            geometryShader(), GeometryVert.renderer, GeometryFrag.renderer,
+            this.geometryShader(),
+            GeometryVert.renderer, this.geometryFragShader,
             animState, instances,
             faceCulling, depthTesting,
             renderedMeshes, meshTextureOverrides
@@ -142,11 +261,11 @@ class Renderer(val dest: ConstFramebuffer) {
         renderedMeshes: Collection<String>? = null,
         meshTextureOverrides: Map<String, Texture>? = null
     ) {
-        val shader = outlineShader()
+        val shader = this.outlineShader()
         shader[OutlineVert.outlineThickness] = outlineThickness
         this.render(
             model,
-            shader, OutlineVert.renderer, OutlineFrag.renderer,
+            shader, OutlineVert.renderer, this.outlineFragShader,
             animState, instances,
             FaceCulling.FRONT, depthTesting,
             renderedMeshes, meshTextureOverrides
@@ -161,13 +280,13 @@ class Renderer(val dest: ConstFramebuffer) {
         while (remaining.isNotEmpty()) {
             val batchSize: Int = minOf(remaining.size, maxBatchSize)
             val batch: MutableList<Matrix4fc> = remaining.subList(0, batchSize)
-            this.instanceBuff.clear()
-            val buff: FloatBuffer = this.instanceBuff.asFloatBuffer()
+            this.renderer.instanceBuff.clear()
+            val buff: FloatBuffer = this.renderer.instanceBuff.asFloatBuffer()
             for (i in 0..<batch.size) {
                 batch[i].get(i * 16, buff)
             }
-            this.instances.write(this.instanceBuff)
-            f(batchSize, this.instances)
+            this.renderer.instances.write(this.renderer.instanceBuff)
+            f(batchSize, this.renderer.instances)
             batch.clear()
         }
     }
@@ -184,12 +303,7 @@ class Renderer(val dest: ConstFramebuffer) {
         renderedMeshes: Collection<String>? = null,
         meshTextureOverrides: Map<String, Texture>? = null
     ) {
-        val cfg = this.config
-        shader[vertShader.viewProjection] = this.viewProj
-        shader[fragShader.baseFactor] = cfg.baseColorFactor.toVector3f()
-        shader[fragShader.shadowFactor] = cfg.shadowColorFactor.toVector3f()
-        shader[fragShader.outlineFactor] = cfg.outlineColorFactor.toVector3f()
-        shader[fragShader.groundToSun] = cfg.groundToSun.toVector3f()
+        this.configureShader(shader, vertShader, fragShader)
         this.withInstanceBatches(instances) { batchSize, buff ->
             shader[vertShader.instances] = buff
             model.render(
@@ -216,16 +330,11 @@ class Renderer(val dest: ConstFramebuffer) {
         faceCulling: FaceCulling = FaceCulling.DISABLED,
         depthTesting: DepthTesting = DepthTesting.ENABLED
     ) {
-        val cfg = this.config
-        shader[vertShader.viewProjection] = this.viewProj
+        this.configureShader(shader, vertShader, fragShader)
         shader[vertShader.localTransform] = localTransform
         if (texture != null) {
             shader[fragShader.texture] = texture
         }
-        shader[fragShader.baseFactor] = cfg.baseColorFactor.toVector3f()
-        shader[fragShader.shadowFactor] = cfg.shadowColorFactor.toVector3f()
-        shader[fragShader.outlineFactor] = cfg.outlineColorFactor.toVector3f()
-        shader[fragShader.groundToSun] = cfg.groundToSun.toVector3f()
         this.withInstanceBatches(instances) { batchSize, buff ->
             shader[vertShader.instances] = buff
             geometry.render(

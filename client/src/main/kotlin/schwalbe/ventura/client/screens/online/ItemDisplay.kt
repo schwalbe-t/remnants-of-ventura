@@ -84,7 +84,8 @@ object ItemDisplay {
         renderer.camera.fov = CAMERA_FOV
         val startTimeMs: Long = System.currentTimeMillis()
         return output.withRenderedContent {
-            renderer.update()
+            renderer.update(sunTarget = Vector3f(0f, 0f, 0f))
+            val pass = renderer.beginGeometryPass()
             val absTimeMs: Long = System.currentTimeMillis()
             val timeMs: Long = (absTimeMs - startTimeMs) % ROTATION_TIME_MS
             val timeS: Float = timeMs.toFloat() / 1000f
@@ -93,11 +94,11 @@ object ItemDisplay {
                 .rotateY(angleY)
                 .scale(1f / item.type.modelSize)
             )
-            renderer.renderOutline(
+            pass.renderOutline(
                 itemModel, OUTLINE_THICKNESS, null, instances,
                 meshTextureOverrides = meshTextureOverrides
             )
-            renderer.renderGeometry(
+            pass.renderGeometry(
                 itemModel, null, instances,
                 meshTextureOverrides = meshTextureOverrides
             )
