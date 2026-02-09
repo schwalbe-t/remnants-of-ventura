@@ -13,7 +13,7 @@
         "BUTTON_ADD_SERVER": "Add Server",
         "BUTTON_EDIT_SERVER": "Edit",
         "BUTTON_DELETE_SERVER": "Delete",
-        "PLACEHOLDER_NO_SERVERS": "You do not have any saved servers. Press \"Add Server\" to add one.",
+        "PLACEHOLDER_NO_SERVERS": "You do not have any saved servers. Press \"Add Server\" to add a server.",
         "LABEL_LOGGED_IN_AS": "Logged in as:",
 
         "TITLE_EDIT_SERVER": "Edit Server",
@@ -47,7 +47,7 @@
 
         "ERROR_INVALID_ACCOUNT_PARAMS": "Username already exists",
         "ERROR_INVALID_ACCOUNT_CREDS": "Username or password is invalid",
-        "ERROR_SESSION_CREATION_COOLDOWN": "Please wait a moment before attempting to log in again.",
+        "ERROR_SESSION_CREATION_COOLDOWN": "Please wait a moment before attempting to log in again",
         "ERROR_INVALID_SESSION_CREDS": "Failed to log in automatically",
         "ERROR_ACCOUNT_ALREADY_ONLINE": "The account is already online on another device",
         "ERROR_PASSWORDS_DONT_MATCH": "Passwords don't match",
