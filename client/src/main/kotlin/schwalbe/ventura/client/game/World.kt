@@ -65,8 +65,8 @@ private fun World.renderGround(pass: RenderPass) {
 }
 
 fun World.render(client: Client) {
-    client.renderer.sunDiameter = this.camController.distance.value
-    val sunTarget = Vector3f(0f, 0f, -this.camController.distance.value * 0.2f)
+    client.renderer.sunDiameter = 5f + this.camController.distance.value
+    val sunTarget = Vector3f(0f, 0f, -this.camController.distance.value * 0.25f)
         .add(this.player.position)
     client.renderer.update(sunTarget)
     client.renderer.forEachPass { pass ->
