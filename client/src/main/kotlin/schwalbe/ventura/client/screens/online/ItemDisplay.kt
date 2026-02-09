@@ -85,6 +85,7 @@ object ItemDisplay {
         val startTimeMs: Long = System.currentTimeMillis()
         return output.withRenderedContent {
             renderer.update(sunTarget = Vector3f(0f, 0f, 0f))
+            renderer.beginShadowPass()
             val pass = renderer.beginGeometryPass()
             val absTimeMs: Long = System.currentTimeMillis()
             val timeMs: Long = (absTimeMs - startTimeMs) % ROTATION_TIME_MS

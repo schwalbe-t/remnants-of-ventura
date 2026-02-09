@@ -31,6 +31,7 @@ class WorldState {
 
     companion object {
         const val DISPLAY_DELAY_MS: Long = 200L
+        const val BUFFERED_PACKET_COUNT: Int = 5
         val PLAYER_NAME_OFFSET: Vector3fc = Vector3f(0f, +2.25f, 0f)
     }
 
@@ -62,18 +63,6 @@ class WorldState {
             val screenPxY: Float = screenNormY * client.renderer.dest.height
             displays.update(username, screenPxX, screenPxY)
         }
-    }
-
-    fun update(client: Client) {
-        if (this.received.isEmpty()) { return }
-        this.displayedTime = System.currentTimeMillis()
-        this.displayedTime -= DISPLAY_DELAY_MS
-        this.displayedTime = this.displayedTime
-            .coerceIn(this.received.first().time, this.received.last().time)
-        val firstNotDispIdx: Int = this.received
-            .indexOfFirst { it.time > this.displayedTime }
-        this.received.subList(0, maxOf(firstNotDispIdx - 1, 0)).clear()
-        this.updatePlayerNameDisplays(client)
     }
 
     private fun interpolatePlayerState(
@@ -109,12 +98,13 @@ class WorldState {
         val n: Float = if (timeDiffMs == 0L) { 0f } else {
             (this.displayedTime - before.time).toFloat() / timeDiffMs.toFloat()
         }
-        for (username in this.interpolated.players.keys.toList()) {
-            if (before.state.players.containsKey(username)) { continue }
-            if (after.state.players.containsKey(username)) { continue }
-            this.interpolated.players.remove(username) ?: continue
-            this.activeNameDisplays?.remove(username)
-        }
+        this.interpolated.players.keys
+            .filter { it !in before.state.players.keys }
+            .filter { it !in after.state.players.keys }
+            .forEach { username ->
+                this.interpolated.players.remove(username)
+                this.activeNameDisplays?.remove(username)
+            }
         for ((username, plAfter) in after.state.players) {
             val plBefore = before.state.players[username] ?: plAfter
             val dest = this.interpolated.players
@@ -124,8 +114,22 @@ class WorldState {
         this.updateInterpolatedState(client.deltaTime)
     }
 
-    fun render(client: Client, pass: RenderPass) {
+    fun update(client: Client) {
+        if (this.received.isEmpty()) { return }
+        this.displayedTime = System.currentTimeMillis()
+        this.displayedTime -= DISPLAY_DELAY_MS
+        this.displayedTime = this.displayedTime
+            .coerceIn(this.received.first().time, this.received.last().time)
+        val firstNotDispIdx: Int = this.received
+            .indexOfFirst { it.time > this.displayedTime }
+        this.received.subList(
+            0, maxOf(firstNotDispIdx - BUFFERED_PACKET_COUNT, 0)
+        ).clear()
+        this.updatePlayerNameDisplays(client)
         this.interpolateWorldState(client)
+    }
+
+    fun render(client: Client, pass: RenderPass) {
         for ((username, player) in this.interpolated.players) {
             if (username == client.username) { continue }
             Player.render(

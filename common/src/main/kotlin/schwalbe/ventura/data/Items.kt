@@ -5,12 +5,30 @@ import kotlinx.serialization.Serializable
 import org.joml.Vector3fc
 import org.joml.Vector3f
 
+
 @Serializable
-enum class ItemCategory {
-    DEVELOPMENT_ITEM;
+enum class ItemAction {
+    DEPLOY_ROBOT,
+    TEST;
 
     val localNameKey: String
-        get() = "ITEM_CATEGORY_NAME/${this.name}"
+        get() = "ItemAction:name/${this.name}"
+}
+
+
+@Serializable
+enum class ItemCategory(
+    val actions: List<ItemAction>
+) {
+    DEVELOPMENT_ITEM(
+        actions = listOf(
+            ItemAction.TEST,
+            ItemAction.DEPLOY_ROBOT
+        )
+    );
+
+    val localNameKey: String
+        get() = "ItemCategory:name/${this.name}"
 }
 
 
@@ -35,9 +53,9 @@ enum class ItemType(
     );
 
     val localNameKey: String
-        get() = "ITEM_TYPE_NAME/${this.name}"
+        get() = "ItemType:name/${this.name}"
     val localDescKey: String
-        get() = "ITEM_TYPE_DESC/${this.name}"
+        get() = "ItemType:desc/${this.name}"
 }
 
 
@@ -57,7 +75,7 @@ enum class ItemVariant(
     );
 
     val localNameKey: String
-        get() = "ITEM_VARIANT_NAME/${this.name}"
+        get() = "ItemVariant:name/${this.name}"
 }
 
 

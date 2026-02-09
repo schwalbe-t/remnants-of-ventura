@@ -136,10 +136,34 @@ private fun createInventoryItemActionButton(
     .add(ClickArea().withHandler(handler))
     .wrapBorderRadius(0.75.vmin)
 
+private fun handleItemAction(
+    item: Item, count: Int, action: ItemAction, client: Client
+): Unit = when (action) {
+    ItemAction.DEPLOY_ROBOT -> {
+        println("Activated Deploy Action")
+    }
+    ItemAction.TEST -> {
+        println("Activated Test Action")
+    }
+}
+
 private fun createSelectedItemSection(
-    item: Item, count: Int, itemDisplay: MsaaRenderDisplay
+    item: Item, count: Int, itemDisplay: MsaaRenderDisplay,
+    onItemAction: (ItemAction) -> Unit
 ): Axis {
     val l = localized()
+    val actionButtons = Axis.row()
+    val numActions: Int = item.type.category.actions.size
+    val paddingSum: UiSize = (numActions + 1) * 1.vmin
+    val buttonSize: UiSize = (100.pw - paddingSum) / numActions
+    for (action in item.type.category.actions) {
+        actionButtons.add(1.vmin, Space())
+        actionButtons.add(buttonSize, createInventoryItemActionButton(
+            content = l[action.localNameKey],
+            handler = { onItemAction(action) }
+        ))
+    }
+    actionButtons.add(1.vmin, Space())
     return Axis.column()
         .add(8.vmin, Axis.column()
             .add(60.ph, Text()
@@ -159,18 +183,7 @@ private fun createSelectedItemSection(
             .add((100.ph - 100.pmin) / 2, Space())
             .pad(3.vmin)
         )
-        .add(5.vmin, Axis.row()
-            .add(1.vmin, Space())
-            .add(50.pw - 1.vmin - 0.5.vmin, createInventoryItemActionButton(
-                content = "Action 1",
-                handler = {}
-            ))
-            .add(1.vmin, Space())
-            .add(50.pw - 1.vmin - 0.5.vmin, createInventoryItemActionButton(
-                content = "Action 2",
-                handler = {}
-            ))
-            .add(1.vmin, Space())
+        .add(5.vmin, actionButtons
             .pad(top = 1.vmin)
         )
         .add(20.ph, Text()
@@ -225,6 +238,21 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
         navigator = client.nav
     )
     val selectedItemSection = Stack()
+    fun renderSelectedItemSection(item: Item, count: Int) {
+        selectedItemDisplay = ItemDisplay.createDisplay(
+            item,
+            msaaSamples = 4,
+            fixedAngle = null // null = rotates over time
+        )
+        selectedItemSection.withoutContent()
+        selectedItemSection.add(createSelectedItemSection(
+            item, count, selectedItemDisplay,
+            onItemAction = { action ->
+                handleItemAction(item, count, action, client)
+                renderSelectedItemSection(item, count)
+            }
+        ))
+    }
     screen.add(layer = 0, element = Axis.row()
         .add(fpw * (2f/3f), Stack()
             .add(background)
@@ -232,17 +260,7 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
             .add(Axis.row()
                 .add(50.pw, createItemListSection(
                     client, packets,
-                    onItemSelect = { item, count ->
-                        selectedItemDisplay = ItemDisplay.createDisplay(
-                            item,
-                            msaaSamples = 4,
-                            fixedAngle = null // null = rotates over time
-                        )
-                        selectedItemSection.withoutContent()
-                        selectedItemSection.add(createSelectedItemSection(
-                            item, count, selectedItemDisplay
-                        ))
-                    }
+                    onItemSelect = ::renderSelectedItemSection
                 ))
                 .add(50.pw, selectedItemSection)
             )
