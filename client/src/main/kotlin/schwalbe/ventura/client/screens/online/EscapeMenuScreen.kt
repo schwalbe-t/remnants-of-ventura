@@ -37,7 +37,7 @@ private fun addOption(
 val PLAYER_IN_RIGHT_HALF = CameraController.Mode(
     lookAt = { _, w, _ -> Vector3f()
         .add(w.player.position)
-        .add(0f, +1.5f, 0f)
+        .add(0f, +1f, 0f)
     },
     fovDegrees = 20f,
     offsetAngleX = { _, hh, _ -> atan(tan(hh) * -1f/2f) },

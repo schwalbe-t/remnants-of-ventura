@@ -82,7 +82,29 @@ open class Axis(
         this.invalidate()
         return this
     }
-    
+
+    fun dispose(element: UiElement): Axis {
+        element.disposeTree()
+        return this.detach(element)
+    }
+
+    fun disposeAll(): Axis {
+        this.inside.forEach { it.elem.disposeTree() }
+        return this.detachAll()
+    }
+
+    fun detach(element: UiElement): Axis {
+        this.inside.removeIf { it.elem === element }
+        this.invalidate()
+        return this
+    }
+
+    fun detachAll(): Axis {
+        this.inside.clear()
+        this.invalidate()
+        return this
+    }
+
     fun map(f: (UiElement) -> UiElement): Axis {
         this.inside = this.inside
             .map { e -> Entry(f(e.elem), e.size) }

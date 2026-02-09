@@ -64,7 +64,7 @@ class CameraController {
         val PLAYER_AT_CENTER = Mode(
             lookAt = { _, w, _ -> Vector3f()
                 .add(w.player.position)
-                .add(0f, +1.5f, 0f)
+                .add(0f, +1f, 0f)
             },
             fovDegrees = 30f
         )

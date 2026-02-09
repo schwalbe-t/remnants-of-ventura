@@ -122,6 +122,7 @@ fun serverSelectScreen(client: Client): () -> GameScreen = {
             .withColor(SECONDARY_FONT_COLOR)
         )
     }
+    serverList.add(50.ph, Space())
     screen.add(layer = 0, element = Axis.column()
         .add(7.ph, Axis.row()
             .add(100.pw - 30.vmin, Text()

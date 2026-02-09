@@ -41,6 +41,7 @@ fun languageSelectScreen(client: Client): () -> GameScreen = {
     for (language in GameLanguage.entries) {
         languageList.add(9.5.vmin, createLanguageOption(language, client))
     }
+    languageList.add(50.ph, Space())
     screen.add(layer = 0, element = Axis.column()
         .add(7.ph, Text()
             .withFont(googleSansSb())

@@ -199,7 +199,7 @@ private fun createSelectedItemSection(
 val PLAYER_IN_RIGHT_THIRD = CameraController.Mode(
     lookAt = { _, w, _ -> Vector3f()
         .add(w.player.position)
-        .add(0f, +1.5f, 0f)
+        .add(0f, +1f, 0f)
     },
     fovDegrees = 20f,
     offsetAngleX = { _, hh, _ -> atan(tan(hh) * -2f/3f) },
@@ -244,7 +244,7 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
             msaaSamples = 4,
             fixedAngle = null // null = rotates over time
         )
-        selectedItemSection.withoutContent()
+        selectedItemSection.disposeAll()
         selectedItemSection.add(createSelectedItemSection(
             item, count, selectedItemDisplay,
             onItemAction = { action ->

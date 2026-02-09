@@ -60,7 +60,7 @@ fun NameDisplayManager.add(username: String) {
 
 fun NameDisplayManager.remove(username: String) {
     val removed: Padding = this.nameDisplays.remove(username) ?: return
-    this.container.without(removed)
+    this.container.dispose(removed)
     removed.disposeTree()
 }
 

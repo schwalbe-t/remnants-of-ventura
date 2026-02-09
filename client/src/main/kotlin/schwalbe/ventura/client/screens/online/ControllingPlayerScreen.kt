@@ -10,7 +10,8 @@ import schwalbe.ventura.net.PacketHandler
 
 fun controllingPlayerScreen(client: Client): () -> GameScreen = {
     client.world?.camController?.mode = CameraController.PLAYER_AT_CENTER
-    var playerNames = NameDisplayManager()
+    val playerNames = NameDisplayManager()
+    val robotStatus = RobotStatusDisplayManager()
     val screen = GameScreen(
         render = {
             if (Key.ESCAPE.wasPressed) {
@@ -22,6 +23,9 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             client.world?.state?.activeNameDisplays = playerNames
             client.world?.update(client, captureInput = true)
             client.world?.render(client)
+
+            // TODO! move call to somewhere in game code
+            robotStatus.update()
         },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
             client.nav.replace(serverConnectionFailedScreen(reason, client))
@@ -33,6 +37,7 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
         navigator = client.nav
     )
     screen.add(layer = 0, element = playerNames.container)
+    screen.add(layer = 1, element = robotStatus.container)
     screen
 }
 

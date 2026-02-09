@@ -35,14 +35,23 @@ class Stack : GpuUiElement() {
         return this
     }
 
-    fun without(element: UiElement): Stack {
+    fun dispose(element: UiElement): Stack {
+        element.disposeTree()
+        return this.detach(element)
+    }
+
+    fun disposeAll(): Stack {
+        this.inside.forEach(UiElement::disposeTree)
+        return this.detachAll()
+    }
+
+    fun detach(element: UiElement): Stack {
         this.inside.remove(element)
         this.invalidate()
         return this
     }
 
-    fun withoutContent(): Stack {
-        this.inside.forEach(UiElement::disposeTree)
+    fun detachAll(): Stack {
         this.inside.clear()
         this.invalidate()
         return this
