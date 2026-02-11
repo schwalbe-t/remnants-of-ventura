@@ -83,7 +83,7 @@ object ItemDisplay {
             .add(CAMERA_OFFSET)
         renderer.camera.fov = CAMERA_FOV
         val startTimeMs: Long = System.currentTimeMillis()
-        return output.withRenderedContent {
+        output.withRenderedContent {
             renderer.update(sunTarget = Vector3f(0f, 0f, 0f))
             renderer.beginShadowPass()
             val pass = renderer.beginGeometryPass()
@@ -104,6 +104,8 @@ object ItemDisplay {
                 meshTextureOverrides = meshTextureOverrides
             )
         }
+        output.withDisposalHandler(renderer::dispose)
+        return output
     }
 
 }

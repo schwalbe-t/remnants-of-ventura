@@ -6,9 +6,7 @@ import schwalbe.ventura.engine.gfx.Texture
 import org.joml.Vector4f
 import org.joml.Vector4fc
 
-class MsaaRenderDisplay(
-    samples: Int, renderContents: () -> Unit = {}
-) : GpuUiElement() {
+class MsaaRenderDisplay(samples: Int) : GpuUiElement() {
 
     companion object {
         val DEFAULT_CLEAR_COLOR: Vector4fc = Vector4f(0f, 0f, 0f, 0f)
@@ -26,11 +24,13 @@ class MsaaRenderDisplay(
             16, 16, Texture.Filter.NEAREST, Texture.Format.DEPTH24, samples
         ))
 
-    var renderContents: () -> Unit = renderContents
+    var renderContents: () -> Unit = {}
         set(value) {
             field = value
             this.invalidate()
         }
+
+    var disposeContents: () -> Unit = {}
 
     var clearColor: Vector4fc = MsaaRenderDisplay.DEFAULT_CLEAR_COLOR
         set(value) {
@@ -56,11 +56,17 @@ class MsaaRenderDisplay(
 
     override fun dispose() {
         super.dispose()
+        this.disposeContents()
         this.msaaTarget.dispose()
     }
 
     fun withRenderedContent(f: () -> Unit): MsaaRenderDisplay {
         this.renderContents = f
+        return this
+    }
+
+    fun withDisposalHandler(f: () -> Unit): MsaaRenderDisplay {
+        this.disposeContents = f
         return this
     }
 

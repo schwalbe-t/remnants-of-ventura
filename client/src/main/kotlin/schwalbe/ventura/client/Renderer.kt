@@ -57,7 +57,7 @@ object GeometryFrag : FragShaderDef<GeometryFrag> {
 }
 
 val geometryShader: Resource<Shader<GeometryVert, GeometryFrag>>
-    = Shader.loadGlsl(GeometryVert, GeometryFrag)
+        = Shader.loadGlsl(GeometryVert, GeometryFrag)
 
 
 object OutlineVert : VertShaderDef<OutlineVert> {
@@ -74,7 +74,7 @@ object OutlineFrag : FragShaderDef<OutlineFrag> {
 }
 
 val outlineShader: Resource<Shader<OutlineVert, OutlineFrag>>
-    = Shader.loadGlsl(OutlineVert, OutlineFrag)
+        = Shader.loadGlsl(OutlineVert, OutlineFrag)
 
 
 object DepthOnlyFrag : FragShaderDef<DepthOnlyFrag> {
@@ -84,7 +84,7 @@ object DepthOnlyFrag : FragShaderDef<DepthOnlyFrag> {
 }
 
 val depthOnlyGeometryShader: Resource<Shader<GeometryVert, DepthOnlyFrag>>
-    = Shader.loadGlsl(GeometryVert, DepthOnlyFrag)
+        = Shader.loadGlsl(GeometryVert, DepthOnlyFrag)
 
 object DiscardFrag : FragShaderDef<DiscardFrag> {
     override val path: String = "shaders/discard.frag.glsl"
@@ -93,7 +93,7 @@ object DiscardFrag : FragShaderDef<DiscardFrag> {
 }
 
 val discardOutlineShader: Resource<Shader<OutlineVert, DiscardFrag>>
-    = Shader.loadGlsl(OutlineVert, DiscardFrag)
+        = Shader.loadGlsl(OutlineVert, DiscardFrag)
 
 
 class Renderer(val dest: ConstFramebuffer) {
@@ -146,14 +146,15 @@ class Renderer(val dest: ConstFramebuffer) {
         Texture.Filter.NEAREST, Texture.Format.DEPTH32,
         SHADOW_MAP_SAMPLES
     )
-    val shadowMap: ConstFramebuffer = Framebuffer()
+    private val mutShadowMap = Framebuffer()
         .attachDepth(this.shadowMapTex)
+    val shadowMap: ConstFramebuffer = this.mutShadowMap
 
     val instances = UniformBuffer(BufferWriteFreq.EVERY_FRAME)
     val instanceBuff: ByteBuffer
-        = ByteBuffer.allocateDirect(
-            RendererVert.MAX_NUM_INSTANCES * 4*4 * Geometry.Type.FLOAT.numBytes
-        )
+            = ByteBuffer.allocateDirect(
+        RendererVert.MAX_NUM_INSTANCES * 4*4 * Geometry.Type.FLOAT.numBytes
+    )
         .order(ByteOrder.nativeOrder())
 
     fun update(sunTarget: Vector3fc) {
@@ -196,15 +197,21 @@ class Renderer(val dest: ConstFramebuffer) {
         f(this.beginGeometryPass())
     }
 
+    fun dispose() {
+        this.instances.dispose()
+        this.mutShadowMap.dispose()
+        this.shadowMapTex.dispose()
+    }
+
 }
 
 
 typealias RenderPass = TypedRenderPass<*, *>
 
 class TypedRenderPass<
-    FGeometry : FragShaderDef<FGeometry>,
-    FOutline : FragShaderDef<FOutline>
->(
+        FGeometry : FragShaderDef<FGeometry>,
+        FOutline : FragShaderDef<FOutline>
+        >(
     val renderer: Renderer,
     val viewProj: Matrix4fc,
     val geometryShader: Resource<Shader<GeometryVert, FGeometry>>,
