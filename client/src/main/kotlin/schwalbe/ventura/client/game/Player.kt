@@ -109,6 +109,10 @@ class Player {
         this.rotation.target += wrapAngle(targetRot - this.rotation.target)
     }
 
+    fun stopRotation() {
+        this.rotation.target = this.rotation.value
+    }
+
     private fun move(world: World, client: Client): Boolean {
         val collidingBefore: Boolean = world.chunks
             .intersectsAnyLoaded(Player.relCollider.translate(this.position))
@@ -137,6 +141,9 @@ class Player {
     }
 
     private fun updateAnimations(moving: Boolean?, deltaTime: Float) {
+        if (moving != true) {
+            this.stopRotation()
+        }
         if (moving != null) {
             val targetAnim = if (moving) { PlayerAnim.walk }
             else { PlayerAnim.idle }

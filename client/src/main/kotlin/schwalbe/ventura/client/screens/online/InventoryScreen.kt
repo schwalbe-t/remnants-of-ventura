@@ -77,7 +77,7 @@ fun addInventoryItem(
     items.add(1.vmin, Space())
 }
 
-private fun createItemListSection(
+fun createItemListSection(
     client: Client, packetHandler: PacketHandler<Unit>,
     onItemSelect: (Item, Int) -> Unit
 ): Axis {

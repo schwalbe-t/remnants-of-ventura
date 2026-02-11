@@ -25,7 +25,7 @@ private fun addOption(
         .add(Text()
             .withText(name)
             .withColor(BRIGHT_FONT_COLOR)
-            .withSize(80.ph)
+            .withSize(75.ph)
             .pad(2.vmin)
         )
         .add(ClickArea().withHandler(action))
