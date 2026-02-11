@@ -94,13 +94,20 @@ class Player {
         )
     }
 
-    private var wasMoving: Boolean = false
     val anim = AnimState(PlayerAnim.idle)
 
     val position: Vector3f = Vector3f()
-    var rotation: Float = 0f
+    var rotation: SmoothedFloat = 0f
+        .smoothed(response = 10f, epsilon = 0.001f)
     var animInjectWeight: SmoothedFloat = 0f
         .smoothed(response = 10f, epsilon = 0.01f)
+
+    fun rotateAlong(direction: Vector3fc) {
+        var targetRot = xzVectorAngle(
+            Player.MODEL_NO_ROTATION_DIR, Vector3f(direction).normalize()
+        )
+        this.rotation.target += wrapAngle(targetRot - this.rotation.target)
+    }
 
     private fun move(world: World, client: Client): Boolean {
         val collidingBefore: Boolean = world.chunks
@@ -112,7 +119,7 @@ class Player {
         if (Key.D.isPressed) { velocity.x += 1f; }
         if (velocity.length() == 0f) { return false }
         velocity.normalize()
-        var targetRot = xzVectorAngle(Player.MODEL_NO_ROTATION_DIR, velocity)
+        this.rotateAlong(velocity)
         velocity.mul(Player.WALK_SPEED).mul(client.deltaTime)
         val newPosX = this.position.add(velocity.x(), 0f, 0f, Vector3f())
         val newPosZ = this.position.add(0f, 0f, velocity.z(), Vector3f())
@@ -126,19 +133,16 @@ class Player {
         if (!collidingAfterZ || collidingBefore) {
             this.position.add(0f, 0f, velocity.z())
         }
-        val rToTarget: Float = wrapAngle(targetRot - this.rotation)
-        val rotDist: Float = Player.ROTATION_SPEED * client.deltaTime
-        this.rotation += sign(rToTarget) * minOf(abs(rToTarget), rotDist)
         return true
     }
 
-    private fun updateAnimations(moving: Boolean, deltaTime: Float) {
-        if (moving != this.wasMoving) {
-            this.anim.transitionTo(
-                if (moving) { PlayerAnim.walk } else { PlayerAnim.idle },
-                0.25f
-            )
-            this.wasMoving = moving
+    private fun updateAnimations(moving: Boolean?, deltaTime: Float) {
+        if (moving != null) {
+            val targetAnim = if (moving) { PlayerAnim.walk }
+            else { PlayerAnim.idle }
+            if (this.anim.latestAnim != targetAnim) {
+                this.anim.transitionTo(targetAnim, 0.25f)
+            }
         }
         this.anim.addTimePassed(deltaTime)
         this.anim.addTransitionTimePassed(
@@ -156,7 +160,7 @@ class Player {
             PacketType.PLAYER_STATE,
             SharedPlayerInfo(
                 this.position.toSerVector3(),
-                this.rotation,
+                this.rotation.value,
                 this.anim.latestAnim.toSharedAnim()
             )
         ))
@@ -164,7 +168,7 @@ class Player {
 
     fun update(client: Client, captureInput: Boolean) {
         val world: World = client.world ?: return
-        val moving: Boolean = if (!captureInput) { false }
+        val moving: Boolean? = if (!captureInput) { null }
             else { this.move(world, client) }
         this.animInjectWeight.target = 0f
         if (this.animInjectWeight.value == 0f) {
@@ -177,7 +181,7 @@ class Player {
     fun facePoint(target: Vector3fc) {
         this.animInjectWeight.target = 1f
         val localToWorld: Matrix4f = Player
-            .modelTransform(this.position, this.rotation)
+            .modelTransform(this.position, this.rotation.value)
         fun rotateTowardsTarget(
             all: Float, x: Float, y: Float, z: Float
         ) = rotateTowardsPoint(
@@ -198,7 +202,8 @@ class Player {
 
     fun render(pass: RenderPass) {
         this.animInjectWeight.update()
-        Player.render(pass, this.position, this.rotation, this.anim)
+        this.rotation.update()
+        Player.render(pass, this.position, this.rotation.value, this.anim)
     }
 
 }

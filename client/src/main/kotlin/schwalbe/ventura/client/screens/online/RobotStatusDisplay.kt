@@ -24,7 +24,7 @@ class RobotStatusDisplay {
             .withFont(jetbrainsMonoSb())
             .alignRight()
         )
-        .pad(0.1.vmin)
+        .pad(vertical = 0.1.vmin, horizontal = 0.px)
 
     val nameText: Text = Text()
     val statusText: Text = Text()

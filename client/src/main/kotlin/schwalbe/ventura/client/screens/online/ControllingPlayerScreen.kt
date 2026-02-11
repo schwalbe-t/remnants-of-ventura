@@ -21,13 +21,16 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             if (Key.TAB.wasPressed) {
                 client.nav.push(inventoryMenuScreen(client))
             }
+            if (Key.E.wasPressed) {
+                client.nav.push(robotEditingScreen(client))
+            }
             client.world?.state?.activeNameDisplays = playerNames
             client.world?.update(client, captureInput = true)
             client.world?.render(client)
 
             // TODO! move call to somewhere in game code
             if (Key.UP.wasPressed) { tempNumEntries += 1 }
-            if (Key.DOWN.wasPressed) { tempNumEntries -= 1 }
+            if (Key.DOWN.wasPressed && tempNumEntries > 0) { tempNumEntries -= 1 }
             robotStatus.update(tempNumEntries)
         },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->

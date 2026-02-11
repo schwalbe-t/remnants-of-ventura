@@ -196,7 +196,7 @@ private fun createSelectedItemSection(
         )
 }
 
-val PLAYER_IN_RIGHT_THIRD = CameraController.Mode(
+private val PLAYER_IN_RIGHT_THIRD = CameraController.Mode(
     lookAt = { _, w, _ -> Vector3f()
         .add(w.player.position)
         .add(0f, +1.25f, 0f)
