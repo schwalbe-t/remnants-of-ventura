@@ -10,7 +10,8 @@ import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.data.Item
 import schwalbe.ventura.net.PacketHandler
 import org.joml.Vector3f
-import schwalbe.ventura.client.LocalKeys.TITLE_INVENTORY
+import schwalbe.ventura.engine.ui.Text
+import java.io.File
 import kotlin.math.atan
 import kotlin.math.tan
 
@@ -20,15 +21,15 @@ private fun cancellableSection(
     section: UiElement, onCancel: () -> Unit
 ): UiElement = Axis.column()
     .add(100.ph - 8.vmin, section)
-    .add(8.vmin, createButton(
+    .add(7.5.vmin, createButton(
         content = Text()
             .withText("Cancel")
             .withColor(BRIGHT_FONT_COLOR)
             .withSize(75.ph)
             .alignCenter()
-            .pad(2.vmin),
+            .pad(1.75.vmin),
         handler = onCancel
-    ).pad(1.vmin))
+    ).pad(left = 25.pw, right = 25.pw, top = 1.vmin, bottom = 1.vmin))
 
 private fun createSelectItemSection(
     client: Client, packetHandler: PacketHandler<Unit>,
@@ -41,31 +42,96 @@ private fun createSelectItemSection(
     onCancel = { onItemSelect(null) }
 )
 
-private fun createSelectFileSection(): UiElement {
-    val container = Stack()
-    fun listDirectory(absDir: String, relDir: List<String>) {
-        container.disposeAll()
-        container.add(Axis.column()
-            .add(8.vmin, Axis.column()
-                .add(3.vmin, Text()
-                    .withText("Select Code File")
-                    .withColor(BRIGHT_FONT_COLOR)
-                    .withFont(googleSansSb())
-                    .withSize(85.ph)
-                )
-                .add(2.vmin, Text()
-                    .withText(relDir.joinToString(separator = " > "))
-                    .withColor(BRIGHT_FONT_COLOR)
-                    .withFont(jetbrainsMonoSb())
-                    .withSize(85.ph)
-                )
-                .pad(2.5.vmin)
+private fun listDirectory(
+    dir: File, relDir: List<String>,
+    dest: Stack, onFileSelect: (String) -> Unit
+) {
+    val itemList = Axis.column()
+    fun addFileItem(
+        name: String, bold: Boolean, dark: Boolean, handler: () -> Unit
+    ) {
+        val font = if (bold) googleSansSb() else googleSansR()
+        val color = if (dark) SECONDARY_BRIGHT_FONT_COLOR else BRIGHT_FONT_COLOR
+        itemList.add(5.vmin, Stack()
+            .add(FlatBackground()
+                .withColor(BUTTON_COLOR)
+                .withHoverColor(BUTTON_HOVER_COLOR)
             )
-            .add(100.ph - 8.vmin, Space())
+            .add(Text()
+                .withText(name)
+                .withColor(color)
+                .withFont(font)
+                .withSize(75.ph)
+                .pad(1.vmin)
+            )
+            .add(ClickArea().withHandler(handler))
+            .wrapBorderRadius(0.75.vmin)
+            .pad(left = 1.vmin, right = 1.vmin, bottom = 1.vmin)
         )
     }
-    listDirectory(USERCODE_DIR, listOf())
-    return container
+    val dirContents: Array<File> = dir.listFiles() ?: arrayOf()
+    if (relDir.isEmpty() && dirContents.isEmpty()) {
+        // TODO! placeholder
+    }
+    if (relDir.isNotEmpty()) {
+        addFileItem(
+            name = "..",
+            bold = true, dark = true,
+            handler = { listDirectory(
+                dir.parentFile, relDir.subList(0, relDir.size - 1),
+                dest, onFileSelect
+            ) }
+        )
+    }
+    for (file in dirContents.sorted()) {
+        val isDir: Boolean = file.isDirectory
+        val symbol: String = if (isDir) "> " else ""
+        addFileItem(
+            name = symbol + file.name,
+            bold = isDir, dark = false,
+            handler = handler@{
+                if (!isDir) {
+                    return@handler onFileSelect(file.absolutePath)
+                }
+                listDirectory(
+                    dir.resolve(file.name), relDir + file.name,
+                    dest, onFileSelect
+                )
+            }
+        )
+    }
+    dest.disposeAll()
+    dest.add(Axis.column()
+        .add(8.vmin, Axis.column()
+            .add(60.ph, Text()
+                .withText("Select Code File")
+                .withColor(BRIGHT_FONT_COLOR)
+                .withFont(googleSansSb())
+                .withSize(85.ph)
+            )
+            .add(40.ph, Text()
+                .withText(">" + relDir.joinToString(
+                    transform = { " $it >" },
+                    separator = ""
+                ))
+                .withColor(SECONDARY_BRIGHT_FONT_COLOR)
+                .withFont(jetbrainsMonoSb())
+                .withSize(85.ph)
+            )
+            .pad(1.5.vmin)
+        )
+        .add(100.ph - 8.vmin, itemList
+            .wrapScrolling()
+            .withThumbColor(BUTTON_COLOR)
+            .withThumbHoverColor(BUTTON_HOVER_COLOR)
+        )
+    )
+}
+
+private fun createSelectFileSection(onFileSelect: (String?) -> Unit): UiElement {
+    val container = Stack()
+    listDirectory(File(USERCODE_DIR), listOf(), dest = container, onFileSelect)
+    return cancellableSection(container, onCancel = { onFileSelect(null) })
 }
 
 private fun createRobotSettingsSection(): UiElement = Space()
@@ -117,12 +183,16 @@ fun robotEditingScreen(client: Client): () -> GameScreen = {
             .add(background)
             .add(FlatBackground().withColor(PANEL_BACKGROUND))
             .add(Axis.row()
-                .add(50.pw, Space())
-                .add(50.pw, createSelectItemSection(
-                    client, packets, onItemSelect = {
-                        println("Selected item")
-                    }
-                ))
+                .add(50.pw, createRobotSettingsSection())
+//                .add(50.pw, createSelectItemSection(
+//                    client, packets, onItemSelect = {
+//                        println("Selected item")
+//                    }
+//                ))
+//                .add(50.pw, createSelectFileSection {
+//                    println("Selected '$it'")
+//                })
+                .add(50.pw, createRobotInfoSection())
             )
         )
     )
