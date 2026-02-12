@@ -6,25 +6,27 @@ import schwalbe.ventura.engine.ui.*
 import org.joml.Vector4fc
 import org.joml.Vector4f
 
-private val STATUS_RUNNING_COLOR: Vector4fc = Vector4f(0.35f, 0.85f, 0.45f, 1f)
-private val STATUS_ERROR_COLOR: Vector4fc = Vector4f(1.0f, 0.45f, 0.55f, 1f)
-private val STATUS_STOPPED_COLOR: Vector4fc = Vector4f(0.7f, 0.7f, 0.75f, 1f)
-
 class RobotStatusDisplay {
 
-    private fun createStatusProp(nameText: Text, valueText: Text)
-        = Axis.row()
-        .add(100.pw - 5.vmin, nameText
-            .withSize(80.ph)
-            .withColor(BRIGHT_FONT_COLOR)
-        )
-        .add(5.vmin, valueText
-            .withSize(75.ph)
-            .withColor(BRIGHT_FONT_COLOR)
-            .withFont(jetbrainsMonoSb())
-            .alignRight()
-        )
-        .pad(vertical = 0.1.vmin, horizontal = 0.px)
+    companion object {
+        val RUNNING_COLOR: Vector4fc = Vector4f(0.35f, 0.85f, 0.45f, 1f)
+        val ERROR_COLOR: Vector4fc = Vector4f(1.0f, 0.45f, 0.55f, 1f)
+        val STOPPED_COLOR: Vector4fc = Vector4f(0.7f, 0.7f, 0.75f, 1f)
+
+        fun createStatusProp(nameText: Text, valueText: Text) = Axis.row()
+            .add(100.pw - 5.vmin, nameText
+                .withSize(80.ph)
+                .withColor(BRIGHT_FONT_COLOR)
+            )
+            .add(5.vmin, valueText
+                .withSize(75.ph)
+                .withColor(BRIGHT_FONT_COLOR)
+                .withFont(jetbrainsMonoSb())
+                .alignRight()
+            )
+            .pad(vertical = 0.1.vmin, horizontal = 0.px)
+    }
+
 
     val nameText: Text = Text()
     val statusText: Text = Text()
@@ -61,13 +63,13 @@ class RobotStatusDisplay {
                     .add(this.toggleButtonClick)
                     .wrapBorderRadius(0.5.vmin)
                 )
-                .add(createStatusProp(
+                .add(RobotStatusDisplay.createStatusProp(
                     Text().withText("Health:"), this.hpValueText
                 ))
-                .add(createStatusProp(
+                .add(RobotStatusDisplay.createStatusProp(
                     Text().withText("Memory:"), this.ramValueText
                 ))
-                .add(createStatusProp(
+                .add(RobotStatusDisplay.createStatusProp(
                     Text().withText("Processor:"), this.cpuValueText
                 ))
             )
@@ -93,9 +95,9 @@ class RobotStatusDisplay {
             else -> "Stopped"
         })
         this.statusText.withColor(when (this.toString().hashCode() % 3) {
-            0 -> STATUS_RUNNING_COLOR
-            1 -> STATUS_ERROR_COLOR
-            else -> STATUS_STOPPED_COLOR
+            0 -> RUNNING_COLOR
+            1 -> ERROR_COLOR
+            else -> STOPPED_COLOR
         })
         this.hpValueText.withText("33%")
         this.ramValueText.withText("100%")

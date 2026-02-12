@@ -15,21 +15,67 @@ import java.io.File
 import kotlin.math.atan
 import kotlin.math.tan
 
-private fun createRobotInfoSection(): UiElement = Space()
+private fun createBottomPanelButton(text: String, action: () -> Unit) = Stack()
+    .add(FlatBackground()
+        .withColor(BUTTON_COLOR)
+        .withHoverColor(BUTTON_HOVER_COLOR)
+    )
+    .add(Text()
+        .withText(text)
+        .withColor(BRIGHT_FONT_COLOR)
+        .withSize(75.ph)
+        .alignCenter()
+        .pad(1.75.vmin)
+    )
+    .add(ClickArea().withHandler(action))
+    .wrapBorderRadius(0.75.vmin)
+
+private fun createRobotInfoSection(): UiElement {
+    val topSection: UiSize = 13.vmin
+    val bottomSection: UiSize = 7.vmin
+    val logs = Text()
+        .withText("Really looooong log\n".repeat(100))
+        .withSize(1.3.vmin)
+        .withFont(jetbrainsMonoSb())
+        .withColor(BRIGHT_FONT_COLOR)
+        .wrapScrolling(vert = true, horiz = false)
+        .withThumbColor(BUTTON_COLOR)
+        .withThumbHoverColor(BUTTON_HOVER_COLOR)
+    logs.scrollOffset.target.y = Float.POSITIVE_INFINITY
+    return Axis.column()
+        .add(topSection, Axis.column(100.ph / 4)
+            .add(Text()
+                .withText("Running")
+                .withColor(RobotStatusDisplay.RUNNING_COLOR)
+                .withSize(75.ph)
+                .withFont(googleSansSb())
+            )
+            .add(RobotStatusDisplay.createStatusProp(
+                Text().withText("Health:"), Text().withText("33%")
+            ))
+            .add(RobotStatusDisplay.createStatusProp(
+                Text().withText("Memory:"), Text().withText("100%")
+            ))
+            .add(RobotStatusDisplay.createStatusProp(
+                Text().withText("Processor:"), Text().withText("42%")
+            ))
+            .pad(1.vmin)
+            .pad(bottom = 1.vmin)
+        )
+        .add(100.ph - topSection - bottomSection, logs)
+        .add(bottomSection, createBottomPanelButton("Start/Stop", action = {
+            println("start/stop robot")
+        }).pad(top = 1.vmin))
+        .pad(1.vmin)
+}
 
 private fun cancellableSection(
     section: UiElement, onCancel: () -> Unit
 ): UiElement = Axis.column()
     .add(100.ph - 8.vmin, section)
-    .add(7.5.vmin, createButton(
-        content = Text()
-            .withText("Cancel")
-            .withColor(BRIGHT_FONT_COLOR)
-            .withSize(75.ph)
-            .alignCenter()
-            .pad(1.75.vmin),
-        handler = onCancel
-    ).pad(left = 25.pw, right = 25.pw, top = 1.vmin, bottom = 1.vmin))
+    .add(7.5.vmin, createBottomPanelButton("Cancel", onCancel)
+        .pad(left = 25.pw, right = 25.pw, top = 1.vmin, bottom = 1.vmin)
+    )
 
 private fun createSelectItemSection(
     client: Client, packetHandler: PacketHandler<Unit>,
@@ -134,7 +180,18 @@ private fun createSelectFileSection(onFileSelect: (String?) -> Unit): UiElement 
     return cancellableSection(container, onCancel = { onFileSelect(null) })
 }
 
-private fun createRobotSettingsSection(): UiElement = Space()
+private fun createRobotSettingsSection(): UiElement {
+    val topSection: UiSize = 5.vmin
+    val bottomSection: UiSize = 7.vmin
+    return Axis.column()
+        .add(topSection, Space())
+        .add(100.ph - topSection - bottomSection, Axis.column(100.ph / 2)
+            .add(Space())
+            .add(Space())
+        )
+        .add(bottomSection, Space())
+        .pad(1.vmin)
+}
 
 private val PLAYER_IN_RIGHT_THIRD = CameraController.Mode(
     lookAt = { _, w, _ -> Vector3f()
