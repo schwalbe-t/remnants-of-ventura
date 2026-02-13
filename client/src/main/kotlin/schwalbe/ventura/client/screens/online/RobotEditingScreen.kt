@@ -10,6 +10,7 @@ import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.data.Item
 import schwalbe.ventura.net.PacketHandler
 import org.joml.Vector3f
+import schwalbe.ventura.ROBOT_NAME_MAX_LEN
 import schwalbe.ventura.engine.ui.Text
 import java.io.File
 import kotlin.math.atan
@@ -32,7 +33,6 @@ private fun createBottomPanelButton(text: String, action: () -> Unit) = Stack()
 
 private fun createRobotInfoSection(): UiElement {
     val topSection: UiSize = 13.vmin
-    val bottomSection: UiSize = 7.vmin
     val logs = Text()
         .withText("Really looooong log\n".repeat(100))
         .withSize(1.3.vmin)
@@ -62,31 +62,24 @@ private fun createRobotInfoSection(): UiElement {
             .pad(1.vmin)
             .pad(bottom = 1.vmin)
         )
-        .add(100.ph - topSection - bottomSection, logs)
-        .add(bottomSection, createBottomPanelButton("Start/Stop", action = {
-            println("start/stop robot")
-        }).pad(top = 1.vmin))
+        .add(100.ph - topSection, logs)
         .pad(1.vmin)
+        .withBottomButton("Start/Stop") {
+            println("start/stop robot")
+        }
 }
 
-private fun cancellableSection(
-    section: UiElement, onCancel: () -> Unit
-): UiElement = Axis.column()
-    .add(100.ph - 8.vmin, section)
-    .add(7.5.vmin, createBottomPanelButton("Cancel", onCancel)
-        .pad(left = 25.pw, right = 25.pw, top = 1.vmin, bottom = 1.vmin)
-    )
-
-private fun createSelectItemSection(
-    client: Client, packetHandler: PacketHandler<Unit>,
-    onItemSelect: (Pair<Item, Int>?) -> Unit
-): UiElement = cancellableSection(
-    section = createItemListSection(
-        client, packetHandler,
-        onItemSelect = { item, count -> onItemSelect(Pair(item, count)) }
-    ),
-    onCancel = { onItemSelect(null) }
-)
+private fun UiElement.withBottomButton(
+    text: String,
+    onClick: () -> Unit,
+): UiElement {
+    val buttonSectionSize: UiSize = 7.vmin
+    return Axis.column()
+        .add(100.ph - buttonSectionSize, this)
+        .add(buttonSectionSize, createBottomPanelButton(text, onClick)
+            .pad(left = 1.vmin, right = 1.vmin, bottom = 1.vmin)
+        )
+}
 
 private fun listDirectory(
     dir: File, relDir: List<String>,
@@ -117,7 +110,16 @@ private fun listDirectory(
     }
     val dirContents: Array<File> = dir.listFiles() ?: arrayOf()
     if (relDir.isEmpty() && dirContents.isEmpty()) {
-        // TODO! placeholder
+        itemList.add(2.vmin, Text()
+            .withText(
+                "The 'usercode'-directory in the client directory is empty; " +
+                "create a file there, then select it here."
+            )
+            .withSize(85.ph)
+            .withFont(googleSansI())
+            .withColor(BRIGHT_FONT_COLOR)
+            .pad(left = 2.5.vmin, right = 2.5.vmin)
+        )
     }
     if (relDir.isNotEmpty()) {
         addFileItem(
@@ -174,23 +176,136 @@ private fun listDirectory(
     )
 }
 
-private fun createSelectFileSection(onFileSelect: (String?) -> Unit): UiElement {
+private fun createSelectFileSection(onFileSelect: (String) -> Unit): UiElement {
     val container = Stack()
     listDirectory(File(USERCODE_DIR), listOf(), dest = container, onFileSelect)
-    return cancellableSection(container, onCancel = { onFileSelect(null) })
+    return container
 }
 
-private fun createRobotSettingsSection(): UiElement {
-    val topSection: UiSize = 5.vmin
-    val bottomSection: UiSize = 7.vmin
-    return Axis.column()
-        .add(topSection, Space())
-        .add(100.ph - topSection - bottomSection, Axis.column(100.ph / 2)
-            .add(Space())
-            .add(Space())
-        )
-        .add(bottomSection, Space())
+private fun createRobotSettingsSection(
+    onSetAttachment: ((Item?) -> Unit) -> Unit,
+    onAddCodeFile: ((String) -> Unit) -> Unit
+): UiElement {
+    val subsectionTitleSize: UiSize = 4.5.vmin
+    fun subsectionTitle(text: String) = Text()
+        .withText(text)
+        .withFont(googleSansR())
+        .withSize(80.ph)
+        .withColor(BRIGHT_FONT_COLOR)
         .pad(1.vmin)
+    val topSection: UiSize = 8.vmin
+    val attachmentList = Axis.column()
+    fun writeAttachments(numAttachments: Int) {
+        attachmentList.disposeAll()
+        for (i in 0..<numAttachments) {
+            addInventoryItem(attachmentList, null, 0) {
+                onSetAttachment {
+                    println("Selected item ${it?.type?.name} for attachment $i")
+                }
+            }
+        }
+        attachmentList.add(50.ph, Space())
+    }
+    writeAttachments(10)
+    val codeFileList = Axis.column()
+    fun writeCodeFiles(numCodeFiles: Int) {
+        codeFileList.disposeAll()
+        fun makeFileButton(
+            text: String, alignment: Text.Alignment = Text.Alignment.CENTER,
+            onClick: (() -> Unit)? = null
+        ): UiElement {
+            val root = Stack()
+            val bg = FlatBackground().withColor(BUTTON_COLOR)
+            root.add(bg)
+            root.add(Text()
+                .withText(text)
+                .withColor(BRIGHT_FONT_COLOR)
+                .withSize(75.ph)
+                .withAlignment(alignment)
+                .pad(1.vmin)
+            )
+            if (onClick != null) {
+                bg.withHoverColor(BUTTON_HOVER_COLOR)
+                root.add(ClickArea().withHandler(onClick))
+            }
+            return root
+                .wrapBorderRadius(0.75.vmin)
+        }
+        for (i in 0..<numCodeFiles) {
+            codeFileList.add(4.vmin, Axis.row()
+                .add(100.pw - 3 * (100.ph + 1.vmin),
+                    makeFileButton("$i.bigton", Text.Alignment.LEFT)
+                )
+                .add(1.vmin, Space())
+                .add(100.ph, makeFileButton("↑") {
+                    println("Move file up")
+                })
+                .add(1.vmin, Space())
+                .add(100.ph, makeFileButton("↓") {
+                    println("Move file down")
+                })
+                .add(1.vmin, Space())
+                .add(100.ph, makeFileButton("X") {
+                    println("Remove file")
+                })
+                .pad(left = 1.vmin, right = 1.vmin)
+            )
+            codeFileList.add(1.vmin, Space())
+        }
+        codeFileList.add(4.vmin, makeFileButton("Add File") {
+            onAddCodeFile {
+                println("Add code file '$it'")
+            }
+        }.pad(left = 1.vmin, right = 1.vmin))
+        codeFileList.add(50.ph, Space())
+    }
+    writeCodeFiles(10)
+    return Axis.column()
+        .add(topSection, Axis.column()
+            .add(60.ph, TextInput()
+                .withContent(Text()
+                    .withFont(googleSansSb())
+                    .withColor(BRIGHT_FONT_COLOR)
+                    .withSize(75.ph)
+                )
+                .withValue("Robot Name")
+                .let { it.withTypedText { typed ->
+                    if (it.value.size < ROBOT_NAME_MAX_LEN) {
+                        it.writeText(typed)
+                    }
+                } }
+            )
+            .add(40.ph, Text()
+                .withText("Robot Model Name")
+                .withColor(SECONDARY_BRIGHT_FONT_COLOR)
+                .withSize(75.ph)
+            )
+            .pad(1.5.vmin)
+        )
+        .add(100.ph - topSection, Axis.column(100.ph / 2)
+            .add(Axis.column()
+                .add(subsectionTitleSize, subsectionTitle("Attachments"))
+                .add(100.ph - subsectionTitleSize, attachmentList
+                    .wrapScrolling()
+                    .withThumbColor(BUTTON_COLOR)
+                    .withThumbHoverColor(BUTTON_HOVER_COLOR)
+                    .pad(bottom = 2.vmin)
+                )
+            )
+            .add(Axis.column()
+                .add(subsectionTitleSize, subsectionTitle("Code Files"))
+                .add(100.ph - subsectionTitleSize, codeFileList
+                    .wrapScrolling()
+                    .withThumbColor(BUTTON_COLOR)
+                    .withThumbHoverColor(BUTTON_HOVER_COLOR)
+                    .pad(bottom = 2.vmin)
+                )
+            )
+        )
+        .pad(1.vmin)
+        .withBottomButton("Delete Robot") {
+            println("on robot delete")
+        }
 }
 
 private val PLAYER_IN_RIGHT_THIRD = CameraController.Mode(
@@ -222,9 +337,7 @@ fun robotEditingScreen(client: Client): () -> GameScreen = {
                 // TODO! exchange for rotation towards robot instead of origin
                 Vector3f(0f, 0f, 0f).sub(world.player.position)
             )
-            if (world.player.anim.latestAnim != PlayerAnim.squat) {
-                world.player.anim.transitionTo(PlayerAnim.squat, 0.5f)
-            }
+            world.player.assertAnimation(PlayerAnim.squat, 0.5f)
             world.render(client)
             background.invalidate()
         },
@@ -235,21 +348,46 @@ fun robotEditingScreen(client: Client): () -> GameScreen = {
         packets = packets,
         navigator = client.nav
     )
+    val rhs = Stack()
+    fun resetRhs() {
+        rhs.disposeAll()
+        rhs.add(createRobotInfoSection())
+    }
+    resetRhs()
+    fun onSetAttachment(onItemSelected: (Item?) -> Unit) {
+        val itemSelect = createItemListSection(client, packets) { item, _ ->
+            onItemSelected(item)
+            resetRhs()
+        }
+        rhs.disposeAll()
+        rhs.add(itemSelect
+            .withBottomButton("Remove Attachment") {
+                onItemSelected(null)
+                resetRhs()
+            }
+            .withBottomButton("Cancel") { resetRhs() }
+        )
+    }
+    fun onAddCodeFile(onFileSelected: (String) -> Unit) {
+        val fileSelect = createSelectFileSection { path ->
+            onFileSelected(path)
+            resetRhs()
+        }
+        rhs.disposeAll()
+        rhs.add(fileSelect
+            .withBottomButton("Cancel") { resetRhs() }
+        )
+    }
     screen.add(Axis.row()
         .add(66.6.vw, Stack()
             .add(background)
             .add(FlatBackground().withColor(PANEL_BACKGROUND))
             .add(Axis.row()
-                .add(50.pw, createRobotSettingsSection())
-//                .add(50.pw, createSelectItemSection(
-//                    client, packets, onItemSelect = {
-//                        println("Selected item")
-//                    }
-//                ))
-//                .add(50.pw, createSelectFileSection {
-//                    println("Selected '$it'")
-//                })
-                .add(50.pw, createRobotInfoSection())
+                .add(50.pw, createRobotSettingsSection(
+                    ::onSetAttachment,
+                    ::onAddCodeFile
+                ))
+                .add(50.pw, rhs)
             )
         )
     )

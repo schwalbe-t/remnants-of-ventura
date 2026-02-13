@@ -440,14 +440,14 @@ class TextInput : GpuUiElement(), Focusable {
                         this.onTypedText(e.codepoint)
                         this.updateDisplayedValue()
                     }
-                    is KeyDown, is KeyRepeat -> when (e.key) {
-                        Key.ENTER -> {
+                    is KeyDown, is KeyRepeat -> when {
+                        e.key == Key.ENTER -> {
                             if (!this.isMultiline) { continue }
                             this.clearSelection()
                             this.onTypedText(EOL)
                             this.updateDisplayedValue()
                         }
-                        Key.BACKSPACE -> {
+                        e.key == Key.BACKSPACE -> {
                             val beforeCp: Int? = this.actualValue
                                 .getOrNull(caret.offset - 1)
                             if (this.selection != null) {
@@ -458,7 +458,7 @@ class TextInput : GpuUiElement(), Focusable {
                                 this.updateDisplayedValue()
                             }
                         }
-                        Key.TAB -> {
+                        e.key == Key.TAB -> {
                             var lineStart: Int = this.actualValue
                                 .subList(0, caret.offset)
                                 .lastIndexOf(EOL)
@@ -478,7 +478,7 @@ class TextInput : GpuUiElement(), Focusable {
                             }
                             this.updateDisplayedValue()
                         }
-                        Key.LEFT -> {
+                        e.key == Key.LEFT -> {
                             val oldOffset: Int = caret.offset
                             caret.moveLeft(this.actualValue)
                             val selection: IntRange? = this.selection
@@ -492,7 +492,7 @@ class TextInput : GpuUiElement(), Focusable {
                                 this.selection = null
                             }
                         }
-                        Key.RIGHT -> {
+                        e.key == Key.RIGHT -> {
                             val oldOffset: Int = caret.offset
                             caret.moveRight(this.actualValue)
                             val selection: IntRange? = this.selection
@@ -506,7 +506,7 @@ class TextInput : GpuUiElement(), Focusable {
                                 this.selection = null
                             }
                         }
-                        Key.UP -> {
+                        e.key == Key.UP -> {
                             val oldOffset: Int = caret.offset
                             caret.moveUp(this.actualValue)
                             if (Key.LEFT_SHIFT.isPressed) {
@@ -517,7 +517,7 @@ class TextInput : GpuUiElement(), Focusable {
                                 this.selection = null
                             }
                         }
-                        Key.DOWN -> {
+                        e.key == Key.DOWN -> {
                             val oldOffset: Int = caret.offset
                             caret.moveDown(this.actualValue)
                             if (Key.LEFT_SHIFT.isPressed) {
@@ -528,27 +528,23 @@ class TextInput : GpuUiElement(), Focusable {
                                 this.selection = null
                             }
                         }
-                        Key.A -> {
-                            if (!Key.LEFT_CONTROL.isPressed) { continue }
+                        e.key == Key.A && Key.LEFT_CONTROL.isPressed -> {
                             this.selection = 0..this.actualValue.size
                             caret.moveToOffset(
                                 this.actualValue, this.actualValue.size
                             )
                         }
-                        Key.C -> {
-                            if (!Key.LEFT_CONTROL.isPressed) { continue }
+                        e.key == Key.C && Key.LEFT_CONTROL.isPressed -> {
                             this.copySelected()
                         }
-                        Key.X -> {
-                            if (!Key.LEFT_CONTROL.isPressed) { continue }
+                        e.key == Key.X && Key.LEFT_CONTROL.isPressed -> {
                             this.copySelected()
                             this.clearSelection()
                         }
-                        Key.V -> {
-                            if (!Key.LEFT_CONTROL.isPressed) { continue }
+                        e.key == Key.V && Key.LEFT_CONTROL.isPressed -> {
                             this.pasteClipboard()
                         }
-                        Key.Z -> {
+                        e.key == Key.Z && Key.LEFT_CONTROL.isPressed -> {
                             if (!Key.LEFT_CONTROL.isPressed) { continue }
                             if (Key.LEFT_SHIFT.isPressed) {
                                 val mod: Modification = this.undoHistory
@@ -563,7 +559,12 @@ class TextInput : GpuUiElement(), Focusable {
                             }
                             continue
                         }
-                        else -> continue
+                        e.key == Key.LEFT_CONTROL -> continue
+                        e.key == Key.LEFT_SHIFT -> continue
+                        else -> {
+                            context.global.nav.input.remove(e)
+                            continue
+                        }
                     }
                     else -> continue
                 }

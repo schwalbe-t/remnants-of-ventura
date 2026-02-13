@@ -113,6 +113,13 @@ class Player {
         this.rotation.target = this.rotation.value
     }
 
+    fun assertAnimation(
+        targetAnim: AnimationRef<PlayerAnim>, transitionSecs: Float = 0.25f
+    ) {
+        if (this.anim.latestAnim == targetAnim) { return }
+        this.anim.transitionTo(targetAnim, transitionSecs)
+    }
+
     private fun move(world: World, client: Client): Boolean {
         val collidingBefore: Boolean = world.chunks
             .intersectsAnyLoaded(Player.relCollider.translate(this.position))
@@ -146,10 +153,8 @@ class Player {
         }
         if (moving != null) {
             val targetAnim = if (moving) { PlayerAnim.walk }
-            else { PlayerAnim.idle }
-            if (this.anim.latestAnim != targetAnim) {
-                this.anim.transitionTo(targetAnim, 0.25f)
-            }
+                else { PlayerAnim.idle }
+            this.assertAnimation(targetAnim)
         }
         this.anim.addTimePassed(deltaTime)
         this.anim.addTransitionTimePassed(

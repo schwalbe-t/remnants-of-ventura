@@ -60,6 +60,7 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
                     .castRay(client.renderer.dest, Mouse.position)
                     .afterDistance(7.5f)
             )
+            client.world?.player?.assertAnimation(PlayerAnim.idle)
             client.world?.render(client)
             background.invalidate()
         },

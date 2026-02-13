@@ -41,14 +41,15 @@ fun createInventoryItemTitle(item: Item, count: Int): List<Span> {
 }
 
 fun addInventoryItem(
-    items: Axis, item: Item, count: Int, onClick: (Item, Int) -> Unit
+    items: Axis, item: Item?, count: Int, onClick: () -> Unit
 ) {
-    items.add(8.vmin, Stack()
-        .add(FlatBackground()
-            .withColor(BUTTON_COLOR)
-            .withHoverColor(BUTTON_HOVER_COLOR)
-        )
-        .add(Axis.row()
+    val root = Stack()
+    root.add(FlatBackground()
+        .withColor(BUTTON_COLOR)
+        .withHoverColor(BUTTON_HOVER_COLOR)
+    )
+    if (item != null) {
+        root.add(Axis.row()
             .add(100.pw - 1.vmin - 100.ph, Axis.column()
                 .add(60.ph, Text()
                     .withText(createInventoryItemTitle(item, count))
@@ -70,7 +71,9 @@ fun addInventoryItem(
             ))
             .pad(1.vmin)
         )
-        .add(ClickArea().withHandler { onClick(item, count) })
+    }
+    root.add(ClickArea().withHandler(onClick))
+    items.add(8.vmin, root
         .wrapBorderRadius(0.75.vmin)
         .pad(left = 1.vmin, right = 1.vmin)
     )
@@ -88,7 +91,9 @@ fun createItemListSection(
             .asSequence().filter { (_, c) -> c > 0 }.toList()
             .sortedBy { (i, _) -> l[i.type.localNameKey] }
         for ((item, count) in itemCounts) {
-            addInventoryItem(itemList, item, count, onItemSelect)
+            addInventoryItem(itemList, item, count) {
+                onItemSelect(item, count)
+            }
         }
         if (itemCounts.isEmpty()) {
             itemList.add(2.vmin, Text()
@@ -226,6 +231,7 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
                     .castRay(client.renderer.dest, Mouse.position)
                     .afterDistance(7.5f)
             )
+            client.world?.player?.assertAnimation(PlayerAnim.idle)
             client.world?.render(client)
             background.invalidate()
             selectedItemDisplay?.invalidate()
