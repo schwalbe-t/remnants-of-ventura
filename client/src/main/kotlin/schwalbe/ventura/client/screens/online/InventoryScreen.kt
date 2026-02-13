@@ -147,9 +147,6 @@ private fun handleItemAction(
     ItemAction.DEPLOY_ROBOT -> {
         println("Activated Deploy Action")
     }
-    ItemAction.TEST -> {
-        println("Activated Test Action")
-    }
 }
 
 private fun createSelectedItemSection(

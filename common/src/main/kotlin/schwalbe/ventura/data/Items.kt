@@ -8,8 +8,7 @@ import org.joml.Vector3f
 
 @Serializable
 enum class ItemAction {
-    DEPLOY_ROBOT,
-    TEST;
+    DEPLOY_ROBOT;
 
     val localNameKey: String
         get() = "ItemAction:name/${this.name}"
@@ -20,11 +19,16 @@ enum class ItemAction {
 enum class ItemCategory(
     val actions: List<ItemAction>
 ) {
-    DEVELOPMENT_ITEM(
+    ROBOT(
         actions = listOf(
-            ItemAction.TEST,
             ItemAction.DEPLOY_ROBOT
         )
+    ),
+    PROCESSOR(
+        actions = listOf()
+    ),
+    MEMORY_MODULE(
+        actions = listOf()
     );
 
     val localNameKey: String
@@ -36,20 +40,66 @@ enum class ItemCategory(
 enum class ItemType(
     val category: ItemCategory,
     val modelPath: String,
-    val modelCenter: Vector3fc,
-    val modelSize: Float
+    val modelCenter: Vector3fc = Vector3f(0f, +0.5f, 0f),
+    val modelSize: Float = 1f
 ) {
-    TEST(
-        category = ItemCategory.DEVELOPMENT_ITEM,
-        modelPath = "res/player.glb",
-        modelCenter = Vector3f(0f, 5.5f, 0f),
-        modelSize = 11f
+    KENDAL_DYNAMICS_SCOUT(
+        category = ItemCategory.ROBOT,
+        modelPath = "res/robots/scout.glb"
     ),
-    ROCK(
-        category = ItemCategory.DEVELOPMENT_ITEM,
-        modelPath = "res/objects/rock.glb",
-        modelCenter = Vector3f(0f, 1.5f, 0f),
-        modelSize = 4.5f
+
+    BIGTON_1030(
+        category = ItemCategory.PROCESSOR,
+        modelPath = "res/items/bigton_1000.glb"
+    ),
+    BIGTON_1050(
+        category = ItemCategory.PROCESSOR,
+        modelPath = "res/items/bigton_1000.glb"
+    ),
+    BIGTON_1070(
+        category = ItemCategory.PROCESSOR,
+        modelPath = "res/items/bigton_1000.glb"
+    ),
+    BIGTON_2030(
+        category = ItemCategory.PROCESSOR,
+        modelPath = "res/items/bigton_2000.glb"
+    ),
+    BIGTON_2050(
+        category = ItemCategory.PROCESSOR,
+        modelPath = "res/items/bigton_2000.glb"
+    ),
+    BIGTON_2070(
+        category = ItemCategory.PROCESSOR,
+        modelPath = "res/items/bigton_2000.glb"
+    ),
+    BIGTON_3030(
+        category = ItemCategory.PROCESSOR,
+        modelPath = "res/items/bigton_3000.glb"
+    ),
+    BIGTON_3050(
+        category = ItemCategory.PROCESSOR,
+        modelPath = "res/items/bigton_3000.glb"
+    ),
+    BIGTON_3070(
+        category = ItemCategory.PROCESSOR,
+        modelPath = "res/items/bigton_3000.glb"
+    ),
+
+    PIVOTAL_ME2048(
+        category = ItemCategory.MEMORY_MODULE,
+        modelPath = "res/items/pivotal.glb"
+    ),
+    PIVOTAL_ME5120(
+        category = ItemCategory.MEMORY_MODULE,
+        modelPath = "res/items/pivotal.glb"
+    ),
+    PIVOTAL_ME10K(
+        category = ItemCategory.MEMORY_MODULE,
+        modelPath = "res/items/pivotal.glb"
+    ),
+    PIVOTAL_ME20K(
+        category = ItemCategory.MEMORY_MODULE,
+        modelPath = "res/items/pivotal.glb"
     );
 
     val localNameKey: String

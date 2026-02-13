@@ -4,11 +4,11 @@
 #     - BIGTON 1030
 #     - BIGTON 1050 
 #     - BIGTON 1070
-# - BIGTON 2000 Series - Memory, Functions (no arguments)
+# - BIGTON 2000 Series - Memory, Functions
 #     - BIGTON 2030
 #     - BIGTON 2050
 #     - BIGTON 2070
-# - BIGTON 3000 Series - Memory, Functions (+arguments), Floats, Types
+# - BIGTON 3000 Series - Memory, Functions (+arguments), Floats
 #     - BIGTON 3030
 #     - BIGTON 3050
 #     - BIGTON 3070

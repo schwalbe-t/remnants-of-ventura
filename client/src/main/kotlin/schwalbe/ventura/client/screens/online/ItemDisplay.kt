@@ -52,7 +52,7 @@ object ItemDisplay {
         itemVariantResources.forEach { it.submitResources(loader) }
     }
 
-    val CAMERA_OFFSET: Vector3fc = Vector3f(0f, +1f, +2f).normalize().mul(2f)
+    val CAMERA_OFFSET: Vector3fc = Vector3f(0f, +1f, +2f).normalize().mul(3f)
     const val CAMERA_FOV: Float = PI.toFloat() / 6f // 180/6 = 30 degrees
 
     const val OUTLINE_THICKNESS: Float = 0.015f / 2f

@@ -30,9 +30,20 @@ fun PlayerData.Companion.createStartingData(
 ) = PlayerData(
     worlds = mutableListOf(worlds.baseWorld.createPlayerEntry()),
     inventoryItemCounts = mutableMapOf(
-        Item(ItemType.TEST, null) to 12,
-        Item(ItemType.TEST, ItemVariant.TEST_RED_HOODIE) to 1,
-        Item(ItemType.ROCK, null) to 5023
+        Item(ItemType.KENDAL_DYNAMICS_SCOUT, null) to 99999,
+        Item(ItemType.BIGTON_1030, null) to 99999,
+        Item(ItemType.BIGTON_1050, null) to 99999,
+        Item(ItemType.BIGTON_1070, null) to 99999,
+        Item(ItemType.BIGTON_2030, null) to 99999,
+        Item(ItemType.BIGTON_2050, null) to 99999,
+        Item(ItemType.BIGTON_2070, null) to 99999,
+        Item(ItemType.BIGTON_3030, null) to 99999,
+        Item(ItemType.BIGTON_3050, null) to 99999,
+        Item(ItemType.BIGTON_3070, null) to 99999,
+        Item(ItemType.PIVOTAL_ME2048, null) to 99999,
+        Item(ItemType.PIVOTAL_ME5120, null) to 99999,
+        Item(ItemType.PIVOTAL_ME10K, null) to 99999,
+        Item(ItemType.PIVOTAL_ME20K, null) to 99999
     )
 )
 
