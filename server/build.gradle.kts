@@ -21,3 +21,9 @@ dependencies {
 application {
     mainClass.set("schwalbe.ventura.server.MainKt")
 }
+
+val bigtonRuntime = project(":server:bigtonruntime")
+
+tasks.named("build") {
+    dependsOn(bigtonRuntime.tasks.named("link"))
+}

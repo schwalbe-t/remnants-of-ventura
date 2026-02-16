@@ -1,2 +1,6 @@
 build
 hs_err_pid*.log
+
+*.so
+*.dll
+*.dylib

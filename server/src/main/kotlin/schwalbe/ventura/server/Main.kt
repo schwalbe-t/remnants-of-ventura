@@ -14,22 +14,20 @@ import schwalbe.ventura.net.*
 import schwalbe.ventura.data.*
 import kotlin.system.exitProcess
 
-const val DEFAULT_KEYSTORE_PATH: String = "dev-keystore.p12"
-const val DEFAULT_KEYSTORE_ALIAS: String = "ventura"
-const val DEFAULT_KEYSTORE_PASS: String = "labubu"
-const val DEFAULT_PORT: Int = 8443
-
 fun getKeyStorePath(): String = System.getenv("VENTURA_KEYSTORE_PATH")
-    ?: DEFAULT_KEYSTORE_PATH
+    ?: "dev-keystore.p12"
 
 fun getKeyStoreAlias(): String = System.getenv("VENTURA_KEYSTORE_ALIAS")
-    ?: DEFAULT_KEYSTORE_ALIAS
+    ?: "ventura"
 
 fun getKeyStorePass(): String = System.getenv("VENTURA_KEYSTORE_PASS")
-    ?: DEFAULT_KEYSTORE_PASS
+    ?: "labubu"
 
 fun getPort(): Int = System.getenv("VENTURA_PORT")?.toInt()
-    ?: DEFAULT_PORT
+    ?: 8443
+
+fun getBigtonRuntimeDir(): String = System.getenv("VENTURA_BIGTON_LIB_DIR")
+    ?: "bigtonruntime/build/libs/main"
 
 private fun scheduled(interval: Duration, f: () -> Unit) {
     thread {
@@ -51,7 +49,7 @@ class Workers {
 }
 
 fun main() {
-    loadBigtonRuntime("bigtonruntime", "bigtonruntime")
+    loadBigtonRuntime(getBigtonRuntimeDir(), name = "bigtonruntime")
     initDatabase()
 
     val baseWorldChunks: Map<ChunkRef, ChunkData>

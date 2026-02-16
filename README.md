@@ -43,6 +43,12 @@ The server can be configured using the following environmental variables:
 - `VENTURA_DB_URL` - Url of the database (defaults to `jdbc:postgresql://localhost:5432/ventura`)
 - `VENTURA_DB_USER` - Username in the database (defaults to `ventura`)
 - `VENTURA_DB_PASS` - Password for the database **(has no default)**
+- `VENTURA_BIGTON_LIB_DIR` - The relative or absolute directory containing the compiled dynamic library
+for the BIGTON runtime (defaults to `bigtonruntime/build/libs/main`). The server
+will look for a different file depending on the host operating system:
+  - Linux - `libbigtonruntime.so`
+  - MacOS - `libbigtonruntime.dylib`
+  - Windows - `bigtonruntime.dll`
 
 ### Running the Client
 The client can be built and run using Gradle:
