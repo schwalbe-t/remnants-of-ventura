@@ -151,6 +151,6 @@ class Robot(val type: RobotType) {
         }
     }
 
-    val cpuUsagePercent: Float = (this.runtime?.usedInstrCost ?: 0L).toDouble() /
-
+    // TODO! percentual CPU and memory usage
+    
 }
