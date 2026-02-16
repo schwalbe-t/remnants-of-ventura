@@ -6,7 +6,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class WorldRegistry(
-    val playerWriter: PlayerWriter,
+    val workers: Workers,
     baseWorldData: WorldData
 ) {
 
@@ -58,7 +58,7 @@ class WorldRegistry(
     }
     
     fun handlePlayerDisconnect(player: Player) {
-        this.playerWriter.add(player)
+        this.workers.playerWriter.add(player)
         synchronized(this) {
             for (world in this.worlds.values) {
                 world.handlePlayerDisconnect(player) 

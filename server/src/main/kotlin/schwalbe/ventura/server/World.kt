@@ -39,7 +39,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             if (player.data.worlds.last()?.worldId != this.id) {
                 player.data.worlds.add(this.createPlayerEntry())
             }
-            this.registry.playerWriter.add(player)
+            this.registry.workers.playerWriter.add(player)
             player.connection.outgoing.send(Packet.serialize(
                 PacketType.COMPLETE_WORLD_CHANGE,
                 WorldEntryPacket(

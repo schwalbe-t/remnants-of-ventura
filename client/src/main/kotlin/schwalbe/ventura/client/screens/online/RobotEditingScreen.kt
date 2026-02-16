@@ -11,6 +11,7 @@ import schwalbe.ventura.data.Item
 import schwalbe.ventura.net.PacketHandler
 import org.joml.Vector3f
 import schwalbe.ventura.ROBOT_NAME_MAX_LEN
+import schwalbe.ventura.data.ItemCategory
 import schwalbe.ventura.engine.ui.Text
 import java.io.File
 import kotlin.math.atan
@@ -355,10 +356,14 @@ fun robotEditingScreen(client: Client): () -> GameScreen = {
     }
     resetRhs()
     fun onSetAttachment(onItemSelected: (Item?) -> Unit) {
-        val itemSelect = createItemListSection(client, packets) { item, _ ->
-            onItemSelected(item)
-            resetRhs()
-        }
+        val itemSelect = createItemListSection(
+            client, packets,
+            displayedEntries = { i, _ -> i.type.category.isRobotAttachment },
+            onItemSelect = { i, _ ->
+                onItemSelected(i)
+                resetRhs()
+            }
+        )
         rhs.disposeAll()
         rhs.add(itemSelect
             .withBottomButton("Remove Attachment") {
@@ -378,7 +383,7 @@ fun robotEditingScreen(client: Client): () -> GameScreen = {
             .withBottomButton("Cancel") { resetRhs() }
         )
     }
-    screen.add(Axis.row()
+    screen.add(element = Axis.row()
         .add(66.6.vw, Stack()
             .add(background)
             .add(FlatBackground().withColor(PANEL_BACKGROUND))

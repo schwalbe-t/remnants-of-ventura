@@ -45,6 +45,11 @@ private fun scheduled(interval: Duration, f: () -> Unit) {
     }
 }
 
+class Workers {
+    val playerWriter = PlayerWriter()
+    val compilationQueue = CompilationQueue()
+}
+
 fun main() {
     loadBigtonRuntime("bigtonruntime", "bigtonruntime")
     initDatabase()
@@ -71,8 +76,8 @@ fun main() {
         baseWorldChunks
     )
 
-    val playerWriter = PlayerWriter()
-    val worlds = WorldRegistry(playerWriter, baseWorld)
+    val workers = Workers()
+    val worlds = WorldRegistry(workers, baseWorld)
 
     val port: Int = getPort()
     val server = Server(
@@ -101,16 +106,20 @@ fun main() {
         ServerNetwork.deleteAllExpired()
     }
 
-    CoroutineScope(Dispatchers.IO).launch {
-        playerWriter.writePlayers()
-    }
-
     scheduled(interval = 50.milliseconds) {
         worlds.updateAll()
     }
 
     scheduled(interval = 100.milliseconds) {
         server.updateUnauthorized()
+    }
+
+    CoroutineScope(Dispatchers.IO).launch {
+        workers.playerWriter.runWorker()
+    }
+
+    thread {
+        workers.compilationQueue.runWorker()
     }
 }
 

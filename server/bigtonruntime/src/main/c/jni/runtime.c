@@ -216,6 +216,13 @@ PARAMS(jlong runtimeHandle) {
     return (jlong) r->b.totalSizeBytes;
 }
 
+// external fun getUsedInstrCost(runtimeHandle: Long): Long
+JNIEXPORT jlong JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntimeN_getUsedInstrCost
+PARAMS(jlong runtimeHandle) {
+    UNPACK(runtimeHandle, bigton_runtime_state_t, r);
+    return (jlong) r->accCost;
+}
+
 // external fun getError(runtimeHandle: Long): Int
 JNIEXPORT jint JNICALL Java_schwalbe_ventura_bigton_runtime_BigtonRuntimeN_getError
 PARAMS(jlong runtimeHandle) {

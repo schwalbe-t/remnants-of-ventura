@@ -53,6 +53,7 @@ object BigtonRuntimeN {
     @JvmStatic external fun getCurrentFile(runtimeHandle: Long): Int
     @JvmStatic external fun getCurrentLine(runtimeHandle: Long): Int
     @JvmStatic external fun getUsedMemory(runtimeHandle: Long): Long
+    @JvmStatic external fun getUsedInstrCost(runtimeHandle: Long): Long
     
     @JvmStatic external fun getError(runtimeHandle: Long): Int
     @JvmStatic external fun setError(runtimeHandle: Long, error: Int)
@@ -153,6 +154,9 @@ val BigtonRuntime.currentLine: Int
     
 val BigtonRuntime.usedMemory: Long
     get() = BigtonRuntimeN.getUsedMemory(this.handle)
+
+val BigtonRuntime.usedInstrCost: Long
+    get() = BigtonRuntimeN.getUsedInstrCost(this.handle)
     
 var BigtonRuntime.error: BigtonRuntimeError
     get() {

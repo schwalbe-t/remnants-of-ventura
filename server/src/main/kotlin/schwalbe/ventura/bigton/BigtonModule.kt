@@ -4,21 +4,21 @@ package schwalbe.ventura.bigton
 import schwalbe.ventura.bigton.runtime.*
 import kotlin.math.*
 
-data class BuiltinFunctionInfo(
+data class BuiltinFunctionInfo<C>(
     val name: String, val cost: Int, val argc: Int,
-    val impl: (BigtonRuntime) -> Unit
+    val impl: (BigtonRuntime, C) -> Unit
 )
 
-class BigtonBuiltinFunctions {
+class BigtonBuiltinFunctions<C> {
     
-    private val mutFunctionsById: MutableList<BuiltinFunctionInfo>
+    private val mutFunctionsById: MutableList<BuiltinFunctionInfo<C>>
         = mutableListOf()
     private val mutIdByFunctionName: MutableMap<String, Int>
         = mutableMapOf()
-    val functions: List<BuiltinFunctionInfo> = this.mutFunctionsById
+    val functions: List<BuiltinFunctionInfo<C>> = this.mutFunctionsById
     val functionIds: Map<String, Int> = this.mutIdByFunctionName
     
-    fun register(info: BuiltinFunctionInfo) {
+    fun register(info: BuiltinFunctionInfo<C>) {
         val id: Int = this.mutFunctionsById.size
         this.mutFunctionsById.add(info)
         this.mutIdByFunctionName[info.name] = id
@@ -26,15 +26,20 @@ class BigtonBuiltinFunctions {
     
 }
 
-class BigtonModule(val funcOut: BigtonBuiltinFunctions) {
+class BigtonModule<C>(val funcOut: BigtonBuiltinFunctions<C>) {
     
-    private val mutFunctions: MutableMap<String, BuiltinFunctionInfo>
+    private val mutFunctions: MutableMap<String, BuiltinFunctionInfo<C>>
         = mutableMapOf()
-    val functions: Map<String, BuiltinFunctionInfo> = this.mutFunctions
+    val functions: Map<String, BuiltinFunctionInfo<C>> = this.mutFunctions
     
     fun withFunction(
         name: String, cost: Int, argc: Int, f: (BigtonRuntime) -> Unit
-    ): BigtonModule {
+    ): BigtonModule<C>
+        = this.withCtxFunction(name, cost, argc) { r, _ -> f(r) }
+
+    fun withCtxFunction(
+        name: String, cost: Int, argc: Int, f: (BigtonRuntime, C) -> Unit
+    ): BigtonModule<C> {
         val info = BuiltinFunctionInfo(name, cost, argc, f)
         this.mutFunctions[name] = info
         this.funcOut.register(info)
@@ -282,9 +287,9 @@ private fun remove(r: BigtonRuntime) {
     }
 }
 
-object BigtonModules {
+class BigtonModules<C> {
     
-    val functions = BigtonBuiltinFunctions()
+    val functions = BigtonBuiltinFunctions<C>()
     
     val standard = BigtonModule(functions)
         .withFunction("print", cost = 1, argc = 1, ::printValue)

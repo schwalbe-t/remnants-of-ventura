@@ -17,18 +17,22 @@ enum class ItemAction {
 
 @Serializable
 enum class ItemCategory(
-    val actions: List<ItemAction>
+    val actions: List<ItemAction>,
+    val isRobotAttachment: Boolean
 ) {
     ROBOT(
         actions = listOf(
             ItemAction.DEPLOY_ROBOT
-        )
+        ),
+        isRobotAttachment = false
     ),
     PROCESSOR(
-        actions = listOf()
+        actions = listOf(),
+        isRobotAttachment = true
     ),
     MEMORY_MODULE(
-        actions = listOf()
+        actions = listOf(),
+        isRobotAttachment = true
     );
 
     val localNameKey: String

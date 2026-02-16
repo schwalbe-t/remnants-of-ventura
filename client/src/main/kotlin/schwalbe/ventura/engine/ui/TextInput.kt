@@ -561,6 +561,7 @@ class TextInput : GpuUiElement(), Focusable {
                         }
                         e.key == Key.LEFT_CONTROL -> continue
                         e.key == Key.LEFT_SHIFT -> continue
+                        e.key == Key.ESCAPE -> continue
                         else -> {
                             context.global.nav.input.remove(e)
                             continue

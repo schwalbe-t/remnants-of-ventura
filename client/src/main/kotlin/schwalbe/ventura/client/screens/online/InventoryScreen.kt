@@ -82,20 +82,24 @@ fun addInventoryItem(
 
 fun createItemListSection(
     client: Client, packetHandler: PacketHandler<Unit>,
+    displayedEntries: (Item, Int) -> Boolean = { _, _ -> true },
     onItemSelect: (Item, Int) -> Unit
 ): Axis {
     val l = localized()
     val itemList = Axis.column()
     packetHandler.onPacket(PacketType.INVENTORY_CONTENTS) { inventory, _ ->
-        val itemCounts = inventory.itemCounts
-            .asSequence().filter { (_, c) -> c > 0 }.toList()
+        val itemCounts = inventory.itemCounts.asSequence()
+            .filter { (_, c) -> c > 0 }
+            .filter { (i, c) -> displayedEntries(i, c) }
             .sortedBy { (i, _) -> l[i.type.localNameKey] }
+        var isEmpty = true
         for ((item, count) in itemCounts) {
+            isEmpty = false
             addInventoryItem(itemList, item, count) {
                 onItemSelect(item, count)
             }
         }
-        if (itemCounts.isEmpty()) {
+        if (isEmpty) {
             itemList.add(2.vmin, Text()
                 .withText(l[PLACEHOLDER_INVENTORY_EMPTY])
                 .withSize(85.ph)
