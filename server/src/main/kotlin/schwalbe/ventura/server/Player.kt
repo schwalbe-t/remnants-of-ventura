@@ -7,7 +7,6 @@ import schwalbe.ventura.net.Packet
 import schwalbe.ventura.net.PacketType
 import schwalbe.ventura.net.SharedPlayerInfo
 import kotlinx.serialization.Serializable
-import schwalbe.ventura.data.ItemVariant
 
 @Serializable
 data class PlayerData(

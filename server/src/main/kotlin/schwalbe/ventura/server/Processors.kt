@@ -4,13 +4,6 @@ package schwalbe.ventura.server
 import schwalbe.ventura.bigton.BigtonFeature
 import schwalbe.ventura.bigton.BigtonModule
 import schwalbe.ventura.data.ItemType
-import kotlin.math.roundToLong
-
-private val Int.kb: Long
-    get() = this * 1024L
-
-private val Double.kb: Long
-    get() = (this * 1024.0).roundToLong()
 
 
 class ProcessorFeatures(
@@ -63,8 +56,8 @@ val BIGTON_3000_FEATURES = ProcessorFeatures(
 class ProcessorStats(
     val baseMemory: Long,
     val instructionLimit: Long,
-    val maxCallDepth: Long,
-    val maxTupleSize: Long
+    val maxCallDepth: Int,
+    val maxTupleSize: Int
 )
 
 val BIGTON_STATS_0 = ProcessorStats(
