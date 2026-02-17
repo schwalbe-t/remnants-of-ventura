@@ -1,5 +1,5 @@
 
-package schwalbe.ventura.server
+package schwalbe.ventura.server.persistence
 
 import schwalbe.ventura.server.database.*
 import org.jetbrains.exposed.exceptions.ExposedSQLException

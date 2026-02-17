@@ -1,7 +1,6 @@
 
-package schwalbe.ventura.server
+package schwalbe.ventura.server.persistence
 
-import schwalbe.ventura.server.database.*
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator
 import org.bouncycastle.crypto.params.Argon2Parameters
 import org.jetbrains.exposed.exceptions.ExposedSQLException
@@ -15,10 +14,8 @@ import schwalbe.ventura.ACCOUNT_PASSWORD_MAX_LEN
 import schwalbe.ventura.ACCOUNT_PASSWORD_MIN_LEN
 import java.security.SecureRandom
 
-class Account {
-    companion object {
-        val SESSION_CREATION_COOLDOWN = DateTimePeriod(minutes = 1)
-    }
+object Account {
+    val SESSION_CREATION_COOLDOWN = DateTimePeriod(minutes = 1)
 }
 
 private fun generateAccountSalt(): ByteArray {
@@ -49,7 +46,7 @@ private fun assertCredentialsLength(
     username.length in ACCOUNT_NAME_MIN_LEN..ACCOUNT_NAME_MAX_LEN &&
     password.length in ACCOUNT_PASSWORD_MIN_LEN..ACCOUNT_PASSWORD_MAX_LEN
 
-fun Account.Companion.create(
+fun Account.create(
     username: String, password: String, playerData: ByteArray
 ): Boolean {
     if (!assertCredentialsLength(username, password)) { return false }
@@ -80,7 +77,7 @@ private fun hashesEqual(a: ByteArray, b: ByteArray): Boolean {
     return e == 0
 }
 
-fun Account.Companion.hasMatchingPassword(
+fun Account.hasMatchingPassword(
     username: String, password: String
 ): Boolean {
     if (!assertCredentialsLength(username, password)) { return false }
@@ -97,7 +94,7 @@ fun Account.Companion.hasMatchingPassword(
     return matches
 }
 
-fun Account.Companion.fetchPlayerData(username: String): ByteArray?
+fun Account.fetchPlayerData(username: String): ByteArray?
     = transaction { AccountsTable
         .select(AccountsTable.userdata)
         .where { AccountsTable.username eq username }
@@ -105,7 +102,7 @@ fun Account.Companion.fetchPlayerData(username: String): ByteArray?
         ?.let { it[AccountsTable.userdata].bytes }
     }
 
-fun Account.Companion.writePlayerData(username: String, playerData: ByteArray) {
+fun Account.writePlayerData(username: String, playerData: ByteArray) {
     transaction {
         AccountsTable.update({ AccountsTable.username eq username }) {
             it[AccountsTable.userdata] = ExposedBlob(playerData)
@@ -113,7 +110,7 @@ fun Account.Companion.writePlayerData(username: String, playerData: ByteArray) {
     }
 }
 
-fun Account.Companion.tryApplyLoginCooldown(username: String): Boolean {
+fun Account.tryApplyLoginCooldown(username: String): Boolean {
     val now: LocalDateTime = Clock.System.now()
         .toLocalDateTime(TimeZone.UTC)
     val mayLogin: Boolean = transaction { AccountsTable

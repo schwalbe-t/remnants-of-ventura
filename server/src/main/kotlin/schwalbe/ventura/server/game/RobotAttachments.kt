@@ -1,5 +1,5 @@
 
-package schwalbe.ventura.server
+package schwalbe.ventura.server.game
 
 import schwalbe.ventura.bigton.BigtonModule
 import schwalbe.ventura.bigton.BigtonModules

@@ -1,5 +1,5 @@
 
-package schwalbe.ventura.server
+package schwalbe.ventura.server.game
 
 import schwalbe.ventura.bigton.runtime.*
 import schwalbe.ventura.bigton.*

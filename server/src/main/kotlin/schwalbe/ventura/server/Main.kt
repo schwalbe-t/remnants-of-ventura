@@ -1,7 +1,12 @@
 
 package schwalbe.ventura.server
 
-import schwalbe.ventura.server.database.initDatabase
+import schwalbe.ventura.bigton.runtime.loadBigtonRuntime
+import schwalbe.ventura.net.*
+import schwalbe.ventura.data.*
+import schwalbe.ventura.server.game.CompilationQueue
+import schwalbe.ventura.server.game.WorldRegistry
+import schwalbe.ventura.server.persistence.*
 import kotlinx.coroutines.*
 import kotlin.concurrent.thread
 import kotlin.time.Duration
@@ -9,9 +14,6 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.datetime.*
 import org.joml.Vector3f
-import schwalbe.ventura.bigton.runtime.loadBigtonRuntime
-import schwalbe.ventura.net.*
-import schwalbe.ventura.data.*
 import kotlin.system.exitProcess
 
 fun getKeyStorePath(): String = System.getenv("VENTURA_KEYSTORE_PATH")

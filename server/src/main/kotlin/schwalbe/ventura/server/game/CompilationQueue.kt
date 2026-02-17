@@ -1,7 +1,8 @@
 
-package schwalbe.ventura.server
+package schwalbe.ventura.server.game
 
 import schwalbe.ventura.bigton.*
+import schwalbe.ventura.server.QueuedWorker
 
 class CompilationTask(
     val sources: List<BigtonSourceFile>,

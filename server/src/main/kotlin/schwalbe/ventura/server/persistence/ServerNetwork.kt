@@ -1,7 +1,6 @@
 
-package schwalbe.ventura.server
+package schwalbe.ventura.server.persistence
 
-import schwalbe.ventura.server.database.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
@@ -11,21 +10,19 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.datetime.*
 import java.util.UUID
 
-class ServerNetwork {
-    companion object {
-        val thisServerId: UUID = UUID.randomUUID()
+object ServerNetwork {
+    val thisServerId: UUID = UUID.randomUUID()
 
-        val SERVER_REPORT_INTERVAL: Duration = 10.seconds
-        val SERVER_EXPIRATION_DELAY = DateTimePeriod(seconds = 20)
-    }
+    val SERVER_REPORT_INTERVAL: Duration = 10.seconds
+    val SERVER_EXPIRATION_DELAY = DateTimePeriod(seconds = 20)
 }
 
-private fun ServerNetwork.Companion.getNewExpiration(): LocalDateTime
+private fun ServerNetwork.getNewExpiration(): LocalDateTime
     = Clock.System.now()
     .plus(SERVER_EXPIRATION_DELAY, TimeZone.UTC)
     .toLocalDateTime(TimeZone.UTC)
 
-fun ServerNetwork.Companion.registerServer() {
+fun ServerNetwork.registerServer() {
     transaction {
         ServersTable.insert {
             it[ServersTable.id] = ServerNetwork.thisServerId
@@ -34,7 +31,7 @@ fun ServerNetwork.Companion.registerServer() {
     }
 }
 
-fun ServerNetwork.Companion.reportServerOnline(): Boolean {
+fun ServerNetwork.reportServerOnline(): Boolean {
     val now: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.UTC)
     val updates: Int = transaction {
         ServersTable.update({
@@ -47,14 +44,14 @@ fun ServerNetwork.Companion.reportServerOnline(): Boolean {
     return updates >= 1
 }
 
-fun ServerNetwork.Companion.deleteAllExpired() {
+fun ServerNetwork.deleteAllExpired() {
     val now: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.UTC)
     transaction {
         ServersTable.deleteWhere { ServersTable.expiration lessEq now }
     }
 }
 
-fun ServerNetwork.Companion.tryAcquireAccount(username: String): Boolean {
+fun ServerNetwork.tryAcquireAccount(username: String): Boolean {
     val sql = """
         UPDATE accounts
         SET owning_server = ?
@@ -84,7 +81,7 @@ fun ServerNetwork.Companion.tryAcquireAccount(username: String): Boolean {
     return numAffectedRows >= 1
 }
 
-fun ServerNetwork.Companion.releaseAccount(username: String) {
+fun ServerNetwork.releaseAccount(username: String) {
     transaction {
         AccountsTable.update({ AccountsTable.username eq username }) {
             it[AccountsTable.owningServer] = null

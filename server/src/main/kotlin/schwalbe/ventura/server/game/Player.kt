@@ -1,5 +1,5 @@
 
-package schwalbe.ventura.server
+package schwalbe.ventura.server.game
 
 import schwalbe.ventura.data.Item
 import schwalbe.ventura.data.ItemType
@@ -7,6 +7,7 @@ import schwalbe.ventura.net.Packet
 import schwalbe.ventura.net.PacketType
 import schwalbe.ventura.net.SharedPlayerInfo
 import kotlinx.serialization.Serializable
+import schwalbe.ventura.server.Server
 
 @Serializable
 data class PlayerData(

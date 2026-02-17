@@ -1,5 +1,5 @@
 
-package schwalbe.ventura.server
+package schwalbe.ventura.server.game
 
 import schwalbe.ventura.MAX_NUM_REQUESTED_CHUNKS
 import schwalbe.ventura.WORLD_STATE_CONTENT_RADIUS

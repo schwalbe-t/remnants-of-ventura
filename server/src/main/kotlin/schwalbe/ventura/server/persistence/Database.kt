@@ -1,5 +1,5 @@
 
-package schwalbe.ventura.server.database
+package schwalbe.ventura.server.persistence
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
