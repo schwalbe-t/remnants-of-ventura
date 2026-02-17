@@ -54,8 +54,10 @@ data class PacketType<P>(
     val REQUEST_STORED_SOURCES      = up<Unit>()
     val STORED_SOURCES              = down<StoredSourcesInfoPacket>()
 
-    val DEPLOY_ROBOT                = up<Item>()
+    val DEPLOY_ROBOT                = up<RobotDeploymentPacket>()
+    val ROBOT_DEPLOYED              = down<Uuid>()
     val DESTROY_ROBOT               = up<Uuid>()
+    val ROBOT_DESTROYED             = down<Uuid>()
     val START_ROBOT                 = up<Uuid>()
     val PAUSE_ROBOT                 = up<Uuid>()
     val STOP_ROBOT                  = up<Uuid>()
@@ -87,7 +89,25 @@ enum class TaggedErrorPacket {
     ACCOUNT_ALREADY_ONLINE,
 
     // chunk data request asked for too many chunks
-    TOO_MANY_CHUNKS_REQUESTED
+    TOO_MANY_CHUNKS_REQUESTED,
+
+    // requested robot deployment failed due to non-matching item
+    REQUESTED_ROBOT_DOES_NOT_MATCH_ITEM,
+    // requested robot deployment failed due to item not being in inventory
+    REQUESTED_ROBOT_NOT_IN_INVENTORY,
+    // requested robot deployment failed because max number reached
+    TOO_MANY_ROBOTS,
+    // attempt to manipulate robot failed because robot does not exist or is
+    // not owned by the calling player
+    NOT_ROBOT_OWNER,
+    // attempt to change attachment failed because the attachment index is OOB
+    ATTACHMENT_IDX_OOB,
+    // attempt to change attachment failed due to item not being in inventory
+    ATTACHMENT_NOT_IN_INVENTORY,
+    // attempt to configure robot source files failed because too many given
+    TOO_MANY_ROBOT_SOURCE_FILES,
+    // provided robot name is too long
+    ROBOT_NAME_TOO_LONG
 }
 
 
@@ -126,7 +146,7 @@ data class SharedPlayerInfo(
 @Serializable
 data class SharedRobotInfo(
     val name: String,
-    val state: RobotState,
+    val status: RobotStatus,
     val position: SerVector3,
     val rotation: Float
 )
@@ -151,6 +171,12 @@ data class WorldStatePacket(
 @Serializable
 data class InventoryContentsPacket(val itemCounts: Map<Item, Int>)
 
+
+@Serializable
+data class RobotDeploymentPacket(
+    val robotType: RobotType,
+    val item: Item
+)
 
 @Serializable
 data class UploadSourceContentsPacket(

@@ -11,6 +11,7 @@ import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.net.*
 import org.joml.Vector3f
+import kotlin.math.PI
 import kotlin.math.atan
 import kotlin.math.tan
 
@@ -66,7 +67,7 @@ fun addInventoryItem(
             .add(1.vmin, Space())
             .add(100.ph, ItemDisplay.createDisplay(
                 item,
-                fixedAngle = 0f,
+                fixedAngle = -(PI.toFloat() / 4f), // 180/4 = 45 degrees
                 msaaSamples = 4
             ))
             .pad(1.vmin)

@@ -4,7 +4,7 @@ package schwalbe.ventura.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class RobotState {
+enum class RobotStatus {
     STOPPED,
     RUNNING,
     PAUSED,
@@ -12,9 +12,13 @@ enum class RobotState {
 }
 
 @Serializable
-data class RobotSummary(
-    val state: RobotState,
-    val fracHealth: Float,
-    val fracMemUsage: Float,
-    val fracCpuUsage: Float
-)
+enum class RobotType(
+    val itemType: ItemType,
+    val numAttachments: Int,
+    val maxHealth: Float = 100f
+) {
+    SCOUT(
+        itemType = ItemType.KENDAL_DYNAMICS_SCOUT,
+        numAttachments = 4
+    )
+}

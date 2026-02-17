@@ -10,23 +10,34 @@ class SourceFiles {
 
     @Serializable
     class SourceFile(
-        var content: String,
+        var content: String = "",
         var lastChangeTimeMs: Long = 0,
         @Transient
         var used: Boolean = false
     )
 
     private val files: MutableMap<String, SourceFile> = mutableMapOf()
+    val paths: Set<String> = this.files.keys
 
-    operator fun set(path: String, content: String, changeTimeMs: Long) {
+    fun touch(path: String) {
+        if (path !in this.files.keys) {
+            this.files[path] = SourceFile()
+        }
+    }
+
+    fun set(path: String, content: String, changeTimeMs: Long) {
         val file: SourceFile = this.files.getOrPut(path) { SourceFile(content) }
         file.content = content
         file.lastChangeTimeMs = changeTimeMs
     }
 
-    operator fun get(path: String): String = this.files
-        .getOrPut(path) { SourceFile("") }
+    fun getContent(path: String): String = this.files
+        .getOrPut(path, ::SourceFile)
         .content
+
+    fun getChangeTime(path: String): Long = this.files
+        .getOrPut(path, ::SourceFile)
+        .lastChangeTimeMs
 
     fun removeUnused(markUsedFiles: ((String) -> Unit) -> Unit) {
         this.files.values.forEach { it.used = false }

@@ -4,9 +4,11 @@ package schwalbe.ventura.server.game
 import schwalbe.ventura.bigton.runtime.*
 import schwalbe.ventura.bigton.*
 import schwalbe.ventura.data.*
-import schwalbe.ventura.net.SerVector3
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import schwalbe.ventura.net.PrivateRobotInfo
+import schwalbe.ventura.net.SerVector3
+import schwalbe.ventura.net.SharedRobotInfo
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.roundToLong
@@ -17,17 +19,6 @@ val Int.kb: Long
 
 val Double.kb: Long
     get() = (this * 1024.0).roundToLong()
-
-enum class RobotType(
-    val itemType: ItemType,
-    val numAttachments: Int,
-    val maxHealth: Float = 100f
-) {
-    SCOUT(
-        itemType = ItemType.KENDAL_DYNAMICS_SCOUT,
-        numAttachments = 4
-    )
-}
 
 class RobotStats(
     val processor: ProcessorInfo,
@@ -60,16 +51,20 @@ private fun findAttachedProcessor(
 }
 
 private fun computeRobotStats(
-    attachments: Array<Item?>, logs: MutableList<String>
+    robotType: RobotType, attachments: Array<Item?>, logs: MutableList<String>
 ): RobotStats? {
+    val totalModules = mutableListOf<BigtonModule<World>>()
+    var totalMemoryLimit: Long = 0
+    val robotInfo = ROBOT_TYPE_EXT[robotType] ?: RobotExtensions()
+    totalModules.addAll(robotInfo.addedModules)
+    totalMemoryLimit += robotInfo.addedMemory
     val processor: ProcessorInfo = findAttachedProcessor(attachments, logs)
         ?: return null
-    val totalModules: MutableList<BigtonModule<World>>
-        = processor.features.modules.toMutableList()
-    var totalMemoryLimit: Long = processor.stats.baseMemory
+    totalModules.addAll(processor.features.modules)
+    totalMemoryLimit += processor.stats.baseMemory
     for (item in attachments.asSequence().filterNotNull()) {
         if (item.type in PROCESSOR_INFO) { continue }
-        val info = ATTACHMENT_INFO[item.type] ?: continue
+        val info = ATTACHMENT_EXT[item.type] ?: continue
         if (item.type !in processor.features.supportedAttachments) {
             logs.add(
                 "WARNING: The robot will not be able to make use of the " +
@@ -85,14 +80,18 @@ private fun computeRobotStats(
 }
 
 @Serializable
-class Robot(val type: RobotType, val item: Item) {
+class Robot(
+    val type: RobotType,
+    val item: Item,
+    var position: SerVector3
+) {
 
     var name: String = "Unnamed Robot"
     val id: Uuid = Uuid.random()
-    val position = SerVector3(0f, 0f, 0f)
     var health: Float = this.type.maxHealth
+    var rotation: Float = 0f
 
-    var state: RobotState = RobotState.STOPPED
+    var status: RobotStatus = RobotStatus.STOPPED
         private set
 
     @Transient
@@ -104,36 +103,36 @@ class Robot(val type: RobotType, val item: Item) {
 
     val logs: MutableList<String> = mutableListOf()
     val attachments: Array<Item?> = Array(this.type.numAttachments) { null }
-    val sourceFiles: MutableList<String> = mutableListOf()
+    var sourceFiles: List<String> = listOf()
 
     fun start() {
-        when (this.state) {
-            RobotState.RUNNING, RobotState.PAUSED -> {}
-            RobotState.STOPPED, RobotState.ERROR -> {
+        when (this.status) {
+            RobotStatus.RUNNING, RobotStatus.PAUSED -> {}
+            RobotStatus.STOPPED, RobotStatus.ERROR -> {
                 this.logs.clear()
                 this.stats = null
                 this.compileTask = null
                 this.runtime = null
             }
         }
-        this.state = RobotState.RUNNING
+        this.status = RobotStatus.RUNNING
     }
 
     fun pause() {
-        when (this.state) {
-            RobotState.RUNNING -> {
-                this.state = RobotState.PAUSED
+        when (this.status) {
+            RobotStatus.RUNNING -> {
+                this.status = RobotStatus.PAUSED
             }
-            RobotState.PAUSED, RobotState.STOPPED, RobotState.ERROR -> {}
+            RobotStatus.PAUSED, RobotStatus.STOPPED, RobotStatus.ERROR -> {}
         }
     }
 
     fun stop() {
-        when (this.state) {
-            RobotState.RUNNING, RobotState.PAUSED -> {
-                this.state = RobotState.STOPPED
+        when (this.status) {
+            RobotStatus.RUNNING, RobotStatus.PAUSED -> {
+                this.status = RobotStatus.STOPPED
             }
-            RobotState.STOPPED, RobotState.ERROR -> {}
+            RobotStatus.STOPPED, RobotStatus.ERROR -> {}
         }
     }
 
@@ -162,10 +161,10 @@ class Robot(val type: RobotType, val item: Item) {
     ) {
         var stats: RobotStats? = this.stats
         if (stats == null) {
-            stats = computeRobotStats(this.attachments, this.logs)
+            stats = computeRobotStats(this.type, this.attachments, this.logs)
         }
         if (stats == null) {
-            this.state = RobotState.ERROR
+            this.status = RobotStatus.ERROR
             return
         }
         this.stats = stats
@@ -173,7 +172,7 @@ class Robot(val type: RobotType, val item: Item) {
         if (task == null) {
             val newTask = CompilationTask(
                 sources = this.sourceFiles.map { path ->
-                    BigtonSourceFile(path, sourceFiles[path])
+                    BigtonSourceFile(path, sourceFiles.getContent(path))
                 },
                 features = stats.processor.features.features,
                 modules = stats.totalModules,
@@ -183,13 +182,13 @@ class Robot(val type: RobotType, val item: Item) {
             this.compileTask = newTask
             return
         }
-        when (val status = task.status) {
+        when (val compStatus = task.status) {
             is CompilationTask.Waiting, is CompilationTask.InProgress -> {}
             is CompilationTask.Success -> {
                 val programBuffer: ByteBuffer = ByteBuffer
-                    .allocateDirect(status.binary.size)
+                    .allocateDirect(compStatus.binary.size)
                     .order(ByteOrder.nativeOrder())
-                    .put(status.binary).flip()
+                    .put(compStatus.binary).flip()
                 val procStats = stats.processor.stats
                 this.runtime = BigtonRuntime(
                     programBuffer,
@@ -200,17 +199,17 @@ class Robot(val type: RobotType, val item: Item) {
                 )
             }
             is CompilationTask.Failed -> {
-                val src: BigtonSource = status.error.source
+                val src: BigtonSource = compStatus.error.source
                 this.logError(
-                    status.error.error, src.line, src.file, runtime = null
+                    compStatus.error.error, src.line, src.file, runtime = null
                 )
-                this.state = RobotState.ERROR
+                this.status = RobotStatus.ERROR
             }
         }
     }
 
     fun update(world: World, owner: Player) {
-        if (this.state != RobotState.RUNNING) {
+        if (this.status != RobotStatus.RUNNING) {
             this.compileTask = null
             this.runtime = null
             return
@@ -235,7 +234,7 @@ class Robot(val type: RobotType, val item: Item) {
                 }
                 is BigtonExecStatus.AwaitTick -> break
                 is BigtonExecStatus.Complete -> {
-                    this.state = RobotState.STOPPED
+                    this.status = RobotStatus.STOPPED
                     break
                 }
                 is BigtonExecStatus.Error -> {
@@ -245,7 +244,7 @@ class Robot(val type: RobotType, val item: Item) {
                         runtime.getConstStr(runtime.currentFile),
                         runtime
                     )
-                    this.state = RobotState.ERROR
+                    this.status = RobotStatus.ERROR
                     break
                 }
             }
@@ -268,5 +267,22 @@ class Robot(val type: RobotType, val item: Item) {
         return (runtime.usedInstrCost.toDouble() / instrLimit.toDouble())
             .toFloat()
     }
+
+    fun buildLogString(): String = this.logs.joinToString(
+        separator = "",
+        transform = { it + "\n" }
+    )
+
+    fun buildSharedInfo() = SharedRobotInfo(
+        this.name, this.status, this.position, this.rotation
+    )
+
+    fun buildPrivateInfo() = PrivateRobotInfo(
+        this.attachments.toList(),
+        this.sourceFiles,
+        this.getFracHealth(),
+        this.getFracMemUsage(),
+        this.getFracCpuUsage()
+    )
 
 }
