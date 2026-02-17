@@ -1,7 +1,6 @@
 
 package schwalbe.ventura.server.persistence
 
-import schwalbe.ventura.server.database.*
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq

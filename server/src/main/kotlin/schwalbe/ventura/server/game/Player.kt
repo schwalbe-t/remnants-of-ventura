@@ -6,13 +6,16 @@ import schwalbe.ventura.data.ItemType
 import schwalbe.ventura.net.Packet
 import schwalbe.ventura.net.PacketType
 import schwalbe.ventura.net.SharedPlayerInfo
-import kotlinx.serialization.Serializable
 import schwalbe.ventura.server.Server
+import kotlinx.serialization.Serializable
+import kotlin.uuid.Uuid
 
 @Serializable
 data class PlayerData(
-    val worlds: MutableList<WorldEntry>,
-    val inventoryItemCounts: MutableMap<Item, Int>
+    val worlds: MutableList<WorldEntry> = mutableListOf(),
+    val inventoryItemCounts: MutableMap<Item, Int> = mutableMapOf(),
+    val deployedRobots: MutableMap<Uuid, Robot> = mutableMapOf(),
+    val sourceFiles: SourceFiles = SourceFiles()
 ) {
     
     companion object;
@@ -98,4 +101,15 @@ fun Player.popWorld(worlds: WorldRegistry) {
         PacketType.BEGIN_WORLD_CHANGE, Unit
     ))
     current.transfer(this)
+}
+
+fun Player.updateState(world: World) {
+    this.data.deployedRobots.values.forEach {
+        it.update(world, this)
+    }
+    this.data.sourceFiles.removeUnused { markFileUsed ->
+        this.data.deployedRobots.values.forEach {
+            it.sourceFiles.forEach(markFileUsed)
+        }
+    }
 }

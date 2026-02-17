@@ -65,6 +65,12 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
     fun handlePlayerLeaving(player: Player) {
         this.players.remove(player.username)
     }
+    
+    private fun updateState() {
+        for (player in this.players.values) {
+            player.updateState(this)
+        }
+    }
 
     private fun sendWorldStatePacket() {
         val playerStates = this.players.map { (name, pl) ->
@@ -87,6 +93,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
     fun update() {
         this.handleIncomingPlayers()
         this.handlePlayerPackets()
+        this.updateState()
         this.sendWorldStatePacket()
     }
 

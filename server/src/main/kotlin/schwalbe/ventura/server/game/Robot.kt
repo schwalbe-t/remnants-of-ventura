@@ -9,8 +9,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-
 import kotlin.math.roundToLong
+import kotlin.uuid.Uuid
 
 val Int.kb: Long
     get() = this * 1024L
@@ -95,6 +95,7 @@ enum class RobotState {
 class Robot(val type: RobotType) {
 
     var name: String = "Unnamed Robot"
+    val id: Uuid = Uuid.random()
     val position = SerVector3(0f, 0f, 0f)
     var health: Float = this.type.maxHealth
 
@@ -110,6 +111,7 @@ class Robot(val type: RobotType) {
 
     val logs: MutableList<String> = mutableListOf()
     val attachments: Array<ItemType?> = Array(this.type.numAttachments) { null }
+    val sourceFiles: MutableList<String> = mutableListOf()
 
     fun start() {
         when (this.state) {
@@ -162,7 +164,9 @@ class Robot(val type: RobotType) {
         }
     }
 
-    private fun updateCompilation(compilationQueue: CompilationQueue) {
+    private fun updateCompilation(
+        compilationQueue: CompilationQueue, sourceFiles: SourceFiles
+    ) {
         var stats: RobotStats? = this.stats
         if (stats == null) {
             stats = computeRobotStats(this.attachments, this.logs)
@@ -175,7 +179,9 @@ class Robot(val type: RobotType) {
         val task: CompilationTask? = this.compileTask
         if (task == null) {
             val newTask = CompilationTask(
-                sources = listOf(), // TODO! actual sources
+                sources = this.sourceFiles.map { path ->
+                    BigtonSourceFile(path, sourceFiles[path])
+                },
                 features = stats.processor.features.features,
                 modules = stats.totalModules,
                 BIGTON_MODULES.functions
@@ -210,7 +216,7 @@ class Robot(val type: RobotType) {
         }
     }
 
-    fun update(world: World) {
+    fun update(world: World, owner: Player) {
         if (this.state != RobotState.RUNNING) {
             this.compileTask = null
             this.runtime = null
@@ -218,7 +224,9 @@ class Robot(val type: RobotType) {
         }
         val runtime: BigtonRuntime? = this.runtime
         if (runtime == null) {
-            this.updateCompilation(world.registry.workers.compilationQueue)
+            this.updateCompilation(
+                world.registry.workers.compilationQueue, owner.data.sourceFiles
+            )
             return
         }
         runtime.startTick()
