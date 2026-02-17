@@ -12,7 +12,7 @@ class PacketHandler<C>(val receivingDir: PacketDirection) {
     }
 
 
-    val handlers: MutableMap<Short, (ByteArray, C) -> Unit>
+    val handlers: MutableMap<Short, MutableList<(ByteArray, C) -> Unit>>
         = mutableMapOf()
     var onDecodeError: (C, String) -> Unit = { _, _ -> }
 
@@ -26,13 +26,15 @@ class PacketHandler<C>(val receivingDir: PacketDirection) {
         }
         val err: (C, String) -> Unit = this.onDecodeError
         val packetTypeId: Short = packetType.ordinal.toShort()
-        this.handlers[packetTypeId] = handler@{ rpl: ByteArray, ctx: C ->
+        val handlers: MutableList<(ByteArray, C) -> Unit>
+            = this.handlers.getOrPut(packetTypeId) { mutableListOf() }
+        handlers.add { rpl: ByteArray, ctx: C ->
             val decPayload: P
             try {
                 decPayload = Cbor.decodeFromByteArray(serializer<P>(), rpl)
             } catch (e: Exception) {
                 err(ctx, e.message ?: "")
-                return@handler
+                return@add
             }
             try {
                 handler(decPayload, ctx)
@@ -44,8 +46,8 @@ class PacketHandler<C>(val receivingDir: PacketDirection) {
     }
 
     fun handlePacket(packet: Packet, context: C) {
-        val handler = this.handlers[packet.type] ?: return
-        handler(packet.payload, context)
+        val handlers = this.handlers[packet.type] ?: return
+        handlers.forEach { it(packet.payload, context) }
     }
 
     fun handleAll(packets: PacketInStream, context: C) {

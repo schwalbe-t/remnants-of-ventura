@@ -1,11 +1,8 @@
 
 package schwalbe.ventura.net
 
+import schwalbe.ventura.data.*
 import kotlinx.serialization.Serializable
-import schwalbe.ventura.data.ChunkData
-import schwalbe.ventura.data.ChunkRef
-import schwalbe.ventura.data.ConstWorldInfo
-import schwalbe.ventura.data.Item
 import kotlin.uuid.Uuid
 
 enum class PacketDirection { UP, DOWN }
@@ -51,6 +48,22 @@ data class PacketType<P>(
 
     val REQUEST_INVENTORY_CONTENTS  = up<Unit>()
     val INVENTORY_CONTENTS          = down<InventoryContentsPacket>()
+
+    val UPLOAD_SOURCE_CONTENT       = up<UploadSourceContentsPacket>()
+    val SOURCE_CONTENT_RECEIVED     = down<Unit>()
+    val REQUEST_STORED_SOURCES      = up<Unit>()
+    val STORED_SOURCES              = down<StoredSourcesInfoPacket>()
+
+    val DEPLOY_ROBOT                = up<Item>()
+    val DESTROY_ROBOT               = up<Uuid>()
+    val START_ROBOT                 = up<Uuid>()
+    val PAUSE_ROBOT                 = up<Uuid>()
+    val STOP_ROBOT                  = up<Uuid>()
+    val SET_ROBOT_ATTACHMENT        = up<RobotAttachmentChangePacket>()
+    val SET_ROBOT_SOURCES           = up<RobotSourceFilesChangePacket>()
+    val SET_ROBOT_NAME              = up<RobotNameChangePacket>()
+    val REQUEST_ROBOT_LOGS          = up<Uuid>()
+    val ROBOT_LOGS                  = down<RobotLogsPacket>()
 
     val NUM_PACKET_TYPES: Int = this.pollNextPacketId()
 
@@ -111,12 +124,69 @@ data class SharedPlayerInfo(
 }
 
 @Serializable
+data class SharedRobotInfo(
+    val name: String,
+    val state: RobotState,
+    val position: SerVector3,
+    val rotation: Float
+)
+
+@Serializable
+data class PrivateRobotInfo(
+    val attachments: List<Item?>,
+    val sourceFiles: List<String>,
+    val fracHealth: Float,
+    val fracMemUsage: Float,
+    val fracCpuUsage: Float
+)
+
+@Serializable
 data class WorldStatePacket(
-    val players: Map<String, SharedPlayerInfo>
+    val players: Map<String, SharedPlayerInfo>,
+    val allRobots: Map<Uuid, SharedRobotInfo>,
+    val ownedRobots: Map<Uuid, PrivateRobotInfo>
 )
 
 
 @Serializable
-data class InventoryContentsPacket(
-    val itemCounts: Map<Item, Int>
+data class InventoryContentsPacket(val itemCounts: Map<Item, Int>)
+
+
+@Serializable
+data class UploadSourceContentsPacket(
+    val path: String,
+    val content: String,
+    val changeTimeMs: Long
+)
+
+@Serializable
+data class StoredSourcesInfoPacket(val sources: Map<String, SourceInfo>) {
+    @Serializable
+    data class SourceInfo(val lastChangeTimeMs: Long)
+}
+
+
+@Serializable
+data class RobotLogsPacket(
+    val robotId: Uuid,
+    val logs: String
+)
+
+@Serializable
+data class RobotAttachmentChangePacket(
+    val robotId: Uuid,
+    val attachmentId: Int,
+    val attachedItem: Item?
+)
+
+@Serializable
+data class RobotSourceFilesChangePacket(
+    val robotId: Uuid,
+    val sourceFiles: List<String>
+)
+
+@Serializable
+data class RobotNameChangePacket(
+    val robotId: Uuid,
+    val newName: String
 )

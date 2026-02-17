@@ -80,7 +80,12 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             val r: Float = WORLD_STATE_CONTENT_RADIUS
             val fPlayerStates = playerStates
                 .filterValues { insideSquareRadiusXZ(it.position, observer, r) }
-            return WorldStatePacket(fPlayerStates)
+            return WorldStatePacket(
+                fPlayerStates,
+                // TODO! send actual robot state
+                allRobots = mapOf(),
+                ownedRobots = mapOf()
+            )
         }
         for (player in this.players.values) {
             val pos: SerVector3 = player.data.worlds.last().state.position
@@ -135,7 +140,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
         ph.onPacket(PacketType.REQUEST_INVENTORY_CONTENTS) { _, pl ->
             pl.connection.outgoing.send(Packet.serialize(
                 PacketType.INVENTORY_CONTENTS,
-                InventoryContentsPacket(pl.data.inventoryItemCounts)
+                InventoryContentsPacket(pl.data.inventory.itemCounts)
             ))
         }
     }

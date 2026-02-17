@@ -3,7 +3,7 @@ package schwalbe.ventura.server.game
 
 import schwalbe.ventura.bigton.runtime.*
 import schwalbe.ventura.bigton.*
-import schwalbe.ventura.data.ItemType
+import schwalbe.ventura.data.*
 import schwalbe.ventura.net.SerVector3
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -36,11 +36,11 @@ class RobotStats(
 )
 
 private fun findAttachedProcessor(
-    attachments: Array<ItemType?>, logs: MutableList<String>
+    attachments: Array<Item?>, logs: MutableList<String>
 ): ProcessorInfo? {
     var found: ProcessorInfo? = null
-    for (item in attachments) {
-        val info = PROCESSOR_INFO[item ?: continue] ?: continue
+    for (item in attachments.asSequence().filterNotNull()) {
+        val info = PROCESSOR_INFO[item.type] ?: continue
         if (found == null) {
             found = info
             continue
@@ -60,21 +60,21 @@ private fun findAttachedProcessor(
 }
 
 private fun computeRobotStats(
-    attachments: Array<ItemType?>, logs: MutableList<String>
+    attachments: Array<Item?>, logs: MutableList<String>
 ): RobotStats? {
     val processor: ProcessorInfo = findAttachedProcessor(attachments, logs)
         ?: return null
     val totalModules: MutableList<BigtonModule<World>>
         = processor.features.modules.toMutableList()
     var totalMemoryLimit: Long = processor.stats.baseMemory
-    for (item in attachments) {
-        if (item in PROCESSOR_INFO) { continue }
-        val info = ATTACHMENT_INFO[item ?: continue] ?: continue
-        if (item !in processor.features.supportedAttachments) {
+    for (item in attachments.asSequence().filterNotNull()) {
+        if (item.type in PROCESSOR_INFO) { continue }
+        val info = ATTACHMENT_INFO[item.type] ?: continue
+        if (item.type !in processor.features.supportedAttachments) {
             logs.add(
                 "WARNING: The robot will not be able to make use of the " +
-                "attachment '${item.name}', as it is not supported by the " +
-                "attached processor."
+                "attachment '${item.type.name}', as it is not supported by " +
+                "the attached processor."
             )
             continue
         }
@@ -84,15 +84,8 @@ private fun computeRobotStats(
     return RobotStats(processor, totalModules, totalMemoryLimit)
 }
 
-enum class RobotState {
-    STOPPED,
-    RUNNING,
-    PAUSED,
-    ERROR
-}
-
 @Serializable
-class Robot(val type: RobotType) {
+class Robot(val type: RobotType, val item: Item) {
 
     var name: String = "Unnamed Robot"
     val id: Uuid = Uuid.random()
@@ -110,7 +103,7 @@ class Robot(val type: RobotType) {
     private var runtime: BigtonRuntime? = null
 
     val logs: MutableList<String> = mutableListOf()
-    val attachments: Array<ItemType?> = Array(this.type.numAttachments) { null }
+    val attachments: Array<Item?> = Array(this.type.numAttachments) { null }
     val sourceFiles: MutableList<String> = mutableListOf()
 
     fun start() {
