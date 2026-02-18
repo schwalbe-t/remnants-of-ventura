@@ -16,14 +16,15 @@ data class UiElementContext(
 fun UiElementContext.childContext(
     parent: UiElement?, relPxX: Int, relPxY: Int, width: Int, height: Int
 ): UiElementContext {
-    require(width >= 0 && height >= 0)
+    val pWidth: Int = maxOf(width, 0)
+    val pHeight: Int = maxOf(height, 0)
     val absPxLeft: Int = this.absPxX + maxOf(relPxX, 0)
     val absPxTop: Int = this.absPxY + maxOf(relPxY, 0)
-    val absPxRight: Int = absPxLeft + width
-    val absPxBottom: Int = absPxTop + height
+    val absPxRight: Int = absPxLeft + pWidth
+    val absPxBottom: Int = absPxTop + pHeight
     return UiElementContext(
         this.global, parent,
-        this.absPxX + relPxX, this.absPxY + relPxY, width, height,
+        this.absPxX + relPxX, this.absPxY + relPxY, pWidth, pHeight,
         this.closestVisibleX(absPxLeft), this.closestVisibleY(absPxTop),
         this.closestVisibleX(absPxRight), this.closestVisibleY(absPxBottom)
     )

@@ -36,7 +36,11 @@ object ItemDisplay {
         val meshTextureOverrides: Map<String, Texture>?
             = itemVariantRes?.collectTextureOverrides()
         val output = MsaaRenderDisplay(samples = msaaSamples)
-        val renderer = Renderer(output.msaaTarget)
+        val renderer = Renderer(
+            output.msaaTarget,
+            shadowMapRes = 256,
+            shadowMapSamples = 2
+        )
         renderer.camera.lookAt
             .set(item.type.modelCenter)
             .div(item.type.modelSize)

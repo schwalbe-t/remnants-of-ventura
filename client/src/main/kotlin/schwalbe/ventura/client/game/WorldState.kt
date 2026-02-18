@@ -66,6 +66,8 @@ class WorldState {
 
 
     val received: MutableList<ReceivedPacket> = mutableListOf()
+    val lastReceived: WorldStatePacket?
+        get() = this.received.lastOrNull()?.state
 
     var displayedTime: Long = System.currentTimeMillis()
     val interpolated = Interpolated()

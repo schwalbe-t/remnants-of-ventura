@@ -159,6 +159,13 @@ class Scroll : GpuUiElement() {
             if (field != value) { this.invalidate() }
             field = value
         }
+
+    var scrollInputFunction: (x: Float, y: Float) -> Pair<Float, Float>
+        = { dx, dy -> Pair(dx, dy) }
+        set(value) {
+            field = value
+            this.invalidate()
+        }
         
     private var shouldShowHorizBar: Boolean = false
     private var shouldShowVertBar: Boolean = false
@@ -247,13 +254,16 @@ class Scroll : GpuUiElement() {
         )
         if (isInside) {
             for (e in context.global.nav.input.remainingOfType<MouseScroll>()) {
+                val (dx, dy) = this.scrollInputFunction(
+                    e.offset.x(), e.offset.y()
+                )
                 if (this.shouldShowHorizBar) {
                     val step: Float = this.pxWidth * SCROLL_SPEED
-                    this.scrollOffset.target.x -= e.offset.x() * step
+                    this.scrollOffset.target.x -= dx * step
                 }
                 if (this.shouldShowVertBar) {
                     val step: Float = this.pxHeight * SCROLL_SPEED
-                    this.scrollOffset.target.y -= e.offset.y() * step
+                    this.scrollOffset.target.y -= dy * step
                 }
                 context.global.nav.input.remove(e)
                 this.invalidate()
@@ -349,6 +359,11 @@ class Scroll : GpuUiElement() {
 
     fun withThumbHoverColor(thumbHoverColor: Vector4fc): Scroll {
         this.thumbHoverColor = thumbHoverColor
+        return this
+    }
+
+    fun withScrollInputFunc(f: (Float, Float) -> Pair<Float, Float>): Scroll {
+        this.scrollInputFunction = f
         return this
     }
     

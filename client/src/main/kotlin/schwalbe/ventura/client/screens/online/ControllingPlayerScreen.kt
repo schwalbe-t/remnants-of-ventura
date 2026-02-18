@@ -12,7 +12,6 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
     client.world?.camController?.mode = CameraController.PLAYER_AT_CENTER
     val playerNames = NameDisplayManager()
     val robotStatus = RobotStatusDisplayManager()
-    var tempNumEntries: Int = 1 // TODO! remove later
     val screen = GameScreen(
         render = {
             if (Key.ESCAPE.wasPressed) {
@@ -27,11 +26,10 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             client.world?.state?.activeNameDisplays = playerNames
             client.world?.update(client, captureInput = true)
             client.world?.render(client)
-
-            // TODO! move call to somewhere in game code
-            if (Key.UP.wasPressed) { tempNumEntries += 1 }
-            if (Key.DOWN.wasPressed && tempNumEntries > 0) { tempNumEntries -= 1 }
-            robotStatus.update(tempNumEntries)
+            val worldState = client.world?.state?.lastReceived
+            if (worldState != null) {
+                robotStatus.update(client, worldState)
+            }
         },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
             client.nav.replace(serverConnectionFailedScreen(reason, client))

@@ -1,11 +1,15 @@
 
 package schwalbe.ventura.client.screens.online
 
+import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
+import schwalbe.ventura.client.game.WorldState
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.engine.ui.*
-import schwalbe.ventura.client.localized
-import schwalbe.ventura.data.RobotStatus
+import schwalbe.ventura.net.*
+import kotlin.math.PI
+import kotlin.math.roundToInt
+import kotlin.uuid.Uuid
 
 class RobotStatusDisplay {
 
@@ -32,6 +36,7 @@ class RobotStatusDisplay {
     val cpuValueText: Text = Text()
     val toggleButtonText: Text = Text()
     val toggleButtonClick: ClickArea = ClickArea()
+    val robotDisplay: Stack = Stack()
 
     val content = Axis.column()
         .add(3.vmin, this.nameText
@@ -74,31 +79,48 @@ class RobotStatusDisplay {
                 ))
             )
             .add(1.5.vmin, Space())
-            // TODO! 3D render of robot instead of blue rectangle
-            .add(100.ph, FlatBackground().withColor(0, 0, 255))
+            .add(100.ph, this.robotDisplay)
         )
 
     val root = Stack()
         .add(BlurBackground()
-            .withRadius(3)
-            .withSpread(3)
+            .withRadius(2)
+            .withSpread(4)
         )
         .add(FlatBackground().withColor(PANEL_BACKGROUND))
         .add(this.content.pad(1.5.vmin))
         .wrapBorderRadius(0.75.vmin)
+        .pad()
 
-    fun update() {
+    fun update(
+        id: Uuid, si: SharedRobotInfo, pi: PrivateRobotInfo, client: Client
+    ) {
         val l = localized()
-        this.nameText.withText("Unnamed Robot")
-        this.statusText.withText(l[RobotStatus.RUNNING.localNameKey]) // TODO! or other status
-        this.statusText.withColor(RobotStatus.RUNNING.displayColor) // TODO! or other status
-        this.hpValueText.withText("33%")
-        this.ramValueText.withText("100%")
-        this.cpuValueText.withText("42%")
-        this.toggleButtonText.withText(l[BUTTON_ROBOT_START]) // TODO! or 'BUTTON_ROBOT_STOP'
+        this.nameText.withText(si.name)
+        this.statusText.withText(l[si.status.localNameKey])
+        this.statusText.withColor(si.status.displayColor)
+        val pHealth: Int = (pi.fracHealth * 100f).roundToInt()
+        val pMemUsage: Int = (pi.fracMemUsage * 100f).roundToInt()
+        val pCpuUsage: Int = (pi.fracCpuUsage * 100f).roundToInt()
+        this.hpValueText.withText("$pHealth%")
+        this.ramValueText.withText("$pMemUsage%")
+        this.cpuValueText.withText("$pCpuUsage%")
+        val toggleButtonLabel: LocalKeys =
+            if (!si.status.isRunning) { BUTTON_ROBOT_START }
+            else { BUTTON_ROBOT_STOP }
+        this.toggleButtonText.withText(l[toggleButtonLabel])
         this.toggleButtonClick.withHandler {
-            // TODO!
-            println("Start/Stop Robot")
+            val action: PacketType<Uuid> =
+                if (!si.status.isRunning) { PacketType.START_ROBOT }
+                else { PacketType.STOP_ROBOT }
+            client.network.outPackets?.send(Packet.serialize(action, id))
+        }
+        if (this.robotDisplay.children.isEmpty()) {
+            this.robotDisplay.add(ItemDisplay.createDisplay(
+                item = si.item,
+                fixedAngle = -(PI.toFloat() / 4f), // 180/4 = 45 degrees
+                msaaSamples = 4
+            ))
         }
     }
 
@@ -106,37 +128,42 @@ class RobotStatusDisplay {
 
 
 class RobotStatusDisplayManager {
-    val entries: MutableList<RobotStatusDisplay> = mutableListOf()
+    val entries: MutableMap<Uuid, RobotStatusDisplay> = mutableMapOf()
     val entryRoots: Axis = Axis.row()
     val container: Padding = this.entryRoots
         .wrapScrolling(vert = true, horiz = true)
         .withThumbColor(BUTTON_COLOR)
         .withThumbHoverColor(BUTTON_HOVER_COLOR)
+        .withScrollInputFunc { dx, dy -> Pair(dx + dy, 0f) }
         .pad()
 }
 
-fun RobotStatusDisplayManager.update(numEntries: Int) {
+fun RobotStatusDisplayManager.update(
+    client: Client, worldState: WorldStatePacket
+) {
     val p: UiSize = 1.5.vmin
     val entryWidth: UiSize = 30.vmin + p
     val entryHeight: UiSize = 15.vmin
     val centeringPad: UiSize = maxOf(
-        (100.vw - (entryWidth * numEntries) - p) / 2, 0.px
+        (100.vw - (entryWidth * worldState.ownedRobots.size) - p) / 2, 0.px
     )
-    val numExistingEntries: Int = this.entryRoots.children.size
-    if (numEntries < numExistingEntries) {
-        this.entries.subList(numEntries, numExistingEntries).clear()
-        this.entryRoots.children
-            .subList(numEntries, numExistingEntries)
-            .toList().forEach(this.entryRoots::dispose)
-    }
-    if (numEntries > numExistingEntries) {
-        for (i in numExistingEntries..<numEntries) {
-            val d = RobotStatusDisplay()
-            this.entries.add(d)
-            this.entryRoots.add(entryWidth, d.root.pad(left = p))
+    this.entries
+        .filter { (id, _) -> id !in worldState.ownedRobots.keys }
+        .forEach { (id, disp) ->
+            this.entries.remove(id)
+            this.entryRoots.dispose(disp.root)
         }
+    for ((id, privateInfo) in worldState.ownedRobots) {
+        val sharedInfo: SharedRobotInfo = worldState.allRobots[id] ?: continue
+        val disp: RobotStatusDisplay = this.entries.getOrPut(id) {
+            val d = RobotStatusDisplay()
+            this.entryRoots.add(entryWidth, d.root.withPadding(
+                left = p, right = 0.px, top = 0.px, bottom = 0.px
+            ))
+            d
+        }
+        disp.update(id, sharedInfo, privateInfo, client)
     }
-    this.entries.forEach(RobotStatusDisplay::update)
     this.container.withPadding(
         left = floor(centeringPad), right = floor(centeringPad) + p,
         top = 100.vh - entryHeight - p,

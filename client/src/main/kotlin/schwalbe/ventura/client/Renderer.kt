@@ -57,7 +57,7 @@ object GeometryFrag : FragShaderDef<GeometryFrag> {
 }
 
 val geometryShader: Resource<Shader<GeometryVert, GeometryFrag>>
-        = Shader.loadGlsl(GeometryVert, GeometryFrag)
+    = Shader.loadGlsl(GeometryVert, GeometryFrag)
 
 
 object OutlineVert : VertShaderDef<OutlineVert> {
@@ -74,7 +74,7 @@ object OutlineFrag : FragShaderDef<OutlineFrag> {
 }
 
 val outlineShader: Resource<Shader<OutlineVert, OutlineFrag>>
-        = Shader.loadGlsl(OutlineVert, OutlineFrag)
+    = Shader.loadGlsl(OutlineVert, OutlineFrag)
 
 
 object DepthOnlyFrag : FragShaderDef<DepthOnlyFrag> {
@@ -84,7 +84,7 @@ object DepthOnlyFrag : FragShaderDef<DepthOnlyFrag> {
 }
 
 val depthOnlyGeometryShader: Resource<Shader<GeometryVert, DepthOnlyFrag>>
-        = Shader.loadGlsl(GeometryVert, DepthOnlyFrag)
+    = Shader.loadGlsl(GeometryVert, DepthOnlyFrag)
 
 object DiscardFrag : FragShaderDef<DiscardFrag> {
     override val path: String = "shaders/discard.frag.glsl"
@@ -93,10 +93,14 @@ object DiscardFrag : FragShaderDef<DiscardFrag> {
 }
 
 val discardOutlineShader: Resource<Shader<OutlineVert, DiscardFrag>>
-        = Shader.loadGlsl(OutlineVert, DiscardFrag)
+    = Shader.loadGlsl(OutlineVert, DiscardFrag)
 
 
-class Renderer(val dest: ConstFramebuffer) {
+class Renderer(
+    val dest: ConstFramebuffer,
+    shadowMapRes: Int = DEFAULT_SHADOW_MAP_RES,
+    val shadowMapSamples: Int = DEFAULT_SHADOW_MAP_SAMPLES
+) {
 
     companion object {
         val meshProperties: List<Model.Property> = listOf(
@@ -126,8 +130,18 @@ class Renderer(val dest: ConstFramebuffer) {
         const val DEPTH_BIAS: Float = 0.00075f
         const val NORMAL_OFFSET: Float = 0.01f
 
-        const val SHADOW_MAP_RES: Int = 2048
-        const val SHADOW_MAP_SAMPLES: Int = 4
+        const val DEFAULT_SHADOW_MAP_RES: Int = 2048
+        const val DEFAULT_SHADOW_MAP_SAMPLES: Int = 4
+
+        val instances: UniformBuffer by lazy {
+            UniformBuffer(BufferWriteFreq.EVERY_FRAME)
+        }
+        val instanceBuff: ByteBuffer
+            = ByteBuffer.allocateDirect(
+                RendererVert.MAX_NUM_INSTANCES * 4*4
+                    * Geometry.Type.FLOAT.numBytes
+            )
+            .order(ByteOrder.nativeOrder())
     }
 
 
@@ -142,20 +156,13 @@ class Renderer(val dest: ConstFramebuffer) {
     val sunViewProj: Matrix4fc = this.mutSunViewProj
 
     val shadowMapTex = Texture(
-        SHADOW_MAP_RES, SHADOW_MAP_RES,
+        shadowMapRes, shadowMapRes,
         Texture.Filter.NEAREST, Texture.Format.DEPTH32,
-        SHADOW_MAP_SAMPLES
+        this.shadowMapSamples
     )
     private val mutShadowMap = Framebuffer()
         .attachDepth(this.shadowMapTex)
     val shadowMap: ConstFramebuffer = this.mutShadowMap
-
-    val instances = UniformBuffer(BufferWriteFreq.EVERY_FRAME)
-    val instanceBuff: ByteBuffer
-            = ByteBuffer.allocateDirect(
-        RendererVert.MAX_NUM_INSTANCES * 4*4 * Geometry.Type.FLOAT.numBytes
-    )
-        .order(ByteOrder.nativeOrder())
 
     fun update(sunTarget: Vector3fc) {
         this.mutCamViewProj.set(this.camera.computeViewProj(this.dest))
@@ -198,7 +205,6 @@ class Renderer(val dest: ConstFramebuffer) {
     }
 
     fun dispose() {
-        this.instances.dispose()
         this.mutShadowMap.dispose()
         this.shadowMapTex.dispose()
     }
@@ -209,9 +215,9 @@ class Renderer(val dest: ConstFramebuffer) {
 typealias RenderPass = TypedRenderPass<*, *>
 
 class TypedRenderPass<
-        FGeometry : FragShaderDef<FGeometry>,
-        FOutline : FragShaderDef<FOutline>
-        >(
+    FGeometry : FragShaderDef<FGeometry>,
+    FOutline : FragShaderDef<FOutline>
+>(
     val renderer: Renderer,
     val viewProj: Matrix4fc,
     val geometryShader: Resource<Shader<GeometryVert, FGeometry>>,
@@ -234,7 +240,7 @@ class TypedRenderPass<
         shader[fragShader.groundToSun] = cfg.groundToSun.toVector3f()
         shader[fragShader.sunViewProjection] = this.renderer.sunViewProj
         shader[fragShader.shadowMap] = this.renderer.shadowMapTex
-        shader[fragShader.shadowMapSamples] = Renderer.SHADOW_MAP_SAMPLES
+        shader[fragShader.shadowMapSamples] = this.renderer.shadowMapSamples
         shader[fragShader.depthBias] = Renderer.DEPTH_BIAS
         shader[fragShader.normalOffset] = Renderer.NORMAL_OFFSET
         shader[fragShader.defaultLit] = cfg.defaultLit
@@ -287,13 +293,13 @@ class TypedRenderPass<
         while (remaining.isNotEmpty()) {
             val batchSize: Int = minOf(remaining.size, maxBatchSize)
             val batch: MutableList<Matrix4fc> = remaining.subList(0, batchSize)
-            this.renderer.instanceBuff.clear()
-            val buff: FloatBuffer = this.renderer.instanceBuff.asFloatBuffer()
+            Renderer.instanceBuff.clear()
+            val buff: FloatBuffer = Renderer.instanceBuff.asFloatBuffer()
             for (i in 0..<batch.size) {
                 batch[i].get(i * 16, buff)
             }
-            this.renderer.instances.write(this.renderer.instanceBuff)
-            f(batchSize, this.renderer.instances)
+            Renderer.instances.write(Renderer.instanceBuff)
+            f(batchSize, Renderer.instances)
             batch.clear()
         }
     }

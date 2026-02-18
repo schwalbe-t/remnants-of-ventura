@@ -84,6 +84,7 @@ fun addInventoryItem(
 fun createItemListSection(
     packetHandler: PacketHandler<Unit>,
     displayedEntries: (Item, Int) -> Boolean = { _, _ -> true },
+    onInventoryReceived: ((Item?) -> Int) -> Unit = {},
     onItemSelect: (Item, Int) -> Unit
 ): UiElement {
     val l = localized()
@@ -115,6 +116,7 @@ fun createItemListSection(
             )
         }
         itemList.add(50.ph, Space())
+        onInventoryReceived { item -> i.itemCounts[item] ?: 0 }
     }
     return Axis.column()
         .add(8.vmin, Text()
@@ -247,15 +249,15 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
     )
     val selectedItemSection = Stack()
     fun renderSelectedItemSection(
-        item: Item, count: Int, afterAction: () -> Unit
+        item: Item?, count: Int, afterAction: () -> Unit
     ) {
+        selectedItemSection.disposeAll()
+        if (item == null || count <= 0) { return }
         selectedItemDisplay = ItemDisplay.createDisplay(
             item,
             msaaSamples = 4,
             fixedAngle = null // null = rotates over time
         )
-        selectedItemSection.disposeAll()
-        if (count <= 0) { return }
         selectedItemSection.add(createSelectedItemSection(
             item, count, selectedItemDisplay,
             onItemAction = onAction@{ action ->
@@ -265,12 +267,22 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
             }
         ))
     }
-    val itemListSection = createItemListSection(packets) { item, count ->
-        renderSelectedItemSection(
-            item, count,
-            afterAction = { requestInventoryContents(client) }
-        )
-    }
+    var selectedItem: Item? = null
+    fun afterItemAction(): Unit = requestInventoryContents(client)
+    val itemListSection = createItemListSection(
+        packets,
+        onInventoryReceived = { countOf ->
+            renderSelectedItemSection(
+                selectedItem, countOf(selectedItem), ::afterItemAction
+            )
+        },
+        onItemSelect = { item, count ->
+            selectedItem = item
+            renderSelectedItemSection(
+                item, count, ::afterItemAction
+            )
+        },
+    )
     requestInventoryContents(client)
     screen.add(layer = 0, element = Axis.row()
         .add(fpw * (2f/3f), Stack()
