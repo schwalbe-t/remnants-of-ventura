@@ -1,6 +1,7 @@
 
 package schwalbe.ventura.client.game
 
+import org.joml.Matrix4f
 import schwalbe.ventura.engine.Resource
 import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.client.RenderPass
@@ -32,11 +33,17 @@ object Robot {
     }
 }
 
+fun Robot.modelTransform(
+    pos: Vector3fc, rotY: Float
+): Matrix4f = Matrix4f()
+    .translate(pos)
+    .rotateY(rotY)
+
 fun Robot.render(
     pass: RenderPass, pos: Vector3fc, rotY: Float, anim: AnimState<RobotAnim>,
     item: Item
 ) {
-    val transf = Player.modelTransform(pos, rotY)
+    val transf = Robot.modelTransform(pos, rotY)
     val instances = listOf(transf)
     val model: Model<RobotAnim> = (robotModels[item.type] ?: return)()
     val variant: ItemVariant? = item.variant

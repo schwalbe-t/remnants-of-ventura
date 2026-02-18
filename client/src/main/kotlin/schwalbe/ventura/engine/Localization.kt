@@ -50,7 +50,7 @@ class Localizations<L : Language<L>, K : Enum<K>>(
     operator fun get(key: K): String = this[key.name]
 
     operator fun get(rawKey: String): String
-        = this.current.strings[rawKey] ?: ""
+        = this.current.strings[rawKey] ?: "[$rawKey]"
 
 }
 

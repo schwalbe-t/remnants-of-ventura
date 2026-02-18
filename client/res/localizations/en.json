@@ -45,6 +45,21 @@
         "TITLE_INVENTORY": "Inventory",
         "PLACEHOLDER_INVENTORY_EMPTY": "Your inventory is empty.",
 
+        "LABEL_ROBOT_STAT_HEALTH": "Health:",
+        "LABEL_ROBOT_STAT_MEMORY": "Memory:",
+        "LABEL_ROBOT_STAT_PROCESSOR": "Processor:",
+        "BUTTON_ROBOT_START": "Start",
+        "BUTTON_ROBOT_STOP": "Robot",
+        "TITLE_SELECT_SOURCE_FILE": "Select Source File",
+        "PLACEHOLDER_NO_SOURCE_FILES": "The 'usercode'-directory in the client directory is empty; create a file there, then select it here.",
+        "TITLE_ROBOT_ATTACHMENTS": "Attachments",
+        "TITLE_ROBOT_CODE_FILES": "Code Files",
+        "BUTTON_ADD_CODE_FILE": "Add Code File",
+        "BUTTON_DESTROY_ROBOT": "Destroy Robot",
+
+        "BUTTON_BACK_TO_GAME": "Back to Game",
+        "BUTTON_LOG_OUT": "Log Out",
+
         "ERROR_INVALID_ACCOUNT_PARAMS": "Username already exists",
         "ERROR_INVALID_ACCOUNT_CREDS": "Username or password is invalid",
         "ERROR_SESSION_CREATION_COOLDOWN": "Please wait a moment before attempting to log in again",
@@ -54,9 +69,10 @@
         "ERROR_USERNAME_TOO_SHORT": "Username too short",
         "ERROR_PASSWORD_TOO_SHORT": "Password too short",
 
-        "BUTTON_BACK_TO_GAME": "Back to Game",
-        "BUTTON_LOG_OUT": "Log Out",
-
+        "RobotStatus:name/STOPPED": "Stopped",
+        "RobotStatus:name/RUNNING": "Running",
+        "RobotStatus:name/PAUSED": "Paused",
+        "RobotStatus:name/ERROR": "Error",
 
         "ItemAction:name/DEPLOY_ROBOT": "Deploy",
 

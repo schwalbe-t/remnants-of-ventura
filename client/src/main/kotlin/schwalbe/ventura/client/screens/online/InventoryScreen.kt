@@ -82,14 +82,19 @@ fun addInventoryItem(
 }
 
 fun createItemListSection(
-    client: Client, packetHandler: PacketHandler<Unit>,
+    packetHandler: PacketHandler<Unit>,
     displayedEntries: (Item, Int) -> Boolean = { _, _ -> true },
     onItemSelect: (Item, Int) -> Unit
-): Axis {
+): UiElement {
     val l = localized()
     val itemList = Axis.column()
-    packetHandler.onPacket(PacketType.INVENTORY_CONTENTS) { inventory, _ ->
-        val itemCounts = inventory.itemCounts.asSequence()
+    packetHandler.onPacketRef(PacketType.INVENTORY_CONTENTS) { i, _, phr ->
+        if (itemList.wasDisposed) {
+            packetHandler.remove(phr)
+            return@onPacketRef
+        }
+        itemList.disposeAll()
+        val itemCounts = i.itemCounts.asSequence()
             .filter { (_, c) -> c > 0 }
             .filter { (i, c) -> displayedEntries(i, c) }
             .sortedBy { (i, _) -> l[i.type.localNameKey] }
@@ -111,9 +116,6 @@ fun createItemListSection(
         }
         itemList.add(50.ph, Space())
     }
-    client.network.outPackets?.send(Packet.serialize(
-        PacketType.REQUEST_INVENTORY_CONTENTS, Unit
-    ))
     return Axis.column()
         .add(8.vmin, Text()
             .withText(l[TITLE_INVENTORY])
@@ -127,6 +129,12 @@ fun createItemListSection(
             .withThumbColor(BUTTON_COLOR)
             .withThumbHoverColor(BUTTON_HOVER_COLOR)
         )
+}
+
+fun requestInventoryContents(client: Client) {
+    client.network.outPackets?.send(Packet.serialize(
+        PacketType.REQUEST_INVENTORY_CONTENTS, Unit
+    ))
 }
 
 private fun createInventoryItemActionButton(
@@ -145,14 +153,6 @@ private fun createInventoryItemActionButton(
     )
     .add(ClickArea().withHandler(handler))
     .wrapBorderRadius(0.75.vmin)
-
-private fun handleItemAction(
-    item: Item, count: Int, action: ItemAction, client: Client
-): Unit = when (action) {
-    ItemAction.DEPLOY_ROBOT -> {
-        println("Activated Deploy Action")
-    }
-}
 
 private fun createSelectedItemSection(
     item: Item, count: Int, itemDisplay: MsaaRenderDisplay,
@@ -246,30 +246,38 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
         navigator = client.nav
     )
     val selectedItemSection = Stack()
-    fun renderSelectedItemSection(item: Item, count: Int) {
+    fun renderSelectedItemSection(
+        item: Item, count: Int, afterAction: () -> Unit
+    ) {
         selectedItemDisplay = ItemDisplay.createDisplay(
             item,
             msaaSamples = 4,
             fixedAngle = null // null = rotates over time
         )
         selectedItemSection.disposeAll()
+        if (count <= 0) { return }
         selectedItemSection.add(createSelectedItemSection(
             item, count, selectedItemDisplay,
-            onItemAction = { action ->
-                handleItemAction(item, count, action, client)
-                renderSelectedItemSection(item, count)
+            onItemAction = onAction@{ action ->
+                val handler = ITEM_ACTION_HANDLERS[action] ?: return@onAction
+                handler(item, client)
+                afterAction()
             }
         ))
     }
+    val itemListSection = createItemListSection(packets) { item, count ->
+        renderSelectedItemSection(
+            item, count,
+            afterAction = { requestInventoryContents(client) }
+        )
+    }
+    requestInventoryContents(client)
     screen.add(layer = 0, element = Axis.row()
         .add(fpw * (2f/3f), Stack()
             .add(background)
             .add(FlatBackground().withColor(PANEL_BACKGROUND))
             .add(Axis.row()
-                .add(50.pw, createItemListSection(
-                    client, packets,
-                    onItemSelect = ::renderSelectedItemSection
-                ))
+                .add(50.pw, itemListSection)
                 .add(50.pw, selectedItemSection)
             )
         )

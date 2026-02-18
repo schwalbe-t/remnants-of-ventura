@@ -2,6 +2,7 @@
 package schwalbe.ventura.client.screens.online
 
 import schwalbe.ventura.client.*
+import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.game.*
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
@@ -11,7 +12,7 @@ import schwalbe.ventura.data.Item
 import schwalbe.ventura.net.PacketHandler
 import org.joml.Vector3f
 import schwalbe.ventura.ROBOT_NAME_MAX_LEN
-import schwalbe.ventura.data.ItemCategory
+import schwalbe.ventura.data.RobotStatus
 import schwalbe.ventura.engine.ui.Text
 import java.io.File
 import kotlin.math.atan
@@ -43,29 +44,33 @@ private fun createRobotInfoSection(): UiElement {
         .withThumbColor(BUTTON_COLOR)
         .withThumbHoverColor(BUTTON_HOVER_COLOR)
     logs.scrollOffset.target.y = Float.POSITIVE_INFINITY
+    val l = localized()
     return Axis.column()
         .add(topSection, Axis.column(100.ph / 4)
             .add(Text()
-                .withText("Running")
-                .withColor(RobotStatusDisplay.RUNNING_COLOR)
+                .withText(l[RobotStatus.RUNNING.localNameKey]) // TODO! or other status
+                .withColor(RobotStatus.RUNNING.displayColor) // TODO! or other status
                 .withSize(75.ph)
                 .withFont(googleSansSb())
             )
             .add(RobotStatusDisplay.createStatusProp(
-                Text().withText("Health:"), Text().withText("33%")
+                Text().withText(l[LABEL_ROBOT_STAT_HEALTH]),
+                Text().withText("33%")
             ))
             .add(RobotStatusDisplay.createStatusProp(
-                Text().withText("Memory:"), Text().withText("100%")
+                Text().withText(l[LABEL_ROBOT_STAT_MEMORY]),
+                Text().withText("100%")
             ))
             .add(RobotStatusDisplay.createStatusProp(
-                Text().withText("Processor:"), Text().withText("42%")
+                Text().withText(l[LABEL_ROBOT_STAT_PROCESSOR]),
+                Text().withText("42%")
             ))
             .pad(1.vmin)
             .pad(bottom = 1.vmin)
         )
         .add(100.ph - topSection, logs)
         .pad(1.vmin)
-        .withBottomButton("Start/Stop") {
+        .withBottomButton(l[BUTTON_ROBOT_START]) { // TODO! or 'BUTTON_ROBOT_STOP'
             println("start/stop robot")
         }
 }
@@ -112,10 +117,7 @@ private fun listDirectory(
     val dirContents: Array<File> = dir.listFiles() ?: arrayOf()
     if (relDir.isEmpty() && dirContents.isEmpty()) {
         itemList.add(2.vmin, Text()
-            .withText(
-                "The 'usercode'-directory in the client directory is empty; " +
-                "create a file there, then select it here."
-            )
+            .withText(localized()[PLACEHOLDER_NO_SOURCE_FILES])
             .withSize(85.ph)
             .withFont(googleSansI())
             .withColor(BRIGHT_FONT_COLOR)
@@ -153,7 +155,7 @@ private fun listDirectory(
     dest.add(Axis.column()
         .add(8.vmin, Axis.column()
             .add(60.ph, Text()
-                .withText("Select Code File")
+                .withText(localized()[TITLE_SELECT_SOURCE_FILE])
                 .withColor(BRIGHT_FONT_COLOR)
                 .withFont(googleSansSb())
                 .withSize(85.ph)
@@ -194,6 +196,7 @@ private fun createRobotSettingsSection(
         .withSize(80.ph)
         .withColor(BRIGHT_FONT_COLOR)
         .pad(1.vmin)
+    val l = localized()
     val topSection: UiSize = 8.vmin
     val attachmentList = Axis.column()
     fun writeAttachments(numAttachments: Int) {
@@ -253,7 +256,7 @@ private fun createRobotSettingsSection(
             )
             codeFileList.add(1.vmin, Space())
         }
-        codeFileList.add(4.vmin, makeFileButton("Add File") {
+        codeFileList.add(4.vmin, makeFileButton(l[BUTTON_ADD_CODE_FILE]) {
             onAddCodeFile {
                 println("Add code file '$it'")
             }
@@ -285,7 +288,9 @@ private fun createRobotSettingsSection(
         )
         .add(100.ph - topSection, Axis.column(100.ph / 2)
             .add(Axis.column()
-                .add(subsectionTitleSize, subsectionTitle("Attachments"))
+                .add(subsectionTitleSize,
+                    subsectionTitle(l[TITLE_ROBOT_ATTACHMENTS])
+                )
                 .add(100.ph - subsectionTitleSize, attachmentList
                     .wrapScrolling()
                     .withThumbColor(BUTTON_COLOR)
@@ -294,7 +299,9 @@ private fun createRobotSettingsSection(
                 )
             )
             .add(Axis.column()
-                .add(subsectionTitleSize, subsectionTitle("Code Files"))
+                .add(subsectionTitleSize,
+                    subsectionTitle(l[TITLE_ROBOT_CODE_FILES])
+                )
                 .add(100.ph - subsectionTitleSize, codeFileList
                     .wrapScrolling()
                     .withThumbColor(BUTTON_COLOR)
@@ -304,7 +311,7 @@ private fun createRobotSettingsSection(
             )
         )
         .pad(1.vmin)
-        .withBottomButton("Delete Robot") {
+        .withBottomButton(l[BUTTON_DESTROY_ROBOT]) {
             println("on robot delete")
         }
 }
@@ -356,22 +363,16 @@ fun robotEditingScreen(client: Client): () -> GameScreen = {
     }
     resetRhs()
     fun onSetAttachment(onItemSelected: (Item?) -> Unit) {
-        val itemSelect = createItemListSection(
-            client, packets,
+        rhs.disposeAll()
+        rhs.add(createItemListSection(
+            packets,
             displayedEntries = { i, _ -> i.type.category.isRobotAttachment },
             onItemSelect = { i, _ ->
                 onItemSelected(i)
                 resetRhs()
             }
-        )
-        rhs.disposeAll()
-        rhs.add(itemSelect
-            .withBottomButton("Remove Attachment") {
-                onItemSelected(null)
-                resetRhs()
-            }
-            .withBottomButton("Cancel") { resetRhs() }
-        )
+        ))
+        requestInventoryContents(client)
     }
     fun onAddCodeFile(onFileSelected: (String) -> Unit) {
         val fileSelect = createSelectFileSection { path ->

@@ -1,18 +1,15 @@
 
 package schwalbe.ventura.client.screens.online
 
+import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.engine.ui.*
-import org.joml.Vector4fc
-import org.joml.Vector4f
+import schwalbe.ventura.client.localized
+import schwalbe.ventura.data.RobotStatus
 
 class RobotStatusDisplay {
 
     companion object {
-        val RUNNING_COLOR: Vector4fc = Vector4f(0.35f, 0.85f, 0.45f, 1f)
-        val ERROR_COLOR: Vector4fc = Vector4f(1.0f, 0.45f, 0.55f, 1f)
-        val STOPPED_COLOR: Vector4fc = Vector4f(0.7f, 0.7f, 0.75f, 1f)
-
         fun createStatusProp(nameText: Text, valueText: Text) = Axis.row()
             .add(100.pw - 5.vmin, nameText
                 .withSize(80.ph)
@@ -64,13 +61,16 @@ class RobotStatusDisplay {
                     .wrapBorderRadius(0.5.vmin)
                 )
                 .add(RobotStatusDisplay.createStatusProp(
-                    Text().withText("Health:"), this.hpValueText
+                    Text().withText(localized()[LABEL_ROBOT_STAT_HEALTH]),
+                    this.hpValueText
                 ))
                 .add(RobotStatusDisplay.createStatusProp(
-                    Text().withText("Memory:"), this.ramValueText
+                    Text().withText(localized()[LABEL_ROBOT_STAT_MEMORY]),
+                    this.ramValueText
                 ))
                 .add(RobotStatusDisplay.createStatusProp(
-                    Text().withText("Processor:"), this.cpuValueText
+                    Text().withText(localized()[LABEL_ROBOT_STAT_PROCESSOR]),
+                    this.cpuValueText
                 ))
             )
             .add(1.5.vmin, Space())
@@ -88,21 +88,14 @@ class RobotStatusDisplay {
         .wrapBorderRadius(0.75.vmin)
 
     fun update() {
+        val l = localized()
         this.nameText.withText("Unnamed Robot")
-        this.statusText.withText(when (this.toString().hashCode() % 3) {
-            0 -> "Running"
-            1 -> "Encountered Error"
-            else -> "Stopped"
-        })
-        this.statusText.withColor(when (this.toString().hashCode() % 3) {
-            0 -> RUNNING_COLOR
-            1 -> ERROR_COLOR
-            else -> STOPPED_COLOR
-        })
+        this.statusText.withText(l[RobotStatus.RUNNING.localNameKey]) // TODO! or other status
+        this.statusText.withColor(RobotStatus.RUNNING.displayColor) // TODO! or other status
         this.hpValueText.withText("33%")
         this.ramValueText.withText("100%")
         this.cpuValueText.withText("42%")
-        this.toggleButtonText.withText("Start")
+        this.toggleButtonText.withText(l[BUTTON_ROBOT_START]) // TODO! or 'BUTTON_ROBOT_STOP'
         this.toggleButtonClick.withHandler {
             // TODO!
             println("Start/Stop Robot")
