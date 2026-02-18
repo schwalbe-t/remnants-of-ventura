@@ -28,6 +28,7 @@ class World {
     companion object {
         fun submitResources(resLoader: ResourceLoader) {
             Player.submitResources(resLoader)
+            Robot.submitResources(resLoader)
             ChunkLoader.submitResources(resLoader)
             resLoader.submit(groundShader)
         }

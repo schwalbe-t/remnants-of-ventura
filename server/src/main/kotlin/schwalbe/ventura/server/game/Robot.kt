@@ -274,7 +274,7 @@ class Robot(
     )
 
     fun buildSharedInfo() = SharedRobotInfo(
-        this.name, this.status, this.position, this.rotation
+        this.name, this.item, this.status, this.position, this.rotation
     )
 
     fun buildPrivateInfo() = PrivateRobotInfo(

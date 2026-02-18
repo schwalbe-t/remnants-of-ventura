@@ -2,14 +2,14 @@
 package schwalbe.ventura.client.game
 
 import schwalbe.ventura.client.screens.online.*
-import schwalbe.ventura.engine.gfx.AnimState
+import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.client.Client
-import schwalbe.ventura.net.SharedPlayerInfo
-import schwalbe.ventura.net.WorldStatePacket
-import schwalbe.ventura.net.toVector3f
+import schwalbe.ventura.client.RenderPass
+import schwalbe.ventura.net.*
 import org.joml.Vector3f
 import org.joml.Vector3fc
-import schwalbe.ventura.client.RenderPass
+import schwalbe.ventura.data.Item
+import kotlin.uuid.Uuid
 
 // The server automatically only sends the world state in a specific radius,
 // so there is no reason for any logic to limit rendering / updating here
@@ -20,13 +20,42 @@ class WorldState {
     )
 
     class Interpolated(
-        val players: MutableMap<String, Player> = mutableMapOf()
-    ) {
-        class Player(
-            val position: Vector3f = Vector3f(),
-            var rotation: Float = 0f,
-            val animation: AnimState<PlayerAnim> = AnimState(PlayerAnim.idle)
-        )
+        val players: MutableMap<String, PlayerState> = mutableMapOf(),
+        val robots: MutableMap<Uuid, RobotState> = mutableMapOf(),
+        var ownedRobots: Map<Uuid, PrivateRobotInfo> = mapOf()
+    )
+
+    open class AgentState<A : Animations<A>>(startingAnim: AnimationRef<A>) {
+        val position: Vector3f = Vector3f()
+        var rotation: Float = 0f
+        val animation: AnimState<A> = AnimState(startingAnim)
+
+        fun interpolate(
+            beforePos: SerVector3, afterPos: SerVector3,
+            beforeRot: Float, afterRot: Float,
+            afterAnim: AnimationRef<A>,
+            n: Float
+        ) {
+            this.position.set(beforePos.toVector3f())
+                .lerp(afterPos.toVector3f(), n)
+            this.rotation = beforeRot + (afterRot - beforeRot) * n
+            if (this.animation.latestAnim != afterAnim) {
+                this.animation.transitionTo(afterAnim, 0.25f)
+            }
+        }
+
+        fun update(deltaTime: Float) {
+            this.animation.addTimePassed(deltaTime)
+            this.animation.addTransitionTimePassed(
+                deltaTime * this.animation.numQueuedTransitions
+            )
+        }
+    }
+
+    class PlayerState : AgentState<PlayerAnim>(PlayerAnim.idle)
+
+    class RobotState : AgentState<RobotAnim>(RobotAnim.dummy) {
+        var item: Item? = null
     }
 
     companion object {
@@ -65,28 +94,6 @@ class WorldState {
         }
     }
 
-    private fun interpolatePlayerState(
-        before: SharedPlayerInfo, after: SharedPlayerInfo, n: Float,
-        dest: Interpolated.Player
-    ) {
-        before.position.toVector3f()
-            .lerp(after.position.toVector3f(), n, dest.position)
-        dest.rotation = before.rotation + (after.rotation - before.rotation) * n
-        val newAnim = PlayerAnim.fromSharedAnim(after.animation)
-        if (dest.animation.latestAnim != newAnim) {
-            dest.animation.transitionTo(newAnim, 0.25f)
-        }
-    }
-
-    private fun updateInterpolatedState(deltaTime: Float) {
-        this.interpolated.players.values.forEach { player ->
-            player.animation.addTimePassed(deltaTime)
-            player.animation.addTransitionTimePassed(
-                deltaTime * player.animation.numQueuedTransitions
-            )
-        }
-    }
-
     private fun interpolateWorldState(client: Client) {
         val afterIdx: Int = this.received
             .indexOfFirst { it.time > this.displayedTime }
@@ -107,11 +114,30 @@ class WorldState {
             }
         for ((username, plAfter) in after.state.players) {
             val plBefore = before.state.players[username] ?: plAfter
-            val dest = this.interpolated.players
-                .getOrPut(username) { Interpolated.Player() }
-            this.interpolatePlayerState(plBefore, plAfter, n, dest)
+            this.interpolated.players
+                .getOrPut(username, ::PlayerState)
+                .interpolate(
+                    plBefore.position, plAfter.position,
+                    plBefore.rotation, plAfter.rotation,
+                    PlayerAnim.fromSharedAnim(plAfter.animation),
+                    n
+                )
         }
-        this.updateInterpolatedState(client.deltaTime)
+        for ((robotId, rAfter) in after.state.allRobots) {
+            val rBefore = before.state.allRobots[robotId] ?: rAfter
+            val state = this.interpolated.robots.getOrPut(robotId, ::RobotState)
+            state.interpolate(
+                rBefore.position, rAfter.position,
+                rBefore.rotation, rAfter.rotation,
+                RobotAnim.dummy, // TODO! replace with shared animation
+                n
+            )
+            state.item = rAfter.item
+        }
+        this.interpolated.ownedRobots = after.state.ownedRobots
+        val dt: Float = client.deltaTime
+        this.interpolated.players.values.forEach { it.update(dt) }
+        this.interpolated.robots.values.forEach { it.update(dt) }
     }
 
     fun update(client: Client) {
@@ -134,6 +160,12 @@ class WorldState {
             if (username == client.username) { continue }
             Player.render(
                 pass, player.position, player.rotation, player.animation
+            )
+        }
+        for (robot in this.interpolated.robots.values) {
+            val item: Item = robot.item ?: continue
+            Robot.render(
+                pass, robot.position, robot.rotation, robot.animation, item
             )
         }
     }

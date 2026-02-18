@@ -33,5 +33,4 @@ fun submitScreenResources(loader: ResourceLoader) {
         googleSansR, googleSansSb, googleSansI,
         gridShader, gridQuad
     )
-    ItemDisplay.submitResources(loader)
 }

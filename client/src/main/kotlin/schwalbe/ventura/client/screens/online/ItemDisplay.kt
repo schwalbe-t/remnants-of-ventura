@@ -1,56 +1,18 @@
 
 package schwalbe.ventura.client.screens.online
 
-import org.joml.Matrix4f
 import schwalbe.ventura.client.Renderer
-import schwalbe.ventura.engine.Resource
-import schwalbe.ventura.engine.ResourceLoader
+import schwalbe.ventura.client.ItemTypeResources
+import schwalbe.ventura.client.ItemVariantResources
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.data.*
 import schwalbe.ventura.engine.ui.MsaaRenderDisplay
 import kotlin.math.PI
 import org.joml.Vector3f
 import org.joml.Vector3fc
-
-data class ItemTypeResources(
-    val model: Resource<Model<StaticAnim>>
-)
-
-fun ItemTypeResources.submitResources(loader: ResourceLoader) {
-    loader.submit(this.model)
-}
-
-private val itemTypeResources: List<ItemTypeResources>
-    = ItemType.entries.map { ItemTypeResources(
-        model = Model.loadFile(
-            it.modelPath,
-            Renderer.meshProperties,
-            textureFilter = Texture.Filter.LINEAR
-        )
-    ) }
-
-
-data class ItemVariantResources(
-    val meshTextureOverrides: Map<String, Resource<Texture>>
-)
-
-fun ItemVariantResources.submitResources(loader: ResourceLoader) {
-    this.meshTextureOverrides.values.forEach(loader::submit)
-}
-
-private val itemVariantResources: List<ItemVariantResources>
-    = ItemVariant.entries.map { ItemVariantResources(
-        meshTextureOverrides = it.meshOverrideTexturePaths
-            .mapValues { (_, p) -> Texture.loadImage(p, Texture.Filter.LINEAR) }
-    ) }
-
+import org.joml.Matrix4f
 
 object ItemDisplay {
-
-    fun submitResources(loader: ResourceLoader) {
-        itemTypeResources.forEach { it.submitResources(loader) }
-        itemVariantResources.forEach { it.submitResources(loader) }
-    }
 
     val CAMERA_OFFSET: Vector3fc = Vector3f(0f, +1f, +2f).normalize().mul(5f)
     const val CAMERA_FOV: Float = PI.toFloat() / 9f // 180/9 = 20 degrees
@@ -65,14 +27,14 @@ object ItemDisplay {
     fun createDisplay(
         item: Item, fixedAngle: Float? = null, msaaSamples: Int = 4
     ): MsaaRenderDisplay {
-        val itemTypeRes = itemTypeResources[item.type.ordinal]
+        val itemTypeRes = ItemTypeResources.all[item.type.ordinal]
         val itemVariant: ItemVariant? = item.variant
         val itemVariantRes: ItemVariantResources? =
             if (itemVariant == null) { null }
-            else { itemVariantResources[itemVariant.ordinal] }
+            else { ItemVariantResources.all[itemVariant.ordinal] }
         val itemModel: Model<StaticAnim> = itemTypeRes.model()
         val meshTextureOverrides: Map<String, Texture>?
-            = itemVariantRes?.meshTextureOverrides?.mapValues { (_, t) -> t() }
+            = itemVariantRes?.collectTextureOverrides()
         val output = MsaaRenderDisplay(samples = msaaSamples)
         val renderer = Renderer(output.msaaTarget)
         renderer.camera.lookAt
