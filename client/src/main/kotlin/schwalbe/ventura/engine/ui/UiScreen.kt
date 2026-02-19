@@ -6,7 +6,10 @@ import schwalbe.ventura.engine.gfx.Shader
 import schwalbe.ventura.engine.gfx.Texture
 import org.joml.*
 
-open class UiScreen<S : UiScreen<S>>(val nav: UiNavigator<S>) {
+open class UiScreen<S : UiScreen<S>>(
+    val nav: UiNavigator<S>,
+    val onOpen: () -> Unit
+) {
     
     private data class BaseElement(val element: UiElement, val layer: Int)
 

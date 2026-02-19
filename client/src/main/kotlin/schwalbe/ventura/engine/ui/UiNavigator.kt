@@ -14,11 +14,18 @@ class UiNavigator<S : UiScreen<S>>(
     var defaultFontColor: Vector4fc = Vector4f(0f, 0f, 0f, 1f)
 ) {
 
-    private val screens: MutableList<() -> S> = mutableListOf()
+    private inner class Entry(
+        val create: () -> S,
+        var saved: S? = null
+    )
+
+    private val screens: MutableList<Entry> = mutableListOf()
     private var disposeQueue: MutableList<S> = mutableListOf()
 
     var currentOrNull: S? = null
         private set
+    val currentIsSaved: Boolean
+        get() = this.screens.lastOrNull()?.saved != null
 
     private fun disposeCurrent() {
         val current: S = this.currentOrNull ?: return
@@ -26,17 +33,30 @@ class UiNavigator<S : UiScreen<S>>(
         this.currentOrNull = null
     }
 
+    fun retainCurrent() {
+        val currentEntry: Entry = this.screens.lastOrNull() ?: return
+        currentEntry.saved = this.currentOrNull
+    }
+
+    private fun makeCurrent(screen: S) {
+        this.currentOrNull = screen
+        screen.onOpen()
+    }
+
     fun push(screen: () -> S) {
-        this.disposeCurrent()
-        this.screens.add(screen)
-        this.currentOrNull = screen()
+        if (!this.currentIsSaved) {
+            this.disposeCurrent()
+        }
+        this.screens.add(Entry(screen))
+        this.makeCurrent(screen())
     }
 
     fun pop() {
-        if (this.screens.size < 2) { return }
+        if (this.screens.size <= 1) { return }
         this.disposeCurrent()
         this.screens.removeLast()
-        this.currentOrNull = this.screens.last().invoke()
+        val entry: Entry = this.screens.last()
+        this.makeCurrent(entry.saved ?: entry.create())
     }
 
     fun replace(screen: () -> S) {

@@ -127,8 +127,18 @@ class Scroll : GpuUiElement() {
     override val children: List<UiElement>
         get() = listOfNotNull(this.inside)
 
-    var scrollOffset: SmoothedVector2f = Vector2f().smoothed(SCROLL_RESPONSE)
-    
+    private var actualScrollOffset: SmoothedVector2f
+        = Vector2f().smoothed(SCROLL_RESPONSE)
+    var scrollOffset: Vector2fc
+        get() = this.actualScrollOffset.value
+        set(value) {
+            this.actualScrollOffset.target.set(value)
+            this.actualScrollOffset.snapToTarget()
+            this.invalidate()
+        }
+
+    var stickToBottom: Boolean = false
+
     var scrollBarWidth: UiSize = ScrollBar.defaultWidth
         set(value) {
             field = value
@@ -208,7 +218,7 @@ class Scroll : GpuUiElement() {
         this.horizBar?.updateLayout(
             0, this.pxHeight - this.barWidth, bw, horizLength,
             dirX = 1, dirY = 0, orthoX = 0, orthoY = 1,
-            this.scrollOffset.value.x().roundToInt(), inside.pxWidth
+            this.actualScrollOffset.value.x().roundToInt(), inside.pxWidth
         )
         val showVert: Boolean = this.shouldShowVertBar
         if (showVert != (this.vertBar != null)) {
@@ -218,7 +228,7 @@ class Scroll : GpuUiElement() {
         this.vertBar?.updateLayout(
             this.pxWidth - this.barWidth, 0, bw, vertLength,
             dirX = 0, dirY = 1, orthoX = 1, orthoY = 0,
-            this.scrollOffset.value.y().roundToInt(), inside.pxHeight
+            this.actualScrollOffset.value.y().roundToInt(), inside.pxHeight
         )
     }
     
@@ -231,19 +241,29 @@ class Scroll : GpuUiElement() {
             = maxOf(inside.pxWidth - this.pxWidth + this.vBarWidth, 0)
         val vertScrollLimit: Int
             = maxOf(inside.pxHeight - this.pxHeight + this.hBarHeight, 0)
-        this.scrollOffset.target.x = this.scrollOffset.target.x()
+        this.actualScrollOffset.target.x = this.actualScrollOffset.target.x()
             .coerceIn(0f, horizScrollLimit.toFloat())
-        this.scrollOffset.target.y = this.scrollOffset.target.y()
+        this.actualScrollOffset.target.y = this.actualScrollOffset.target.y()
             .coerceIn(0f, vertScrollLimit.toFloat())
     }
 
     override fun captureInput(context: UiElementContext) {
-        this.scrollOffset.target.x += this.horizBar?.updateThumb(
+        if (this.stickToBottom) {
+            this.actualScrollOffset.target.y = Float.POSITIVE_INFINITY
+            this.limitScrollOffsets()
+            this.actualScrollOffset.snapToTarget()
+            this.invalidate()
+        }
+        val thumbDx = this.horizBar?.updateThumb(
             context.absPxX, context.absPxY, 1, 0, this, context.global.nav.input
         ) ?: 0f
-        this.scrollOffset.target.y += this.vertBar?.updateThumb(
+        val thumbDy = this.vertBar?.updateThumb(
             context.absPxX, context.absPxY, 0, 1, this, context.global.nav.input
         ) ?: 0f
+        this.actualScrollOffset.target.x += thumbDx
+        this.actualScrollOffset.target.y += thumbDy
+        this.stickToBottom = this.stickToBottom
+            && thumbDx == 0f && thumbDy == 0f
         this.updateChildren(context, UiElement::captureInput)
         val rawAbsRight: Int = context.absPxX + this.pxWidth - this.vBarWidth
         val rawAbsBottom: Int = context.absPxY + this.pxHeight - this.hBarHeight
@@ -254,24 +274,25 @@ class Scroll : GpuUiElement() {
         )
         if (isInside) {
             for (e in context.global.nav.input.remainingOfType<MouseScroll>()) {
+                this.stickToBottom = false
                 val (dx, dy) = this.scrollInputFunction(
                     e.offset.x(), e.offset.y()
                 )
                 if (this.shouldShowHorizBar) {
                     val step: Float = this.pxWidth * SCROLL_SPEED
-                    this.scrollOffset.target.x -= dx * step
+                    this.actualScrollOffset.target.x -= dx * step
                 }
                 if (this.shouldShowVertBar) {
                     val step: Float = this.pxHeight * SCROLL_SPEED
-                    this.scrollOffset.target.y -= dy * step
+                    this.actualScrollOffset.target.y -= dy * step
                 }
                 context.global.nav.input.remove(e)
                 this.invalidate()
             }
         }
         this.limitScrollOffsets()
-        this.scrollOffset.update()
-        if (!this.scrollOffset.isResting) {
+        this.actualScrollOffset.update()
+        if (!this.actualScrollOffset.isResting) {
             this.invalidate()
         }
     }
@@ -282,8 +303,8 @@ class Scroll : GpuUiElement() {
         val inside: UiElement = this.inside ?: return
         val childContext = context.childContext(
             this,
-            -this.scrollOffset.value.x().roundToInt(),
-            -this.scrollOffset.value.y().roundToInt(),
+            -this.actualScrollOffset.value.x().roundToInt(),
+            -this.actualScrollOffset.value.y().roundToInt(),
             this.pxWidth - this.vBarWidth,
             this.pxHeight - this.hBarHeight
         )
@@ -297,8 +318,8 @@ class Scroll : GpuUiElement() {
         this.prepareTarget()
         blitTexture(
             insideTex, this.target,
-            -this.scrollOffset.value.x().roundToInt(),
-            -this.scrollOffset.value.y().roundToInt(),
+            -this.actualScrollOffset.value.x().roundToInt(),
+            -this.actualScrollOffset.value.y().roundToInt(),
             inside.pxWidth, inside.pxHeight
         )
         this.horizBar?.render(
@@ -310,18 +331,20 @@ class Scroll : GpuUiElement() {
     }
     
     fun requestVisible(relPosX: Int, relPosY: Int, padding: Int = 0) {
-        val outerX: Int = relPosX - this.scrollOffset.target.x().roundToInt()
-        val outerY: Int = relPosY - this.scrollOffset.target.y().roundToInt()
+        val outerX: Int = relPosX - this.actualScrollOffset.target
+            .x().roundToInt()
+        val outerY: Int = relPosY - this.actualScrollOffset.target
+            .y().roundToInt()
         val deltaLeft = 0 - (outerX - padding)
         val deltaTop = 0 - (outerY - padding)
         val deltaRight = (outerX + padding) - (this.pxWidth - this.vBarWidth)
         val deltaBottom = (outerY + padding) - (this.pxHeight - this.hBarHeight)
-        if (deltaLeft > 0) { this.scrollOffset.target.x -= deltaLeft }
-        if (deltaRight > 0) { this.scrollOffset.target.x += deltaRight }
-        if (deltaTop > 0) { this.scrollOffset.target.y -= deltaTop }
-        if (deltaBottom > 0) { this.scrollOffset.target.y += deltaBottom }
+        if (deltaLeft > 0) { this.actualScrollOffset.target.x -= deltaLeft }
+        if (deltaRight > 0) { this.actualScrollOffset.target.x += deltaRight }
+        if (deltaTop > 0) { this.actualScrollOffset.target.y -= deltaTop }
+        if (deltaBottom > 0) { this.actualScrollOffset.target.y += deltaBottom }
         this.limitScrollOffsets()
-        this.scrollOffset.snapToTarget()
+        this.actualScrollOffset.snapToTarget()
     }
     
     fun withBarsEnabled(horiz: Boolean = true, vert: Boolean = true): Scroll {
@@ -364,6 +387,11 @@ class Scroll : GpuUiElement() {
 
     fun withScrollInputFunc(f: (Float, Float) -> Pair<Float, Float>): Scroll {
         this.scrollInputFunction = f
+        return this
+    }
+
+    fun withStickToBottom(stickToBottom: Boolean = true): Scroll {
+        this.stickToBottom = stickToBottom
         return this
     }
     

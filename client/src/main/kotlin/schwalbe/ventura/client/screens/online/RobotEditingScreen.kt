@@ -8,15 +8,15 @@ import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.engine.ui.*
+import schwalbe.ventura.net.*
 import schwalbe.ventura.data.Item
-import schwalbe.ventura.net.PacketHandler
-import org.joml.Vector3f
 import schwalbe.ventura.ROBOT_NAME_MAX_LEN
-import schwalbe.ventura.data.RobotStatus
-import schwalbe.ventura.engine.ui.Text
 import java.io.File
+import org.joml.Vector3f
 import kotlin.math.atan
+import kotlin.math.roundToInt
 import kotlin.math.tan
+import kotlin.uuid.Uuid
 
 private fun createBottomPanelButton(text: String, action: () -> Unit) = Stack()
     .add(FlatBackground()
@@ -33,45 +33,74 @@ private fun createBottomPanelButton(text: String, action: () -> Unit) = Stack()
     .add(ClickArea().withHandler(action))
     .wrapBorderRadius(0.75.vmin)
 
-private fun createRobotInfoSection(): UiElement {
-    val topSection: UiSize = 13.vmin
-    val logs = Text()
-        .withText("Really looooong log\n".repeat(100))
-        .withSize(1.3.vmin)
-        .withFont(jetbrainsMonoSb())
-        .withColor(BRIGHT_FONT_COLOR)
-        .wrapScrolling(vert = true, horiz = false)
-        .withThumbColor(BUTTON_COLOR)
-        .withThumbHoverColor(BUTTON_HOVER_COLOR)
-    logs.scrollOffset.target.y = Float.POSITIVE_INFINITY
+private fun createRobotInfoSection(
+    client: Client, packetHandler: PacketHandler<Unit>, robotId: Uuid
+): UiElement {
     val l = localized()
-    return Axis.column()
+    val topSection: UiSize = 13.vmin
+    val container = Axis.column()
+    val statusText = Text()
+    val healthValueText = Text()
+    val memoryValueText = Text()
+    val processorValueText = Text()
+    packetHandler.onPacketRef(PacketType.WORLD_STATE) { ws, _, phr ->
+        if (container.wasDisposed) {
+            packetHandler.remove(phr)
+            return@onPacketRef
+        }
+        val pi = ws.ownedRobots[robotId] ?: return@onPacketRef
+        val si = ws.allRobots[robotId] ?: return@onPacketRef
+        statusText.withText(l[si.status.localNameKey])
+        statusText.withColor(si.status.displayColor)
+        val pHealth: Int = (pi.fracHealth * 100f).roundToInt()
+        val pMemUsage: Int = (pi.fracMemUsage * 100f).roundToInt()
+        val pCpuUsage: Int = (pi.fracCpuUsage * 100f).roundToInt()
+        healthValueText.withText("$pHealth%")
+        memoryValueText.withText("$pMemUsage%")
+        processorValueText.withText("$pCpuUsage%")
+    }
+    val logText = Text()
+    packetHandler.onPacketRef(PacketType.ROBOT_LOGS) { logs, _, phr ->
+        if (logText.wasDisposed) {
+            packetHandler.remove(phr)
+            return@onPacketRef
+        }
+        logText.withText(logs.logs)
+    }
+    client.network.outPackets?.send(Packet.serialize(
+        PacketType.REQUEST_ROBOT_LOGS, robotId
+    ))
+    return container
         .add(topSection, Axis.column(100.ph / 4)
-            .add(Text()
-                .withText(l[RobotStatus.RUNNING.localNameKey]) // TODO! or other status
-                .withColor(RobotStatus.RUNNING.displayColor) // TODO! or other status
+            .add(statusText
                 .withSize(75.ph)
                 .withFont(googleSansSb())
             )
             .add(RobotStatusDisplay.createStatusProp(
-                Text().withText(l[LABEL_ROBOT_STAT_HEALTH]),
-                Text().withText("33%")
+                Text().withText(l[LABEL_ROBOT_STAT_HEALTH]), healthValueText
             ))
             .add(RobotStatusDisplay.createStatusProp(
-                Text().withText(l[LABEL_ROBOT_STAT_MEMORY]),
-                Text().withText("100%")
+                Text().withText(l[LABEL_ROBOT_STAT_MEMORY]), memoryValueText
             ))
             .add(RobotStatusDisplay.createStatusProp(
                 Text().withText(l[LABEL_ROBOT_STAT_PROCESSOR]),
-                Text().withText("42%")
+                processorValueText
             ))
             .pad(1.vmin)
             .pad(bottom = 1.vmin)
         )
-        .add(100.ph - topSection, logs)
+        .add(100.ph - topSection, logText
+            .withSize(1.3.vmin)
+            .withFont(jetbrainsMonoSb())
+            .withColor(BRIGHT_FONT_COLOR)
+            .wrapScrolling(vert = true, horiz = false)
+            .withThumbColor(BUTTON_COLOR)
+            .withThumbHoverColor(BUTTON_HOVER_COLOR)
+            .withStickToBottom()
+        )
         .pad(1.vmin)
         .withBottomButton(l[BUTTON_ROBOT_START]) { // TODO! or 'BUTTON_ROBOT_STOP'
-            println("start/stop robot")
+            println("start/stop robot") // TODO! send start/stop commands
         }
 }
 
@@ -186,6 +215,7 @@ private fun createSelectFileSection(onFileSelect: (String) -> Unit): UiElement {
 }
 
 private fun createRobotSettingsSection(
+    client: Client, robotId: Uuid, initialState: SharedRobotInfo?,
     onSetAttachment: ((Item?) -> Unit) -> Unit,
     onAddCodeFile: ((String) -> Unit) -> Unit
 ): UiElement {
@@ -202,8 +232,10 @@ private fun createRobotSettingsSection(
     fun writeAttachments(numAttachments: Int) {
         attachmentList.disposeAll()
         for (i in 0..<numAttachments) {
+            // TODO! get robot attachments and display instead of 'null'
             addInventoryItem(attachmentList, null, 0) {
                 onSetAttachment {
+                    // TODO! send request to set attachment
                     println("Selected item ${it?.type?.name} for attachment $i")
                 }
             }
@@ -236,20 +268,25 @@ private fun createRobotSettingsSection(
                 .wrapBorderRadius(0.75.vmin)
         }
         for (i in 0..<numCodeFiles) {
+            // TODO! get actual file names
             codeFileList.add(4.vmin, Axis.row()
                 .add(100.pw - 3 * (100.ph + 1.vmin),
+                    // TODO! actual file name
                     makeFileButton("$i.bigton", Text.Alignment.LEFT)
                 )
                 .add(1.vmin, Space())
                 .add(100.ph, makeFileButton("↑") {
+                    // TODO! implement
                     println("Move file up")
                 })
                 .add(1.vmin, Space())
                 .add(100.ph, makeFileButton("↓") {
+                    // TODO! implement
                     println("Move file down")
                 })
                 .add(1.vmin, Space())
                 .add(100.ph, makeFileButton("X") {
+                    // TODO! implement
                     println("Remove file")
                 })
                 .pad(left = 1.vmin, right = 1.vmin)
@@ -258,6 +295,7 @@ private fun createRobotSettingsSection(
         }
         codeFileList.add(4.vmin, makeFileButton(l[BUTTON_ADD_CODE_FILE]) {
             onAddCodeFile {
+                // TODO! add code file to robot
                 println("Add code file '$it'")
             }
         }.pad(left = 1.vmin, right = 1.vmin))
@@ -272,15 +310,23 @@ private fun createRobotSettingsSection(
                     .withColor(BRIGHT_FONT_COLOR)
                     .withSize(75.ph)
                 )
-                .withValue("Robot Name")
+                .withValue(initialState?.name ?: "")
                 .let { it.withTypedText { typed ->
                     if (it.value.size < ROBOT_NAME_MAX_LEN) {
                         it.writeText(typed)
                     }
                 } }
+                .withValueChangedHandler { value ->
+                    client.network.outPackets?.send(Packet.serialize(
+                        PacketType.SET_ROBOT_NAME,
+                        RobotNameChangePacket(robotId, value)
+                    ))
+                }
             )
             .add(40.ph, Text()
-                .withText("Robot Model Name")
+                .withText(
+                    initialState?.item?.type?.localNameKey?.let(l::get) ?: ""
+                )
                 .withColor(SECONDARY_BRIGHT_FONT_COLOR)
                 .withSize(75.ph)
             )
@@ -312,7 +358,10 @@ private fun createRobotSettingsSection(
         )
         .pad(1.vmin)
         .withBottomButton(l[BUTTON_DESTROY_ROBOT]) {
-            println("on robot delete")
+            client.network.outPackets?.send(Packet.serialize(
+                PacketType.DESTROY_ROBOT, robotId
+            ))
+            client.nav.pop()
         }
 }
 
@@ -326,25 +375,32 @@ private val PLAYER_IN_RIGHT_THIRD = CameraController.Mode(
     distance = { _ -> 10f }
 )
 
-fun robotEditingScreen(client: Client): () -> GameScreen = {
-    client.world?.camController?.mode = PLAYER_IN_RIGHT_THIRD
+fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
     val background = BlurBackground()
         .withRadius(3)
         .withSpread(5)
     val packets = PacketHandler.receiveDownPackets<Unit>()
         .addErrorLogging()
         .addWorldHandling(client)
+    val sharedRobotInfo: SharedRobotInfo?
+        = client.world?.state?.lastReceived?.allRobots[robotId]
     val screen = GameScreen(
+        onOpen = {
+            client.world?.camController?.mode = PLAYER_IN_RIGHT_THIRD
+        },
         render = render@{
             if (Key.ESCAPE.wasPressed || Key.E.wasPressed) {
                 client.nav.pop()
             }
             val world = client.world ?: return@render
             world.update(client, captureInput = false)
-            world.player.rotateAlong(
-                // TODO! exchange for rotation towards robot instead of origin
-                Vector3f(0f, 0f, 0f).sub(world.player.position)
-            )
+            if (sharedRobotInfo != null) {
+                val toRobot = sharedRobotInfo.position.toVector3f()
+                    .sub(world.player.position)
+                if (toRobot.lengthSquared() != 0f) {
+                    world.player.rotateAlong(toRobot)
+                }
+            }
             world.player.assertAnimation(PlayerAnim.squat, 0.5f)
             world.render(client)
             background.invalidate()
@@ -359,7 +415,7 @@ fun robotEditingScreen(client: Client): () -> GameScreen = {
     val rhs = Stack()
     fun resetRhs() {
         rhs.disposeAll()
-        rhs.add(createRobotInfoSection())
+        rhs.add(createRobotInfoSection(client, packets, robotId))
     }
     resetRhs()
     fun onSetAttachment(onItemSelected: (Item?) -> Unit) {
@@ -390,6 +446,7 @@ fun robotEditingScreen(client: Client): () -> GameScreen = {
             .add(FlatBackground().withColor(PANEL_BACKGROUND))
             .add(Axis.row()
                 .add(50.pw, createRobotSettingsSection(
+                    client, robotId, sharedRobotInfo,
                     ::onSetAttachment,
                     ::onAddCodeFile
                 ))

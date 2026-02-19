@@ -45,11 +45,13 @@ private val PLAYER_IN_RIGHT_HALF = CameraController.Mode(
 )
 
 fun escapeMenuScreen(client: Client): () -> GameScreen = {
-    client.world?.camController?.mode = PLAYER_IN_RIGHT_HALF
     val background = BlurBackground()
         .withRadius(3)
         .withSpread(5)
     val screen = GameScreen(
+        onOpen = {
+            client.world?.camController?.mode = PLAYER_IN_RIGHT_HALF
+        },
         render = {
             if (Key.ESCAPE.wasPressed) {
                 client.nav.pop()

@@ -216,7 +216,6 @@ private val PLAYER_IN_RIGHT_THIRD = CameraController.Mode(
 )
 
 fun inventoryMenuScreen(client: Client): () -> GameScreen = {
-    client.world?.camController?.mode = PLAYER_IN_RIGHT_THIRD
     val background = BlurBackground()
         .withRadius(3)
         .withSpread(5)
@@ -225,6 +224,9 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
         .addErrorLogging()
         .addWorldHandling(client)
     val screen = GameScreen(
+        onOpen = {
+            client.world?.camController?.mode = PLAYER_IN_RIGHT_THIRD
+        },
         render = {
             if (Key.ESCAPE.wasPressed || Key.TAB.wasPressed) {
                 client.nav.pop()

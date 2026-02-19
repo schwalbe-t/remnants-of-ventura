@@ -125,6 +125,12 @@ class WorldState {
                     n
                 )
         }
+        this.interpolated.robots.keys
+            .filter { it !in before.state.allRobots.keys }
+            .filter { it !in after.state.allRobots.keys }
+            .forEach { robotId ->
+                this.interpolated.robots.remove(robotId)
+            }
         for ((robotId, rAfter) in after.state.allRobots) {
             val rBefore = before.state.allRobots[robotId] ?: rAfter
             val state = this.interpolated.robots.getOrPut(robotId, ::RobotState)

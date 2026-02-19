@@ -228,19 +228,20 @@ class TextInput : GpuUiElement(), Focusable {
     var onTypedText: (Int) -> Unit = { c -> this.writeText(c) }
         
     var onDeletedText: (Int) -> Unit = { c -> this.deleteLeft(1) }
+
+    var onValueChanged: (String) -> Unit = {}
         
     var tabLength: Int = 4
         
     private var actualValue: MutableList<Int> = mutableListOf()
-    private var actualValueStr: String = ""
+    var valueString: String = ""
+        private set
     var value: List<Int>
         get() = this.actualValue
         set(value) {
             this.actualValue = value.toMutableList()
             this.updateDisplayedValue()
         }
-    val valueString: String
-        get() = this.actualValueStr
 
     override val children: List<UiElement>
         get() = listOfNotNull(this.placeholder, this.content)
@@ -256,17 +257,18 @@ class TextInput : GpuUiElement(), Focusable {
     }
     
     private fun charIndexOf(caretPos: Int): Int
-        = this.actualValueStr.offsetByCodePoints(0, caretPos)
+        = this.valueString.offsetByCodePoints(0, caretPos)
     
     private fun caretPosOf(charIndex: Int): Int
-        = if (this.actualValueStr.isEmpty()) { 0 }
-        else { this.actualValueStr.codePointCount(0, charIndex) }
+        = if (this.valueString.isEmpty()) { 0 }
+        else { this.valueString.codePointCount(0, charIndex) }
     
     private fun updateDisplayedValue() {
-        this.actualValueStr = this.actualValue
+        this.valueString = this.actualValue
             .joinToString("", transform = Character::toString)
         this.content?.withText(this.displayedValue(this.actualValue))
         this.invalidate()
+        this.onValueChanged(this.valueString)
     }
     
     private val edits: MutableList<Modification.Edit> = mutableListOf()
@@ -616,7 +618,7 @@ class TextInput : GpuUiElement(), Focusable {
         val caret: Caret = this.caret ?: return
         val content: Text = this.content ?: return
         val caretCharIdx: Int = this.charIndexOf(caret.offset)
-        val beforeCaret: String = this.actualValueStr
+        val beforeCaret: String = this.valueString
             .substring(0, caretCharIdx)
         val caretLineIdx: Int = beforeCaret.count { it == '\n' }
         val lineCharIdx: Int = caretCharIdx -
@@ -662,7 +664,7 @@ class TextInput : GpuUiElement(), Focusable {
             lineIdx += 1
         }
     }
-    
+
     override fun render(context: UiElementContext) {
         this.computeCaretPosition(context)
         this.prepareTarget()
@@ -746,6 +748,11 @@ class TextInput : GpuUiElement(), Focusable {
         
     fun withMultilineInput(multiline: Boolean = true): TextInput {
         this.isMultiline = multiline
+        return this
+    }
+
+    fun withValueChangedHandler(f: (String) -> Unit): TextInput {
+        this.onValueChanged = f
         return this
     }
     

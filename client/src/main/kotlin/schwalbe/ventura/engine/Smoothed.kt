@@ -4,16 +4,16 @@ package schwalbe.ventura.engine
 import org.joml.*
 import kotlin.math.abs
 
-data class SmoothingOps<T, V>(
-    val zero: () -> T,
-    val add: (a: T, b: T, dest: T) -> T,
-    val sub: (a: T, b: T, dest: T) -> T,
-    val scale: (x: T, n: Float, dest: T) -> T,
-    val len: (x: T) -> Float,
-    val equals: (a: T, b: T) -> Boolean,
-    val set: (value: T, dest: T) -> T,
-    val toExposed: (x: T) -> V
-)
+interface SmoothingOps<T, V> {
+    fun zero(): T
+    fun add(a: T, b: T, dest: T): T
+    fun sub(a: T, b: T, dest: T): T
+    fun scale(x: T, n: Float, dest: T): T
+    fun len(x: T): Float
+    fun equals(a: T, b: T): Boolean
+    fun set(value: T, dest: T): T
+    fun toExposed(x: T): V
+}
 
 private const val SECS_PER_NANO: Double = 1.0 / 1_000_000_000.0
 
@@ -30,7 +30,7 @@ class Smoothed<T, V>(
     private var current: T = ops.zero()
 
     init {
-        this.current = this.ops.set(this.target, this.current)
+        this.current = this.ops.set(value = this.target, dest = this.current)
     }
 
     private var lastAccessTime: Long = System.nanoTime()
@@ -45,84 +45,119 @@ class Smoothed<T, V>(
     fun update() {
         val deltaTime: Float = this.computeDeltaTime()
         this.toTarget = this.ops.sub(
-            this.target, this.current, this.toTarget
+            a = this.target, b = this.current, dest = this.toTarget
         )
         val dist: Float = this.ops.len(this.toTarget)
         if (dist <= this.epsilon) {
-            this.current = this.ops.set(this.target, this.current)
+            this.current = this.ops.set(
+                value = this.target, dest = this.current
+            )
             return
         }
+        val moveDist: Float = minOf(this.response * deltaTime, 1f)
         this.toTarget = this.ops.scale(
-            this.toTarget, this.response * deltaTime, this.toTarget
+            x = this.toTarget, n = moveDist, dest = this.toTarget
         )
         this.current = this.ops.add(
-            this.current, this.toTarget, this.current
+            a = this.current, b = this.toTarget, dest = this.current
         )
     }
 
     fun snapToTarget() {
         this.lastAccessTime = System.nanoTime()
-        this.current = this.ops.set(this.target, this.current)
+        this.current = this.ops.set(value = this.target, dest = this.current)
     }
 
     val isResting: Boolean
-        get() = this.ops.equals(this.current, this.target)
+        get() = this.ops.equals(a = this.current, b = this.target)
     val value: V
         get() = this.ops.toExposed(this.current)
 }
 
 typealias SmoothedFloat = Smoothed<Float, Float>
-val FLOAT_SMOOTHING_OPS = SmoothingOps<Float, Float>(
-    zero = { 0f },
-    add = { a, b, _ -> a + b },
-    scale = { x, n, _ -> x * n },
-    sub = { a, b, _ -> a - b },
-    len = ::abs,
-    equals = { a, b -> a == b },
-    set = { value, _ -> value },
-    toExposed = { it }
-)
+object FloatSmoothingOps : SmoothingOps<Float, Float> {
+    override fun zero(): Float
+        = 0f
+    override fun add(a: Float, b: Float, dest: Float): Float
+        = a + b
+    override fun scale(x: Float, n: Float, dest: Float): Float
+        = x * n
+    override fun sub(a: Float, b: Float, dest: Float): Float
+        = a - b
+    override fun len(x: Float): Float
+        = abs(x)
+    override fun equals(a: Float, b: Float): Boolean
+        = a == b
+    override fun set(value: Float, dest: Float): Float
+        = value
+    override fun toExposed(x: Float): Float
+        = x
+}
 fun Float.smoothed(response: Float, epsilon: Float = 0.1f): SmoothedFloat
-    = Smoothed(FLOAT_SMOOTHING_OPS, this, response, epsilon)
+    = Smoothed(FloatSmoothingOps, this, response, epsilon)
 
 typealias SmoothedVector2f = Smoothed<Vector2f, Vector2fc>
-val VECTOR2F_SMOOTHING_OPS = SmoothingOps<Vector2f, Vector2fc>(
-    zero = { Vector2f(0f, 0f) },
-    add = Vector2f::add,
-    scale = Vector2f::mul,
-    sub = Vector2f::sub,
-    len = Vector2f::length,
-    equals = Vector2f::equals,
-    set = { value, dest -> dest.set(value) },
-    toExposed = { it }
-)
+object Vector2fSmoothingOps : SmoothingOps<Vector2f, Vector2fc> {
+    override fun zero(): Vector2f
+        = Vector2f(0f, 0f)
+    override fun add(a: Vector2f, b: Vector2f, dest: Vector2f): Vector2f
+        = a.add(b, dest)
+    override fun scale(x: Vector2f, n: Float, dest: Vector2f): Vector2f
+        = x.mul(n, dest)
+    override fun sub(a: Vector2f, b: Vector2f, dest: Vector2f): Vector2f
+        = a.sub(b, dest)
+    override fun len(x: Vector2f): Float
+        = x.length()
+    override fun equals(a: Vector2f, b: Vector2f): Boolean
+        = a == b
+    override fun set(value: Vector2f, dest: Vector2f): Vector2f
+        = dest.set(value)
+    override fun toExposed(x: Vector2f): Vector2fc
+        = x
+}
 fun Vector2f.smoothed(response: Float, epsilon: Float = 0.1f): SmoothedVector2f
-    = Smoothed(VECTOR2F_SMOOTHING_OPS, this, response, epsilon)
+    = Smoothed(Vector2fSmoothingOps, this, response, epsilon)
 
 typealias SmoothedVector3f = Smoothed<Vector3f, Vector3fc>
-val VECTOR3F_SMOOTHING_OPS = SmoothingOps<Vector3f, Vector3fc>(
-    zero = { Vector3f(0f, 0f, 0f) },
-    add = Vector3f::add,
-    scale = Vector3f::mul,
-    sub = Vector3f::sub,
-    len = Vector3f::length,
-    equals = Vector3f::equals,
-    set = { value, dest -> dest.set(value) },
-    toExposed = { it }
-)
+object Vector3fSmoothingOps : SmoothingOps<Vector3f, Vector3fc> {
+    override fun zero(): Vector3f
+        = Vector3f(0f, 0f, 0f)
+    override fun add(a: Vector3f, b: Vector3f, dest: Vector3f): Vector3f
+        = a.add(b, dest)
+    override fun scale(x: Vector3f, n: Float, dest: Vector3f): Vector3f
+        = x.mul(n, dest)
+    override fun sub(a: Vector3f, b: Vector3f, dest: Vector3f): Vector3f
+        = a.sub(b, dest)
+    override fun len(x: Vector3f): Float
+        = x.length()
+    override fun equals(a: Vector3f, b: Vector3f): Boolean
+        = a == b
+    override fun set(value: Vector3f, dest: Vector3f): Vector3f
+        = dest.set(value)
+    override fun toExposed(x: Vector3f): Vector3fc
+        = x
+}
 fun Vector3f.smoothed(response: Float, epsilon: Float = 0.1f): SmoothedVector3f
-    = Smoothed(VECTOR3F_SMOOTHING_OPS, this, response, epsilon)
+    = Smoothed(Vector3fSmoothingOps, this, response, epsilon)
 
 typealias SmoothedVector4f = Smoothed<Vector4f, Vector4fc>
-val VECTOR4F_SMOOTHING_OPS = SmoothingOps<Vector4f, Vector4fc>(
-    zero = { Vector4f(0f, 0f, 0f, 0f) },
-    add = Vector4f::add,
-    scale = Vector4f::mul,
-    sub = Vector4f::sub,
-    len = Vector4f::length,
-    equals = Vector4f::equals,
-    set = { value, dest -> dest.set(value) },
-    toExposed = { it }
-)
+object Vector4fSmoothingOps : SmoothingOps<Vector4f, Vector4fc> {
+    override fun zero(): Vector4f
+        = Vector4f(0f, 0f, 0f, 0f)
+    override fun add(a: Vector4f, b: Vector4f, dest: Vector4f): Vector4f
+        = a.add(b, dest)
+    override fun scale(x: Vector4f, n: Float, dest: Vector4f): Vector4f
+        = x.mul(n, dest)
+    override fun sub(a: Vector4f, b: Vector4f, dest: Vector4f): Vector4f
+        = a.sub(b, dest)
+    override fun len(x: Vector4f): Float
+        = x.length()
+    override fun equals(a: Vector4f, b: Vector4f): Boolean
+        = a == b
+    override fun set(value: Vector4f, dest: Vector4f): Vector4f
+        = dest.set(value)
+    override fun toExposed(x: Vector4f): Vector4fc
+        = x
+}
 fun Vector4f.smoothed(response: Float, epsilon: Float = 0.1f): SmoothedVector4f
-    = Smoothed(VECTOR4F_SMOOTHING_OPS, this, response, epsilon)
+    = Smoothed(Vector4fSmoothingOps, this, response, epsilon)
