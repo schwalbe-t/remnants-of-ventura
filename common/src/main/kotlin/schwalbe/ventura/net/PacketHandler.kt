@@ -6,7 +6,7 @@ import kotlinx.serialization.serializer
 
 class PacketHandler<C>(val receivingDir: PacketDirection) {
 
-    inner class Ref(var f: (ByteArray, C) -> Unit = { _, _ -> })
+    inner class Ref(var f: (ByteArray, C, Ref) -> Unit = { _, _, _ -> })
 
     companion object {
         fun <C> receiveUpPackets() = PacketHandler<C>(PacketDirection.UP)
@@ -27,24 +27,23 @@ class PacketHandler<C>(val receivingDir: PacketDirection) {
                     "'${packetType.direction.name}' was attempted to be registered"
         }
         val err: (C, String) -> Unit = this.onDecodeError
-        val packetTypeId: Short = packetType.ordinal.toShort()
-        val handlers: MutableList<Ref>
-            = this.handlers.getOrPut(packetTypeId) { mutableListOf() }
-        val ref = Ref()
-        ref.f = handler@{ rpl: ByteArray, ctx: C ->
+        val ref = Ref { rpl: ByteArray, ctx: C, self: Ref ->
             val decPayload: P
             try {
                 decPayload = Cbor.decodeFromByteArray(serializer<P>(), rpl)
             } catch (e: Exception) {
                 err(ctx, e.message ?: "")
-                return@handler
+                return@Ref
             }
             try {
-                handler(decPayload, ctx, ref)
+                handler(decPayload, ctx, self)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
+        val packetTypeId: Short = packetType.ordinal.toShort()
+        val handlers: MutableList<Ref>
+            = this.handlers.getOrPut(packetTypeId) { mutableListOf() }
         handlers.add(ref)
         return ref
     }
@@ -68,13 +67,13 @@ class PacketHandler<C>(val receivingDir: PacketDirection) {
 
     fun remove(handlerRef: Ref) {
         for (handlers in this.handlers) {
-            handlers.value.removeIf { it === handlerRef }
+            handlers.value.remove(handlerRef)
         }
     }
 
     fun handlePacket(packet: Packet, context: C) {
         val handlers = this.handlers[packet.type] ?: return
-        handlers.forEach { it.f(packet.payload, context) }
+        handlers.toList().forEach { it.f(packet.payload, context, it) }
     }
 
     fun handleAll(packets: PacketInStream, context: C) {
