@@ -55,6 +55,20 @@ class PacketHandler<C>(val receivingDir: PacketDirection) {
         return this
     }
 
+    inline fun <reified P> onPacketUntil(
+        packetType: PacketType<P>, crossinline until: () -> Boolean,
+        crossinline handler: (P, C) -> Unit
+    ): PacketHandler<C> {
+        this.onPacketRef(packetType) { p, c, r ->
+            if (until()) {
+                this.remove(r)
+            } else {
+                handler(p, c)
+            }
+        }
+        return this
+    }
+
     inline fun <reified P> onPacketOnce(
         packetType: PacketType<P>, crossinline handler: (P, C) -> Unit
     ): PacketHandler<C> {

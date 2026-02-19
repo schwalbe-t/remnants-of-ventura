@@ -233,6 +233,10 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             val robot = getRobotOrError(robotId, pl) ?: return@onPacket
             robot.pause()
         }
+        ph.onPacket(PacketType.UNPAUSE_ROBOT) { robotId, pl ->
+            val robot = getRobotOrError(robotId, pl) ?: return@onPacket
+            robot.unpause()
+        }
         ph.onPacket(PacketType.STOP_ROBOT) { robotId, pl ->
             val robot = getRobotOrError(robotId, pl) ?: return@onPacket
             robot.stop()
@@ -263,6 +267,8 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
                 ))
                 return@onPacket
             }
+            val replaced: Item? = robot.attachments[at.attachmentId]
+            if (replaced != null) { pl.data.inventory.add(replaced) }
             robot.attachments[at.attachmentId] = attached
             robot.stop()
         }

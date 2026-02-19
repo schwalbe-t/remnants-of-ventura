@@ -10,5 +10,6 @@ class GameScreen(
     val networkState: () -> Unit = {},
     val packets: PacketHandler<Unit>? = null,
     navigator: UiNavigator<GameScreen>,
-    onOpen: () -> Unit = {}
-) : UiScreen<GameScreen>(navigator, onOpen)
+    onOpen: () -> Unit = {},
+    onClose: () -> Unit = {}
+) : UiScreen<GameScreen>(navigator, onOpen, onClose)

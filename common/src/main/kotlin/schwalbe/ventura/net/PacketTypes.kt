@@ -60,6 +60,7 @@ data class PacketType<P>(
     val ROBOT_DESTROYED             = down<Uuid>()
     val START_ROBOT                 = up<Uuid>()
     val PAUSE_ROBOT                 = up<Uuid>()
+    val UNPAUSE_ROBOT               = up<Uuid>()
     val STOP_ROBOT                  = up<Uuid>()
     val SET_ROBOT_ATTACHMENT        = up<RobotAttachmentChangePacket>()
     val SET_ROBOT_SOURCES           = up<RobotSourceFilesChangePacket>()

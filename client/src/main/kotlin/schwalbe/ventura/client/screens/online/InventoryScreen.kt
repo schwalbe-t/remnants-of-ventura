@@ -89,11 +89,9 @@ fun createItemListSection(
 ): UiElement {
     val l = localized()
     val itemList = Axis.column()
-    packetHandler.onPacketRef(PacketType.INVENTORY_CONTENTS) { i, _, phr ->
-        if (itemList.wasDisposed) {
-            packetHandler.remove(phr)
-            return@onPacketRef
-        }
+    packetHandler.onPacketUntil(
+        PacketType.INVENTORY_CONTENTS, until = itemList::wasDisposed
+    ) { i, _ ->
         itemList.disposeAll()
         val itemCounts = i.itemCounts.asSequence()
             .filter { (_, c) -> c > 0 }
@@ -131,6 +129,7 @@ fun createItemListSection(
             .withThumbColor(BUTTON_COLOR)
             .withThumbHoverColor(BUTTON_HOVER_COLOR)
         )
+        .pad(bottom = 1.vmin)
 }
 
 fun requestInventoryContents(client: Client) {

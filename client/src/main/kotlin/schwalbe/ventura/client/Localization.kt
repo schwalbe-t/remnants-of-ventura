@@ -83,6 +83,8 @@ enum class LocalKeys {
     TITLE_ROBOT_CODE_FILES,
     BUTTON_ADD_CODE_FILE,
     BUTTON_DESTROY_ROBOT,
+    BUTTON_REMOVE_ITEM,
+    BUTTON_CANCEL_EDIT,
 
     // Escape Menu Screen
     BUTTON_BACK_TO_GAME,

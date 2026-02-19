@@ -44,6 +44,7 @@ class UiNavigator<S : UiScreen<S>>(
     }
 
     fun push(screen: () -> S) {
+        this.currentOrNull?.onClose()
         if (!this.currentIsSaved) {
             this.disposeCurrent()
         }
@@ -53,6 +54,7 @@ class UiNavigator<S : UiScreen<S>>(
 
     fun pop() {
         if (this.screens.size <= 1) { return }
+        this.currentOrNull?.onClose()
         this.disposeCurrent()
         this.screens.removeLast()
         val entry: Entry = this.screens.last()

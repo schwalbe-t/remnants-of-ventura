@@ -62,19 +62,30 @@ private fun computeRobotStats(
         ?: return null
     totalModules.addAll(processor.features.modules)
     totalMemoryLimit += processor.stats.baseMemory
+    var hasIgnored: Boolean = false
     for (item in attachments.asSequence().filterNotNull()) {
-        if (item.type in PROCESSOR_INFO) { continue }
+        if (item.type in PROCESSOR_INFO.keys) { continue }
         val info = ATTACHMENT_EXT[item.type] ?: continue
         if (item.type !in processor.features.supportedAttachments) {
-            logs.add(
-                "WARNING: The robot will not be able to make use of the " +
-                "attachment '${item.type.name}', as it is not supported by " +
-                "the attached processor."
-            )
+            hasIgnored = true
             continue
         }
         totalModules.addAll(info.addedModules)
         totalMemoryLimit += info.addedMemory
+    }
+    if (hasIgnored) {
+        logs.add(
+            "WARNING: One or more attachments are not supported by " +
+            "the attached processor:"
+        )
+        val ignored = attachments.asSequence()
+            .filterNotNull()
+            .filter { it.type !in PROCESSOR_INFO.keys }
+            .filter { it.type !in processor.features.supportedAttachments }
+            .toSet()
+        for (item in ignored) {
+            logs.add(" - ${item.type.name}")
+        }
     }
     return RobotStats(processor, totalModules, totalMemoryLimit)
 }
@@ -124,6 +135,15 @@ class Robot(
                 this.status = RobotStatus.PAUSED
             }
             RobotStatus.PAUSED, RobotStatus.STOPPED, RobotStatus.ERROR -> {}
+        }
+    }
+
+    fun unpause() {
+        when (this.status) {
+            RobotStatus.PAUSED -> {
+                this.status = RobotStatus.RUNNING
+            }
+            RobotStatus.RUNNING, RobotStatus.STOPPED, RobotStatus.ERROR -> {}
         }
     }
 
@@ -209,16 +229,22 @@ class Robot(
     }
 
     fun update(world: World, owner: Player) {
-        if (this.status != RobotStatus.RUNNING) {
-            this.compileTask = null
-            this.runtime = null
-            return
+        when (this.status) {
+            RobotStatus.ERROR, RobotStatus.STOPPED -> {
+                this.compileTask = null
+                this.runtime = null
+                return
+            }
+            else -> {}
         }
         val runtime: BigtonRuntime? = this.runtime
         if (runtime == null) {
             this.updateCompilation(
                 world.registry.workers.compilationQueue, owner.data.sourceFiles
             )
+            return
+        }
+        if (this.status != RobotStatus.RUNNING) {
             return
         }
         runtime.startTick()
