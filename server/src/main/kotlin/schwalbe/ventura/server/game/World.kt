@@ -156,10 +156,18 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
         }
 
         ph.onPacket(PacketType.UPLOAD_SOURCE_CONTENT) { sc, pl ->
-            pl.data.sourceFiles.set(sc.path, sc.content, sc.changeTimeMs)
-            pl.connection.outgoing.send(Packet.serialize(
-                PacketType.SOURCE_CONTENT_RECEIVED, Unit
-            ))
+            val success: Boolean = pl.data.sourceFiles
+                .set(sc.path, sc.content, sc.changeTimeMs)
+            if (!success) {
+                pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.TAGGED_ERROR,
+                    TaggedErrorPacket.INVALID_SOURCE_FILE
+                ))
+            } else {
+                pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.SOURCE_CONTENT_RECEIVED, Unit
+                ))
+            }
         }
         ph.onPacket(PacketType.REQUEST_STORED_SOURCES) { _, pl ->
             pl.connection.outgoing.send(Packet.serialize(
@@ -282,7 +290,14 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             }
             val robot = getRobotOrError(src.robotId, pl) ?: return@onPacket
             robot.sourceFiles = src.sourceFiles
-            src.sourceFiles.forEach(pl.data.sourceFiles::touch)
+            src.sourceFiles.forEach {
+                if (!pl.data.sourceFiles.touch(it)) {
+                    pl.connection.outgoing.send(Packet.serialize(
+                        PacketType.TAGGED_ERROR,
+                        TaggedErrorPacket.TOO_MANY_PLAYER_SOURCE_FILES
+                    ))
+                }
+            }
         }
         ph.onPacket(PacketType.SET_ROBOT_NAME) { n, pl ->
             if (n.newName.length > ROBOT_NAME_MAX_LEN) {

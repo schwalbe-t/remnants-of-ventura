@@ -222,6 +222,7 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
     val packets = PacketHandler.receiveDownPackets<Unit>()
         .addErrorLogging()
         .addWorldHandling(client)
+        .updateStoredSources(client)
     val screen = GameScreen(
         onOpen = {
             client.world?.camController?.mode = PLAYER_IN_RIGHT_THIRD
@@ -230,6 +231,7 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
             if (Key.ESCAPE.wasPressed || Key.TAB.wasPressed) {
                 client.nav.pop()
             }
+            SourceFiles.update(client)
             client.world?.update(client, captureInput = false)
             client.world?.player?.facePoint(
                 client.renderer.camera

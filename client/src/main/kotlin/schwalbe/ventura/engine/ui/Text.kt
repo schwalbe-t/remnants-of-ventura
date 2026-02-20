@@ -148,8 +148,10 @@ class Text : UiElement(), Colored {
     
     var content: List<Span> = listOf()
         set(value) {
+            if (field != value) {
+                this.invalidateRender()
+            }
             field = value
-            this.invalidateRender()
         }
 
     var font: Font? = null

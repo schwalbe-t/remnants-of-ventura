@@ -158,6 +158,7 @@ PARAMS(jlong runtimeHandle) {
     if (r->stack.count == 0) { return 0; }
     MALLOC_VALUE(value);
     *value = bigtonStackPop(&r->stack, r);
+    return AS_HANDLE(value);
 }
 
 // external fun getStackLength(runtimeHandle: Long): Int

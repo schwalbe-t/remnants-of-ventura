@@ -46,6 +46,7 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             if (Key.TAB.wasPressed) {
                 client.nav.push(inventoryMenuScreen(client))
             }
+            SourceFiles.update(client)
             val worldState: WorldStatePacket? = world.state.lastReceived
             if (worldState != null) {
                 val (closestId, closestDist)
@@ -68,7 +69,8 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
         }),
         packets = PacketHandler.receiveDownPackets<Unit>()
             .addErrorLogging()
-            .addWorldHandling(client),
+            .addWorldHandling(client)
+            .updateStoredSources(client),
         navigator = client.nav
     )
     screen.add(layer = 0, element = playerNames.container)

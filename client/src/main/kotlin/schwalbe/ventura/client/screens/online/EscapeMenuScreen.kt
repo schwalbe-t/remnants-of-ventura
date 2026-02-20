@@ -56,6 +56,7 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
             if (Key.ESCAPE.wasPressed) {
                 client.nav.pop()
             }
+            SourceFiles.update(client)
             client.world?.update(client, captureInput = false)
             client.world?.player?.facePoint(
                 client.renderer.camera
@@ -72,7 +73,8 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
         }),
         packets = PacketHandler.receiveDownPackets<Unit>()
             .addErrorLogging()
-            .addWorldHandling(client),
+            .addWorldHandling(client)
+            .updateStoredSources(client),
         navigator = client.nav
     )
     val areaSize: UiSize = (3 * 7.5 + 2).vmin

@@ -92,6 +92,11 @@ enum class TaggedErrorPacket {
     // chunk data request asked for too many chunks
     TOO_MANY_CHUNKS_REQUESTED,
 
+    // too many source files
+    TOO_MANY_PLAYER_SOURCE_FILES,
+    // source file too large or does not exist
+    INVALID_SOURCE_FILE,
+
     // requested robot deployment failed due to non-matching item
     REQUESTED_ROBOT_DOES_NOT_MATCH_ITEM,
     // requested robot deployment failed due to item not being in inventory

@@ -110,9 +110,9 @@ class Framebuffer : ConstFramebuffer, Disposable {
         return this
     }
     
-    fun resize(newWidth: Int, newHeight: Int) {
+    fun resize(newWidth: Int, newHeight: Int): Boolean {
         val resize: Boolean = this.width != newWidth || this.height != newHeight
-        if (!resize) { return }
+        if (!resize) { return false }
         val oldColor: Texture? = this.color
         val oldDepth: Texture? = this.depth
         this.attachColor(null)
@@ -131,6 +131,7 @@ class Framebuffer : ConstFramebuffer, Disposable {
             ))
             oldDepth.dispose()
         }
+        return true
     }
 
     private fun blitOnto(

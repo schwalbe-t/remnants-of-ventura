@@ -3,8 +3,8 @@ package schwalbe.ventura.engine.ui
 
 import schwalbe.ventura.engine.gfx.Shader
 import schwalbe.ventura.engine.gfx.Texture
-import org.joml.*
 import schwalbe.ventura.engine.gfx.Framebuffer
+import org.joml.*
 
 class BlurBackground : GpuUiElement() {
     
@@ -15,44 +15,44 @@ class BlurBackground : GpuUiElement() {
     
     
     private var kernelWeights = Framebuffer()
-        .attachColor(Texture(1, 1, Texture.Filter.NEAREST, Texture.Format.R16F))
+        .attachColor(Texture(1, 1, Texture.Filter.NEAREST, Texture.Format.R8))
     
     private fun computeKernelWeights() {
         val size: Int = 1 + (this.radius * 2)
-        this.kernelWeights.resize(size, size)
-        val shader: Shader<FullBuffer, GaussianDistrib> = gaussianDistribShader()
-        shader[GaussianDistrib.sigma] = this.radius.toFloat() / BlurBackground.SIGMA
+        if (!this.kernelWeights.resize(size, size)) { return }
+        val shader: Shader<FullBuffer, GaussianDistrib>
+            = gaussianDistribShader()
+        shader[GaussianDistrib.sigma] = this.radius.toFloat() / SIGMA
         shader[GaussianDistrib.kernelRadius] = this.radius
         quad().render(shader, this.kernelWeights)
     }
     
-    private var radius: Int = 1
+    var radius: Int = 0
         set(value) {
-            val maxValue: Int = BlurBackground.MAX_KERNEL_RADIUS
-            require(value in 0..maxValue) {
-                "Blur radius $value is not between 0 and $maxValue"
+            require(value in 0..MAX_KERNEL_RADIUS) {
+                "Blur radius $value is not between 0 and $MAX_KERNEL_RADIUS"
             }
             if (field != value) {
-                field = value
-                this.computeKernelWeights()
                 this.invalidate()
             }
+            field = value
         }
-    private var spread: Int = 1
+    var spread: Int = 1
         set(value) {
             require(value >= 1) {
                 "Blur spread distance must be greater or equal to 1"
             }
             if (field != value) {
-                field = value
                 this.invalidate()
             }
+            field = value
         }
     
     override val children: List<UiElement> = listOf()
 
     override fun render(context: UiElementContext) {
         this.prepareTarget()
+        this.computeKernelWeights()
         val background: Texture = context.global.nav.output.color ?: return
         val kernelWeights: Texture = this.kernelWeights.color ?: return
         val shader: Shader<FullBuffer, BlurBg> = blurBgShader()

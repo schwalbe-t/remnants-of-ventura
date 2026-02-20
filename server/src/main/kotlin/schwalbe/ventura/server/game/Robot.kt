@@ -6,6 +6,7 @@ import schwalbe.ventura.bigton.*
 import schwalbe.ventura.data.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import schwalbe.ventura.MAX_ROBOT_LOG_LENGTH
 import schwalbe.ventura.net.PrivateRobotInfo
 import schwalbe.ventura.net.SerVector3
 import schwalbe.ventura.net.SharedRobotInfo
@@ -228,6 +229,14 @@ class Robot(
         }
     }
 
+    private fun addLogLines(lines: List<String>) {
+        this.logs.addAll(lines)
+        if (this.logs.size > MAX_ROBOT_LOG_LENGTH) {
+            this.logs.subList(0, this.logs.size - MAX_ROBOT_LOG_LENGTH)
+                .clear()
+        }
+    }
+
     fun update(world: World, owner: Player) {
         when (this.status) {
             RobotStatus.ERROR, RobotStatus.STOPPED -> {
@@ -250,7 +259,7 @@ class Robot(
         runtime.startTick()
         while (true) {
             val execStatus = runtime.executeBatch()
-            this.logs.addAll(runtime.drainLogLines())
+            this.addLogLines(runtime.drainLogLines())
             when (execStatus) {
                 is BigtonExecStatus.Continue -> continue
                 is BigtonExecStatus.ExecBuiltinFun -> {

@@ -9,6 +9,9 @@ const val ACCOUNT_PASSWORD_MAX_LEN: Int = 256
 const val MAX_NUM_REQUESTED_CHUNKS: Int = 64
 const val WORLD_STATE_CONTENT_RADIUS: Float = 4f * 16f
 
+const val MAX_ROBOT_LOG_LENGTH: Int = 128
 const val MAX_NUM_DEPLOYED_ROBOTS: Int = 16
 const val MAX_NUM_ROBOT_SOURCE_FILES: Int = 32
+const val MAX_NUM_PLAYER_SOURCE_FILES: Int = 128
+const val MAX_SOURCE_FILE_SIZE: Int = 1024 * 32 // in bytes
 const val ROBOT_NAME_MAX_LEN: Int = 32

@@ -139,7 +139,7 @@ fun requestRobotLogs(client: Client, robotId: Uuid) {
 }
 
 private fun listDirectory(
-    dir: File, relDir: List<String>,
+    rootDir: File, dir: File, relDir: List<String>,
     dest: Stack, onFileSelect: (String) -> Unit
 ) {
     val itemList = Axis.column()
@@ -180,7 +180,7 @@ private fun listDirectory(
             name = "..",
             bold = true, dark = true,
             handler = { listDirectory(
-                dir.parentFile, relDir.subList(0, relDir.size - 1),
+                rootDir, dir.parentFile, relDir.subList(0, relDir.size - 1),
                 dest, onFileSelect
             ) }
         )
@@ -193,10 +193,10 @@ private fun listDirectory(
             bold = isDir, dark = false,
             handler = handler@{
                 if (!isDir) {
-                    return@handler onFileSelect(file.absolutePath)
+                    return@handler onFileSelect(file.relativeTo(rootDir).path)
                 }
                 listDirectory(
-                    dir.resolve(file.name), relDir + file.name,
+                    rootDir, dir.resolve(file.name), relDir + file.name,
                     dest, onFileSelect
                 )
             }
@@ -232,7 +232,8 @@ private fun listDirectory(
 
 private fun createSelectFileSection(onFileSelect: (String) -> Unit): UiElement {
     val container = Stack()
-    listDirectory(File(USERCODE_DIR), listOf(), dest = container, onFileSelect)
+    val rootDir = File(USERCODE_DIR)
+    listDirectory(rootDir, rootDir, listOf(), dest = container, onFileSelect)
     return container
 }
 
@@ -252,7 +253,7 @@ private fun createRobotSettingsSection(
     val l = localized()
     val topSection: UiSize = 8.vmin
     val attachmentList = Axis.column()
-    var displayedAttachments: List<Item?> = listOf()
+    var displayedAttachments: List<Item?>? = null
     packetHandler.onPacketUntil(
         PacketType.WORLD_STATE, until = attachmentList::wasDisposed
     ) { ws, _ ->
@@ -277,8 +278,12 @@ private fun createRobotSettingsSection(
         displayedAttachments = pi.attachments
     }
     val codeFileList = Axis.column()
-    fun writeCodeFiles(numCodeFiles: Int) {
-        codeFileList.disposeAll()
+    var displayedSourceFiles: List<String>? = null
+    packetHandler.onPacketUntil(
+        PacketType.WORLD_STATE, until = codeFileList::wasDisposed
+    ) { ws, _ ->
+        val pi = ws.ownedRobots[robotId] ?: return@onPacketUntil
+        if (pi.sourceFiles == displayedSourceFiles) { return@onPacketUntil }
         fun makeFileButton(
             text: String, alignment: Text.Alignment = Text.Alignment.CENTER,
             onClick: (() -> Unit)? = null
@@ -300,27 +305,43 @@ private fun createRobotSettingsSection(
             return root
                 .wrapBorderRadius(0.75.vmin)
         }
-        for (i in 0..<numCodeFiles) {
-            // TODO! get actual file names
+        val sourceFiles: MutableList<String> = pi.sourceFiles.toMutableList()
+        fun sendChangedSourceFiles() {
+            client.network.outPackets?.send(Packet.serialize(
+                PacketType.SET_ROBOT_SOURCES,
+                RobotSourceFilesChangePacket(robotId, sourceFiles)
+            ))
+        }
+        fun wrapFileIdx(i: Int): Int {
+            if (i < 0) { return i + sourceFiles.size }
+            return i % sourceFiles.size
+        }
+        fun swapFiles(aIdx: Int, bIdx: Int) {
+            val a = sourceFiles[aIdx]
+            sourceFiles[aIdx] = sourceFiles[bIdx]
+            sourceFiles[bIdx] = a
+        }
+        codeFileList.disposeAll()
+        for (i in pi.sourceFiles.indices) {
+            val codeFilePath = pi.sourceFiles[i]
             codeFileList.add(4.vmin, Axis.row()
                 .add(100.pw - 3 * (100.ph + 1.vmin),
-                    // TODO! actual file name
-                    makeFileButton("$i.bigton", Text.Alignment.LEFT)
+                    makeFileButton(codeFilePath, Text.Alignment.LEFT)
                 )
                 .add(1.vmin, Space())
                 .add(100.ph, makeFileButton("↑") {
-                    // TODO! implement
-                    println("Move file up")
+                    swapFiles(i, wrapFileIdx(i - 1))
+                    sendChangedSourceFiles()
                 })
                 .add(1.vmin, Space())
                 .add(100.ph, makeFileButton("↓") {
-                    // TODO! implement
-                    println("Move file down")
+                    swapFiles(i, wrapFileIdx(i + 1))
+                    sendChangedSourceFiles()
                 })
                 .add(1.vmin, Space())
                 .add(100.ph, makeFileButton("X") {
-                    // TODO! implement
-                    println("Remove file")
+                    sourceFiles.removeAt(i)
+                    sendChangedSourceFiles()
                 })
                 .pad(left = 1.vmin, right = 1.vmin)
             )
@@ -328,13 +349,13 @@ private fun createRobotSettingsSection(
         }
         codeFileList.add(4.vmin, makeFileButton(l[BUTTON_ADD_CODE_FILE]) {
             onAddCodeFile {
-                // TODO! add code file to robot
-                println("Add code file '$it'")
+                sourceFiles.add(it)
+                sendChangedSourceFiles()
             }
         }.pad(left = 1.vmin, right = 1.vmin))
         codeFileList.add(50.ph, Space())
+        displayedSourceFiles = pi.sourceFiles
     }
-    writeCodeFiles(10)
     return Axis.column()
         .add(topSection, Axis.column()
             .add(60.ph, TextInput()
@@ -417,6 +438,7 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
     val packets = PacketHandler.receiveDownPackets<Unit>()
         .addErrorLogging()
         .addWorldHandling(client)
+        .updateStoredSources(client)
     val sharedRobotInfo: SharedRobotInfo?
         = client.world?.state?.lastReceived?.allRobots[robotId]
     var lastLogRequestTime: Long = 0
@@ -441,6 +463,7 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
             if (Key.ESCAPE.wasPressed || Key.E.wasPressed) {
                 client.nav.pop()
             }
+            SourceFiles.update(client)
             val world = client.world ?: return@render
             world.update(client, captureInput = false)
             if (sharedRobotInfo != null) {
