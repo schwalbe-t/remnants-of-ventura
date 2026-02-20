@@ -290,6 +290,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             }
             val robot = getRobotOrError(src.robotId, pl) ?: return@onPacket
             robot.sourceFiles = src.sourceFiles
+            robot.stop()
             src.sourceFiles.forEach {
                 if (!pl.data.sourceFiles.touch(it)) {
                     pl.connection.outgoing.send(Packet.serialize(

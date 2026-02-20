@@ -171,10 +171,11 @@ class Robot(
         var currFile: String = inFile
         for (traceEntry in runtime.collectBacktrace().reversed()) {
             val name: String = runtime.getConstStr(traceEntry.name)
-            this.logs.add("    at '$name' (line $currLine, file '$currFile')")
+            this.logs.add("    in '$name' (line $currLine, file '$currFile')")
             currLine = traceEntry.fromLine
             currFile = runtime.getConstStr(traceEntry.fromFile)
         }
+        this.logs.add("    in <global> (line $currLine, file '$currFile')")
     }
 
     private fun updateCompilation(
@@ -222,7 +223,9 @@ class Robot(
             is CompilationTask.Failed -> {
                 val src: BigtonSource = compStatus.error.source
                 this.logError(
-                    compStatus.error.error, src.line, src.file, runtime = null
+                    compStatus.error.error,
+                    src.line + 1, src.file,
+                    runtime = null
                 )
                 this.status = RobotStatus.ERROR
             }

@@ -167,11 +167,12 @@ private fun listDirectory(
     }
     val dirContents: Array<File> = dir.listFiles() ?: arrayOf()
     if (relDir.isEmpty() && dirContents.isEmpty()) {
-        itemList.add(2.vmin, Text()
+        itemList.add(10.vmin, Text()
             .withText(localized()[PLACEHOLDER_NO_SOURCE_FILES])
-            .withSize(85.ph)
+            .withSize(1.5.vmin)
             .withFont(googleSansI())
             .withColor(BRIGHT_FONT_COLOR)
+            .withWidth(100.pw)
             .pad(left = 2.5.vmin, right = 2.5.vmin)
         )
     }

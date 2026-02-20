@@ -572,8 +572,9 @@ private fun generateStatementList(
 private fun generateFunction(
     ast: BigtonAst, ctx: ProgramContext, program: ProgramBuilder
 ) {
+    ctx.currentSource.setLine(ast.source.line, program)
+    ctx.currentSource.setFile(ast.source.file, program)
     ctx.assertFeatureSupported(BigtonFeature.CUSTOM_FUNCTIONS)
-    ctx.currentSource.reset()
     val function: BigtonAstFunction = ast.castArg<BigtonAstFunction>()
     // When calling, we push the arguments in normal order onto the stack,
     // then execute the function body.

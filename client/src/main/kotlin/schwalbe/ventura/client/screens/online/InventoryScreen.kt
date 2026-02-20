@@ -105,9 +105,9 @@ fun createItemListSection(
             }
         }
         if (isEmpty) {
-            itemList.add(2.vmin, Text()
+            itemList.add(10.vmin, Text()
                 .withText(l[PLACEHOLDER_INVENTORY_EMPTY])
-                .withSize(85.ph)
+                .withSize(1.5.vmin)
                 .withFont(googleSansI())
                 .withColor(BRIGHT_FONT_COLOR)
                 .pad(left = 2.5.vmin, right = 2.5.vmin)

@@ -89,8 +89,6 @@ object BigtonValueN {
     ): Long
     
     fun wrapHandle(handle: Long): BigtonValue {
-        Exception().printStackTrace()
-        println(handle)
         return when (BigtonValueN.getType(handle)) {
             ValueType.NULL -> BigtonNull(handle)
             ValueType.INT -> BigtonInt(handle)

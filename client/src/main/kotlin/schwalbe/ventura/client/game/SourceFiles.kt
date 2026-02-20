@@ -2,6 +2,7 @@ package schwalbe.ventura.client.game
 
 import schwalbe.ventura.client.Client
 import schwalbe.ventura.net.*
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.getLastModifiedTime
@@ -27,6 +28,10 @@ object SourceFiles {
     fun uploadModifiedSources(
         client: Client, sources: StoredSourcesInfoPacket
     ) {
+        val rootDir = Path.of(USERCODE_DIR)
+        if (!rootDir.exists()) {
+            Files.createDirectory(rootDir)
+        }
         for ((relPath, info) in sources.sources) {
             val path: Path
             try {
