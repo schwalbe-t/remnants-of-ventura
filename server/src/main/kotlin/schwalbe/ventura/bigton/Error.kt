@@ -43,7 +43,7 @@ enum class BigtonErrorType(val id: String, val message: String) {
     UNHANDLED_AST_TYPE("SC-INTERNAL002", "Code generation for used AST type not yet implemented"),
 
     // [RT___] - Runtime Error
-    EXCEEDED_INSTR_LIMIT("RT001", "Ran too many instructions during this tick"),
+    // [RT001] is free, was previously EXCEEDED_INSTR_LIMIT
     INT_DIVISION_BY_ZERO("RT002", "Attempted division of an integer by zero"),
     BY_PROGRAM("RT003", "Error indicated by program"),
     TUPLE_INDEX_OOB("RT004", "Tuple index too large for given tuple"),
@@ -88,7 +88,6 @@ class BigtonException(val error: BigtonErrorType, val source: BigtonSource)
 data class BigtonSource(val line: Int, val file: String)
 
 private val runtimeToStandardError: Map<BigtonRuntimeError, BigtonErrorType> = mapOf(
-    BigtonRuntimeError.EXCEEDED_INSTR_LIMIT         to BigtonErrorType.EXCEEDED_INSTR_LIMIT,
     BigtonRuntimeError.INT_DIVISION_BY_ZERO         to BigtonErrorType.INT_DIVISION_BY_ZERO,
     BigtonRuntimeError.BY_PROGRAM                   to BigtonErrorType.BY_PROGRAM,
     BigtonRuntimeError.TUPLE_INDEX_OOB              to BigtonErrorType.TUPLE_INDEX_OOB,

@@ -12,6 +12,8 @@ fun Int.chunksToUnits(): Int
 fun Int.unitsToChunks(): Int
     = this.floorDiv(UNITS_PER_CHUNK)
 
+fun Float.unitsToUnitIdx(): Int
+    = floor(this).toInt()
 fun Float.chunksToUnits(): Float
     = this * UNITS_PER_CHUNK
 fun Float.unitsToChunks(): Float

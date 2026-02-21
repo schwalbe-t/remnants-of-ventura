@@ -33,6 +33,10 @@ enum class ItemCategory(
     MEMORY_MODULE(
         actions = listOf(),
         isRobotAttachment = true
+    ),
+    UTILITY_MODULE(
+        actions = listOf(),
+        isRobotAttachment = true
     );
 
     val localNameKey: String
@@ -104,6 +108,15 @@ enum class ItemType(
     PIVOTAL_ME20K(
         category = ItemCategory.MEMORY_MODULE,
         modelPath = "res/items/pivotal.glb"
+    ),
+
+    DIGITAL_RADIO(
+        category = ItemCategory.UTILITY_MODULE,
+        modelPath = "res/items/radio.glb"
+    ),
+    GPS_RECEIVER(
+        category = ItemCategory.UTILITY_MODULE,
+        modelPath = "res/items/gps.glb"
     );
 
     val localNameKey: String

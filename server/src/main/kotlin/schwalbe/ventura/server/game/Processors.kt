@@ -3,12 +3,13 @@ package schwalbe.ventura.server.game
 
 import schwalbe.ventura.bigton.BigtonFeature
 import schwalbe.ventura.bigton.BigtonModule
+import schwalbe.ventura.server.game.attachments.GameAttachmentContext
 import schwalbe.ventura.data.ItemType
 
 
 class ProcessorFeatures(
     val features: Set<BigtonFeature>,
-    val modules: List<BigtonModule<World>>,
+    val modules: List<BigtonModule<GameAttachmentContext>>,
     val supportedAttachments: Set<ItemType>
 )
 
@@ -17,7 +18,10 @@ val BIGTON_1000_FEATURES = ProcessorFeatures(
     modules = listOf(
         BIGTON_MODULES.standard
     ),
-    supportedAttachments = setOf()
+    supportedAttachments = setOf(
+        ItemType.DIGITAL_RADIO,
+        ItemType.GPS_RECEIVER
+    )
 )
 val BIGTON_2000_FEATURES = ProcessorFeatures(
     features = setOf(
@@ -31,7 +35,10 @@ val BIGTON_2000_FEATURES = ProcessorFeatures(
         ItemType.PIVOTAL_ME2048,
         ItemType.PIVOTAL_ME5120,
         ItemType.PIVOTAL_ME10K,
-        ItemType.PIVOTAL_ME20K
+        ItemType.PIVOTAL_ME20K,
+
+        ItemType.DIGITAL_RADIO,
+        ItemType.GPS_RECEIVER
     )
 )
 val BIGTON_3000_FEATURES = ProcessorFeatures(
@@ -48,7 +55,10 @@ val BIGTON_3000_FEATURES = ProcessorFeatures(
         ItemType.PIVOTAL_ME2048,
         ItemType.PIVOTAL_ME5120,
         ItemType.PIVOTAL_ME10K,
-        ItemType.PIVOTAL_ME20K
+        ItemType.PIVOTAL_ME20K,
+
+        ItemType.DIGITAL_RADIO,
+        ItemType.GPS_RECEIVER
     )
 )
 

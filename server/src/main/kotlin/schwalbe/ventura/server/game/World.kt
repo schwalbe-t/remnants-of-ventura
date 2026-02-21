@@ -263,7 +263,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
                 val detached: Item = robot.attachments[at.attachmentId]
                     ?: return@onPacket
                 robot.attachments[at.attachmentId] = null
-                robot.stop()
+                robot.reset()
                 pl.data.inventory.add(detached)
                 return@onPacket
             }
@@ -278,7 +278,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             val replaced: Item? = robot.attachments[at.attachmentId]
             if (replaced != null) { pl.data.inventory.add(replaced) }
             robot.attachments[at.attachmentId] = attached
-            robot.stop()
+            robot.reset()
         }
         ph.onPacket(PacketType.SET_ROBOT_SOURCES) { src, pl ->
             if (src.sourceFiles.size > MAX_NUM_ROBOT_SOURCE_FILES) {
@@ -290,7 +290,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             }
             val robot = getRobotOrError(src.robotId, pl) ?: return@onPacket
             robot.sourceFiles = src.sourceFiles
-            robot.stop()
+            robot.reset()
             src.sourceFiles.forEach {
                 if (!pl.data.sourceFiles.touch(it)) {
                     pl.connection.outgoing.send(Packet.serialize(

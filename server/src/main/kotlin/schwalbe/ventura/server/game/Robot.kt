@@ -4,12 +4,14 @@ package schwalbe.ventura.server.game
 import schwalbe.ventura.bigton.runtime.*
 import schwalbe.ventura.bigton.*
 import schwalbe.ventura.data.*
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import schwalbe.ventura.MAX_ROBOT_LOG_LENGTH
 import schwalbe.ventura.net.PrivateRobotInfo
 import schwalbe.ventura.net.SerVector3
 import schwalbe.ventura.net.SharedRobotInfo
+import schwalbe.ventura.server.game.attachments.GameAttachmentContext
+import schwalbe.ventura.server.game.attachments.GameAttachment
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.roundToLong
@@ -23,7 +25,7 @@ val Double.kb: Long
 
 class RobotStats(
     val processor: ProcessorInfo,
-    val totalModules: List<BigtonModule<World>>,
+    val totalModules: List<BigtonModule<GameAttachmentContext>>,
     val totalMemoryLimit: Long
 )
 
@@ -54,7 +56,7 @@ private fun findAttachedProcessor(
 private fun computeRobotStats(
     robotType: RobotType, attachments: Array<Item?>, logs: MutableList<String>
 ): RobotStats? {
-    val totalModules = mutableListOf<BigtonModule<World>>()
+    val totalModules = mutableListOf<BigtonModule<GameAttachmentContext>>()
     var totalMemoryLimit: Long = 0
     val robotInfo = ROBOT_TYPE_EXT[robotType] ?: RobotExtensions()
     totalModules.addAll(robotInfo.addedModules)
@@ -117,14 +119,13 @@ class Robot(
     val attachments: Array<Item?> = Array(this.type.numAttachments) { null }
     var sourceFiles: List<String> = listOf()
 
+    val attachmentStates = AttachmentStates<GameAttachment>()
+
     fun start() {
         when (this.status) {
             RobotStatus.RUNNING, RobotStatus.PAUSED -> {}
             RobotStatus.STOPPED, RobotStatus.ERROR -> {
-                this.logs.clear()
-                this.stats = null
-                this.compileTask = null
-                this.runtime = null
+                this.reset()
             }
         }
         this.status = RobotStatus.RUNNING
@@ -157,11 +158,21 @@ class Robot(
         }
     }
 
+    fun reset() {
+        this.status = RobotStatus.STOPPED
+        this.logs.clear()
+        this.stats = null
+        this.compileTask = null
+        this.runtime = null
+    }
+
     private fun logError(
         type: BigtonErrorType, atLine: Int, inFile: String,
         runtime: BigtonRuntime?
     ) {
-        this.logs.add("ERROR: ${type.message} [${type.id}]")
+        if (type != BigtonErrorType.BY_PROGRAM) {
+            this.logs.add("ERROR: ${type.message} [${type.id}]")
+        }
         if (runtime == null) {
             this.logs.add("    at line $atLine, file '$inFile'")
             return
@@ -259,6 +270,7 @@ class Robot(
         if (this.status != RobotStatus.RUNNING) {
             return
         }
+        val gameAttachmentContext = GameAttachmentContext(world, owner, this)
         runtime.startTick()
         while (true) {
             val execStatus = runtime.executeBatch()
@@ -266,9 +278,9 @@ class Robot(
             when (execStatus) {
                 is BigtonExecStatus.Continue -> continue
                 is BigtonExecStatus.ExecBuiltinFun -> {
-                    val f: BuiltinFunctionInfo<World>
+                    val f: BuiltinFunctionInfo<GameAttachmentContext>
                         = BIGTON_MODULES.functions.functions[execStatus.id]
-                    f.impl(runtime, world)
+                    f.impl(runtime, gameAttachmentContext)
                 }
                 is BigtonExecStatus.AwaitTick -> break
                 is BigtonExecStatus.Complete -> {

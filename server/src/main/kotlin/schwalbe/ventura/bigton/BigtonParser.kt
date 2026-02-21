@@ -170,13 +170,18 @@ fun BigtonParser.parseExpression(parentPower: Int = 0): BigtonAst {
         // special binary operators (special / fixed rhs)
         when (op.type) {
             BigtonTokenType.PAREN_OPEN -> {
+                val args: MutableList<BigtonAst> = mutableListOf()
                 val called: String = when (acc.type) {
                     BigtonAstType.IDENTIFIER -> acc.castArg<String>()
+                    BigtonAstType.OBJECT_MEMBER -> {
+                        args.addAll(acc.children)
+                        acc.castArg<String>()
+                    }
                     else -> throw BigtonException(
                         BigtonErrorType.CALLING_EXPRESSION, op.source
                     )
                 }
-                val args = this.parseValueList(BigtonTokenType.PAREN_CLOSE)
+                args.addAll(this.parseValueList(BigtonTokenType.PAREN_CLOSE))
                 this.advance()
                 acc = BigtonAst(BigtonAstType.CALL, op.source, called, args)
                 continue

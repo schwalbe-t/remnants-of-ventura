@@ -7,8 +7,7 @@ package schwalbe.ventura.bigton.runtime
  */
 enum class BigtonRuntimeError {
     NONE,
-    
-    EXCEEDED_INSTR_LIMIT,
+
     INT_DIVISION_BY_ZERO,
     BY_PROGRAM,
     TUPLE_INDEX_OOB,

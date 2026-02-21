@@ -10,22 +10,17 @@ enum class RobotStatus(
     val isRunning: Boolean,
     val displayColor: Vector4fc
 ) {
-    STOPPED(
-        isRunning = false,
-        displayColor = Vector4f(178f, 178f, 178f, 255f).div(255f)
-    ),
-    RUNNING(
-        isRunning = true,
-        displayColor = Vector4f(134f, 160f, 099f, 255f).div(255f)
-    ),
-    PAUSED(
-        isRunning = true,
-        displayColor = Vector4f(211f, 146f, 091f, 255f).div(255f)
-    ),
-    ERROR(
-        isRunning = false,
-        displayColor = Vector4f(186f, 094f, 105f, 255f).div(255f)
-    );
+    STOPPED(isRunning = false, displayColor = StatusColor.GRAY),
+    RUNNING(isRunning = true, displayColor = StatusColor.GREEN),
+    PAUSED(isRunning = true, displayColor = StatusColor.YELLOW),
+    ERROR(isRunning = false, displayColor = StatusColor.RED);
+
+    object StatusColor {
+        val GRAY: Vector4fc     = Vector4f(178f, 178f, 178f, 255f).div(255f)
+        val RED: Vector4fc      = Vector4f(255f, 128f, 128f, 255f).div(255f)
+        val YELLOW: Vector4fc   = Vector4f(255f, 255f, 128f, 255f).div(255f)
+        val GREEN: Vector4fc    = Vector4f(128f, 255f, 128f, 255f).div(255f)
+    }
 
     val localNameKey: String
         get() = "RobotStatus:name/${this.name}"

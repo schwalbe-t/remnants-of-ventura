@@ -58,3 +58,15 @@ The client can be built and run using Gradle:
 
 The client can be configured using the following environmental variables:
 - `VENTURA_TRUST_ALL_CERTS` - (if set to `true`) Makes the client trusts ALL certificates. ONLY USE FOR TESTING!
+
+### Environment Variables
+
+Both the server and client can be configurd using a traditional `.env` file
+at the repository root, containing `<VAR>=<VALUE>` on each line of the file.
+For example, to have the server run on port 844 and the client trust all
+certificates, `.env` could be defined as such:
+```
+VENTURA_DB_PASS=<PASSWORD>
+VENTURA_PORT=844
+VENTURA_TRUST_ALL_CERTS=true
+```

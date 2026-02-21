@@ -87,12 +87,9 @@ private fun createRobotInfoSection(
                 sendAction(PacketType.PAUSE_ROBOT)
             }
         }
-        val pHealth: Int = (pi.fracHealth * 100f).roundToInt()
-        val pMemUsage: Int = (pi.fracMemUsage * 100f).roundToInt()
-        val pCpuUsage: Int = (pi.fracCpuUsage * 100f).roundToInt()
-        healthValueText.withText("$pHealth%")
-        memoryValueText.withText("$pMemUsage%")
-        processorValueText.withText("$pCpuUsage%")
+        RobotStatusDisplay.updateDisplayTexts(
+            healthValueText, memoryValueText, processorValueText, pi
+        )
     }
     val logText = Text()
     packetHandler.onPacketUntil(

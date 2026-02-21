@@ -81,6 +81,7 @@
         "ItemCategory:name/ROBOT": "Robot",
         "ItemCategory:name/PROCESSOR": "Processor",
         "ItemCategory:name/MEMORY_MODULE": "Memory Module",
+        "ItemCategory:name/UTILITY_MODULE": "Utility Module",
 
         "ItemType:name/KENDAL_DYNAMICS_SCOUT": "Kendal Dynamics Scout",
         "ItemType:desc/KENDAL_DYNAMICS_SCOUT": "The newest generation of Kendal Dynamics' quadropedic spider robots. It's small size and low weight make it ideal for situations where high agility is of the utmost importance.",
@@ -110,6 +111,10 @@
         "ItemType:desc/PIVOTAL_ME10K": "The Pivotal ME10K is a memory expansion unit, compatible with any BIGTON 20XX and 30XX series processor. This particular unit adds 10 kilobytes of random access memory to your system.",
         "ItemType:name/PIVOTAL_ME20K": "Pivotal ME20K",
         "ItemType:desc/PIVOTAL_ME20K": "The Pivotal ME20K is a memory expansion unit, compatible with any BIGTON 20XX and 30XX series processor. This particular unit adds 20 kilobytes of random access memory to your system.",
+        "ItemType:name/DIGITAL_RADIO": "Digital Radio",
+        "ItemType:desc/DIGITAL_RADIO": "A digital radio attachment that allows your robots to communicate with each other by sending messages over channels. Compatible with any BIGTON processor.",
+        "ItemType:name/GPS_RECEIVER": "GPS Receiver",
+        "ItemType:desc/GPS_RECEIVER": "A GPS (Global Positioning System) receiver that allows your robots to receive absolute coordinates that describe exactly where in the world they are located. Compatible with any BIGTON processor.",
 
         "ItemVariant:name/TEST_RED_HOODIE": "Red"
     }

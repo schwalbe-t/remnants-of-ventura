@@ -5,6 +5,7 @@ import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.game.WorldState
 import schwalbe.ventura.client.screens.*
+import schwalbe.ventura.data.RobotStatus
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.net.*
 import kotlin.math.PI
@@ -26,6 +27,32 @@ class RobotStatusDisplay {
                 .alignRight()
             )
             .pad(vertical = 0.1.vmin, horizontal = 0.px)
+
+        fun updateDisplayTexts(
+            health: Text, memory: Text, processor: Text, pi: PrivateRobotInfo
+        ) {
+            val pHealth: Int = (pi.fracHealth * 100f).roundToInt()
+            val pMemUsage: Int = (pi.fracMemUsage * 100f).roundToInt()
+            val pCpuUsage: Int = (pi.fracCpuUsage * 100f).roundToInt()
+            health.withText("$pHealth%")
+            health.withColor(when {
+                pHealth >= 70 -> RobotStatus.StatusColor.GREEN
+                pHealth >= 10 -> RobotStatus.StatusColor.YELLOW
+                else -> RobotStatus.StatusColor.RED
+            })
+            memory.withText("$pMemUsage%")
+            memory.withColor(when {
+                pMemUsage <= 70 -> RobotStatus.StatusColor.GREEN
+                pMemUsage <= 90 -> RobotStatus.StatusColor.RED
+                else -> RobotStatus.StatusColor.RED
+            })
+            processor.withText("$pCpuUsage%")
+            processor.withColor(when {
+                pCpuUsage <= 70 -> RobotStatus.StatusColor.GREEN
+                pCpuUsage <= 90 -> RobotStatus.StatusColor.YELLOW
+                else -> RobotStatus.StatusColor.RED
+            })
+        }
     }
 
 
@@ -99,12 +126,9 @@ class RobotStatusDisplay {
         this.nameText.withText(si.name)
         this.statusText.withText(l[si.status.localNameKey])
         this.statusText.withColor(si.status.displayColor)
-        val pHealth: Int = (pi.fracHealth * 100f).roundToInt()
-        val pMemUsage: Int = (pi.fracMemUsage * 100f).roundToInt()
-        val pCpuUsage: Int = (pi.fracCpuUsage * 100f).roundToInt()
-        this.hpValueText.withText("$pHealth%")
-        this.ramValueText.withText("$pMemUsage%")
-        this.cpuValueText.withText("$pCpuUsage%")
+        RobotStatusDisplay.updateDisplayTexts(
+            this.hpValueText, this.ramValueText, this.cpuValueText, pi
+        )
         val toggleButtonLabel: LocalKeys =
             if (!si.status.isRunning) { BUTTON_ROBOT_START }
             else { BUTTON_ROBOT_STOP }

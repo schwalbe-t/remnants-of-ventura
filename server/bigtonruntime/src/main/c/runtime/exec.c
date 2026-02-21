@@ -250,8 +250,7 @@ bigton_exec_status_t bigtonExecInstr(bigton_runtime_state_t *r) {
         return BIGTONST_ERROR;
     }
     if (r->accCost > r->settings.tickInstructionLimit) {
-        r->error = BIGTONE_EXCEEDED_INSTR_LIMIT;
-        return BIGTONST_ERROR;
+        return BIGTONST_AWAIT_TICK;
     }
     bigton_scope_t *scope = bigtonScopeCurr(r);
     if (HAS_ERROR(r)) { return BIGTONST_ERROR; }

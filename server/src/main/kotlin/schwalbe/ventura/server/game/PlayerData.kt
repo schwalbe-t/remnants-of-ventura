@@ -43,6 +43,8 @@ fun PlayerData.Companion.createStartingData(
         Item(ItemType.PIVOTAL_ME2048, null) to 99999,
         Item(ItemType.PIVOTAL_ME5120, null) to 99999,
         Item(ItemType.PIVOTAL_ME10K, null) to 99999,
-        Item(ItemType.PIVOTAL_ME20K, null) to 99999
+        Item(ItemType.PIVOTAL_ME20K, null) to 99999,
+        Item(ItemType.DIGITAL_RADIO, null) to 99999,
+        Item(ItemType.GPS_RECEIVER, null) to 99999
     ))
 )

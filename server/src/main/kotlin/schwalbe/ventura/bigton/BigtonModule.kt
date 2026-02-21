@@ -91,19 +91,16 @@ private fun displayValue(
     }
 }
 
-private fun printValue(r: BigtonRuntime) {
-    val dispStr: String = r.popStack()
-        ?.let { v -> v.use {
-            displayValue(it, PRINT_MAX_DEPTH, r)
-        } }
-        ?: "<empty stack>"
-    r.logLine(dispStr)
-    BigtonNull.create().use(r::pushStack)
+private fun runtimeError(r: BigtonRuntime, reason: String) {
+    r.logLine("ERROR: $reason")
+    r.error = BigtonRuntimeError.BY_PROGRAM
 }
 
-private fun runtimeError(r: BigtonRuntime, reason: String) {
-    r.logLine(reason)
-    r.error = BigtonRuntimeError.BY_PROGRAM
+private fun valueIsTruthy(v: BigtonValue): Boolean = when (v) {
+    is BigtonNull -> false
+    is BigtonInt -> v.value != 0L
+    is BigtonFloat -> v.value != 0.0 && !v.value.isNaN()
+    is BigtonString, is BigtonTuple, is BigtonObject, is BigtonArray -> true
 }
 
 private fun parseInt(r: BigtonRuntime) {
@@ -292,10 +289,30 @@ class BigtonModules<C> {
     val functions = BigtonBuiltinFunctions<C>()
     
     val standard = BigtonModule(functions)
-        .withFunction("print", cost = 1, argc = 1, ::printValue)
+        .withFunction("print", cost = 1, argc = 1) { r ->
+            val dispStr: String = r.popStack()
+                ?.use { displayValue(it, PRINT_MAX_DEPTH, r) }
+                ?: "<empty stack>"
+            r.logLine(dispStr)
+            BigtonNull.create().use(r::pushStack)
+        }
         .withFunction("error", cost = 1, argc = 1) { r ->
-            printValue(r)
-            r.error = BigtonRuntimeError.BY_PROGRAM
+            val dispStr: String = r.popStack()
+                ?.use { displayValue(it, PRINT_MAX_DEPTH, r) }
+                ?: "<empty stack>"
+            runtimeError(r, dispStr)
+            BigtonNull.create().use(r::pushStack)
+        }
+        .withFunction("choose", cost = 1, argc = 3) { r ->
+            val b: BigtonValue? = r.popStack()
+            val a: BigtonValue? = r.popStack()
+            val cond: BigtonValue? = r.popStack()
+            arrayOf(cond, a, b).useAll {
+                if (cond == null || a == null || b == null) {
+                    return@withFunction BigtonNull.create().use(r::pushStack)
+                }
+                r.pushStack(if (valueIsTruthy(cond)) a else b)
+            }
         }
         .withFunction("string", cost = 1, argc = 1) { r ->
             val dispStr: String = r.popStack()
@@ -323,10 +340,7 @@ class BigtonModules<C> {
             val flatLength: Int = r.popStack()
                 ?.use { when (it) {
                     is BigtonTuple -> it.flatLength
-                    else -> return@withFunction runtimeError(r,
-                        "'flatLen' expects a tuple, but function received " +
-                        "something else"
-                    )
+                    else -> 1
                 } }
                 ?: 0
             BigtonInt.fromValue(flatLength.toLong()).use(r::pushStack)

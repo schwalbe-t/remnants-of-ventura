@@ -3,12 +3,13 @@ package schwalbe.ventura.server.game
 
 import schwalbe.ventura.bigton.*
 import schwalbe.ventura.server.QueuedWorker
+import schwalbe.ventura.server.game.attachments.GameAttachmentContext
 
 class CompilationTask(
     val sources: List<BigtonSourceFile>,
     val features: Set<BigtonFeature>,
-    val modules: List<BigtonModule<World>>,
-    val builtinFunctions: BigtonBuiltinFunctions<World>
+    val modules: List<BigtonModule<GameAttachmentContext>>,
+    val builtinFunctions: BigtonBuiltinFunctions<GameAttachmentContext>
 ) {
     sealed interface Status
     object Waiting : Status
