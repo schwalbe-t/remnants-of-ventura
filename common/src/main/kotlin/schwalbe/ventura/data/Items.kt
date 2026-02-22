@@ -117,6 +117,18 @@ enum class ItemType(
     GPS_RECEIVER(
         category = ItemCategory.UTILITY_MODULE,
         modelPath = "res/items/gps.glb"
+    ),
+    SHORT_RANGE_SONAR(
+        category = ItemCategory.UTILITY_MODULE,
+        modelPath = "res/items/sonar.glb"
+    ),
+    MID_RANGE_SONAR(
+        category = ItemCategory.UTILITY_MODULE,
+        modelPath = "res/items/sonar.glb"
+    ),
+    LONG_RANGE_SONAR(
+        category = ItemCategory.UTILITY_MODULE,
+        modelPath = "res/items/sonar.glb"
     );
 
     val localNameKey: String

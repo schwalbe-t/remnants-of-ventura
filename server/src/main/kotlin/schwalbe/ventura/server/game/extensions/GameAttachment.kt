@@ -1,5 +1,5 @@
 
-package schwalbe.ventura.server.game.attachments
+package schwalbe.ventura.server.game.extensions
 
 import kotlinx.serialization.Serializable
 import schwalbe.ventura.server.game.*
@@ -11,4 +11,6 @@ data class GameAttachmentContext(
 )
 
 @Serializable
-sealed interface GameAttachment
+sealed interface GameAttachment {
+    fun update(ctx: GameAttachmentContext) {}
+}

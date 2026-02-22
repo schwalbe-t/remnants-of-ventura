@@ -201,7 +201,7 @@ class Player {
             weight = { all * this.animInjectWeight.value }
         )
         this.anim.injections["head"] =
-            rotateTowardsTarget(all = 0.33f, x = 1.00f, y = 1f, z = 0.50f)
+            rotateTowardsTarget(all = 0.33f, x = 0.75f, y = 1f, z = 0.50f)
         this.anim.injections["neck"] =
             rotateTowardsTarget(all = 0.33f, x = 0.50f, y = 1f, z = 0.25f)
         this.anim.injections["body_upper"] =

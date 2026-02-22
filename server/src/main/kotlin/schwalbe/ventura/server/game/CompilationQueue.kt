@@ -3,7 +3,7 @@ package schwalbe.ventura.server.game
 
 import schwalbe.ventura.bigton.*
 import schwalbe.ventura.server.QueuedWorker
-import schwalbe.ventura.server.game.attachments.GameAttachmentContext
+import schwalbe.ventura.server.game.extensions.GameAttachmentContext
 
 class CompilationTask(
     val sources: List<BigtonSourceFile>,

@@ -129,10 +129,11 @@ class ChunkLoader {
     }
 
     fun intersectsAnyLoaded(b: AxisAlignedBox): Boolean {
-        val minChunkX: Int = b.min.x().unitsToChunkIdx() - 1
-        val minChunkZ: Int = b.min.z().unitsToChunkIdx() - 1
-        val maxChunkX: Int = b.max.x().unitsToChunkIdx() + 1
-        val maxChunkZ: Int = b.max.z().unitsToChunkIdx() + 1
+        val mcsc: Int = MAX_COLLIDER_SIZE_CHUNKS
+        val minChunkX: Int = b.min.x().unitsToChunkIdx() - mcsc
+        val maxChunkX: Int = b.max.x().unitsToChunkIdx() + mcsc
+        val minChunkZ: Int = b.min.z().unitsToChunkIdx() - mcsc
+        val maxChunkZ: Int = b.max.z().unitsToChunkIdx() + mcsc
         for (chunkX in minChunkX..maxChunkX) {
             for (chunkZ in minChunkZ..maxChunkZ) {
                 val chunk = this.loaded[ChunkRef(chunkX, chunkZ)] ?: continue

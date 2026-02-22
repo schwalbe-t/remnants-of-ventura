@@ -1,10 +1,10 @@
 
-package schwalbe.ventura.server.game
+package schwalbe.ventura.server.game.extensions
 
 import schwalbe.ventura.bigton.BigtonFeature
 import schwalbe.ventura.bigton.BigtonModule
-import schwalbe.ventura.server.game.attachments.GameAttachmentContext
 import schwalbe.ventura.data.ItemType
+import schwalbe.ventura.server.game.kb
 
 
 class ProcessorFeatures(
@@ -20,7 +20,10 @@ val BIGTON_1000_FEATURES = ProcessorFeatures(
     ),
     supportedAttachments = setOf(
         ItemType.DIGITAL_RADIO,
-        ItemType.GPS_RECEIVER
+        ItemType.GPS_RECEIVER,
+        ItemType.SHORT_RANGE_SONAR,
+        ItemType.MID_RANGE_SONAR,
+        ItemType.LONG_RANGE_SONAR
     )
 )
 val BIGTON_2000_FEATURES = ProcessorFeatures(
@@ -38,7 +41,10 @@ val BIGTON_2000_FEATURES = ProcessorFeatures(
         ItemType.PIVOTAL_ME20K,
 
         ItemType.DIGITAL_RADIO,
-        ItemType.GPS_RECEIVER
+        ItemType.GPS_RECEIVER,
+        ItemType.SHORT_RANGE_SONAR,
+        ItemType.MID_RANGE_SONAR,
+        ItemType.LONG_RANGE_SONAR
     )
 )
 val BIGTON_3000_FEATURES = ProcessorFeatures(
@@ -58,7 +64,10 @@ val BIGTON_3000_FEATURES = ProcessorFeatures(
         ItemType.PIVOTAL_ME20K,
 
         ItemType.DIGITAL_RADIO,
-        ItemType.GPS_RECEIVER
+        ItemType.GPS_RECEIVER,
+        ItemType.SHORT_RANGE_SONAR,
+        ItemType.MID_RANGE_SONAR,
+        ItemType.LONG_RANGE_SONAR
     )
 )
 

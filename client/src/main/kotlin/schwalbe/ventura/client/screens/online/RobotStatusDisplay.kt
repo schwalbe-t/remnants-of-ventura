@@ -42,12 +42,14 @@ class RobotStatusDisplay {
             })
             memory.withText("$pMemUsage%")
             memory.withColor(when {
+                pi.fracMemUsage == 0f -> RobotStatus.StatusColor.GRAY
                 pMemUsage <= 70 -> RobotStatus.StatusColor.GREEN
-                pMemUsage <= 90 -> RobotStatus.StatusColor.RED
+                pMemUsage <= 90 -> RobotStatus.StatusColor.YELLOW
                 else -> RobotStatus.StatusColor.RED
             })
             processor.withText("$pCpuUsage%")
             processor.withColor(when {
+                pi.fracCpuUsage == 0f -> RobotStatus.StatusColor.GRAY
                 pCpuUsage <= 70 -> RobotStatus.StatusColor.GREEN
                 pCpuUsage <= 90 -> RobotStatus.StatusColor.YELLOW
                 else -> RobotStatus.StatusColor.RED

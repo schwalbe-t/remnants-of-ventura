@@ -115,6 +115,12 @@
         "ItemType:desc/DIGITAL_RADIO": "A digital radio attachment that allows your robots to communicate with each other by sending messages over channels. Compatible with any BIGTON processor.",
         "ItemType:name/GPS_RECEIVER": "GPS Receiver",
         "ItemType:desc/GPS_RECEIVER": "A GPS (Global Positioning System) receiver that allows your robots to receive absolute coordinates that describe exactly where in the world they are located. Compatible with any BIGTON processor.",
+        "ItemType:name/SHORT_RANGE_SONAR": "Short Range Sonar",
+        "ItemType:desc/SHORT_RANGE_SONAR": "A short range sonar apparatus that uses echolocation to find the distance to obstacles in a given direction. This particular unit has a maximum detection distance of 5 meters. Compatible with any BIGTON processor.",
+        "ItemType:name/MID_RANGE_SONAR": "Mid Range Sonar",
+        "ItemType:desc/MID_RANGE_SONAR": "A mid range sonar apparatus that uses echolocation to find the distance to obstacles in a given direction. This particular unit has a maximum detection distance of 20 meters. Compatible with any BIGTON processor.",
+        "ItemType:name/LONG_RANGE_SONAR": "Long Range Sonar",
+        "ItemType:desc/LONG_RANGE_SONAR": "A long range sonar apparatus that uses echolocation to find the distance to obstacles in a given direction. This particular unit has a maximum detection distance of 50 meters. Compatible with any BIGTON processor.",
 
         "ItemVariant:name/TEST_RED_HOODIE": "Red"
     }

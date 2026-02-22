@@ -1,11 +1,9 @@
 
-package schwalbe.ventura.server.game.attachments
+package schwalbe.ventura.server.game.extensions
 
 import kotlinx.serialization.Serializable
 import schwalbe.ventura.bigton.BigtonModule
 import schwalbe.ventura.bigton.runtime.*
-import schwalbe.ventura.server.game.AttachmentStates
-import schwalbe.ventura.server.game.BIGTON_MODULES
 
 @Serializable
 data class RadioAttachmentState(
@@ -13,8 +11,8 @@ data class RadioAttachmentState(
     val messages: MutableList<String> = mutableListOf()
 ) : GameAttachment {
     companion object {
-        const val MAX_BUFFER_SIZE: Int = 32
         val TYPE = AttachmentStates.register(::RadioAttachmentState)
+        const val MAX_BUFFER_SIZE: Int = 32
     }
 }
 

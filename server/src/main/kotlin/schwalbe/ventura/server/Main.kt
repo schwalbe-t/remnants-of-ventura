@@ -6,6 +6,7 @@ import schwalbe.ventura.net.*
 import schwalbe.ventura.data.*
 import schwalbe.ventura.server.game.CompilationQueue
 import schwalbe.ventura.server.game.WorldRegistry
+import schwalbe.ventura.server.game.WorldData
 import schwalbe.ventura.server.persistence.*
 import kotlinx.coroutines.*
 import kotlin.concurrent.thread

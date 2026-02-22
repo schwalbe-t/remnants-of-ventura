@@ -4,12 +4,11 @@ package schwalbe.ventura.server.game
 import schwalbe.ventura.bigton.runtime.*
 import schwalbe.ventura.bigton.*
 import schwalbe.ventura.data.*
+import schwalbe.ventura.server.game.extensions.*
 import schwalbe.ventura.MAX_ROBOT_LOG_LENGTH
 import schwalbe.ventura.net.PrivateRobotInfo
 import schwalbe.ventura.net.SerVector3
 import schwalbe.ventura.net.SharedRobotInfo
-import schwalbe.ventura.server.game.attachments.GameAttachmentContext
-import schwalbe.ventura.server.game.attachments.GameAttachment
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.nio.ByteBuffer
@@ -97,13 +96,16 @@ private fun computeRobotStats(
 class Robot(
     val type: RobotType,
     val item: Item,
-    var position: SerVector3
+    var tileX: Int, var tileZ: Int
 ) {
 
     var name: String = "Unnamed Robot"
     val id: Uuid = Uuid.random()
     var health: Float = this.type.maxHealth
     var rotation: Float = 0f
+    var position: SerVector3 = SerVector3(
+        this.tileX + 0.5f, 0f, this.tileZ + 0.5f
+    )
 
     var status: RobotStatus = RobotStatus.STOPPED
         private set
@@ -251,7 +253,7 @@ class Robot(
         }
     }
 
-    fun update(world: World, owner: Player) {
+    private fun updateExecution(world: World, owner: Player) {
         when (this.status) {
             RobotStatus.ERROR, RobotStatus.STOPPED -> {
                 this.compileTask = null
@@ -279,7 +281,7 @@ class Robot(
                 is BigtonExecStatus.Continue -> continue
                 is BigtonExecStatus.ExecBuiltinFun -> {
                     val f: BuiltinFunctionInfo<GameAttachmentContext>
-                        = BIGTON_MODULES.functions.functions[execStatus.id]
+                            = BIGTON_MODULES.functions.functions[execStatus.id]
                     f.impl(runtime, gameAttachmentContext)
                 }
                 is BigtonExecStatus.AwaitTick -> break
@@ -299,6 +301,17 @@ class Robot(
                 }
             }
         }
+    }
+
+    private fun updateMovement() {
+        this.position = SerVector3(this.tileX + 0.5f, 0f, this.tileZ + 0.5f)
+    }
+
+    fun update(world: World, owner: Player) {
+        val attachmentCtx = GameAttachmentContext(world, owner, this)
+        this.attachmentStates.states.values.forEach { it.update(attachmentCtx) }
+        this.updateExecution(world, owner)
+        this.updateMovement()
     }
 
     fun getFracHealth(): Float = this.health / this.type.maxHealth

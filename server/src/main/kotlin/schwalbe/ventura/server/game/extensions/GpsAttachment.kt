@@ -1,10 +1,9 @@
 
-package schwalbe.ventura.server.game.attachments
+package schwalbe.ventura.server.game.extensions
 
 import schwalbe.ventura.bigton.BigtonModule
 import schwalbe.ventura.bigton.runtime.*
 import schwalbe.ventura.data.unitsToUnitIdx
-import schwalbe.ventura.server.game.BIGTON_MODULES
 
 val GPS_ATTACHMENT_MODULE = BigtonModule(BIGTON_MODULES.functions)
     .withCtxFunction("gpsReceive", cost = 1, argc = 0) { r, ctx ->
