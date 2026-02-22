@@ -4,7 +4,7 @@ package schwalbe.ventura.engine.ui
 import schwalbe.ventura.engine.gfx.Texture
 import schwalbe.ventura.engine.gfx.ConstFramebuffer
 import schwalbe.ventura.engine.input.*
-import schwalbe.ventura.engine.*
+import schwalbe.ventura.utils.*
 import org.joml.*
 import kotlin.math.roundToInt
 

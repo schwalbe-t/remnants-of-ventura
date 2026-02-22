@@ -6,9 +6,7 @@ import schwalbe.ventura.client.Client
 import schwalbe.ventura.client.Renderer
 import schwalbe.ventura.engine.gfx.ConstFramebuffer
 import schwalbe.ventura.engine.input.Mouse
-import schwalbe.ventura.engine.SmoothedFloat
-import schwalbe.ventura.engine.SmoothedVector3f
-import schwalbe.ventura.engine.smoothed
+import schwalbe.ventura.utils.*
 import kotlin.math.PI
 import kotlin.math.atan
 import kotlin.math.tan

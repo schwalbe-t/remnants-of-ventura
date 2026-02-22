@@ -354,6 +354,14 @@ private fun createRobotSettingsSection(
         codeFileList.add(50.ph, Space())
         displayedSourceFiles = pi.sourceFiles
     }
+    var subtitle = ""
+    if (initialState != null) {
+        subtitle += l[initialState.item.type.localNameKey]
+        val variant = initialState.item.variant
+        if (variant != null) {
+            subtitle += " (${l[variant.localNameKey]})"
+        }
+    }
     return Axis.column()
         .add(topSection, Axis.column()
             .add(60.ph, TextInput()
@@ -376,9 +384,7 @@ private fun createRobotSettingsSection(
                 }
             )
             .add(40.ph, Text()
-                .withText(
-                    initialState?.item?.type?.localNameKey?.let(l::get) ?: ""
-                )
+                .withText(subtitle)
                 .withColor(SECONDARY_BRIGHT_FONT_COLOR)
                 .withSize(75.ph)
             )

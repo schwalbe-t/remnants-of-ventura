@@ -4,6 +4,7 @@ package schwalbe.ventura.server.game
 import kotlinx.serialization.Serializable
 import schwalbe.ventura.data.Item
 import schwalbe.ventura.data.ItemType
+import schwalbe.ventura.data.ItemVariant
 import schwalbe.ventura.net.SharedPlayerInfo
 import kotlin.uuid.Uuid
 
@@ -30,7 +31,9 @@ fun PlayerData.Companion.createStartingData(
 ) = PlayerData(
     worlds = mutableListOf(worlds.baseWorld.createPlayerEntry()),
     inventory = Inventory(itemCounts = mutableMapOf(
-        Item(ItemType.KENDAL_DYNAMICS_SCOUT, null) to 10,
+        Item(ItemType.KENDAL_DYNAMICS_SCOUT, ItemVariant.SCOUT_CAMOUFLAGE) to 10,
+        Item(ItemType.KENDAL_DYNAMICS_SCOUT, ItemVariant.SCOUT_FIREWORKS) to 10,
+        Item(ItemType.KENDAL_DYNAMICS_SCOUT, ItemVariant.SCOUT_LADYBUG) to 10,
         Item(ItemType.BIGTON_1030, null) to 99999,
         Item(ItemType.BIGTON_1050, null) to 99999,
         Item(ItemType.BIGTON_1070, null) to 99999,

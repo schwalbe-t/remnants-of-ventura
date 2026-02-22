@@ -155,8 +155,14 @@ data class SharedRobotInfo(
     val item: Item,
     val status: RobotStatus,
     val position: SerVector3,
-    val rotation: Float
-)
+    val rotation: Float,
+    val animation: Animation
+) {
+    @Serializable
+    enum class Animation {
+        IDLE, MOVE
+    }
+}
 
 @Serializable
 data class PrivateRobotInfo(

@@ -122,6 +122,8 @@
         "ItemType:name/LONG_RANGE_SONAR": "Long Range Sonar",
         "ItemType:desc/LONG_RANGE_SONAR": "A long range sonar apparatus that uses echolocation to find the distance to obstacles in a given direction. This particular unit has a maximum detection distance of 50 meters. Compatible with any BIGTON processor.",
 
-        "ItemVariant:name/TEST_RED_HOODIE": "Red"
+        "ItemVariant:name/SCOUT_CAMOUFLAGE": "Camouflage",
+        "ItemVariant:name/SCOUT_FIREWORKS": "Fireworks",
+        "ItemVariant:name/SCOUT_LADYBUG": "Ladybug"
     }
 }

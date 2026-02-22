@@ -5,6 +5,7 @@ import schwalbe.ventura.client.*
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.input.*
+import schwalbe.ventura.utils.*
 import schwalbe.ventura.net.*
 import kotlin.math.*
 import org.joml.*
@@ -33,19 +34,6 @@ val playerModel: Resource<Model<PlayerAnim>> = Model.loadFile(
     Renderer.meshProperties, PlayerAnim,
     textureFilter = Texture.Filter.LINEAR
 )
-
-private fun xzVectorAngle(a: Vector3fc, b: Vector3fc): Float
-    = atan2(
-        (a.z() * b.x()) - (a.x() * b.z()),
-        (a.x() * b.x()) + (a.z() * b.z())
-    )
-
-private fun wrapAngle(angle: Float): Float {
-    var a = angle
-    while (a > PI)  a -= (2f * PI.toFloat())
-    while (a < -PI) a += (2f * PI.toFloat())
-    return a
-}
 
 private fun rotateTowardsPoint(
     baseDir: Vector3fc, targetPoint: Vector3fc, axisFactors: Vector3fc,
@@ -82,7 +70,6 @@ class Player {
         val MODEL_NO_ROTATION_DIR: Vector3fc = Vector3f(0f, 0f, +1f)
 
         const val WALK_SPEED: Float = 3f
-        const val ROTATION_SPEED: Float = 2f * PI.toFloat() * 1.5f // radians per second
 
         const val OUTLINE_THICKNESS: Float = 0.015f
 
@@ -104,7 +91,7 @@ class Player {
 
     fun rotateAlong(direction: Vector3fc) {
         var targetRot = xzVectorAngle(
-            Player.MODEL_NO_ROTATION_DIR, Vector3f(direction).normalize()
+            MODEL_NO_ROTATION_DIR, Vector3f(direction).normalize()
         )
         this.rotation.target += wrapAngle(targetRot - this.rotation.target)
     }

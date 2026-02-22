@@ -147,10 +147,17 @@ private fun String.overrides(
 enum class ItemVariant(
     val meshOverrideTexturePaths: Map<String, String> = mapOf()
 ) {
-    TEST_RED_HOODIE(
-        meshOverrideTexturePaths =
-            "res/player_red.png"
-                .overrides("body", "hair", "eyebrows", "skull")
+    SCOUT_CAMOUFLAGE(
+        meshOverrideTexturePaths = "res/robots/scout_camouflage.png"
+            .overrides("body")
+    ),
+    SCOUT_FIREWORKS(
+        meshOverrideTexturePaths = "res/robots/scout_fireworks.png"
+            .overrides("body")
+    ),
+    SCOUT_LADYBUG(
+        meshOverrideTexturePaths = "res/robots/scout_ladybug.png"
+            .overrides("body")
     );
 
     val localNameKey: String

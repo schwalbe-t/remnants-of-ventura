@@ -6,11 +6,12 @@ import schwalbe.ventura.bigton.*
 import schwalbe.ventura.data.*
 import schwalbe.ventura.server.game.extensions.*
 import schwalbe.ventura.MAX_ROBOT_LOG_LENGTH
-import schwalbe.ventura.net.PrivateRobotInfo
-import schwalbe.ventura.net.SerVector3
-import schwalbe.ventura.net.SharedRobotInfo
+import schwalbe.ventura.net.*
+import schwalbe.ventura.utils.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import org.joml.Vector3f
+import org.joml.Vector3fc
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.roundToLong
@@ -96,16 +97,28 @@ private fun computeRobotStats(
 class Robot(
     val type: RobotType,
     val item: Item,
-    var tileX: Int, var tileZ: Int
+    var position: SerVector3
 ) {
+
+    data class MovementStep(val dx: Float, val dz: Float, var remTicks: Int)
+
+    companion object {
+        val MODEL_BASE_ROTATION: Vector3fc = Vector3f(0f, 0f, +1f)
+    }
+
 
     var name: String = "Unnamed Robot"
     val id: Uuid = Uuid.random()
     var health: Float = this.type.maxHealth
-    var rotation: Float = 0f
-    var position: SerVector3 = SerVector3(
-        this.tileX + 0.5f, 0f, this.tileZ + 0.5f
-    )
+    @Transient
+    val rotation: SmoothedFloat = 0f
+        .smoothed(response = 10f, epsilon = 0.001f)
+    @Transient
+    var ticksSinceMoved: Int = 2000
+    @Transient
+    val movementSteps: MutableList<MovementStep> = mutableListOf()
+    val isMoving: Boolean
+        get() = this.movementSteps.isNotEmpty()
 
     var status: RobotStatus = RobotStatus.STOPPED
         private set
@@ -122,6 +135,10 @@ class Robot(
     var sourceFiles: List<String> = listOf()
 
     val attachmentStates = AttachmentStates<GameAttachment>()
+
+    init {
+        this.alignPosition()
+    }
 
     fun start() {
         when (this.status) {
@@ -248,8 +265,7 @@ class Robot(
     private fun addLogLines(lines: List<String>) {
         this.logs.addAll(lines)
         if (this.logs.size > MAX_ROBOT_LOG_LENGTH) {
-            this.logs.subList(0, this.logs.size - MAX_ROBOT_LOG_LENGTH)
-                .clear()
+            this.logs.subList(0, this.logs.size - MAX_ROBOT_LOG_LENGTH).clear()
         }
     }
 
@@ -303,8 +319,44 @@ class Robot(
         }
     }
 
+    private fun alignPosition() {
+        this.position = SerVector3(
+            this.position.x.unitsToUnitIdx() + 0.5f, 0f,
+            this.position.z.unitsToUnitIdx() + 0.5f
+        )
+    }
+
+    private fun rotateAlong(direction: Vector3fc) {
+        var targetRot = xzVectorAngle(
+            MODEL_BASE_ROTATION, Vector3f(direction).normalize()
+        )
+        this.rotation.target += wrapAngle(targetRot - this.rotation.target)
+    }
+
+    fun move(dx: Float, dz: Float, duration: Int) {
+        this.rotateAlong(Vector3f(dx, 0f, dz))
+        if (duration <= 0) { return }
+        this.movementSteps.add(MovementStep(
+            dx / duration, dz / duration, duration
+        ))
+    }
+
     private fun updateMovement() {
-        this.position = SerVector3(this.tileX + 0.5f, 0f, this.tileZ + 0.5f)
+        val movementStep: MovementStep? = this.movementSteps.firstOrNull()
+        if (movementStep != null) {
+            this.position = SerVector3(
+                this.position.x + movementStep.dx, 0f,
+                this.position.z + movementStep.dz
+            )
+            movementStep.remTicks -= 1
+            if (movementStep.remTicks <= 0) {
+                this.movementSteps.removeFirst()
+                this.alignPosition()
+            }
+        }
+        this.rotation.update()
+        this.ticksSinceMoved = if (this.isMoving) { 0 }
+            else { this.ticksSinceMoved + 1 }
     }
 
     fun update(world: World, owner: Player) {
@@ -337,7 +389,9 @@ class Robot(
     )
 
     fun buildSharedInfo() = SharedRobotInfo(
-        this.name, this.item, this.status, this.position, this.rotation
+        this.name, this.item, this.status, this.position, this.rotation.value,
+        if (this.ticksSinceMoved < 2) { SharedRobotInfo.Animation.MOVE }
+            else { SharedRobotInfo.Animation.IDLE }
     )
 
     fun buildPrivateInfo() = PrivateRobotInfo(

@@ -1,5 +1,4 @@
-
-package schwalbe.ventura.engine
+package schwalbe.ventura.utils
 
 import org.joml.*
 import kotlin.math.abs

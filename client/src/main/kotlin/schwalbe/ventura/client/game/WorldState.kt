@@ -54,7 +54,7 @@ class WorldState {
 
     class PlayerState : AgentState<PlayerAnim>(PlayerAnim.idle)
 
-    class RobotState : AgentState<RobotAnim>(RobotAnim.dummy) {
+    class RobotState : AgentState<RobotAnim>(RobotAnim.idle) {
         var item: Item? = null
     }
 
@@ -137,7 +137,7 @@ class WorldState {
             state.interpolate(
                 rBefore.position, rAfter.position,
                 rBefore.rotation, rAfter.rotation,
-                RobotAnim.dummy, // TODO! replace with shared animation
+                RobotAnim.fromSharedAnim(rAfter.animation),
                 n
             )
             state.item = rAfter.item

@@ -8,12 +8,18 @@ import schwalbe.ventura.client.RenderPass
 import schwalbe.ventura.client.Renderer
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.data.*
-import org.joml.Vector3fc
 import schwalbe.ventura.client.ItemVariantResources
+import schwalbe.ventura.net.SharedRobotInfo
+import org.joml.Vector3fc
 
 object RobotAnim : Animations<RobotAnim> {
-    // TODO! replace with actual animations
-    val dummy = anim("dummy")
+    val idle = anim("idle")
+    val move = anim("move")
+}
+
+fun RobotAnim.fromSharedAnim(a: SharedRobotInfo.Animation) = when (a) {
+    SharedRobotInfo.Animation.IDLE -> RobotAnim.idle
+    SharedRobotInfo.Animation.MOVE -> RobotAnim.move
 }
 
 val robotModels: Map<ItemType, Resource<Model<RobotAnim>>>

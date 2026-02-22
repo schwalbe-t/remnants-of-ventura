@@ -206,9 +206,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
                 return@onPacket
             }
             val position = pl.data.worlds.last().state.position
-            val tileX: Int = position.x.unitsToUnitIdx()
-            val tileZ: Int = position.z.unitsToUnitIdx()
-            val robot = Robot(d.robotType, d.item, tileX, tileZ)
+            val robot = Robot(d.robotType, d.item, position)
             pl.data.deployedRobots[robot.id] = robot
             pl.connection.outgoing.send(Packet.serialize(
                 PacketType.ROBOT_DEPLOYED,
