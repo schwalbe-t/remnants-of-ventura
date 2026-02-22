@@ -8,7 +8,7 @@ import schwalbe.ventura.client.screens.offline.mainScreen
 import schwalbe.ventura.client.screens.submitScreenResources
 import schwalbe.ventura.engine.ui.loadUiResources
 
-fun submitResources(resLoader: ResourceLoader) {
+private fun submitResources(resLoader: ResourceLoader) {
     loadUiResources(resLoader)
     submitScreenResources(resLoader)
     resLoader.submit(localized)
