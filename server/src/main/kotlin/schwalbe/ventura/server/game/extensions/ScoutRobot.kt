@@ -4,34 +4,57 @@ package schwalbe.ventura.server.game.extensions
 import schwalbe.ventura.bigton.BigtonModule
 import schwalbe.ventura.bigton.runtime.*
 import schwalbe.ventura.data.unitsToUnitIdx
-import kotlin.math.hypot
+import kotlin.math.abs
+import kotlin.math.sign
 
 const val SCOUT_MOVEMENT_SPEED: Int = 10 // ticks per unit moved
 
 private fun implementMovement(
-    dx: Int, dz: Int
-): (BigtonRuntime, GameAttachmentContext) -> Unit = f@{ r, ctx ->
+    r: BigtonRuntime, ctx: GameAttachmentContext, rdx: Int, rdz: Int
+) {
     if (ctx.robot.isMoving) {
-        return@f BigtonInt.fromValue(0).use(r::pushStack)
+        return BigtonInt.fromValue(0).use(r::pushStack)
     }
-    val len: Float = hypot(dx.toFloat(), dz.toFloat())
-    val ndx: Float = dx / len
-    val ndz: Float = dz / len
-    val destTx: Int = (ctx.robot.position.x + ndx).unitsToUnitIdx()
-    val destTz: Int = (ctx.robot.position.z + ndz).unitsToUnitIdx()
+    val (dx, dz) = if (abs(rdx) > abs(rdz)) { sign(rdx.toFloat()) to 0f }
+        else { 0f to sign(rdz.toFloat()) }
+    val destTx: Int = (ctx.robot.position.x + dx).unitsToUnitIdx()
+    val destTz: Int = (ctx.robot.position.z + dz).unitsToUnitIdx()
     val isOccupied: Boolean = ctx.world.data.chunkCollisions[destTx, destTz]
     if (isOccupied) {
-        return@f BigtonInt.fromValue(0).use(r::pushStack)
+        return BigtonInt.fromValue(0).use(r::pushStack)
     }
-    ctx.robot.move(ndx, ndz, SCOUT_MOVEMENT_SPEED)
+    ctx.robot.move(dx, dz, SCOUT_MOVEMENT_SPEED)
     BigtonInt.fromValue(1).use(r::pushStack)
 }
 
 val SCOUT_ROBOT_MODULE = BigtonModule(BIGTON_MODULES.functions)
-    .withCtxFunction("moveLeft", cost = 1, argc = 0, implementMovement(-1, 0))
-    .withCtxFunction("moveRight", cost = 1, argc = 0, implementMovement(+1, 0))
-    .withCtxFunction("moveUp", cost = 1, argc = 0, implementMovement(0, -1))
-    .withCtxFunction("moveDown", cost = 1, argc = 0, implementMovement(0, +1))
+    .withCtxFunction("moveLeft", cost = 1, argc = 0) { r, ctx ->
+        implementMovement(r, ctx, -1, 0)
+    }
+    .withCtxFunction("moveRight", cost = 1, argc = 0) { r, ctx ->
+        implementMovement(r, ctx, +1, 0)
+    }
+    .withCtxFunction("moveUp", cost = 1, argc = 0) { r, ctx ->
+        implementMovement(r, ctx, 0, -1)
+    }
+    .withCtxFunction("moveDown", cost = 1, argc = 0) { r, ctx ->
+        implementMovement(r, ctx, 0, +1)
+    }
+    .withCtxFunction("move", cost = 1, argc = 1) { r, ctx ->
+        val (dx, dy) = r.popStack()?.use {
+            if (it !is BigtonTuple || it.length != 2) { return@use null }
+            val a: BigtonValue = it[0]
+            val b: BigtonValue = it[1]
+            arrayOf<BigtonValue?>(a, b).useAll {
+                if (a !is BigtonInt || b !is BigtonInt) { return@use null }
+                a.value.toInt() to b.value.toInt()
+            }
+        } ?: return@withCtxFunction r.reportDynError(
+            "'move' expects a tuple of 2 integers, but function received " +
+            "something else"
+        )
+        implementMovement(r, ctx, dx, dy)
+    }
     .withCtxFunction("canMove", cost = 1, argc = 0) { r, ctx ->
         BigtonInt.fromValue(if (ctx.robot.isMoving) 0 else 1).use(r::pushStack)
     }
