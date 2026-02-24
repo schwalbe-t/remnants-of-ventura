@@ -59,8 +59,8 @@ class WorldState {
     }
 
     companion object {
-        const val DISPLAY_DELAY_MS: Long = 200L
-        const val BUFFERED_PACKET_COUNT: Int = 5
+        const val DISPLAY_DELAY_MS: Long = 500L
+        const val BUFFERED_PACKET_COUNT: Int = 10
         val PLAYER_NAME_OFFSET: Vector3fc = Vector3f(0f, +2.25f, 0f)
     }
 
