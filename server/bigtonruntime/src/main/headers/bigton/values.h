@@ -5,6 +5,7 @@
 #include <bigton/ir.h>
 #include <bigton/error.h>
 #include <string.h>
+#include <stdbool.h>
 
 
 typedef struct BigtonRc {
