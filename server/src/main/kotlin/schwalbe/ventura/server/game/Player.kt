@@ -58,6 +58,12 @@ fun Player.popWorld(worlds: WorldRegistry) {
 }
 
 fun Player.updateState(world: World) {
+    for (robot in this.data.deployedRobots.values.filter { it.health <= 0f }) {
+        // TODO! replace with items on the ground (with some probability of them disappearing)
+        //       created items need to be private to this player
+        robot.collectContainedItems().forEach(this.data.inventory::add)
+        this.data.deployedRobots.remove(robot.id)
+    }
     this.data.deployedRobots.values.forEach {
         it.update(world, this)
     }

@@ -37,6 +37,10 @@ enum class ItemCategory(
     UTILITY_MODULE(
         actions = listOf(),
         isRobotAttachment = true
+    ),
+    WEAPON(
+        actions = listOf(),
+        isRobotAttachment = true
     );
 
     val localNameKey: String
@@ -129,6 +133,11 @@ enum class ItemType(
     LONG_RANGE_SONAR(
         category = ItemCategory.UTILITY_MODULE,
         modelPath = "res/items/sonar.glb"
+    ),
+
+    LASER(
+        category = ItemCategory.WEAPON,
+        modelPath = "res/items/laser.glb"
     );
 
     val localNameKey: String

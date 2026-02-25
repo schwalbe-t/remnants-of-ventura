@@ -143,7 +143,7 @@ class RobotStatusDisplay {
         }
         if (this.robotDisplay.children.isEmpty()) {
             this.robotDisplay.add(ItemDisplay.createDisplay(
-                item = si.item,
+                item = si.baseItem,
                 fixedAngle = -(PI.toFloat() / 4f), // 180/4 = 45 degrees
                 msaaSamples = 4
             ))

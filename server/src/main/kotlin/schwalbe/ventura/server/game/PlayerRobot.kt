@@ -14,6 +14,7 @@ import java.nio.ByteOrder
 
 class RobotStats(
     val processor: ProcessorInfo,
+    val weaponItem: Item?,
     val totalModules: List<BigtonModule<GameAttachmentContext>>,
     val totalMemoryLimit: Long
 )
@@ -42,6 +43,25 @@ private fun findAttachedProcessor(
     return null
 }
 
+private fun findAttachedWeaponItem(
+    attachments: Array<Item?>, logs: MutableList<String>
+): Pair<Item?, Boolean> {
+    var found: Item? = null
+    for (item in attachments.asSequence().filterNotNull()) {
+        if (item.type.category != ItemCategory.WEAPON) { continue }
+        if (found == null) {
+            found = item
+            continue
+        }
+        logs.add(
+            "ERROR: Robot has multiple weapons attached! Only one " +
+            "weapon may be attached at a time."
+        )
+        return null to false
+    }
+    return found to true
+}
+
 private fun computeRobotStats(
     robotType: RobotType, attachments: Array<Item?>, logs: MutableList<String>
 ): RobotStats? {
@@ -52,6 +72,8 @@ private fun computeRobotStats(
     totalMemoryLimit += robotInfo.addedMemory
     val processor: ProcessorInfo = findAttachedProcessor(attachments, logs)
         ?: return null
+    val (weapon, findWeaponSuccess) = findAttachedWeaponItem(attachments, logs)
+    if (!findWeaponSuccess) { return null }
     totalModules.addAll(processor.features.modules)
     totalMemoryLimit += processor.stats.baseMemory
     var hasIgnored: Boolean = false
@@ -79,19 +101,22 @@ private fun computeRobotStats(
             logs.add(" - ${item.type.name}")
         }
     }
-    return RobotStats(processor, totalModules, totalMemoryLimit)
+    return RobotStats(processor, weapon, totalModules, totalMemoryLimit)
 }
 
 @Serializable
 class PlayerRobot(
     override val type: RobotType,
-    override val item: Item,
+    override val baseItem: Item,
     override var position: SerVector3
 ) : Robot() {
 
     override var name: String = "Unnamed Robot"
     override var status: RobotStatus = RobotStatus.STOPPED
     override var health: Float = this.type.maxHealth
+
+    override val weaponItem: Item?
+        get() = this.stats?.weaponItem
 
     @Transient
     private var stats: RobotStats? = null
@@ -109,7 +134,7 @@ class PlayerRobot(
     init {
         this.alignPosition()
     }
-    
+
     fun start() {
         when (this.status) {
             RobotStatus.RUNNING, RobotStatus.PAUSED -> {}
@@ -293,7 +318,7 @@ class PlayerRobot(
         val attachmentCtx = GameAttachmentContext(world, owner, this)
         this.attachmentStates.states.values.forEach { it.update(attachmentCtx) }
         this.updateExecution(world, owner)
-        this.updateMovement()
+        super.update()
     }
 
     fun getFracMemUsage(): Float {
@@ -323,5 +348,8 @@ class PlayerRobot(
         this.getFracMemUsage(),
         this.getFracCpuUsage()
     )
+
+    fun collectContainedItems(): List<Item>
+        = listOf(this.baseItem) + this.attachments.filterNotNull()
 
 }

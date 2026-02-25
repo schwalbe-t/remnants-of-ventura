@@ -1,7 +1,6 @@
 
 package schwalbe.ventura.client.game
 
-import org.joml.Matrix4f
 import schwalbe.ventura.engine.Resource
 import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.client.RenderPass
@@ -10,7 +9,8 @@ import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.data.*
 import schwalbe.ventura.client.ItemVariantResources
 import schwalbe.ventura.net.SharedRobotInfo
-import org.joml.Vector3fc
+import org.joml.*
+import schwalbe.ventura.client.ItemTypeResources
 
 object RobotAnim : Animations<RobotAnim> {
     val idle = anim("idle")
@@ -39,29 +39,62 @@ object Robot {
     }
 }
 
-fun Robot.modelTransform(
+val ROBOT_WEAPON_OFFSETS: Map<ItemType, Vector3fc> = mapOf(
+    ItemType.KENDAL_DYNAMICS_SCOUT to Vector3f(0f, +1f, 0f)
+)
+
+fun Robot.baseTransform(
     pos: Vector3fc, rotY: Float
 ): Matrix4f = Matrix4f()
     .translate(pos)
     .rotateY(rotY)
 
+fun Robot.weaponTransform(
+    baseTransform: Matrix4fc, offset: Vector3fc, rotY: Float
+): Matrix4f = Matrix4f(baseTransform)
+    .translate(offset)
+    .rotateY(rotY)
+
 fun Robot.render(
-    pass: RenderPass, pos: Vector3fc, rotY: Float, anim: AnimState<RobotAnim>,
-    item: Item
+    pass: RenderPass, pos: Vector3fc,
+    baseRotY: Float, weaponRotY: Float, anim: AnimState<RobotAnim>,
+    baseItem: Item, weaponItem: Item?
 ) {
-    val transf = Robot.modelTransform(pos, rotY)
-    val instances = listOf(transf)
-    val model: Model<RobotAnim> = (robotModels[item.type] ?: return)()
-    val variant: ItemVariant? = item.variant
-    val texOverrides = if (variant == null) { null } else {
-        ItemVariantResources.all[variant.ordinal].collectTextureOverrides()
+    val baseTransf = Robot.baseTransform(pos, baseRotY)
+    val baseInstances = listOf(baseTransf)
+    val baseModel: Model<RobotAnim> = (robotModels[baseItem.type] ?: return)()
+    val baseItemVariant: ItemVariant? = baseItem.variant
+    val baseTexOverrides = if (baseItemVariant == null) { null } else {
+        ItemVariantResources.all[baseItemVariant.ordinal]
+            .collectTextureOverrides()
     }
     pass.renderOutline(
-        model, Player.OUTLINE_THICKNESS, anim, instances,
-        meshTextureOverrides = texOverrides
+        baseModel, Player.OUTLINE_THICKNESS, anim, baseInstances,
+        meshTextureOverrides = baseTexOverrides
     )
     pass.renderGeometry(
-        model, anim, instances,
-        meshTextureOverrides = texOverrides
+        baseModel, anim, baseInstances,
+        meshTextureOverrides = baseTexOverrides
     )
+    if (weaponItem != null) {
+        val weaponOffset = ROBOT_WEAPON_OFFSETS[baseItem.type] ?: Vector3f()
+        val weaponTransf = Robot.weaponTransform(
+            baseTransf, weaponOffset, weaponRotY
+        )
+        val weaponInstances = listOf(weaponTransf)
+        val weaponItemTypeRes = ItemTypeResources.all[weaponItem.type.ordinal]
+        val weaponItemVar = weaponItem.variant
+        val weaponItemVarRes = if (weaponItemVar == null) { null }
+            else { ItemVariantResources.all[weaponItemVar.ordinal] }
+        val weaponTexOverrides = weaponItemVarRes?.collectTextureOverrides()
+        pass.renderOutline(
+            weaponItemTypeRes.model(), Player.OUTLINE_THICKNESS, null,
+            weaponInstances,
+            meshTextureOverrides = weaponTexOverrides
+        )
+        pass.renderGeometry(
+            weaponItemTypeRes.model(), null, weaponInstances,
+            meshTextureOverrides = weaponTexOverrides
+        )
+    }
 }

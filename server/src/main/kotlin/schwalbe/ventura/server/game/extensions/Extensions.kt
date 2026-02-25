@@ -65,7 +65,9 @@ val ATTACHMENT_EXT: Map<ItemType, RobotExtensions> = mapOf(
     ItemType.MID_RANGE_SONAR
         to RobotExtensions(listOf(makeSonarAttachmentModule(20))),
     ItemType.LONG_RANGE_SONAR
-        to RobotExtensions(listOf(makeSonarAttachmentModule(50)))
+        to RobotExtensions(listOf(makeSonarAttachmentModule(50))),
+    ItemType.LASER
+        to RobotExtensions(listOf(LASER_ATTACHMENT_MODULE))
 )
 
 val ROBOT_TYPE_EXT: Map<RobotType, RobotExtensions> = mapOf(

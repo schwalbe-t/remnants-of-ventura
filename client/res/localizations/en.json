@@ -82,6 +82,7 @@
         "ItemCategory:name/PROCESSOR": "Processor",
         "ItemCategory:name/MEMORY_MODULE": "Memory Module",
         "ItemCategory:name/UTILITY_MODULE": "Utility Module",
+        "ItemCategory:name/WEAPON": "Weapon",
 
         "ItemType:name/KENDAL_DYNAMICS_SCOUT": "Kendal Dynamics Scout",
         "ItemType:desc/KENDAL_DYNAMICS_SCOUT": "The newest generation of Kendal Dynamics' quadropedic spider robots. It's small size and low weight make it ideal for situations where high agility is of the utmost importance.",
@@ -121,6 +122,8 @@
         "ItemType:desc/MID_RANGE_SONAR": "A mid range sonar apparatus that uses echolocation to find the distance to obstacles in a given direction. This particular unit has a maximum detection distance of 20 meters. Compatible with any BIGTON processor.",
         "ItemType:name/LONG_RANGE_SONAR": "Long Range Sonar",
         "ItemType:desc/LONG_RANGE_SONAR": "A long range sonar apparatus that uses echolocation to find the distance to obstacles in a given direction. This particular unit has a maximum detection distance of 50 meters. Compatible with any BIGTON processor.",
+        "ItemType:name/LASER": "Laser",
+        "ItemType:desc/LASER": "This laser attachment allows your robots to fire powerful beams of light at other robots, damaging them in the process. It has an effective range of 15 meters. Compatible with any BIGTON processor.",
 
         "ItemVariant:name/SCOUT_CAMOUFLAGE": "Camouflage",
         "ItemVariant:name/SCOUT_FIREWORKS": "Fireworks",

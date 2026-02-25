@@ -30,10 +30,11 @@ enum class RobotStatus(
 enum class RobotType(
     val itemType: ItemType,
     val numAttachments: Int,
-    val maxHealth: Float = 100f
+    val maxHealth: Float
 ) {
     SCOUT(
         itemType = ItemType.KENDAL_DYNAMICS_SCOUT,
-        numAttachments = 4
+        numAttachments = 4,
+        maxHealth = 100f
     )
 }

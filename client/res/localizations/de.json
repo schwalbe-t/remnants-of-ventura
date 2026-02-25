@@ -82,6 +82,7 @@
         "ItemCategory:name/PROCESSOR": "Prozessor",
         "ItemCategory:name/MEMORY_MODULE": "Arbeitsspeichermodul",
         "ItemCategory:name/UTILITY_MODULE": "Hilfsmodul",
+        "ItemCategory:name/WEAPON": "Waffe",
 
 
         "ItemType:name/KENDAL_DYNAMICS_SCOUT": "Kendal Dynamics Scout",
@@ -122,6 +123,8 @@
         "ItemType:desc/MID_RANGE_SONAR": "Ein Mittelbereichssonar, das mittels Echoortung die Entfernung zu Hindernissen in einer bestimmten Richtung ermittelt. Dieses Gerät hat eine maximale Erfassungsreichweite von 20 Metern. Kompatibel mit allen BIGTON-Prozessoren.",
         "ItemType:name/LONG_RANGE_SONAR": "Fernbereichssonar",
         "ItemType:desc/LONG_RANGE_SONAR": "Ein Fernbereichssonar, das mittels Echoortung die Entfernung zu Hindernissen in einer bestimmten Richtung ermittelt. Dieses Gerät hat eine maximale Erfassungsreichweite von 50 Metern. Kompatibel mit allen BIGTON-Prozessoren.",
+        "ItemType:name/LASER": "Laser",
+        "ItemType:desc/LASER": "Mit diesem Laseraufsatz können Ihre Roboter starke Lichtstrahlen auf andere Roboter abfeuern und diese dabei beschädigen. Die Reichweite beträgt 15 Meter. Kompatibel mit allen BIGTON-Prozessoren.",
 
         "ItemVariant:name/SCOUT_CAMOUFLAGE": "Tarnung",
         "ItemVariant:name/SCOUT_FIREWORKS": "Feuerwerk",

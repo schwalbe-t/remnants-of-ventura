@@ -41,19 +41,12 @@ val SCOUT_ROBOT_MODULE = BigtonModule(BIGTON_MODULES.functions)
         implementMovement(r, ctx, 0, +1)
     }
     .withCtxFunction("move", cost = 1, argc = 1) { r, ctx ->
-        val (dx, dy) = r.popStack()?.use {
-            if (it !is BigtonTuple || it.length != 2) { return@use null }
-            val a: BigtonValue = it[0]
-            val b: BigtonValue = it[1]
-            arrayOf<BigtonValue?>(a, b).useAll {
-                if (a !is BigtonInt || b !is BigtonInt) { return@use null }
-                a.value.toInt() to b.value.toInt()
-            }
-        } ?: return@withCtxFunction r.reportDynError(
-            "'move' expects a tuple of 2 integers, but function received " +
-            "something else"
-        )
-        implementMovement(r, ctx, dx, dy)
+        val (dx, dz) = r.popTuple2Int()
+            ?: return@withCtxFunction r.reportDynError(
+                "'move' expects a tuple of 2 integers, but function received " +
+                "something else"
+            )
+        implementMovement(r, ctx, dx.toInt(), dz.toInt())
     }
     .withCtxFunction("canMove", cost = 1, argc = 0) { r, ctx ->
         BigtonInt.fromValue(if (ctx.robot.isMoving) 0 else 1).use(r::pushStack)

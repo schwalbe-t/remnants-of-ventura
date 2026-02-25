@@ -356,8 +356,8 @@ private fun createRobotSettingsSection(
     }
     var subtitle = ""
     if (initialState != null) {
-        subtitle += l[initialState.item.type.localNameKey]
-        val variant = initialState.item.variant
+        subtitle += l[initialState.baseItem.type.localNameKey]
+        val variant = initialState.baseItem.variant
         if (variant != null) {
             subtitle += " (${l[variant.localNameKey]})"
         }
@@ -538,5 +538,12 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
             )
         )
     )
+    packets.onPacketUntil(
+        PacketType.WORLD_STATE, until = background::wasDisposed
+    ) { ws, _ ->
+        if (robotId !in ws.ownedRobots.keys) {
+            client.nav.pop()
+        }
+    }
     screen
 }

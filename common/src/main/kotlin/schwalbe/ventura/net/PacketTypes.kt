@@ -152,10 +152,12 @@ data class SharedPlayerInfo(
 @Serializable
 data class SharedRobotInfo(
     val name: String,
-    val item: Item,
+    val baseItem: Item,
+    val weaponItem: Item?,
     val status: RobotStatus,
     val position: SerVector3,
-    val rotation: Float,
+    val baseRotation: Float,
+    val weaponRotation: Float,
     val animation: Animation
 ) {
     @Serializable

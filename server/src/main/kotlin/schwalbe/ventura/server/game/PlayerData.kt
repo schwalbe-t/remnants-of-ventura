@@ -51,6 +51,7 @@ fun PlayerData.Companion.createStartingData(
         Item(ItemType.GPS_RECEIVER, null) to 99999,
         Item(ItemType.SHORT_RANGE_SONAR, null) to 99999,
         Item(ItemType.MID_RANGE_SONAR, null) to 99999,
-        Item(ItemType.LONG_RANGE_SONAR, null) to 99999
+        Item(ItemType.LONG_RANGE_SONAR, null) to 99999,
+        Item(ItemType.LASER, null) to 99999
     ))
 )

@@ -30,17 +30,16 @@ class WorldState {
         var rotation: Float = 0f
         val animation: AnimState<A> = AnimState(startingAnim)
 
-        fun interpolate(
-            beforePos: SerVector3, afterPos: SerVector3,
-            beforeRot: Float, afterRot: Float,
-            afterAnim: AnimationRef<A>,
-            n: Float
-        ) {
-            this.position.set(beforePos.toVector3f())
-                .lerp(afterPos.toVector3f(), n)
-            this.rotation = beforeRot + (afterRot - beforeRot) * n
-            if (this.animation.latestAnim != afterAnim) {
-                this.animation.transitionTo(afterAnim, 0.25f)
+        fun interpPos(a: SerVector3, b: SerVector3, n: Float, dest: Vector3f) {
+            dest.set(a.toVector3f()).lerp(b.toVector3f(), n)
+        }
+
+        fun interpRot(a: Float, b: Float, n: Float): Float
+            = a + (b - a) * n
+
+        fun interpAnim(b: AnimationRef<A>, dest: AnimState<A>) {
+            if (dest.latestAnim != b) {
+                dest.transitionTo(b, 0.25f)
             }
         }
 
@@ -52,10 +51,29 @@ class WorldState {
         }
     }
 
-    class PlayerState : AgentState<PlayerAnim>(PlayerAnim.idle)
+    class PlayerState : AgentState<PlayerAnim>(PlayerAnim.idle) {
+        fun interpolate(a: SharedPlayerInfo, b: SharedPlayerInfo, n: Float) {
+            interpPos(a.position, b.position, n, this.position)
+            this.rotation = interpRot(a.rotation, b.rotation, n)
+            interpAnim(PlayerAnim.fromSharedAnim(b.animation), this.animation)
+        }
+    }
 
     class RobotState : AgentState<RobotAnim>(RobotAnim.idle) {
-        var item: Item? = null
+        var baseItem: Item? = null
+        var weaponItem: Item? = null
+        var weaponRotation: Float = 0f
+
+        fun interpolate(a: SharedRobotInfo, b: SharedRobotInfo, n: Float) {
+            interpPos(a.position, b.position, n, this.position)
+            this.rotation = interpRot(a.baseRotation, b.baseRotation, n)
+            this.weaponRotation = interpRot(
+                a.weaponRotation, b.weaponRotation, n
+            )
+            interpAnim(RobotAnim.fromSharedAnim(b.animation), this.animation)
+            this.baseItem = b.baseItem
+            this.weaponItem = b.weaponItem
+        }
     }
 
     companion object {
@@ -118,12 +136,7 @@ class WorldState {
             val plBefore = before.state.players[username] ?: plAfter
             this.interpolated.players
                 .getOrPut(username, ::PlayerState)
-                .interpolate(
-                    plBefore.position, plAfter.position,
-                    plBefore.rotation, plAfter.rotation,
-                    PlayerAnim.fromSharedAnim(plAfter.animation),
-                    n
-                )
+                .interpolate(plBefore, plAfter, n)
         }
         this.interpolated.robots.keys
             .filter { it !in before.state.allRobots.keys }
@@ -134,13 +147,7 @@ class WorldState {
         for ((robotId, rAfter) in after.state.allRobots) {
             val rBefore = before.state.allRobots[robotId] ?: rAfter
             val state = this.interpolated.robots.getOrPut(robotId, ::RobotState)
-            state.interpolate(
-                rBefore.position, rAfter.position,
-                rBefore.rotation, rAfter.rotation,
-                RobotAnim.fromSharedAnim(rAfter.animation),
-                n
-            )
-            state.item = rAfter.item
+            state.interpolate(rBefore, rAfter, n)
         }
         this.interpolated.ownedRobots = after.state.ownedRobots
         val dt: Float = client.deltaTime
@@ -171,9 +178,10 @@ class WorldState {
             )
         }
         for (robot in this.interpolated.robots.values) {
-            val item: Item = robot.item ?: continue
+            val baseItem: Item = robot.baseItem ?: continue
             Robot.render(
-                pass, robot.position, robot.rotation, robot.animation, item
+                pass, robot.position, robot.rotation, robot.weaponRotation,
+                robot.animation, baseItem, robot.weaponItem
             )
         }
     }

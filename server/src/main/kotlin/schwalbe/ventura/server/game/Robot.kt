@@ -17,11 +17,16 @@ val Int.kb: Long
 val Double.kb: Long
     get() = (this * 1024.0).roundToLong()
 
+private fun SmoothedFloat.rotateTowards(newAngle: Float) {
+    this.target += wrapAngle(newAngle - this.target)
+}
+
 @Serializable
 abstract class Robot {
 
     abstract val type: RobotType
-    abstract val item: Item
+    abstract val baseItem: Item
+    abstract val weaponItem: Item?
     abstract var position: SerVector3
 
     abstract val status: RobotStatus
@@ -36,7 +41,10 @@ abstract class Robot {
 
     val id: Uuid = Uuid.random()
     @Transient
-    val rotation: SmoothedFloat = 0f
+    val baseRotation: SmoothedFloat = 0f
+        .smoothed(response = 10f, epsilon = 0.001f)
+    @Transient
+    val weaponRotation: SmoothedFloat = 0f
         .smoothed(response = 10f, epsilon = 0.001f)
     @Transient
     var ticksSinceMoved: Int = 2000
@@ -52,22 +60,27 @@ abstract class Robot {
         )
     }
 
-    fun rotateAlong(direction: Vector3fc) {
-        var targetRot = xzVectorAngle(
+    fun rotateBaseAlong(direction: Vector3fc) {
+        this.baseRotation.rotateTowards(xzVectorAngle(
             MODEL_BASE_ROTATION, Vector3f(direction).normalize()
-        )
-        this.rotation.target += wrapAngle(targetRot - this.rotation.target)
+        ))
+    }
+
+    fun rotateWeaponAlong(direction: Vector3fc) {
+        this.weaponRotation.rotateTowards(xzVectorAngle(
+            MODEL_BASE_ROTATION, Vector3f(direction).normalize()
+        ))
     }
 
     fun move(dx: Float, dz: Float, duration: Int) {
-        this.rotateAlong(Vector3f(dx, 0f, dz))
+        this.rotateBaseAlong(Vector3f(dx, 0f, dz))
         if (duration <= 0) { return }
         this.movementSteps.add(MovementStep(
             dx / duration, dz / duration, duration
         ))
     }
 
-    fun updateMovement() {
+    fun update() {
         val movementStep: MovementStep? = this.movementSteps.firstOrNull()
         if (movementStep != null) {
             this.position = SerVector3(
@@ -80,7 +93,8 @@ abstract class Robot {
                 this.alignPosition()
             }
         }
-        this.rotation.update()
+        this.baseRotation.update()
+        this.weaponRotation.update()
         this.ticksSinceMoved = if (this.isMoving) { 0 }
         else { this.ticksSinceMoved + 1 }
     }
@@ -92,7 +106,10 @@ abstract class Robot {
             else { SharedRobotInfo.Animation.IDLE }
 
     fun buildSharedInfo() = SharedRobotInfo(
-        this.name, this.item, this.status, this.position, this.rotation.value,
+        this.name,
+        this.baseItem, this.weaponItem,
+        this.status, this.position,
+        this.baseRotation.value, this.weaponRotation.value,
         this.animation
     )
 

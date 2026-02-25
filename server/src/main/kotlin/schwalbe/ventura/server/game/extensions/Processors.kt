@@ -23,7 +23,8 @@ val BIGTON_1000_FEATURES = ProcessorFeatures(
         ItemType.GPS_RECEIVER,
         ItemType.SHORT_RANGE_SONAR,
         ItemType.MID_RANGE_SONAR,
-        ItemType.LONG_RANGE_SONAR
+        ItemType.LONG_RANGE_SONAR,
+        ItemType.LASER
     )
 )
 val BIGTON_2000_FEATURES = ProcessorFeatures(
@@ -44,7 +45,8 @@ val BIGTON_2000_FEATURES = ProcessorFeatures(
         ItemType.GPS_RECEIVER,
         ItemType.SHORT_RANGE_SONAR,
         ItemType.MID_RANGE_SONAR,
-        ItemType.LONG_RANGE_SONAR
+        ItemType.LONG_RANGE_SONAR,
+        ItemType.LASER
     )
 )
 val BIGTON_3000_FEATURES = ProcessorFeatures(
@@ -67,7 +69,8 @@ val BIGTON_3000_FEATURES = ProcessorFeatures(
         ItemType.GPS_RECEIVER,
         ItemType.SHORT_RANGE_SONAR,
         ItemType.MID_RANGE_SONAR,
-        ItemType.LONG_RANGE_SONAR
+        ItemType.LONG_RANGE_SONAR,
+        ItemType.LASER
     )
 )
 

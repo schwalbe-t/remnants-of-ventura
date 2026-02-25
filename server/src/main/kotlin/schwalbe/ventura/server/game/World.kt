@@ -14,7 +14,8 @@ private fun insideSquareRadiusXZ(p: SerVector3, center: SerVector3, r: Float)
 class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
 
     private val incoming = ConcurrentLinkedQueue<Player>()
-    private val players: MutableMap<String, Player> = mutableMapOf()
+    private val mutPlayers: MutableMap<String, Player> = mutableMapOf()
+    val players: Map<String, Player> = this.mutPlayers
     private val packetHandler = PacketHandler.receiveUpPackets<Player>()
 
     fun transfer(player: Player) {
@@ -35,7 +36,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
     private fun handleIncomingPlayers() {
         while (true) {
             val player: Player = this.incoming.poll() ?: break
-            this.players[player.username] = player
+            this.mutPlayers[player.username] = player
             if (player.data.worlds.last()?.worldId != this.id) {
                 player.data.worlds.add(this.createPlayerEntry())
             }
@@ -58,12 +59,12 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
 
     @Synchronized
     fun handlePlayerDisconnect(player: Player) {
-        this.players.remove(player.username)
+        this.mutPlayers.remove(player.username)
     }
 
     @Synchronized
     fun handlePlayerLeaving(player: Player) {
-        this.players.remove(player.username)
+        this.mutPlayers.remove(player.username)
     }
     
     private fun updateState() {
@@ -225,10 +226,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             val robot = getRobotOrError(robotId, pl) ?: return@onPacket
             pl.data.deployedRobots.remove(robotId)
             val inv: Inventory = pl.data.inventory
-            inv.add(robot.item)
-            for (attached in robot.attachments.asSequence().filterNotNull()) {
-                inv.add(attached)
-            }
+            robot.collectContainedItems().forEach(inv::add)
             pl.connection.outgoing.send(Packet.serialize(
                 PacketType.ROBOT_DESTROYED, robotId
             ))
