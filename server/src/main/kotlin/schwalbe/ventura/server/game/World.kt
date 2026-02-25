@@ -5,13 +5,26 @@ import schwalbe.ventura.*
 import schwalbe.ventura.net.*
 import schwalbe.ventura.data.*
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.uuid.Uuid
 
 private fun insideSquareRadiusXZ(p: SerVector3, center: SerVector3, r: Float)
     = maxOf(abs(p.x - center.x), abs(p.y - center.y)) <= r
 
 class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
+
+    companion object {
+        const val ENEMIES_PER_UNSAFE_PLAYER: Int = 5
+        const val ENEMY_SPAWN_MIN_DIST: Float = 16f
+        const val ENEMY_MAX_DIST: Float = 48f
+        const val ENEMY_SPAWN_RANGE: Float
+            = ENEMY_MAX_DIST - ENEMY_SPAWN_MIN_DIST
+    }
+
 
     private val incoming = ConcurrentLinkedQueue<Player>()
     private val mutPlayers: MutableMap<String, Player> = mutableMapOf()
@@ -66,22 +79,84 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
     fun handlePlayerLeaving(player: Player) {
         this.mutPlayers.remove(player.username)
     }
+
+    private fun spawnEnemyRobots() {
+        val unsafePlayers: List<Player> = this.players.values.filter { player ->
+            val pos = player.data.worlds.last().state.position
+            val px: Int = pos.x.unitsToUnitIdx()
+            val pz: Int = pos.z.unitsToUnitIdx()
+            this.data.peaceAreas.none { area -> area.contains(px, pz) }
+        }
+        val enemyLimit: Int = unsafePlayers.size * ENEMIES_PER_UNSAFE_PLAYER
+        while (this.data.enemyRobots.size < enemyLimit) {
+            val aroundPlayer: Player = unsafePlayers.random()
+            val aroundPos = aroundPlayer.data.worlds.last().state.position
+            val angle: Float = (Math.random() * 2f * PI).toFloat()
+            val dist: Float = ENEMY_SPAWN_MIN_DIST +
+                    Math.random().toFloat() * ENEMY_SPAWN_RANGE
+            val rtx: Int = (cos(angle) * dist).unitsToUnitIdx()
+            val rtz: Int = (sin(angle) * dist).unitsToUnitIdx()
+            val tx: Int = aroundPos.x.unitsToUnitIdx() + rtx
+            val tz: Int = aroundPos.z.unitsToUnitIdx() + rtz
+            if (this.data.peaceAreas.any { it.contains(tx, tz) }) { continue }
+            val spawned = EnemyRobot(
+                EnemyRobotConfig.BASIC,
+                SerVector3(tx.toFloat(), 0f, tz.toFloat())
+            )
+            this.data.enemyRobots[spawned.id] = spawned
+            println("Created enemy robot $spawned at offset $rtx, $rtz from player '${aroundPlayer.username}'")
+        }
+    }
+
+    private fun despawnEnemyRobots() {
+        val despawnTileDist: Int = ceil(ENEMY_MAX_DIST * 2).toInt()
+        for (robot in this.data.enemyRobots.values.toList()) {
+            val robotTx: Int = robot.position.x.unitsToUnitIdx()
+            val robotTz: Int = robot.position.z.unitsToUnitIdx()
+            val closestDist: Int = this.players.values.minOfOrNull { player ->
+                val playerPos = player.data.worlds.last().state.position
+                val playerTx: Int = playerPos.x.unitsToUnitIdx()
+                val playerTz: Int = playerPos.z.unitsToUnitIdx()
+                abs(playerTx - robotTx) + abs(playerTz - robotTz)
+            } ?: Int.MAX_VALUE
+            if (closestDist <= despawnTileDist) { continue }
+            this.data.enemyRobots.remove(robot.id)
+            println("Despawned enemy robot ${robot.id}")
+        }
+    }
+
+    private fun updateEnemyRobots() {
+        this.spawnEnemyRobots()
+        this.despawnEnemyRobots()
+        for (robot in this.data.enemyRobots.values.filter { it.health <= 0f }) {
+            // TODO! generate drops based on robot configuration and drop on
+            //       the ground (with no particular player as the owner)
+            this.data.enemyRobots.remove(robot.id)
+        }
+        for (robot in this.data.enemyRobots.values) {
+            robot.update(this)
+        }
+    }
     
     private fun updateState() {
         for (player in this.players.values) {
             player.updateState(this)
         }
+        this.updateEnemyRobots()
     }
 
     private fun sendWorldStatePacket() {
         val playerStates = this.players.map { (name, pl) ->
                 name to pl.data.worlds.last().state
             }.toMap()
-        val robotStates = this.players.values.flatMap { pl ->
+        val playerRobotStates = this.players.values.flatMap { pl ->
                 pl.data.deployedRobots.map { (id, r) ->
                     id to r.buildSharedInfo()
                 }
             }.toMap()
+        val enemyRobotStates = this.data.enemyRobots.values
+            .associateBy({ it.id }, { it.buildSharedInfo() })
+        val robotStates = playerRobotStates + enemyRobotStates
         fun worldStateAt(observer: SerVector3, pl: Player): WorldStatePacket {
             val r: Float = WORLD_STATE_CONTENT_RADIUS
             val fPlayerStates = playerStates

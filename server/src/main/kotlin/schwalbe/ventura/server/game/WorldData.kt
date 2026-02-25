@@ -8,6 +8,7 @@ import schwalbe.ventura.data.MAX_COLLIDER_SIZE_CHUNKS
 import schwalbe.ventura.data.chunksToUnits
 import schwalbe.ventura.data.unitsToChunks
 import schwalbe.ventura.data.unitsToUnitIdx
+import kotlin.uuid.Uuid
 
 private fun findChunkBounds(
     chunks: Collection<ChunkRef>
@@ -74,9 +75,19 @@ class ChunkCollisions(
     }
 }
 
+data class EnemyPeaceArea(
+    val minX: Int, val minZ: Int, val untilX: Int, val untilZ: Int
+) {
+    fun contains(x: Int, z: Int): Boolean =
+        this.minX <= x && x < this.untilX &&
+        this.minZ <= z && z < this.untilZ
+}
+
 class WorldData(
     val info: ConstWorldInfo,
-    val chunks: Map<ChunkRef, ChunkData>
+    val chunks: Map<ChunkRef, ChunkData>,
+    val peaceAreas: List<EnemyPeaceArea> = listOf()
 ) {
     val chunkCollisions: ChunkCollisions = ChunkCollisions(this.chunks)
+    val enemyRobots: MutableMap<Uuid, EnemyRobot> = mutableMapOf()
 }

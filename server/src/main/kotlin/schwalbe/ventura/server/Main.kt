@@ -15,6 +15,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.datetime.*
 import org.joml.Vector3f
+import schwalbe.ventura.server.game.EnemyPeaceArea
 import kotlin.system.exitProcess
 
 fun getKeyStorePath(): String = System.getenv("VENTURA_KEYSTORE_PATH")
@@ -74,7 +75,11 @@ fun main() {
         .toMap()
     val baseWorld = WorldData(
         ConstWorldInfo(rendererConfig = RendererConfig.default),
-        baseWorldChunks
+        baseWorldChunks,
+        peaceAreas = listOf(EnemyPeaceArea(
+            minX = (-2).chunksToUnits(), minZ = (-2).chunksToUnits(),
+            untilX = (+2).chunksToUnits(), untilZ = (+2).chunksToUnits()
+        ))
     )
 
     val workers = Workers()

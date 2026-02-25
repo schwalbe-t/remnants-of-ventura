@@ -13,7 +13,7 @@ import kotlin.math.abs
 val BIGTON_MODULES = BigtonModules<GameAttachmentContext>()
 
 val CORE_ROBOT_FUNCTIONS = BigtonModule(BIGTON_MODULES.functions)
-    .withFunction("manhattanDist", cost = 1, argc = 1) { r ->
+    .withFunction("tileDist", cost = 1, argc = 1) { r ->
         var dist: Long = r.popStack()
             ?.use {
                 if (it !is BigtonTuple || it.length != 2) { return@use null }
