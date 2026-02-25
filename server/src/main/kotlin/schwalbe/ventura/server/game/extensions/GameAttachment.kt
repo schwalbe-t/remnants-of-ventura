@@ -7,7 +7,7 @@ import schwalbe.ventura.server.game.*
 data class GameAttachmentContext(
     val world: World,
     val player: Player,
-    val robot: Robot
+    val robot: PlayerRobot
 )
 
 @Serializable

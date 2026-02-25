@@ -12,7 +12,7 @@ import kotlin.uuid.Uuid
 data class PlayerData(
     val worlds: MutableList<WorldEntry> = mutableListOf(),
     val inventory: Inventory = Inventory(),
-    val deployedRobots: MutableMap<Uuid, Robot> = mutableMapOf(),
+    val deployedRobots: MutableMap<Uuid, PlayerRobot> = mutableMapOf(),
     val sourceFiles: SourceFiles = SourceFiles()
 ) {
 

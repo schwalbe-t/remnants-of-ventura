@@ -206,15 +206,15 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
                 return@onPacket
             }
             val position = pl.data.worlds.last().state.position
-            val robot = Robot(d.robotType, d.item, position)
+            val robot = PlayerRobot(d.robotType, d.item, position)
             pl.data.deployedRobots[robot.id] = robot
             pl.connection.outgoing.send(Packet.serialize(
                 PacketType.ROBOT_DEPLOYED,
                 robot.id
             ))
         }
-        fun getRobotOrError(robotId: Uuid, player: Player): Robot? {
-            val robot: Robot? = player.data.deployedRobots[robotId]
+        fun getRobotOrError(robotId: Uuid, player: Player): PlayerRobot? {
+            val robot: PlayerRobot? = player.data.deployedRobots[robotId]
             if (robot != null) { return robot }
             player.connection.outgoing.send(Packet.serialize(
                 PacketType.TAGGED_ERROR, TaggedErrorPacket.NOT_ROBOT_OWNER
@@ -222,7 +222,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             return null
         }
         ph.onPacket(PacketType.DESTROY_ROBOT) { robotId, pl ->
-            val robot: Robot = getRobotOrError(robotId, pl) ?: return@onPacket
+            val robot = getRobotOrError(robotId, pl) ?: return@onPacket
             pl.data.deployedRobots.remove(robotId)
             val inv: Inventory = pl.data.inventory
             inv.add(robot.item)

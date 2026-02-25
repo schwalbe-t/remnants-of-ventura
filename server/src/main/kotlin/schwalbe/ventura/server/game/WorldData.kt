@@ -6,7 +6,6 @@ import schwalbe.ventura.data.ChunkRef
 import schwalbe.ventura.data.ConstWorldInfo
 import schwalbe.ventura.data.MAX_COLLIDER_SIZE_CHUNKS
 import schwalbe.ventura.data.chunksToUnits
-import schwalbe.ventura.data.unitsToChunkIdx
 import schwalbe.ventura.data.unitsToChunks
 import schwalbe.ventura.data.unitsToUnitIdx
 
