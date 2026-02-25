@@ -12,7 +12,7 @@ const val SCOUT_MOVEMENT_SPEED: Int = 10 // ticks per unit moved
 private fun implementMovement(
     r: BigtonRuntime, ctx: GameAttachmentContext, rdx: Int, rdz: Int
 ) {
-    if (ctx.robot.isMoving) {
+    if (ctx.robot.isMoving || (rdx == 0 && rdz == 0)) {
         return BigtonInt.fromValue(0).use(r::pushStack)
     }
     val (dx, dz) = if (abs(rdx) > abs(rdz)) { sign(rdx.toFloat()) to 0f }
