@@ -96,13 +96,6 @@ private fun runtimeError(r: BigtonRuntime, reason: String) {
     r.error = BigtonRuntimeError.BY_PROGRAM
 }
 
-private fun valueIsTruthy(v: BigtonValue): Boolean = when (v) {
-    is BigtonNull -> false
-    is BigtonInt -> v.value != 0L
-    is BigtonFloat -> v.value != 0.0 && !v.value.isNaN()
-    is BigtonString, is BigtonTuple, is BigtonObject, is BigtonArray -> true
-}
-
 private fun parseInt(r: BigtonRuntime) {
     val parsed: Long = r.popStack()
         ?.use { when (it) {
@@ -311,7 +304,7 @@ class BigtonModules<C> {
                 if (cond == null || a == null || b == null) {
                     return@withFunction BigtonNull.create().use(r::pushStack)
                 }
-                r.pushStack(if (valueIsTruthy(cond)) a else b)
+                r.pushStack(if (cond.isTruthy) a else b)
             }
         }
         .withFunction("toString", cost = 1, argc = 1) { r ->

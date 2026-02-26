@@ -108,6 +108,14 @@ sealed class BigtonValue(val handle: Long): AutoCloseable {
     
 }
 
+val BigtonValue.isTruthy: Boolean
+    get() = when (this) {
+        is BigtonNull -> false
+        is BigtonInt -> this.value != 0L
+        is BigtonFloat -> this.value != 0.0 && !this.value.isNaN()
+        is BigtonString, is BigtonTuple, is BigtonObject, is BigtonArray -> true
+    }
+
 
 class BigtonNull    (handle: Long) : BigtonValue(handle) { companion object }
 
