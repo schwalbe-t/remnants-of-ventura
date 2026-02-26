@@ -58,6 +58,8 @@ data class PacketType<P>(
     val ROBOT_DEPLOYED              = down<Uuid>()
     val DESTROY_ROBOT               = up<Uuid>()
     val ROBOT_DESTROYED             = down<Uuid>()
+    val REPAIR_ROBOT                = up<Uuid>()
+    val ROBOT_REPAIRED              = down<Uuid>()
     val START_ROBOT                 = up<Uuid>()
     val PAUSE_ROBOT                 = up<Uuid>()
     val UNPAUSE_ROBOT               = up<Uuid>()
@@ -106,6 +108,8 @@ enum class TaggedErrorPacket {
     // attempt to manipulate robot failed because robot does not exist or is
     // not owned by the calling player
     NOT_ROBOT_OWNER,
+    // attempt to repair robot failed because player out of range for repair
+    ROBOT_TOO_FAR_AWAY_TO_REPAIR,
     // attempt to change attachment failed because the attachment index is OOB
     ATTACHMENT_IDX_OOB,
     // attempt to change attachment failed due to item not being in inventory

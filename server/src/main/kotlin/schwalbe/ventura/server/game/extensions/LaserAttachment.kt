@@ -49,9 +49,8 @@ private fun implementLaserShoot(
     ctx.robot.rotateWeaponAlong(Vector3f(dx.toFloat(), 0f, dz.toFloat()))
     var cx: Int = ctx.robot.position.x.unitsToUnitIdx()
     var cz: Int = ctx.robot.position.z.unitsToUnitIdx()
-    println("Laser was shot from $cx, $cz in direction $dx, $dz by robot with ID ${ctx.robot.id}") // TODO! remove
     for (i in 1..LaserAttachmentState.MAXIMUM_RANGE) {
-        val hitRobot: Robot? = null // TODO! determine actual enemy robot to hit
+        val hitRobot: Robot? = ctx.robot // TODO! determine actual enemy robot to hit
         if (hitRobot != null) {
             hitRobot.health -= LaserAttachmentState.DAMAGE
             return BigtonInt.fromValue(1).use(r::pushStack)

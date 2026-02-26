@@ -9,6 +9,7 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.uuid.Uuid
 
@@ -23,6 +24,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
         const val ENEMY_MAX_DIST: Float = 48f
         const val ENEMY_SPAWN_RANGE: Float
             = ENEMY_MAX_DIST - ENEMY_SPAWN_MIN_DIST
+        const val MAX_ROBOT_REPAIR_DIST: Float = 5f
     }
 
 
@@ -104,7 +106,6 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
                 SerVector3(tx.toFloat(), 0f, tz.toFloat())
             )
             this.data.enemyRobots[spawned.id] = spawned
-            println("Created enemy robot $spawned at offset $rtx, $rtz from player '${aroundPlayer.username}'")
         }
     }
 
@@ -121,7 +122,6 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             } ?: Int.MAX_VALUE
             if (closestDist <= despawnTileDist) { continue }
             this.data.enemyRobots.remove(robot.id)
-            println("Despawned enemy robot ${robot.id}")
         }
     }
 
@@ -306,6 +306,23 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             robot.collectContainedItems().forEach(inv::add)
             pl.connection.outgoing.send(Packet.serialize(
                 PacketType.ROBOT_DESTROYED, robotId
+            ))
+        }
+        ph.onPacket(PacketType.REPAIR_ROBOT) { robotId, pl ->
+            val robot = getRobotOrError(robotId, pl) ?: return@onPacket
+            val playerPos = pl.data.worlds.last().state.position
+            val dist: Float = hypot(
+                robot.position.x - playerPos.x, robot.position.z - playerPos.z
+            )
+            if (dist > MAX_ROBOT_REPAIR_DIST) {
+                return@onPacket pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.TAGGED_ERROR,
+                    TaggedErrorPacket.ROBOT_TOO_FAR_AWAY_TO_REPAIR
+                ))
+            }
+            robot.health = robot.type.maxHealth
+            pl.connection.outgoing.send(Packet.serialize(
+                PacketType.ROBOT_REPAIRED, robotId
             ))
         }
         ph.onPacket(PacketType.START_ROBOT) { robotId, pl ->

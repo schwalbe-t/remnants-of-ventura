@@ -17,7 +17,7 @@ enum class EnemyRobotConfig(
         robotType = RobotType.SCOUT,
         baseItem = Item(
             ItemType.KENDAL_DYNAMICS_SCOUT,
-            ItemVariant.SCOUT_CAMOUFLAGE
+            ItemVariant.SCOUT_ENEMY
         ),
         weaponItem = Item(ItemType.LASER)
     )

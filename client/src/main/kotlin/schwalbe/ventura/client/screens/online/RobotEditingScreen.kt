@@ -415,6 +415,11 @@ private fun createRobotSettingsSection(
             )
         )
         .pad(1.vmin)
+        .withBottomButton(l[BUTTON_REPAIR_ROBOT]) {
+            client.network.outPackets?.send(Packet.serialize(
+                PacketType.REPAIR_ROBOT, robotId
+            ))
+        }
         .withBottomButton(l[BUTTON_DESTROY_ROBOT]) {
             client.network.outPackets?.send(Packet.serialize(
                 PacketType.DESTROY_ROBOT, robotId

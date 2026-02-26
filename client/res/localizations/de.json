@@ -55,6 +55,7 @@
         "TITLE_ROBOT_ATTACHMENTS": "Aufsätze",
         "TITLE_ROBOT_CODE_FILES": "Code-Dateien",
         "BUTTON_ADD_CODE_FILE": "Code-Datei Hinzufügen",
+        "BUTTON_REPAIR_ROBOT": "Roboter Reparieren",
         "BUTTON_DESTROY_ROBOT": "Roboter Zerstören",
         "BUTTON_REMOVE_ITEM": "Item Entfernen",
         "BUTTON_CANCEL_EDIT": "Abbrechen",

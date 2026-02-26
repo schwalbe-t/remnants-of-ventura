@@ -167,6 +167,10 @@ enum class ItemVariant(
     SCOUT_LADYBUG(
         meshOverrideTexturePaths = "res/robots/scout_ladybug.png"
             .overrides("body")
+    ),
+    SCOUT_ENEMY(
+        meshOverrideTexturePaths = "res/robots/scout_enemy.png"
+            .overrides("body")
     );
 
     val localNameKey: String

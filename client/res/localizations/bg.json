@@ -55,6 +55,7 @@
         "TITLE_ROBOT_ATTACHMENTS": "Приставки",
         "TITLE_ROBOT_CODE_FILES": "Код файлове",
         "BUTTON_ADD_CODE_FILE": "Добави код файл",
+        "BUTTON_REPAIR_ROBOT": "Оправи робот",
         "BUTTON_DESTROY_ROBOT": "Онищожи робот",
         "BUTTON_REMOVE_ITEM": "Премахни предмет",
         "BUTTON_CANCEL_EDIT": "Откажи",
