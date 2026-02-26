@@ -30,6 +30,7 @@ class World {
             Player.submitResources(resLoader)
             Robot.submitResources(resLoader)
             ChunkLoader.submitResources(resLoader)
+            VisualEffects.submitResources(resLoader)
             resLoader.submit(groundShader)
         }
     }
@@ -39,6 +40,7 @@ class World {
     val player = Player()
     val chunks = ChunkLoader()
     val state = WorldState()
+    val vfx = VisualEffects()
 
     var groundColor: Vector4fc = Vector4f(0f, 0f, 0f, 0f)
 
@@ -75,5 +77,6 @@ fun World.render(client: Client) {
         this.state.render(client, pass)
         this.player.render(pass)
         this.renderGround(pass)
+        this.vfx.render(pass, client.deltaTime, this.state)
     }
 }

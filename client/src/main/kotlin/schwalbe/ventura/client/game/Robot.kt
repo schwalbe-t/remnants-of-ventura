@@ -50,11 +50,14 @@ fun Robot.baseTransform(
     .rotateY(rotY)
 
 fun Robot.weaponTransform(
-    basePosition: Vector3fc, offset: Vector3fc, rotY: Float
-): Matrix4f = Matrix4f()
-    .translate(basePosition)
-    .translate(offset)
-    .rotateY(rotY)
+    baseItemType: ItemType, basePosition: Vector3fc, rotY: Float
+): Matrix4f {
+    val offset = ROBOT_WEAPON_OFFSETS[baseItemType] ?: Vector3f()
+    return Matrix4f()
+        .translate(basePosition)
+        .translate(offset)
+        .rotateY(rotY)
+}
 
 fun Robot.render(
     pass: RenderPass, pos: Vector3fc,
@@ -78,8 +81,7 @@ fun Robot.render(
         meshTextureOverrides = baseTexOverrides
     )
     if (weaponItem != null) {
-        val weaponOffset = ROBOT_WEAPON_OFFSETS[baseItem.type] ?: Vector3f()
-        val weaponTransf = Robot.weaponTransform(pos, weaponOffset, weaponRotY)
+        val weaponTransf = Robot.weaponTransform(baseItem.type, pos, weaponRotY)
         val weaponInstances = listOf(weaponTransf)
         val weaponItemTypeRes = ItemTypeResources.all[weaponItem.type.ordinal]
         val weaponItemVar = weaponItem.variant

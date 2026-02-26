@@ -3,7 +3,10 @@ package schwalbe.ventura.server.game
 
 import org.joml.Vector3f
 import schwalbe.ventura.data.*
+import schwalbe.ventura.net.Packet
+import schwalbe.ventura.net.PacketType
 import schwalbe.ventura.net.SerVector3
+import schwalbe.ventura.utils.insideSquareRadiusXZ
 import schwalbe.ventura.utils.sign
 import kotlin.math.abs
 
@@ -27,10 +30,11 @@ private fun updateBasicRobot(robot: EnemyRobot): (World) -> Unit {
         val rMoveZ: Int = if (collZ) 0 else toTgtZ
         val (dx, dz) = if (rMoveZ == 0) { sign(rMoveX) to 0 }
             else { 0 to sign(rMoveZ) }
+        if (dx == 0 && dz == 0) { return }
         robot.move(dx.toFloat(), dz.toFloat(), BASIC_ENEMY_MOVEMENT_SPEED)
     }
     var shootCooldown: Long = 0
-    fun shoot(toTgtX: Int, toTgtZ: Int, target: PlayerRobot) {
+    fun shoot(toTgtX: Int, toTgtZ: Int, target: PlayerRobot, world: World) {
         if (shootCooldown > 0) {
             shootCooldown -= 1
             return
@@ -40,6 +44,14 @@ private fun updateBasicRobot(robot: EnemyRobot): (World) -> Unit {
         robot.rotateWeaponAlong(toTgt)
         target.health -= BASIC_ENEMY_ATTACK_DAMAGE
         shootCooldown = BASIC_ENEMY_ATTACK_COOLDOWN
+        val vfx = VisualEffect.LaserRay(
+            robot.id,
+            towards = SerVector3(
+                target.position.x, target.position.y + 0.25f,
+                target.position.z
+            )
+        )
+        world.broadcastVfx(vfx, origin = robot.position)
     }
     return update@{ world ->
         val target: PlayerRobot = world.players.values
@@ -57,7 +69,7 @@ private fun updateBasicRobot(robot: EnemyRobot): (World) -> Unit {
             return@update
         }
         moveTowards(robot.tileX, robot.tileZ, toTgtX, toTgtZ, world)
-        shoot(toTgtX, toTgtZ, target)
+        shoot(toTgtX, toTgtZ, target, world)
     }
 }
 

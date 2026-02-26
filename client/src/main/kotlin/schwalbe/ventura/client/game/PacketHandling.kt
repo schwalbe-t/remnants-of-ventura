@@ -5,6 +5,7 @@ import org.joml.Vector4f
 import schwalbe.ventura.client.Client
 import schwalbe.ventura.net.*
 import schwalbe.ventura.data.ConstWorldInfo
+import schwalbe.ventura.data.VisualEffect
 
 fun PacketHandler<Unit>.addErrorLogging() = this
     .onPacket(PacketType.GENERIC_ERROR) { e: GenericErrorPacket, _ ->
@@ -38,4 +39,9 @@ fun PacketHandler<Unit>.addWorldHandling(client: Client) = this
     .onPacket(PacketType.WORLD_STATE) { s: WorldStatePacket, _ ->
         val world: World = client.world ?: return@onPacket
         world.state.handleReceivedState(s)
+    }
+    .onPacket(PacketType.VISUAL_EFFECT) { v: VisualEffectPacket, _ ->
+        val world: World = client.world ?: return@onPacket
+        val renderer = v.vfx.toVfxRenderer(world) ?: return@onPacket
+        world.vfx.add(v.relTimestamp, renderer)
     }

@@ -5,7 +5,8 @@ import kotlinx.serialization.Serializable
 import org.joml.Vector3f
 import schwalbe.ventura.bigton.BigtonModule
 import schwalbe.ventura.bigton.runtime.*
-import schwalbe.ventura.data.unitsToUnitIdx
+import schwalbe.ventura.data.VisualEffect
+import schwalbe.ventura.net.SerVector3
 import schwalbe.ventura.utils.sign
 import kotlin.math.abs
 import kotlin.math.max
@@ -45,15 +46,25 @@ private fun implementLaserShoot(
     val ox: Int = ctx.robot.tileX
     val oz: Int = ctx.robot.tileZ
     val maxDist: Int = LaserAttachmentState.MAXIMUM_RANGE
+    var hitPos = SerVector3(
+        (ox + dx * maxDist).toFloat() + 0.5f, 1f,
+        (oz + dz * maxDist).toFloat() + 0.5f
+    )
     for (hitRobot in ctx.world.data.enemyRobots.values) {
         val rx: Int = hitRobot.tileX
         val rz: Int = hitRobot.tileZ
         if (rx != ox && rz != oz) { continue }
         if (max(abs(rx - ox), abs(rz - oz)) > maxDist) { continue }
         hitRobot.health -= LaserAttachmentState.DAMAGE
+        hitPos = SerVector3(
+            hitRobot.position.x, hitRobot.position.y + 0.25f,
+            hitRobot.position.z
+        )
         break
     }
     BigtonInt.fromValue(1).use(r::pushStack)
+    val laserRay = VisualEffect.LaserRay(ctx.robot.id, hitPos)
+    ctx.world.broadcastVfx(laserRay, ctx.robot.position)
 }
 
 val LASER_ATTACHMENT_MODULE = BigtonModule(BIGTON_MODULES.functions)

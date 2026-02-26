@@ -124,12 +124,12 @@ class PlayerRobot(
     private var compileTask: CompilationTask? = null
     @Transient
     private var runtime: BigtonRuntime? = null
+    @Transient
+    val attachmentStates = AttachmentStates<GameAttachment>()
 
     val logs: MutableList<String> = mutableListOf()
     val attachments: Array<Item?> = Array(this.type.numAttachments) { null }
     var sourceFiles: List<String> = listOf()
-
-    val attachmentStates = AttachmentStates<GameAttachment>()
 
     init {
         this.alignPosition()

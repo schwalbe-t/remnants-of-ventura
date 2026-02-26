@@ -4,6 +4,7 @@ package schwalbe.ventura.server.game
 import schwalbe.ventura.*
 import schwalbe.ventura.net.*
 import schwalbe.ventura.data.*
+import schwalbe.ventura.utils.insideSquareRadiusXZ
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.PI
 import kotlin.math.abs
@@ -12,9 +13,6 @@ import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.uuid.Uuid
-
-private fun insideSquareRadiusXZ(p: SerVector3, center: SerVector3, r: Float)
-    = maxOf(abs(p.x - center.x), abs(p.y - center.y)) <= r
 
 class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
 
@@ -52,7 +50,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
         while (true) {
             val player: Player = this.incoming.poll() ?: break
             this.mutPlayers[player.username] = player
-            if (player.data.worlds.last()?.worldId != this.id) {
+            if (player.data.worlds.last().worldId != this.id) {
                 player.data.worlds.add(this.createPlayerEntry())
             }
             this.registry.workers.playerWriter.add(player)
@@ -195,6 +193,21 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
         this.handlePlayerPackets()
         this.updateState()
         this.sendWorldStatePacket()
+    }
+
+    fun broadcastVfx(vfx: VisualEffect, origin: SerVector3) {
+        val now: Long = System.currentTimeMillis()
+        val maxDist = VisualEffect.MAX_BROADCAST_DIST
+        for (player in this.players.values) {
+            val pos = player.data.worlds.last().state.position
+            if (!insideSquareRadiusXZ(pos, origin, maxDist)) { continue }
+            player.connection.outgoing.send(Packet.serialize(
+                PacketType.VISUAL_EFFECT, VisualEffectPacket(
+                    relTimestamp = now - player.connection.connectedSince,
+                    vfx
+                )
+            ))
+        }
     }
 
     private val constWorldInfo: Packet

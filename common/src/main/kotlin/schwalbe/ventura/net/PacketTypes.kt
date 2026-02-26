@@ -45,6 +45,7 @@ data class PacketType<P>(
 
     val PLAYER_STATE                = up<SharedPlayerInfo>()
     val WORLD_STATE                 = down<WorldStatePacket>()
+    val VISUAL_EFFECT               = down<VisualEffectPacket>()
 
     val REQUEST_INVENTORY_CONTENTS  = up<Unit>()
     val INVENTORY_CONTENTS          = down<InventoryContentsPacket>()
@@ -185,6 +186,12 @@ data class WorldStatePacket(
     val players: Map<String, SharedPlayerInfo>,
     val allRobots: Map<Uuid, SharedRobotInfo>,
     val ownedRobots: Map<Uuid, PrivateRobotInfo>
+)
+
+@Serializable
+data class VisualEffectPacket(
+    val relTimestamp: Long,
+    val vfx: VisualEffect
 )
 
 
