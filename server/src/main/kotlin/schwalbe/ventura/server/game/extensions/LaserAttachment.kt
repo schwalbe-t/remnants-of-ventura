@@ -6,8 +6,9 @@ import org.joml.Vector3f
 import schwalbe.ventura.bigton.BigtonModule
 import schwalbe.ventura.bigton.runtime.*
 import schwalbe.ventura.data.unitsToUnitIdx
-import schwalbe.ventura.server.game.Robot
+import schwalbe.ventura.utils.sign
 import kotlin.math.abs
+import kotlin.math.max
 
 @Serializable
 data class LaserAttachmentState(
@@ -30,12 +31,6 @@ data class LaserAttachmentState(
     }
 }
 
-private fun sign(i: Int): Int = when {
-    i < 0 -> -1
-    i > 0 -> +1
-    else -> 0
-}
-
 private fun implementLaserShoot(
     r: BigtonRuntime, ctx: GameAttachmentContext, rdx: Int, rdz: Int
 ) {
@@ -47,16 +42,16 @@ private fun implementLaserShoot(
     val (dx, dz) = if (abs(rdx) > abs(rdz)) { sign(rdx) to 0 }
         else { 0 to sign(rdz) }
     ctx.robot.rotateWeaponAlong(Vector3f(dx.toFloat(), 0f, dz.toFloat()))
-    var cx: Int = ctx.robot.position.x.unitsToUnitIdx()
-    var cz: Int = ctx.robot.position.z.unitsToUnitIdx()
-    for (i in 1..LaserAttachmentState.MAXIMUM_RANGE) {
-        val hitRobot: Robot? = ctx.robot // TODO! determine actual enemy robot to hit
-        if (hitRobot != null) {
-            hitRobot.health -= LaserAttachmentState.DAMAGE
-            return BigtonInt.fromValue(1).use(r::pushStack)
-        }
-        cx += dx
-        cz += dz
+    val ox: Int = ctx.robot.position.x.unitsToUnitIdx()
+    val oz: Int = ctx.robot.position.z.unitsToUnitIdx()
+    val maxDist: Int = LaserAttachmentState.MAXIMUM_RANGE
+    for (hitRobot in ctx.world.data.enemyRobots.values) {
+        val rx: Int = hitRobot.position.x.unitsToUnitIdx()
+        val rz: Int = hitRobot.position.z.unitsToUnitIdx()
+        if (rx != ox && rz != oz) { continue }
+        if (max(abs(rx - ox), abs(rz - oz)) > maxDist) { continue }
+        hitRobot.health -= LaserAttachmentState.DAMAGE
+        break
     }
     BigtonInt.fromValue(1).use(r::pushStack)
 }
