@@ -42,12 +42,12 @@ private fun implementLaserShoot(
     val (dx, dz) = if (abs(rdx) > abs(rdz)) { sign(rdx) to 0 }
         else { 0 to sign(rdz) }
     ctx.robot.rotateWeaponAlong(Vector3f(dx.toFloat(), 0f, dz.toFloat()))
-    val ox: Int = ctx.robot.position.x.unitsToUnitIdx()
-    val oz: Int = ctx.robot.position.z.unitsToUnitIdx()
+    val ox: Int = ctx.robot.tileX
+    val oz: Int = ctx.robot.tileZ
     val maxDist: Int = LaserAttachmentState.MAXIMUM_RANGE
     for (hitRobot in ctx.world.data.enemyRobots.values) {
-        val rx: Int = hitRobot.position.x.unitsToUnitIdx()
-        val rz: Int = hitRobot.position.z.unitsToUnitIdx()
+        val rx: Int = hitRobot.tileX
+        val rz: Int = hitRobot.tileZ
         if (rx != ox && rz != oz) { continue }
         if (max(abs(rx - ox), abs(rz - oz)) > maxDist) { continue }
         hitRobot.health -= LaserAttachmentState.DAMAGE

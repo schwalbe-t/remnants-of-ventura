@@ -1,12 +1,13 @@
 
 package schwalbe.ventura.server.game
 
+import org.joml.Vector3f
 import schwalbe.ventura.data.*
 import schwalbe.ventura.net.SerVector3
 import schwalbe.ventura.utils.sign
 import kotlin.math.abs
 
-const val BASIC_ENEMY_SEARCH_RANGE: Int = 20
+const val BASIC_ENEMY_SEARCH_RANGE: Int = 30
 const val BASIC_ENEMY_MOVEMENT_SPEED: Int = 10 // ticks per unit moved
 const val BASIC_ENEMY_TARGET_DIST: Int = 5
 const val BASIC_ENEMY_ATTACK_RANGE: Int = 10
@@ -20,8 +21,8 @@ private fun updateBasicRobot(robot: EnemyRobot): (World) -> Unit {
     fun moveTowards(rx: Int, rz: Int, toTgtX: Int, toTgtZ: Int, world: World) {
         if (robot.isMoving) { return }
         if (canShoot(toTgtX, toTgtZ, BASIC_ENEMY_TARGET_DIST)) { return }
-        val collX: Boolean = world.data.chunkCollisions[rx + sign(toTgtX), rz]
-        val collZ: Boolean = world.data.chunkCollisions[rx, rz + sign(toTgtZ)]
+        val collX: Boolean = world.tileIsOccupied(rx + sign(toTgtX), rz)
+        val collZ: Boolean = world.tileIsOccupied(rx, rz + sign(toTgtZ))
         val rMoveX: Int = if (collX) 0 else toTgtX
         val rMoveZ: Int = if (collZ) 0 else toTgtZ
         val (dx, dz) = if (rMoveZ == 0) { sign(rMoveX) to 0 }
@@ -35,27 +36,27 @@ private fun updateBasicRobot(robot: EnemyRobot): (World) -> Unit {
             return
         }
         if (!canShoot(toTgtX, toTgtZ, BASIC_ENEMY_ATTACK_RANGE)) { return }
+        val toTgt = Vector3f(toTgtX.toFloat(), 0f, toTgtZ.toFloat())
+        robot.rotateWeaponAlong(toTgt)
         target.health -= BASIC_ENEMY_ATTACK_DAMAGE
         shootCooldown = BASIC_ENEMY_ATTACK_COOLDOWN
     }
     return update@{ world ->
-        fun robotX(r: Robot) = r.position.x.unitsToUnitIdx()
-        fun robotZ(r: Robot) = r.position.z.unitsToUnitIdx()
-        val rx: Int = robotX(robot)
-        val rz: Int = robotZ(robot)
         val target: PlayerRobot = world.players.values
             .flatMap { it.data.deployedRobots.values }
             .filter { world.data.peaceAreas.none { area ->
-                area.contains(robotX(it), robotZ(it))
+                area.contains(it.tileX, it.tileZ)
             } }
-            .minByOrNull { abs(robotX(it) - rx) + abs(robotZ(it) - rz) }
+            .minByOrNull {
+                abs(it.tileX - robot.tileX) + abs(it.tileZ - robot.tileZ)
+            }
             ?: return@update
-        val toTgtX: Int = robotX(target) - rx
-        val toTgtZ: Int = robotZ(target) - rz
+        val toTgtX: Int = target.tileX - robot.tileX
+        val toTgtZ: Int = target.tileZ - robot.tileZ
         if (abs(toTgtX) + abs(toTgtZ) > BASIC_ENEMY_SEARCH_RANGE) {
             return@update
         }
-        moveTowards(rx, rz, toTgtX, toTgtZ, world)
+        moveTowards(robot.tileX, robot.tileZ, toTgtX, toTgtZ, world)
         shoot(toTgtX, toTgtZ, target)
     }
 }

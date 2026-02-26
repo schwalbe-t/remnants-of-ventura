@@ -82,6 +82,17 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
         this.mutPlayers.remove(player.username)
     }
 
+    fun tileIsOccupied(tx: Int, tz: Int): Boolean {
+        if (this.data.chunkCollisions[tx, tz]) { return true }
+        fun robotOccupiesTile(r: Robot) = r.tileX == tx && r.tileZ == tz
+        val byPlayerRobot: Boolean = this.players.values
+            .any { it.data.deployedRobots.values.any(::robotOccupiesTile) }
+        if (byPlayerRobot) { return true }
+        val byEnemyRobot: Boolean = this.data.enemyRobots.values
+            .any(::robotOccupiesTile)
+        return byEnemyRobot
+    }
+
     private fun spawnEnemyRobots() {
         val unsafePlayers: List<Player> = this.players.values.filter { player ->
             val pos = player.data.worlds.last().state.position
@@ -112,13 +123,11 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
     private fun despawnEnemyRobots() {
         val despawnTileDist: Int = ceil(ENEMY_MAX_DIST * 2).toInt()
         for (robot in this.data.enemyRobots.values.toList()) {
-            val robotTx: Int = robot.position.x.unitsToUnitIdx()
-            val robotTz: Int = robot.position.z.unitsToUnitIdx()
             val closestDist: Int = this.players.values.minOfOrNull { player ->
                 val playerPos = player.data.worlds.last().state.position
                 val playerTx: Int = playerPos.x.unitsToUnitIdx()
                 val playerTz: Int = playerPos.z.unitsToUnitIdx()
-                abs(playerTx - robotTx) + abs(playerTz - robotTz)
+                abs(playerTx - robot.tileX) + abs(playerTz - robot.tileZ)
             } ?: Int.MAX_VALUE
             if (closestDist <= despawnTileDist) { continue }
             this.data.enemyRobots.remove(robot.id)

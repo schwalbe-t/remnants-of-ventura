@@ -40,7 +40,7 @@ object Robot {
 }
 
 val ROBOT_WEAPON_OFFSETS: Map<ItemType, Vector3fc> = mapOf(
-    ItemType.KENDAL_DYNAMICS_SCOUT to Vector3f(0f, +1f, 0f)
+    ItemType.KENDAL_DYNAMICS_SCOUT to Vector3f(0f, +0.25f, 0f)
 )
 
 fun Robot.baseTransform(
@@ -50,8 +50,9 @@ fun Robot.baseTransform(
     .rotateY(rotY)
 
 fun Robot.weaponTransform(
-    baseTransform: Matrix4fc, offset: Vector3fc, rotY: Float
-): Matrix4f = Matrix4f(baseTransform)
+    basePosition: Vector3fc, offset: Vector3fc, rotY: Float
+): Matrix4f = Matrix4f()
+    .translate(basePosition)
     .translate(offset)
     .rotateY(rotY)
 
@@ -78,9 +79,7 @@ fun Robot.render(
     )
     if (weaponItem != null) {
         val weaponOffset = ROBOT_WEAPON_OFFSETS[baseItem.type] ?: Vector3f()
-        val weaponTransf = Robot.weaponTransform(
-            baseTransf, weaponOffset, weaponRotY
-        )
+        val weaponTransf = Robot.weaponTransform(pos, weaponOffset, weaponRotY)
         val weaponInstances = listOf(weaponTransf)
         val weaponItemTypeRes = ItemTypeResources.all[weaponItem.type.ordinal]
         val weaponItemVar = weaponItem.variant

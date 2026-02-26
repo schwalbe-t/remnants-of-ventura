@@ -56,13 +56,18 @@ fun makeRadarAttachmentModule(
         if (state.includeRogue) {
             state.foundRobots.addAll(ctx.world.data.enemyRobots.values)
         }
-        val rx: Int = ctx.robot.position.x.unitsToUnitIdx()
-        val rz: Int = ctx.robot.position.z.unitsToUnitIdx()
+        val rx: Int = ctx.robot.tileX
+        val rz: Int = ctx.robot.tileZ
         state.foundRobots.removeIf { robot ->
-            val frx: Int = robot.position.x.unitsToUnitIdx()
-            val frz: Int = robot.position.z.unitsToUnitIdx()
+            val frx: Int = robot.tileX
+            val frz: Int = robot.tileZ
             val dist: Int = maxOf(abs(frx - rx), abs(frz - rz))
             dist > maxDistTiles
+        }
+        state.foundRobots.sortBy { robot ->
+            val cx: Int = robot.tileX
+            val cz: Int = robot.tileZ
+            abs(cx - rx) + abs(cz - rz)
         }
         BigtonInt.fromValue(state.foundRobots.size.toLong()).use(r::pushStack)
     }
@@ -76,12 +81,8 @@ fun makeRadarAttachmentModule(
         val state = ctx.robot.attachmentStates[RadarAttachmentState.TYPE]
         val current: Robot = state.currentRobot
             ?: return@withCtxFunction r.reportDynError(RADAR_NO_ROBOT_MSG)
-        val rx: Int = ctx.robot.position.x.unitsToUnitIdx()
-        val rz: Int = ctx.robot.position.z.unitsToUnitIdx()
-        val cx: Int = current.position.x.unitsToUnitIdx()
-        val cz: Int = current.position.z.unitsToUnitIdx()
-        val dx = BigtonInt.fromValue((cx - rx).toLong())
-        val dz = BigtonInt.fromValue((cz - rz).toLong())
+        val dx = BigtonInt.fromValue((current.tileX - ctx.robot.tileX).toLong())
+        val dz = BigtonInt.fromValue((current.tileZ - ctx.robot.tileZ).toLong())
         arrayOf<BigtonValue?>(dx, dz).useAll {
             BigtonTuple.fromElements(listOf(dx, dz), r).use(r::pushStack)
         }

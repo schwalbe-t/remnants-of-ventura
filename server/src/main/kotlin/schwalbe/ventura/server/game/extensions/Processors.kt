@@ -24,6 +24,9 @@ val BIGTON_1000_FEATURES = ProcessorFeatures(
         ItemType.SHORT_RANGE_SONAR,
         ItemType.MID_RANGE_SONAR,
         ItemType.LONG_RANGE_SONAR,
+        ItemType.SHORT_RANGE_RADAR,
+        ItemType.MID_RANGE_RADAR,
+        ItemType.LONG_RANGE_RADAR,
         ItemType.LASER
     )
 )
@@ -46,6 +49,9 @@ val BIGTON_2000_FEATURES = ProcessorFeatures(
         ItemType.SHORT_RANGE_SONAR,
         ItemType.MID_RANGE_SONAR,
         ItemType.LONG_RANGE_SONAR,
+        ItemType.SHORT_RANGE_RADAR,
+        ItemType.MID_RANGE_RADAR,
+        ItemType.LONG_RANGE_RADAR,
         ItemType.LASER
     )
 )
@@ -70,6 +76,9 @@ val BIGTON_3000_FEATURES = ProcessorFeatures(
         ItemType.SHORT_RANGE_SONAR,
         ItemType.MID_RANGE_SONAR,
         ItemType.LONG_RANGE_SONAR,
+        ItemType.SHORT_RANGE_RADAR,
+        ItemType.MID_RANGE_RADAR,
+        ItemType.LONG_RANGE_RADAR,
         ItemType.LASER
     )
 )

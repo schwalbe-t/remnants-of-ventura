@@ -134,6 +134,18 @@ enum class ItemType(
         category = ItemCategory.UTILITY_MODULE,
         modelPath = "res/items/sonar.glb"
     ),
+    SHORT_RANGE_RADAR(
+        category = ItemCategory.UTILITY_MODULE,
+        modelPath = "res/items/radar.glb"
+    ),
+    MID_RANGE_RADAR(
+        category = ItemCategory.UTILITY_MODULE,
+        modelPath = "res/items/radar.glb"
+    ),
+    LONG_RANGE_RADAR(
+        category = ItemCategory.UTILITY_MODULE,
+        modelPath = "res/items/radar.glb"
+    ),
 
     LASER(
         category = ItemCategory.WEAPON,

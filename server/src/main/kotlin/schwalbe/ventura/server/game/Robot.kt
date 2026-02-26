@@ -24,6 +24,11 @@ private fun SmoothedFloat.rotateTowards(newAngle: Float) {
 @Serializable
 abstract class Robot {
 
+    var tileX: Int = 0
+        private set
+    var tileZ: Int = 0
+        private set
+
     abstract val type: RobotType
     abstract val baseItem: Item
     abstract val weaponItem: Item?
@@ -54,9 +59,11 @@ abstract class Robot {
         get() = this.movementSteps.isNotEmpty()
 
     fun alignPosition() {
+        this.tileX = this.position.x.unitsToUnitIdx()
+        this.tileZ = this.position.z.unitsToUnitIdx()
         this.position = SerVector3(
-            this.position.x.unitsToUnitIdx() + 0.5f, 0f,
-            this.position.z.unitsToUnitIdx() + 0.5f
+            this.tileX + 0.5f, this.position.y,
+            this.tileZ + 0.5f
         )
     }
 
@@ -74,7 +81,16 @@ abstract class Robot {
 
     fun move(dx: Float, dz: Float, duration: Int) {
         this.rotateBaseAlong(Vector3f(dx, 0f, dz))
-        if (duration <= 0) { return }
+        if (duration <= 0) {
+            this.position = SerVector3(
+                this.position.x + dx, this.position.y,
+                this.position.z + dz
+            )
+            this.alignPosition()
+            return
+        }
+        this.tileX = (this.position.x + dx).unitsToUnitIdx()
+        this.tileZ = (this.position.z + dz).unitsToUnitIdx()
         this.movementSteps.add(MovementStep(
             dx / duration, dz / duration, duration
         ))

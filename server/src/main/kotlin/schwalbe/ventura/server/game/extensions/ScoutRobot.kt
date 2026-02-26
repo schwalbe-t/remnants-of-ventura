@@ -19,7 +19,7 @@ private fun implementMovement(
         else { 0f to sign(rdz.toFloat()) }
     val destTx: Int = (ctx.robot.position.x + dx).unitsToUnitIdx()
     val destTz: Int = (ctx.robot.position.z + dz).unitsToUnitIdx()
-    val isOccupied: Boolean = ctx.world.data.chunkCollisions[destTx, destTz]
+    val isOccupied: Boolean = ctx.world.tileIsOccupied(destTx, destTz)
     if (isOccupied) {
         return BigtonInt.fromValue(0).use(r::pushStack)
     }
