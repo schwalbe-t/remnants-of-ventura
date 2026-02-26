@@ -314,13 +314,13 @@ class BigtonModules<C> {
                 r.pushStack(if (valueIsTruthy(cond)) a else b)
             }
         }
-        .withFunction("string", cost = 1, argc = 1) { r ->
+        .withFunction("toString", cost = 1, argc = 1) { r ->
             val dispStr: String = r.popStack()
                 ?.use { displayValue(it, DISPLAY_MAX_DEPTH, r) }
                 ?: "<empty stack>"
             BigtonString.fromValue(dispStr, r).use(r::pushStack)
         }
-        .withFunction("int", cost = 1, argc = 1, ::parseInt)
+        .withFunction("toInt", cost = 1, argc = 1, ::parseInt)
         .withFunction("len", cost = 1, argc = 1) { r ->
             val length: Int = r.popStack()
                 ?.use { when (it) {
@@ -402,7 +402,7 @@ class BigtonModules<C> {
         }
 
     val floatingPoint = BigtonModule(functions)
-        .withFunction("float", cost = 1, argc = 1, ::parseFloat)
+        .withFunction("toFloat", cost = 1, argc = 1, ::parseFloat)
         .withFunction("ceil", cost = 1, argc = 1,
             wrapFloatFunction("ceil", ::ceil)
         )

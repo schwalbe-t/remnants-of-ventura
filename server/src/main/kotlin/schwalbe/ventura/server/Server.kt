@@ -50,7 +50,8 @@ class Server(
         val id: Uuid,
         val address: String,
         val incoming: PacketInStream,
-        val outgoing: PacketOutStream
+        val outgoing: PacketOutStream,
+        val connectedSince: Long
     )
 
     val connected = ConcurrentHashMap<Uuid, Connection>()
@@ -71,7 +72,10 @@ class Server(
                 val address: String = call.request.local.remoteAddress
                 val inPackets = PacketInStream(MAX_PACKET_PAYLOAD_SIZE)
                 val outPackets = PacketOutStream(this, sendScope)
-                val connection = Connection(id, address, inPackets, outPackets)
+                val connection = Connection(
+                    id, address, inPackets, outPackets,
+                    connectedSince = System.currentTimeMillis()
+                )
                 server.onConnect(connection)
                 for (frame in incoming) {
                     inPackets.handleBinaryFrame(frame)

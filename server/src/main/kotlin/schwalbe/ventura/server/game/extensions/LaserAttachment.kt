@@ -2,6 +2,7 @@
 package schwalbe.ventura.server.game.extensions
 
 import kotlinx.serialization.Serializable
+import org.joml.Vector3f
 import schwalbe.ventura.bigton.BigtonModule
 import schwalbe.ventura.bigton.runtime.*
 import schwalbe.ventura.data.unitsToUnitIdx
@@ -45,6 +46,7 @@ private fun implementLaserShoot(
     state.shootCooldown = LaserAttachmentState.SHOOT_COOLDOWN_TICKS
     val (dx, dz) = if (abs(rdx) > abs(rdz)) { sign(rdx) to 0 }
         else { 0 to sign(rdz) }
+    ctx.robot.rotateWeaponAlong(Vector3f(dx.toFloat(), 0f, dz.toFloat()))
     var cx: Int = ctx.robot.position.x.unitsToUnitIdx()
     var cz: Int = ctx.robot.position.z.unitsToUnitIdx()
     println("Laser was shot from $cx, $cz in direction $dx, $dz by robot with ID ${ctx.robot.id}") // TODO! remove

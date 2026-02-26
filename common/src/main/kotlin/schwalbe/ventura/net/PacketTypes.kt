@@ -177,6 +177,7 @@ data class PrivateRobotInfo(
 
 @Serializable
 data class WorldStatePacket(
+    val relTimestamp: Long,
     val players: Map<String, SharedPlayerInfo>,
     val allRobots: Map<Uuid, SharedRobotInfo>,
     val ownedRobots: Map<Uuid, PrivateRobotInfo>

@@ -77,24 +77,23 @@ class WorldState {
     }
 
     companion object {
-        const val DISPLAY_DELAY_MS: Long = 500L
+        const val DISPLAY_DELAY_MS: Long = 200L
         const val BUFFERED_PACKET_COUNT: Int = 10
         val PLAYER_NAME_OFFSET: Vector3fc = Vector3f(0f, +2.25f, 0f)
     }
 
 
-    val received: MutableList<ReceivedPacket> = mutableListOf()
+    val received: MutableList<WorldStatePacket> = mutableListOf()
     val lastReceived: WorldStatePacket?
-        get() = this.received.lastOrNull()?.state
+        get() = this.received.lastOrNull()
 
-    var displayedTime: Long = System.currentTimeMillis()
+    var displayedTime: Long = 0
     val interpolated = Interpolated()
 
     var activeNameDisplays: NameDisplayManager? = null
 
     fun handleReceivedState(state: WorldStatePacket) {
-        val now: Long = System.currentTimeMillis()
-        this.received.add(ReceivedPacket(now, state))
+        this.received.add(state)
     }
 
     fun updatePlayerNameDisplays(client: Client) {
@@ -116,40 +115,41 @@ class WorldState {
 
     private fun interpolateWorldState(client: Client) {
         val afterIdx: Int = this.received
-            .indexOfFirst { it.time > this.displayedTime }
+            .indexOfFirst { it.relTimestamp > this.displayedTime }
         if (afterIdx == -1) { return }
         val beforeIdx: Int = maxOf(afterIdx - 1, 0)
-        val before: ReceivedPacket = this.received[beforeIdx]
-        val after: ReceivedPacket = this.received[afterIdx]
-        val timeDiffMs: Long = after.time - before.time
+        val before: WorldStatePacket = this.received[beforeIdx]
+        val after: WorldStatePacket = this.received[afterIdx]
+        val timeDiffMs: Long = after.relTimestamp - before.relTimestamp
         val n: Float = if (timeDiffMs == 0L) { 0f } else {
-            (this.displayedTime - before.time).toFloat() / timeDiffMs.toFloat()
+            (this.displayedTime - before.relTimestamp).toFloat() /
+                timeDiffMs.toFloat()
         }
         this.interpolated.players.keys
-            .filter { it !in before.state.players.keys }
-            .filter { it !in after.state.players.keys }
+            .filter { it !in before.players.keys }
+            .filter { it !in after.players.keys }
             .forEach { username ->
                 this.interpolated.players.remove(username)
                 this.activeNameDisplays?.remove(username)
             }
-        for ((username, plAfter) in after.state.players) {
-            val plBefore = before.state.players[username] ?: plAfter
+        for ((username, plAfter) in after.players) {
+            val plBefore = before.players[username] ?: plAfter
             this.interpolated.players
                 .getOrPut(username, ::PlayerState)
                 .interpolate(plBefore, plAfter, n)
         }
         this.interpolated.robots.keys
-            .filter { it !in before.state.allRobots.keys }
-            .filter { it !in after.state.allRobots.keys }
+            .filter { it !in before.allRobots.keys }
+            .filter { it !in after.allRobots.keys }
             .forEach { robotId ->
                 this.interpolated.robots.remove(robotId)
             }
-        for ((robotId, rAfter) in after.state.allRobots) {
-            val rBefore = before.state.allRobots[robotId] ?: rAfter
+        for ((robotId, rAfter) in after.allRobots) {
+            val rBefore = before.allRobots[robotId] ?: rAfter
             val state = this.interpolated.robots.getOrPut(robotId, ::RobotState)
             state.interpolate(rBefore, rAfter, n)
         }
-        this.interpolated.ownedRobots = after.state.ownedRobots
+        this.interpolated.ownedRobots = after.ownedRobots
         val dt: Float = client.deltaTime
         this.interpolated.players.values.forEach { it.update(dt) }
         this.interpolated.robots.values.forEach { it.update(dt) }
@@ -158,11 +158,14 @@ class WorldState {
     fun update(client: Client) {
         if (this.received.isEmpty()) { return }
         this.displayedTime = System.currentTimeMillis()
+        this.displayedTime -= client.network.connectedSince ?: 0
         this.displayedTime -= DISPLAY_DELAY_MS
-        this.displayedTime = this.displayedTime
-            .coerceIn(this.received.first().time, this.received.last().time)
+        this.displayedTime = this.displayedTime.coerceIn(
+            this.received.first().relTimestamp,
+            this.received.last().relTimestamp
+        )
         val firstNotDispIdx: Int = this.received
-            .indexOfFirst { it.time > this.displayedTime }
+            .indexOfFirst { it.relTimestamp > this.displayedTime }
         this.received.subList(
             0, maxOf(firstNotDispIdx - BUFFERED_PACKET_COUNT, 0)
         ).clear()

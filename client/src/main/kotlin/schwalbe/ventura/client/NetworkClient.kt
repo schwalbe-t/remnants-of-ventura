@@ -60,7 +60,8 @@ class NetworkClient {
         val port: Int,
         val session: DefaultClientWebSocketSession,
         val inPackets: PacketInStream,
-        val outPackets: PacketOutStream
+        val outPackets: PacketOutStream,
+        val connectedSince: Long
     ) : State
     class ExceptionError(
         val e: Exception
@@ -83,6 +84,11 @@ class NetworkClient {
     val outPackets: PacketOutStream?
         get() = when (val s = this.state) {
             is Connected -> s.outPackets
+            else -> null
+        }
+    val connectedSince: Long?
+        get() = when (val s = this.state) {
+            is Connected -> s.connectedSince
             else -> null
         }
 
@@ -110,7 +116,8 @@ fun NetworkClient.connect(targetAddress: String, targetPort: Int) {
                 val inPackets = PacketInStream(MAX_PACKET_PAYLOAD_SIZE)
                 val outPackets = PacketOutStream(this, socketScope)
                 val connection = NetworkClient.Connected(
-                    targetAddress, targetPort, this, inPackets, outPackets
+                    targetAddress, targetPort, this, inPackets, outPackets,
+                    connectedSince = System.currentTimeMillis()
                 )
                 nc.state = connection
 

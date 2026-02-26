@@ -137,7 +137,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             robot.update(this)
         }
     }
-    
+
     private fun updateState() {
         for (player in this.players.values) {
             player.updateState(this)
@@ -157,6 +157,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
         val enemyRobotStates = this.data.enemyRobots.values
             .associateBy({ it.id }, { it.buildSharedInfo() })
         val robotStates = playerRobotStates + enemyRobotStates
+        val now: Long = System.currentTimeMillis()
         fun worldStateAt(observer: SerVector3, pl: Player): WorldStatePacket {
             val r: Float = WORLD_STATE_CONTENT_RADIUS
             val fPlayerStates = playerStates
@@ -167,6 +168,7 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
                 .map { (id, r) -> id to r.buildPrivateInfo() }
                 .toMap()
             return WorldStatePacket(
+                relTimestamp = now - pl.connection.connectedSince,
                 fPlayerStates, fRobotStates, ownedRobots
             )
         }
