@@ -81,17 +81,17 @@ fun makeRadarAttachmentModule(
             BigtonTuple.fromElements(listOf(dx, dz), r).use(r::pushStack)
         }
     }
-    .withCtxFunction("radarIsEnemy", cost = 1, argc = 0) { r, ctx ->
-        val state = ctx.robot.attachmentStates[RadarAttachmentState.TYPE]
-        val current: Robot = state.currentRobot
-            ?: return@withCtxFunction r.reportDynError(RADAR_NO_ROBOT_MSG)
-        val isEnemy: Boolean = current is EnemyRobot
-        BigtonInt.fromValue(if (isEnemy) 1 else 0).use(r::pushStack)
-    }
     .withCtxFunction("radarIsFriendly", cost = 1, argc = 0) { r, ctx ->
         val state = ctx.robot.attachmentStates[RadarAttachmentState.TYPE]
         val current: Robot = state.currentRobot
             ?: return@withCtxFunction r.reportDynError(RADAR_NO_ROBOT_MSG)
         val isFriendly: Boolean = current is PlayerRobot
         BigtonInt.fromValue(if (isFriendly) 1 else 0).use(r::pushStack)
+    }
+    .withCtxFunction("radarIsRogue", cost = 1, argc = 0) { r, ctx ->
+        val state = ctx.robot.attachmentStates[RadarAttachmentState.TYPE]
+        val current: Robot = state.currentRobot
+            ?: return@withCtxFunction r.reportDynError(RADAR_NO_ROBOT_MSG)
+        val isEnemy: Boolean = current is EnemyRobot
+        BigtonInt.fromValue(if (isEnemy) 1 else 0).use(r::pushStack)
     }
