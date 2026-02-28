@@ -400,7 +400,7 @@ class BigtonModules<C> {
             wrapFloatFunction("ceil", ::ceil)
         )
         .withFunction("round", cost = 1, argc = 1,
-            wrapFloatFunction("round", ::round)
+            wrapFloatFunction("round") { it.roundToLong().toDouble() }
         )
         .withFunction("floor", cost = 1, argc = 1,
             wrapFloatFunction("floor", ::floor)

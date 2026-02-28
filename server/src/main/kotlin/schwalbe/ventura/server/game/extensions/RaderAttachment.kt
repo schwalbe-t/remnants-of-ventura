@@ -4,7 +4,6 @@ package schwalbe.ventura.server.game.extensions
 import kotlinx.serialization.Serializable
 import schwalbe.ventura.bigton.BigtonModule
 import schwalbe.ventura.bigton.runtime.*
-import schwalbe.ventura.data.unitsToUnitIdx
 import schwalbe.ventura.server.game.EnemyRobot
 import schwalbe.ventura.server.game.PlayerRobot
 import schwalbe.ventura.server.game.Robot
@@ -58,16 +57,11 @@ fun makeRadarAttachmentModule(
         }
         val rx: Int = ctx.robot.tileX
         val rz: Int = ctx.robot.tileZ
-        state.foundRobots.removeIf { robot ->
-            val frx: Int = robot.tileX
-            val frz: Int = robot.tileZ
-            val dist: Int = maxOf(abs(frx - rx), abs(frz - rz))
-            dist > maxDistTiles
+        state.foundRobots.removeIf {
+            maxOf(abs(it.tileX - rx), abs(it.tileZ - rz)) > maxDistTiles
         }
-        state.foundRobots.sortBy { robot ->
-            val cx: Int = robot.tileX
-            val cz: Int = robot.tileZ
-            abs(cx - rx) + abs(cz - rz)
+        state.foundRobots.sortBy {
+            abs(it.tileX - rx) + abs(it.tileZ - rz)
         }
         BigtonInt.fromValue(state.foundRobots.size.toLong()).use(r::pushStack)
     }
