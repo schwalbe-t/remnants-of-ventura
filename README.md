@@ -70,3 +70,36 @@ VENTURA_DB_PASS=<PASSWORD>
 VENTURA_PORT=844
 VENTURA_TRUST_ALL_CERTS=true
 ```
+
+### Creating Client Release Builds
+
+Note: The following instructions assume a POSIX shell environment.
+
+To create a client release build, change the current directory to `client`
+and run the `build.sh` shell script:
+```sh
+cd client
+./build.sh windows  # create standalone windows x86 build
+./build.sh linux    # create standalone linux x86 build
+```
+
+Executing these commands will download the JDK for the chosen platform once and
+keep them in `client/builds/jdk/<OS>/`. Unless deleted, the script won't
+download them again.
+
+The actual built versions of the application are placed into
+`client/builds/<OS>/`.
+
+### Creating Windows Installer
+
+Note: The following instructiosn assume a Windows environment with
+[Inno Setup](https://jrsoftware.org/isinfo.php) installed at
+`C:\Program Files (x86)\Inno Setup 6\`.
+
+To create a windows installer script, run the following command:
+```
+"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DVersion=<VERSION> /DSrcDir=<BUILD-DIR> remnants-of-ventura.iss
+```
+- Replace `<VERSION>` with the build version, e.g. `0.1.0`.
+- Replace `<BUILD-DIR>` with the absolute path of the directory containing a Windows build produced by `client/build.sh`.
+- If not present in the current directory, replace `remnants-of-ventura.iss` with the path to the Inno Setup Script (located at `client/remnants-of-ventura.iss` in this repository)

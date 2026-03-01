@@ -15,7 +15,11 @@ class Client {
 
     val resLoader = ResourceLoader()
 
-    val window = Window("Remnants of Ventura", fullscreen = false)
+    val window = Window(
+        name = "Remnants of Ventura",
+        sizeFactor = 0.75f,
+        iconPath = "res/icon.png"
+    )
 
     init {
         this.window.setVsyncEnabled(enabled = true)

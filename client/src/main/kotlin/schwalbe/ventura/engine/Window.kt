@@ -9,11 +9,16 @@ import schwalbe.ventura.engine.input.Keyboard
 import schwalbe.ventura.engine.input.Mouse
 import schwalbe.ventura.engine.input.Cursor
 import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.glfw.GLFWImage
 import org.lwjgl.glfw.GLFWVidMode
 import org.lwjgl.system.MemoryUtil.NULL
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.*
+import org.lwjgl.stb.STBImage.stbi_load
+import org.lwjgl.stb.STBImage.stbi_set_flip_vertically_on_load
 import org.lwjgl.system.MemoryStack
+import java.nio.ByteBuffer
+import kotlin.math.roundToInt
 
 private class WindowFramebuffer(val window: Window) : ConstFramebuffer() {    
     override val width: Int
@@ -37,13 +42,17 @@ class Window : Disposable {
         
     val inputEvents: InputEventQueue
 
-    constructor(name: String, fullscreen: Boolean = true) {
+    constructor(
+        name: String,
+        sizeFactor: Float? = null,
+        iconPath: String? = null
+    ) {
         check(glfwInit()) { "Failed to initialize GLFW" }
         val monitor: Long = glfwGetPrimaryMonitor()
         val vidMode: GLFWVidMode = glfwGetVideoMode(monitor)
             ?: throw IllegalStateException("Failed to get primary monitor")
         glfwDefaultWindowHints()
-        if (fullscreen) {
+        if (sizeFactor == null) {
             glfwWindowHint(GLFW_RED_BITS, vidMode.redBits());
             glfwWindowHint(GLFW_GREEN_BITS, vidMode.greenBits());
             glfwWindowHint(GLFW_BLUE_BITS, vidMode.blueBits());
@@ -52,14 +61,24 @@ class Window : Disposable {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE)
+        val width: Int = ((sizeFactor ?: 1f) * vidMode.width()).roundToInt()
+        val height: Int = ((sizeFactor ?: 1f) * vidMode.height()).roundToInt()
         val windowId: Long = glfwCreateWindow(
-            vidMode.width(), vidMode.height(), name,
-            if (fullscreen) { monitor } else { NULL }, NULL
+            width, height, name,
+            if (sizeFactor == null) { monitor } else { NULL }, NULL
         )
         this.windowId = windowId
+        if (sizeFactor != null) {
+            val windowX: Int = (vidMode.width() - width) / 2
+            val windowY: Int = (vidMode.height() - height) / 2
+            glfwSetWindowPos(windowId, windowX, windowY)
+        }
         glfwMakeContextCurrent(windowId)
         this.initGraphics()
         this.inputEvents = InputEventQueue(windowId)
+        if (iconPath != null) {
+            this.loadIcon(iconPath)
+        }
     }
     
     private fun initGraphics() {
@@ -68,6 +87,22 @@ class Window : Disposable {
         FaceCulling.DISABLED.glApply()
         glEnable(GL_BLEND)
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
+    }
+
+    private fun loadIcon(path: String) = MemoryStack.stackPush().use { stack ->
+        val widthPtr = stack.mallocInt(1)
+        val heightPtr = stack.mallocInt(1)
+        val channelsPtr = stack.mallocInt(1)
+        stbi_set_flip_vertically_on_load(false)
+        val decoded: ByteBuffer
+            = stbi_load(path, widthPtr, heightPtr, channelsPtr, 4) ?: return
+        val images = GLFWImage.calloc(1, stack)
+        images[0].run {
+            width(widthPtr.get(0))
+            height(heightPtr.get(0))
+            pixels(decoded)
+        }
+        glfwSetWindowIcon(this.getWindowId(), images)
     }
     
     fun getWindowId(): Long = this.windowId

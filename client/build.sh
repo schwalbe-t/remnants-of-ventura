@@ -55,9 +55,15 @@ for font in "$FONT_DIR"/*; do
     fi
 done
 
+# Copy license file
+cp "../LICENSE" "./$OUT_DIR"
+
+# Create usercode directory
+mkdir -p "./$OUT_DIR/usercode"
+
 # Create a minimal version of the JRE in the output directory
 jlink \
-    --module-path "$JDK_DIR/jmods" \
+    --module-path "./$JDK_DIR/jmods" \
     --add-modules java.base,java.desktop,jdk.unsupported,java.logging \
     --output "./$OUT_DIR/jre" \
     --strip-debug \
@@ -70,23 +76,15 @@ if [ $OS_NAME = $OS_LINUX ]; then
 #!/bin/sh
 cd $( cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P )
 export JAVA_HOME="$PWD/jre/"
-bin/client
+bin/client > "$PWD/latest.log" 2>&1
 EOF
     chmod +x "./$OUT_DIR/run"
 fi
 if [ $OS_NAME = $OS_WINDOWS ]; then
-    cat > "./$OUT_DIR/run.vbs" << 'EOF'
-Option Explicit
-Dim WshShell, fso, scriptDir, javaHome, cmd
-
-Set WshShell = CreateObject("WScript.Shell")
-Set fso = CreateObject("Scripting.FileSystemObject")
-
-scriptDir = fso.GetParentFolderName(WScript.ScriptFullName)
-
-WshShell.Environment("PROCESS")("JAVA_HOME") = scriptDir & "\jre"
-
-cmd = "cmd /c ""cd /d """ & scriptDir & """ && ""bin\client.bat"""""
-WshShell.Run cmd, 0, False
+    cat > "./$OUT_DIR/run.bat" << 'EOF'
+@echo off
+cd /d "%~dp0"
+set "JAVA_HOME=%CD%\jre"
+powershell -WindowStyle Hidden -Command "Start-Process cmd -ArgumentList \"/c `\"bin\client.bat > latest.log 2>&1`\"\" -WindowStyle Hidden"
 EOF
 fi
