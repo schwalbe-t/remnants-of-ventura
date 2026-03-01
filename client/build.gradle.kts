@@ -3,17 +3,23 @@ plugins {
     application
 }
 
-val osName = System.getProperty("os.name").lowercase()
-val osArch = System.getProperty("os.arch").lowercase()
+val thisOsName = System.getProperty("os.name").lowercase()
+val thisOsArch = System.getProperty("os.arch").lowercase()
+val osName = System.getenv("VENTURA_BUILD_OS_NAME") ?: when {
+    thisOsName.contains("win")
+        -> "windows"
+    thisOsName.contains("mac") && thisOsArch.contains("aarch64")
+        -> "macos-arm64"
+    thisOsName.contains("mac")
+        -> "macos"
+    thisOsArch.contains("aarch64") || thisOsArch.contains("arm")
+        -> "linux-arm64"
+    else
+        -> "linux"
+}
 
 val lwjglVersion = "3.3.3"
-val lwjglNatives = "natives-" + when {
-    osName.contains("win")                                  -> "windows"
-    osName.contains("mac") && osArch.contains("aarch64")    -> "macos-arm64"
-    osName.contains("mac")                                  -> "macos"
-    osArch.contains("aarch64") || osArch.contains("arm")    -> "linux-arm64"
-    else                                                    -> "linux"
-}
+val lwjglNatives = "natives-$osName"
 
 dependencies {
     implementation(project(":common"))
