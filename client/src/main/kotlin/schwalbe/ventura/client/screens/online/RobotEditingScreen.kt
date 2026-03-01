@@ -13,6 +13,7 @@ import schwalbe.ventura.data.Item
 import schwalbe.ventura.ROBOT_NAME_MAX_LEN
 import java.io.File
 import org.joml.Vector3f
+import java.awt.Desktop
 import kotlin.math.atan
 import kotlin.math.roundToInt
 import kotlin.math.tan
@@ -232,7 +233,17 @@ private fun createSelectFileSection(onFileSelect: (String) -> Unit): UiElement {
     val container = Stack()
     val rootDir = File(USERCODE_DIR)
     listDirectory(rootDir, rootDir, listOf(), dest = container, onFileSelect)
-    return container
+    val supportsFolderOpen: Boolean =
+        Desktop.isDesktopSupported() &&
+        Desktop.getDesktop().isSupported(Desktop.Action.OPEN)
+    if (!supportsFolderOpen) { return container }
+    return container.withBottomButton(localized()[BUTTON_OPEN_SOURCE_FILES]) {
+        try {
+            Desktop.getDesktop().open(File(USERCODE_DIR))
+        } catch(e: Exception) {
+            e.printStackTrace()
+        }
+    }
 }
 
 private fun createRobotSettingsSection(
