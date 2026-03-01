@@ -64,7 +64,7 @@ mkdir -p "./$OUT_DIR/usercode"
 # Create a minimal version of the JRE in the output directory
 jlink \
     --module-path "./$JDK_DIR/jmods" \
-    --add-modules java.base,java.desktop,jdk.unsupported,java.logging \
+    --add-modules java.base,java.desktop,jdk.unsupported,java.logging,jdk.crypto.ec \
     --output "./$OUT_DIR/jre" \
     --strip-debug \
     --no-header-files \
