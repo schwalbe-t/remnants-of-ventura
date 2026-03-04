@@ -111,6 +111,13 @@ class PlayerRobot(
     override var position: SerVector3
 ) : Robot() {
 
+    companion object {
+        // chance an item that was part of the robot gets dropped when it
+        // gets destructed (health reaches 0)
+        const val DESTRUCT_DROP_CHANCE: Float = 0.75f
+    }
+
+
     override var name: String = "Unnamed Robot"
     override var status: RobotStatus = RobotStatus.STOPPED
     override var health: Float = this.type.maxHealth

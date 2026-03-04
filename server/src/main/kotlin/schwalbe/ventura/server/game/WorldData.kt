@@ -4,10 +4,13 @@ package schwalbe.ventura.server.game
 import schwalbe.ventura.data.ChunkData
 import schwalbe.ventura.data.ChunkRef
 import schwalbe.ventura.data.ConstWorldInfo
+import schwalbe.ventura.data.GroundItem
+import schwalbe.ventura.data.Item
 import schwalbe.ventura.data.MAX_COLLIDER_SIZE_CHUNKS
 import schwalbe.ventura.data.chunksToUnits
 import schwalbe.ventura.data.unitsToChunks
 import schwalbe.ventura.data.unitsToUnitIdx
+import schwalbe.ventura.net.SerVector3
 import kotlin.uuid.Uuid
 
 private fun findChunkBounds(
@@ -90,4 +93,5 @@ class WorldData(
 ) {
     val chunkCollisions: ChunkCollisions = ChunkCollisions(this.chunks)
     val enemyRobots: MutableMap<Uuid, EnemyRobot> = mutableMapOf()
+    val groundItems: MutableMap<Uuid, GroundItem> = mutableMapOf()
 }

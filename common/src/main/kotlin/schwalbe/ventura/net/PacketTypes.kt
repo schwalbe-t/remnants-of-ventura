@@ -71,6 +71,9 @@ data class PacketType<P>(
     val REQUEST_ROBOT_LOGS          = up<Uuid>()
     val ROBOT_LOGS                  = down<RobotLogsPacket>()
 
+    val PICK_UP_ITEM                = up<Uuid>()
+    val ITEM_PICKED_UP              = down<Uuid>()
+
     val NUM_PACKET_TYPES: Int = this.pollNextPacketId()
 
 } }
@@ -118,7 +121,14 @@ enum class TaggedErrorPacket {
     // attempt to configure robot source files failed because too many given
     TOO_MANY_ROBOT_SOURCE_FILES,
     // provided robot name is too long
-    ROBOT_NAME_TOO_LONG
+    ROBOT_NAME_TOO_LONG,
+
+    // attempt to pick up item that doesn't exist
+    GROUND_ITEM_DOES_NOT_EXIST,
+    // attempt to pick up item that is owned by somebody else
+    NOT_GROUND_ITEM_OWNER,
+    // attempt to pick up item that is out of range
+    GROUND_ITEM_OUT_OF_RANGE
 }
 
 
@@ -185,7 +195,8 @@ data class WorldStatePacket(
     val relTimestamp: Long,
     val players: Map<String, SharedPlayerInfo>,
     val allRobots: Map<Uuid, SharedRobotInfo>,
-    val ownedRobots: Map<Uuid, PrivateRobotInfo>
+    val ownedRobots: Map<Uuid, PrivateRobotInfo>,
+    val groundItems: Map<Uuid, GroundItem>
 )
 
 @Serializable

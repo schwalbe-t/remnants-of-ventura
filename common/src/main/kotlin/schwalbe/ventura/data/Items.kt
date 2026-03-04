@@ -4,6 +4,8 @@ package schwalbe.ventura.data
 import kotlinx.serialization.Serializable
 import org.joml.Vector3fc
 import org.joml.Vector3f
+import schwalbe.ventura.net.SerVector3
+import kotlin.uuid.Uuid
 
 
 @Serializable
@@ -195,3 +197,20 @@ data class Item(
     val type: ItemType,
     val variant: ItemVariant? = null
 )
+
+
+@Serializable
+class GroundItem(
+    val position: SerVector3,
+    val item: Item,
+    val count: Int = 1,
+    val ownerName: String? = null
+) {
+    companion object {
+        const val DESPAWN_DELAY: Long = 5 * 60 * 1000
+        const val MAX_PICK_UP_DIST: Float = 2f
+    }
+    
+    val creationTime: Long = System.currentTimeMillis()
+    val id: Uuid = Uuid.random()
+}

@@ -58,10 +58,12 @@ fun Player.popWorld(worlds: WorldRegistry) {
 }
 
 fun Player.updateState(world: World) {
+    val playerPos = this.data.worlds.last().state.position
     for (robot in this.data.deployedRobots.values.filter { it.health <= 0f }) {
-        // TODO! replace with items on the ground (with some probability of them disappearing)
-        //       created items need to be private to this player
-        robot.collectContainedItems().forEach(this.data.inventory::add)
+        for (item in robot.collectContainedItems()) {
+            if (Math.random() > PlayerRobot.DESTRUCT_DROP_CHANCE) { continue }
+            world.spawnItem(playerPos, item, ownerName = this.username)
+        }
         this.data.deployedRobots.remove(robot.id)
     }
     this.data.deployedRobots.values.forEach {

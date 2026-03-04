@@ -1,6 +1,8 @@
 
 package schwalbe.ventura.client
 
+import org.joml.Matrix4fc
+import schwalbe.ventura.data.Item
 import schwalbe.ventura.data.ItemType
 import schwalbe.ventura.data.ItemVariant
 import schwalbe.ventura.engine.Resource
@@ -53,4 +55,26 @@ object Items {
             it.meshTextureOverrides.values.forEach(loader::submit)
         }
     }
+
+    const val OUTLINE_THICKNESS: Float = 0.015f
 }
+
+fun Item.renderOutlined(pass: RenderPass, instances: Iterable<Matrix4fc>) {
+    val itemTypeRes = ItemTypeResources.all[this.type.ordinal]
+    val itemVariant: ItemVariant? = this.variant
+    val itemVariantRes: ItemVariantResources? =
+        if (itemVariant == null) { null }
+        else { ItemVariantResources.all[itemVariant.ordinal] }
+    val itemModel: Model<StaticAnim> = itemTypeRes.model()
+    val meshTextureOverrides: Map<String, Texture>?
+            = itemVariantRes?.collectTextureOverrides()
+    pass.renderOutline(
+        itemModel, Items.OUTLINE_THICKNESS, null, instances,
+        meshTextureOverrides = meshTextureOverrides
+    )
+    pass.renderGeometry(
+        itemModel, null, instances,
+        meshTextureOverrides = meshTextureOverrides
+    )
+}
+

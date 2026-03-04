@@ -2,27 +2,23 @@
 package schwalbe.ventura.client.game
 
 import schwalbe.ventura.client.screens.online.*
+import schwalbe.ventura.client.*
 import schwalbe.ventura.engine.gfx.*
-import schwalbe.ventura.client.Client
-import schwalbe.ventura.client.RenderPass
 import schwalbe.ventura.net.*
-import org.joml.Vector3f
-import org.joml.Vector3fc
+import schwalbe.ventura.data.GroundItem
 import schwalbe.ventura.data.Item
 import kotlin.uuid.Uuid
+import org.joml.*
 
 // The server automatically only sends the world state in a specific radius,
 // so there is no reason for any logic to limit rendering / updating here
 class WorldState {
 
-    data class ReceivedPacket(
-        val time: Long, val state: WorldStatePacket
-    )
-
     class Interpolated(
         val players: MutableMap<String, PlayerState> = mutableMapOf(),
         val robots: MutableMap<Uuid, RobotState> = mutableMapOf(),
-        var ownedRobots: Map<Uuid, PrivateRobotInfo> = mapOf()
+        var ownedRobots: Map<Uuid, PrivateRobotInfo> = mapOf(),
+        var groundItems: Map<Uuid, GroundItem> = mapOf()
     )
 
     open class AgentState<A : Animations<A>>(startingAnim: AnimationRef<A>) {
@@ -80,6 +76,8 @@ class WorldState {
         const val DISPLAY_DELAY_MS: Long = 500L
         const val BUFFERED_PACKET_COUNT: Int = 10
         val PLAYER_NAME_OFFSET: Vector3fc = Vector3f(0f, +2.25f, 0f)
+        const val GROUND_ITEM_ROTATION_SPEED: Float = 6.28f / 8f
+        const val GROUND_ITEM_SCALE: Float = 0.5f
     }
 
 
@@ -150,6 +148,7 @@ class WorldState {
             state.interpolate(rBefore, rAfter, n)
         }
         this.interpolated.ownedRobots = after.ownedRobots
+        this.interpolated.groundItems = after.groundItems
         val dt: Float = client.deltaTime
         this.interpolated.players.values.forEach { it.update(dt) }
         this.interpolated.robots.values.forEach { it.update(dt) }
@@ -186,6 +185,18 @@ class WorldState {
                 pass, robot.position, robot.rotation, robot.weaponRotation,
                 robot.animation, baseItem, robot.weaponItem
             )
+        }
+        val now = System.currentTimeMillis()
+        val itemInstance = mutableListOf(Matrix4f())
+        for (groundItem in this.interpolated.groundItems.values) {
+            val ip: SerVector3 = groundItem.position
+            val age: Float = (now - groundItem.creationTime).toFloat() / 1000f
+            val angle: Float = age * GROUND_ITEM_ROTATION_SPEED
+            itemInstance[0].identity()
+                .translate(ip.x, ip.y, ip.z)
+                .rotateY(angle)
+                .scale(GROUND_ITEM_SCALE)
+            groundItem.item.renderOutlined(pass, itemInstance)
         }
     }
 

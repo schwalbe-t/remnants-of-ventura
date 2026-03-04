@@ -117,13 +117,13 @@ val BigtonValue.isTruthy: Boolean
     }
 
 
-class BigtonNull    (handle: Long) : BigtonValue(handle) { companion object }
+class BigtonNull(handle: Long) : BigtonValue(handle) { companion object }
 
 fun BigtonNull.Companion.create()
     = BigtonNull(BigtonValueN.createNull())
 
 
-class BigtonInt     (handle: Long) : BigtonValue(handle) { companion object }
+class BigtonInt(handle: Long) : BigtonValue(handle) { companion object }
     
 fun BigtonInt.Companion.fromValue(value: Long)
     = BigtonInt(BigtonValueN.createInt(value))
@@ -132,7 +132,7 @@ val BigtonInt.value: Long
     get() = BigtonValueN.getInt(this.handle)
 
     
-class BigtonFloat   (handle: Long) : BigtonValue(handle) { companion object }
+class BigtonFloat(handle: Long) : BigtonValue(handle) { companion object }
     
 fun BigtonFloat.Companion.fromValue(value: Double)
     = BigtonFloat(BigtonValueN.createFloat(value))
@@ -141,7 +141,7 @@ val BigtonFloat.value: Double
     get() = BigtonValueN.getFloat(this.handle)
 
     
-class BigtonString  (handle: Long) : BigtonValue(handle) { companion object }
+class BigtonString(handle: Long) : BigtonValue(handle) { companion object }
 
 fun BigtonString.Companion.fromValue(value: String, runtime: BigtonRuntime)
     = BigtonString(BigtonValueN.createString(value, runtime.handle))
@@ -171,7 +171,7 @@ fun BigtonString.slice(
 }
 
 
-class BigtonTuple   (handle: Long) : BigtonValue(handle) { companion object }
+class BigtonTuple(handle: Long) : BigtonValue(handle) { companion object }
     
 fun BigtonTuple.Companion.fromElements(
     values: Iterable<BigtonValue>, runtime: BigtonRuntime
@@ -205,7 +205,7 @@ val BigtonTuple.values: Sequence<BigtonValue>
     get() = (0..<this.length).asSequence().map(this::get)
 
 
-class BigtonObject  (handle: Long) : BigtonValue(handle) { companion object }
+class BigtonObject(handle: Long) : BigtonValue(handle) { companion object }
 
 val BigtonObject.size: Int
     get() = BigtonValueN.getObjectPropCount(this.handle)
@@ -246,7 +246,7 @@ operator fun BigtonObject.set(
 }
 
 
-class BigtonArray   (handle: Long) : BigtonValue(handle) { companion object }
+class BigtonArray(handle: Long) : BigtonValue(handle) { companion object }
 
 fun BigtonArray.Companion.fromElements(
     values: Iterable<BigtonValue>, runtime: BigtonRuntime
