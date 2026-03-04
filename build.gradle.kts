@@ -7,8 +7,10 @@ plugins {
 }
 
 fun loadEnv(): Map<String, String> {
+    val envFile = file(".env")
+    if (!envFile.exists()) { return mapOf() }
     val props = Properties()
-    file(".env").inputStream().use { props.load(it) }
+    envFile.inputStream().use { props.load(it) }
     return props.entries.associate { it.key.toString() to it.value.toString() }
 }
 
