@@ -151,8 +151,9 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
         this.spawnEnemyRobots()
         this.despawnEnemyRobots()
         for (robot in this.data.enemyRobots.values.filter { it.health <= 0f }) {
-            // TODO! generate drops based on robot configuration and drop on
-            //       the ground (with no particular player as the owner)
+            robot.config.lootTable.generateLoot().forEach {
+                this.spawnItem(robot.position, it)
+            }
             this.data.enemyRobots.remove(robot.id)
         }
         for (robot in this.data.enemyRobots.values) {
@@ -162,7 +163,22 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
 
     private fun updateGroundItems() {
         val lastCreate = System.currentTimeMillis() - GroundItem.DESPAWN_DELAY
-        this.data.groundItems.values.removeIf { it.creationTime <= lastCreate }
+        this.data.groundItems.values.removeIf {
+            if (it.creationTime <= lastCreate) {
+                return@removeIf true
+            }
+            val owners: Iterable<String> = it.ownerName?.let(::listOf)
+                ?: this.players.keys
+            for (username in owners) {
+                val player = this.players[username] ?: continue
+                val pp = player.data.worlds.last().state.position
+                val d = hypot(pp.x - it.position.x, pp.z - it.position.z)
+                if (d > GroundItem.MAX_PICK_UP_DIST) { continue }
+                player.data.inventory.add(it.item, it.count)
+                return@removeIf true
+            }
+            false
+        }
     }
 
     private fun updateState() {
@@ -454,34 +470,6 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             pl.connection.outgoing.send(Packet.serialize(
                 PacketType.ROBOT_LOGS,
                 RobotLogsPacket(robotId, robot.buildLogString())
-            ))
-        }
-
-        ph.onPacket(PacketType.PICK_UP_ITEM) { gItemId, pl ->
-            val item: GroundItem = this.data.groundItems[gItemId]
-                ?: return@onPacket pl.connection.outgoing.send(Packet.serialize(
-                    PacketType.TAGGED_ERROR,
-                    TaggedErrorPacket.GROUND_ITEM_DOES_NOT_EXIST
-                ))
-            if (item.ownerName != null && item.ownerName != pl.username) {
-                return@onPacket pl.connection.outgoing.send(Packet.serialize(
-                    PacketType.TAGGED_ERROR,
-                    TaggedErrorPacket.NOT_GROUND_ITEM_OWNER
-                ))
-            }
-            val pp: SerVector3 = pl.data.worlds.last().state.position
-            val ip: SerVector3 = item.position
-            val d = hypot(ip.x - pp.x, ip.z - pp.z)
-            if (d > GroundItem.MAX_PICK_UP_DIST) {
-                return@onPacket pl.connection.outgoing.send(Packet.serialize(
-                    PacketType.TAGGED_ERROR,
-                    TaggedErrorPacket.GROUND_ITEM_OUT_OF_RANGE
-                ))
-            }
-            pl.data.inventory.add(item.item, item.count)
-            this.data.groundItems.remove(gItemId)
-            pl.connection.outgoing.send(Packet.serialize(
-                PacketType.ITEM_PICKED_UP, gItemId
             ))
         }
     }

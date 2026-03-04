@@ -3,12 +3,33 @@ package schwalbe.ventura.server.game
 
 import org.joml.Vector3f
 import schwalbe.ventura.data.*
-import schwalbe.ventura.net.Packet
-import schwalbe.ventura.net.PacketType
 import schwalbe.ventura.net.SerVector3
-import schwalbe.ventura.utils.insideSquareRadiusXZ
 import schwalbe.ventura.utils.sign
 import kotlin.math.abs
+
+class LootTable {
+    data class Entry(val generate: () -> Item?)
+
+    var entries: MutableList<Entry> = mutableListOf()
+
+    fun generateLoot(): List<Item>
+        = this.entries.mapNotNull { it.generate() }
+}
+
+fun LootTable.oneOf(vararg entries: Pair<Double, Item>): LootTable {
+    val sum = entries.sumOf { it.first }
+    this.entries.add(LootTable.Entry {
+        var acc: Double = Math.random()
+        for (entry in entries) {
+            acc -= entry.first / sum
+            if (acc > 0.0) { continue }
+            return@Entry entry.second
+        }
+        null
+    })
+    return this
+}
+
 
 const val BASIC_ENEMY_SEARCH_RANGE: Int = 30
 const val BASIC_ENEMY_MOVEMENT_SPEED: Int = 10 // ticks per unit moved
@@ -77,7 +98,8 @@ enum class EnemyRobotConfig(
     val robotType: RobotType,
     val baseItem: Item,
     val weaponItem: Item?,
-    val update: (EnemyRobot) -> (World) -> Unit
+    val update: (EnemyRobot) -> (World) -> Unit,
+    val lootTable: LootTable
 ) {
     BASIC(
         robotType = RobotType.SCOUT,
@@ -86,7 +108,24 @@ enum class EnemyRobotConfig(
             ItemVariant.SCOUT_ENEMY
         ),
         weaponItem = Item(ItemType.LASER),
-        update = ::updateBasicRobot
+        update = ::updateBasicRobot,
+        lootTable = LootTable()
+            .oneOf(
+                0.6 to Item(ItemType.BIGTON_1030),
+                0.5 to Item(ItemType.BIGTON_1050),
+                0.4 to Item(ItemType.BIGTON_1070),
+                0.3 to Item(ItemType.BIGTON_2030),
+                0.2 to Item(ItemType.BIGTON_2050),
+                0.1 to Item(ItemType.BIGTON_2070)
+            )
+            .oneOf(
+                0.66 to Item(ItemType.SHORT_RANGE_RADAR),
+                0.22 to Item(ItemType.MID_RANGE_RADAR),
+                0.11 to Item(ItemType.LONG_RANGE_RADAR)
+            )
+            .oneOf(
+                0.33 to Item(ItemType.LASER)
+            )
     )
 }
 

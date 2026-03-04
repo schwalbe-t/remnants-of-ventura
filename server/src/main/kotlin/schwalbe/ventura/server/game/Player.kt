@@ -58,11 +58,10 @@ fun Player.popWorld(worlds: WorldRegistry) {
 }
 
 fun Player.updateState(world: World) {
-    val playerPos = this.data.worlds.last().state.position
     for (robot in this.data.deployedRobots.values.filter { it.health <= 0f }) {
         for (item in robot.collectContainedItems()) {
             if (Math.random() > PlayerRobot.DESTRUCT_DROP_CHANCE) { continue }
-            world.spawnItem(playerPos, item, ownerName = this.username)
+            world.spawnItem(robot.position, item, ownerName = this.username)
         }
         this.data.deployedRobots.remove(robot.id)
     }

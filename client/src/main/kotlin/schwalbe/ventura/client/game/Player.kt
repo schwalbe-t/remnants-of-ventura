@@ -7,7 +7,6 @@ import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.utils.*
 import schwalbe.ventura.net.*
-import kotlin.math.*
 import org.joml.*
 
 object PlayerAnim : Animations<PlayerAnim> {
