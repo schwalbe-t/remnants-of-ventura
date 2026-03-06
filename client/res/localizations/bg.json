@@ -72,6 +72,8 @@
         "ERROR_PASSWORDS_DONT_MATCH": "Паролите не си приличат",
         "ERROR_USERNAME_TOO_SHORT": "Потребителското име е твърде кратко",
         "ERROR_PASSWORD_TOO_SHORT": "Паролата е твърде кратка",
+        "ERROR_SERVER_OUTDATED": "Версията на сървъра е твърде стара! Клиент: {CLIENT}, Сървър: {SERVER}",
+        "ERROR_CLIENT_OUTDATED": "Версията на клиента е твърде стара! Клиент: {CLIENT}, Сървър: {SERVER}",
 
         "RobotStatus:name/STOPPED": "Спрял",
         "RobotStatus:name/RUNNING": "Работи",

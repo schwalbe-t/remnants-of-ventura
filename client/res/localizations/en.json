@@ -72,6 +72,8 @@
         "ERROR_PASSWORDS_DONT_MATCH": "Passwords don't match",
         "ERROR_USERNAME_TOO_SHORT": "Username too short",
         "ERROR_PASSWORD_TOO_SHORT": "Password too short",
+        "ERROR_SERVER_OUTDATED": "Server version is too old! Client: {CLIENT}, Server: {SERVER}",
+        "ERROR_CLIENT_OUTDATED": "Client version is too old! Client: {CLIENT}, Server: {SERVER}",
 
         "RobotStatus:name/STOPPED": "Stopped",
         "RobotStatus:name/RUNNING": "Running",

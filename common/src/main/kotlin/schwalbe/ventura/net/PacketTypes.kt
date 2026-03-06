@@ -28,6 +28,8 @@ data class PacketType<P>(
     val GENERIC_ERROR               = down<GenericErrorPacket>()
     val TAGGED_ERROR                = down<TaggedErrorPacket>()
 
+    val SERVER_VERSION              = down<VersionPacket>()
+
     val CREATE_ACCOUNT              = up<AccountCredPacket>()
     val CREATE_ACCOUNT_SUCCESS      = down<Unit>()
     val CREATE_SESSION              = up<AccountCredPacket>()
@@ -123,6 +125,10 @@ enum class TaggedErrorPacket {
     // provided robot name is too long
     ROBOT_NAME_TOO_LONG
 }
+
+
+@Serializable
+data class VersionPacket(val major: Int, val minor: Int, val patch: Int)
 
 
 @Serializable

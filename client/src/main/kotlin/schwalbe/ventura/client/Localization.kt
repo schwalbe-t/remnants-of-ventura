@@ -101,6 +101,8 @@ enum class LocalKeys {
     ERROR_PASSWORDS_DONT_MATCH,
     ERROR_USERNAME_TOO_SHORT,
     ERROR_PASSWORD_TOO_SHORT,
+    ERROR_SERVER_OUTDATED,
+    ERROR_CLIENT_OUTDATED
 }
 
 val localized: Resource<Localizations<GameLanguage, LocalKeys>>

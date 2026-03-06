@@ -1,7 +1,10 @@
 
 package schwalbe.ventura.server
 
+import schwalbe.ventura.Version
 import schwalbe.ventura.net.*
+import schwalbe.ventura.server.game.*
+import schwalbe.ventura.server.persistence.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.serializer
@@ -13,22 +16,6 @@ import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.webSocket
 import io.ktor.server.routing.routing
-import schwalbe.ventura.server.game.Player
-import schwalbe.ventura.server.game.PlayerData
-import schwalbe.ventura.server.game.World
-import schwalbe.ventura.server.game.WorldRegistry
-import schwalbe.ventura.server.game.createStartingData
-import schwalbe.ventura.server.game.getCurrentWorld
-import schwalbe.ventura.server.persistence.Account
-import schwalbe.ventura.server.persistence.ServerNetwork
-import schwalbe.ventura.server.persistence.Session
-import schwalbe.ventura.server.persistence.create
-import schwalbe.ventura.server.persistence.fetchPlayerData
-import schwalbe.ventura.server.persistence.getSessionUser
-import schwalbe.ventura.server.persistence.hasMatchingPassword
-import schwalbe.ventura.server.persistence.releaseAccount
-import schwalbe.ventura.server.persistence.tryAcquireAccount
-import schwalbe.ventura.server.persistence.tryApplyLoginCooldown
 import java.util.concurrent.ConcurrentHashMap
 import java.security.KeyStore
 import kotlin.uuid.Uuid
@@ -44,7 +31,12 @@ class Server(
     val worlds: WorldRegistry
 ) {
 
-    companion object;
+    companion object {
+        val VERSION_PACKET: Packet = Packet.serialize(
+            PacketType.SERVER_VERSION,
+            VersionPacket(Version.MAJOR, Version.MINOR, Version.PATCH)
+        )
+    }
 
     data class Connection(
         val id: Uuid,
@@ -118,6 +110,7 @@ class Server(
 
     private fun onConnect(connection: Connection) {
         this.connected[connection.id] = connection
+        connection.outgoing.send(VERSION_PACKET)
     }
 
     private fun onDisconnect(connection: Connection) {

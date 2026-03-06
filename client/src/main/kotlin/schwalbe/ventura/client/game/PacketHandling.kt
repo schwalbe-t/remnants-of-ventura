@@ -1,11 +1,43 @@
 
 package schwalbe.ventura.client.game
 
-import org.joml.Vector4f
-import schwalbe.ventura.client.Client
+import schwalbe.ventura.Version
+import schwalbe.ventura.client.*
+import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.net.*
 import schwalbe.ventura.data.ConstWorldInfo
-import schwalbe.ventura.data.VisualEffect
+import org.joml.Vector4f
+
+private enum class VersionDiff { CLIENT_OUTDATED, SERVER_OUTDATED, MATCH }
+
+private fun compareVersions(serverVer: VersionPacket): VersionDiff = when {
+    serverVer.major > Version.MAJOR -> VersionDiff.CLIENT_OUTDATED
+    serverVer.major < Version.MAJOR -> VersionDiff.SERVER_OUTDATED
+    serverVer.minor > Version.MINOR -> VersionDiff.CLIENT_OUTDATED
+    serverVer.minor < Version.MINOR -> VersionDiff.SERVER_OUTDATED
+    serverVer.patch > Version.PATCH -> VersionDiff.CLIENT_OUTDATED
+    serverVer.patch < Version.PATCH -> VersionDiff.SERVER_OUTDATED
+    else -> VersionDiff.MATCH
+}
+
+fun PacketHandler<Unit>.addVersionCheck(onMismatch: (String) -> Unit) = this
+    .onPacket(PacketType.SERVER_VERSION) { sv: VersionPacket, _ ->
+        val clientStrVer = "${Version.MAJOR}.${Version.MINOR}.${Version.PATCH}"
+        val serverStrVer = "${sv.major}.${sv.minor}.${sv.patch}"
+        when (compareVersions(sv)) {
+            VersionDiff.CLIENT_OUTDATED -> onMismatch(
+                localized()[ERROR_CLIENT_OUTDATED]
+                    .replace("{CLIENT}", clientStrVer)
+                    .replace("{SERVER}", serverStrVer)
+            )
+            VersionDiff.SERVER_OUTDATED -> onMismatch(
+                localized()[ERROR_SERVER_OUTDATED]
+                    .replace("{CLIENT}", clientStrVer)
+                    .replace("{SERVER}", serverStrVer)
+            )
+            else -> {}
+        }
+    }
 
 fun PacketHandler<Unit>.addErrorLogging() = this
     .onPacket(PacketType.GENERIC_ERROR) { e: GenericErrorPacket, _ ->
