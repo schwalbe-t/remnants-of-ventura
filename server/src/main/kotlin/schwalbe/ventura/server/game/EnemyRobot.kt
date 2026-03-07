@@ -7,27 +7,28 @@ import schwalbe.ventura.net.SerVector3
 import schwalbe.ventura.utils.sign
 import kotlin.math.abs
 
-class LootTable {
+class LootTable(vararg val entries: Entry) {
     data class Entry(val generate: () -> Item?)
-
-    var entries: MutableList<Entry> = mutableListOf()
 
     fun generateLoot(): List<Item>
         = this.entries.mapNotNull { it.generate() }
 }
 
-fun LootTable.oneOf(vararg entries: Pair<Double, Item>): LootTable {
-    val sum = entries.sumOf { it.first }
-    this.entries.add(LootTable.Entry {
-        var acc: Double = Math.random()
-        for (entry in entries) {
-            acc -= entry.first / sum
-            if (acc > 0.0) { continue }
-            return@Entry entry.second
-        }
-        null
-    })
-    return this
+fun Item.toLoot()
+        = LootTable.Entry { this }
+
+fun LootTable.Entry.withChance(chance: Double): LootTable.Entry
+    = LootTable.Entry { if (Math.random() < chance) this.generate() else null }
+
+fun Iterable<Pair<Double, LootTable.Entry>>.one() = LootTable.Entry {
+    val sum = this.sumOf { it.first }
+    var acc: Double = Math.random()
+    for (entry in this) {
+        acc -= entry.first / sum
+        if (acc > 0.0) { continue }
+        return@Entry entry.second.generate()
+    }
+    null
 }
 
 
@@ -109,23 +110,25 @@ enum class EnemyRobotConfig(
         ),
         weaponItem = Item(ItemType.LASER),
         update = ::updateBasicRobot,
-        lootTable = LootTable()
-            .oneOf(
-                0.6 to Item(ItemType.BIGTON_1030),
-                0.5 to Item(ItemType.BIGTON_1050),
-                0.4 to Item(ItemType.BIGTON_1070),
-                0.3 to Item(ItemType.BIGTON_2030),
-                0.2 to Item(ItemType.BIGTON_2050),
-                0.1 to Item(ItemType.BIGTON_2070)
-            )
-            .oneOf(
-                0.66 to Item(ItemType.SHORT_RANGE_RADAR),
-                0.22 to Item(ItemType.MID_RANGE_RADAR),
-                0.11 to Item(ItemType.LONG_RANGE_RADAR)
-            )
-            .oneOf(
-                0.33 to Item(ItemType.LASER)
-            )
+        lootTable = LootTable(
+            listOf(
+                0.6 to Item(ItemType.BIGTON_1030).toLoot(),
+                0.5 to Item(ItemType.BIGTON_1050).toLoot(),
+                0.4 to Item(ItemType.BIGTON_1070).toLoot(),
+                0.3 to Item(ItemType.BIGTON_2030).toLoot(),
+                0.2 to Item(ItemType.BIGTON_2050).toLoot(),
+                0.1 to Item(ItemType.BIGTON_2070).toLoot()
+            ).one()
+                .withChance(0.75),
+            listOf(
+                0.66 to Item(ItemType.SHORT_RANGE_RADAR).toLoot(),
+                0.22 to Item(ItemType.MID_RANGE_RADAR).toLoot(),
+                0.11 to Item(ItemType.LONG_RANGE_RADAR).toLoot()
+            ).one()
+                .withChance(0.5),
+            Item(ItemType.LASER).toLoot()
+                .withChance(0.33)
+        )
     )
 }
 
