@@ -46,6 +46,9 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             if (Key.TAB.wasPressed) {
                 client.nav.push(inventoryMenuScreen(client))
             }
+            if (Key.C.wasPressed) {
+                client.nav.push(codeEditingScreen(client))
+            }
             SourceFiles.update(client)
             val worldState: WorldStatePacket? = world.state.lastReceived
             if (worldState != null) {

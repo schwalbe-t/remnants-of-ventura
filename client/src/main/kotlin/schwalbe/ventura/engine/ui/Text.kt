@@ -363,6 +363,11 @@ class Text : UiElement(), Colored {
     fun alignLeft(): Text = this.withAlignment(Alignment.LEFT)
     fun alignCenter(): Text = this.withAlignment(Alignment.CENTER)
     fun alignRight(): Text = this.withAlignment(Alignment.RIGHT)
+
+    override fun invalidate() {
+        super.invalidate()
+        this.renderIsDirty = true
+    }
     
 }
 

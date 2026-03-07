@@ -12,18 +12,21 @@ import org.joml.*
 object PlayerAnim : Animations<PlayerAnim> {
     val idle = anim("idle")
     val walk = anim("walk")
+    val thinking = anim("thinking")
     val squat = anim("squat")
 }
 
 fun PlayerAnim.fromSharedAnim(a: SharedPlayerInfo.Animation) = when (a) {
     SharedPlayerInfo.Animation.IDLE     -> PlayerAnim.idle
     SharedPlayerInfo.Animation.WALK     -> PlayerAnim.walk
+    SharedPlayerInfo.Animation.THINKING     -> PlayerAnim.thinking
     SharedPlayerInfo.Animation.SQUAT    -> PlayerAnim.squat
 }
 
 fun AnimationRef<PlayerAnim>.toSharedAnim() = when (this) {
     PlayerAnim.idle     -> SharedPlayerInfo.Animation.IDLE
     PlayerAnim.walk     -> SharedPlayerInfo.Animation.WALK
+    PlayerAnim.thinking     -> SharedPlayerInfo.Animation.THINKING
     PlayerAnim.squat    -> SharedPlayerInfo.Animation.SQUAT
     else -> SharedPlayerInfo.Animation.IDLE
 }

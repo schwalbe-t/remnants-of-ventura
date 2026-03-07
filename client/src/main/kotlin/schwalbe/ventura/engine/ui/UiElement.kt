@@ -96,7 +96,7 @@ abstract class UiElement : Disposable {
     
     protected open fun render(context: UiElementContext) {}
     
-    fun invalidate() {
+    open fun invalidate() {
         this.isDirty = true
     }
     

@@ -262,6 +262,11 @@ class Scroll : GpuUiElement() {
         ) ?: 0f
         this.actualScrollOffset.target.x += thumbDx
         this.actualScrollOffset.target.y += thumbDy
+        if (thumbDx != 0f || thumbDy != 0f) {
+            this.limitScrollOffsets()
+            this.actualScrollOffset.snapToTarget()
+            this.invalidate()
+        }
         this.stickToBottom = this.stickToBottom
             && thumbDx == 0f && thumbDy == 0f
         this.updateChildren(context, UiElement::captureInput)

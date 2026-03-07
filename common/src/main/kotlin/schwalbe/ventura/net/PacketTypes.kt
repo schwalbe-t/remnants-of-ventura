@@ -159,7 +159,7 @@ data class SharedPlayerInfo(
 ) {
     @Serializable
     enum class Animation {
-        IDLE, WALK, SQUAT
+        IDLE, WALK, THINKING, SQUAT
     }
 }
 

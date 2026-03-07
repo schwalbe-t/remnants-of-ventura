@@ -243,6 +243,8 @@ class TextInput : GpuUiElement(), Focusable {
             this.updateDisplayedValue()
         }
 
+    fun computeLineCount(): Int = cpLineCount(this.value)
+
     override val children: List<UiElement>
         get() = listOfNotNull(this.placeholder, this.content)
         
