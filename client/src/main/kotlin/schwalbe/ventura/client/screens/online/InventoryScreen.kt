@@ -196,6 +196,7 @@ private fun createSelectedItemSection(
         )
         .add(20.ph, Text()
             .withText(l[item.type.localDescKey])
+            .withSize(1.5.vmin)
             .withColor(BRIGHT_FONT_COLOR)
             .wrapScrolling()
             .withThumbColor(BUTTON_COLOR)
