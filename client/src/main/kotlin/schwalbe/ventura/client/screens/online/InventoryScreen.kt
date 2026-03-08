@@ -121,7 +121,7 @@ fun createItemListSection(
             .withText(l[TITLE_INVENTORY])
             .withColor(BRIGHT_FONT_COLOR)
             .withFont(googleSansSb())
-            .withSize(85.ph)
+            .withSize(75.ph)
             .pad(2.5.vmin)
         )
         .add(100.ph - 8.vmin, itemList

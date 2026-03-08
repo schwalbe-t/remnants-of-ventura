@@ -13,6 +13,8 @@ import org.joml.Vector4f
 import org.joml.Vector4fc
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.name
 
 private val PLACER_CENTERED = CameraController.Mode(
     lookAt = { _, w, _ -> Vector3f()
@@ -28,6 +30,8 @@ private val CODE_EDITING_SETTINGS = CodeEditingSettings(
     autoIndent = true
 )
 
+private const val EDITOR_SAVE_DELAY_MS: Long = 250
+
 private class Editor(val file: File, fileContent: String) {
 
     val lineNumbers: Text
@@ -35,6 +39,9 @@ private class Editor(val file: File, fileContent: String) {
     val textInput: TextInput
     val textScroll: Scroll
     val root: UiElement
+
+    val path: Path = this.file.toPath()
+    var lastEdit: Long? = null
 
     init {
         val fontSize: UiSize = 1.5.vmin
@@ -52,21 +59,25 @@ private class Editor(val file: File, fileContent: String) {
                 .withColor(BRIGHT_FONT_COLOR)
                 .withSize(fontSize)
             )
-            .withValue(fileContent)
+            .withDisplayedSpans(::syntaxHighlightBigton)
             .withMultilineInput(multiline = true)
+            .withValue(fileContent)
             .withCodeTypedHandler(CODE_EDITING_SETTINGS)
             .withCodeDeletedHandler(CODE_EDITING_SETTINGS)
-            .withValueChangedHandler { this.updateLineNumbers() }
+            .withValueChangedHandler {
+                this.updateLineNumbers()
+                this.lastEdit = System.currentTimeMillis()
+            }
         this.textScroll = this.textInput
             .wrapScrolling(horiz = true, vert = true)
             .withThumbColor(BUTTON_COLOR)
             .withThumbHoverColor(BUTTON_HOVER_COLOR)
         this.root = Axis.column()
             .add(5.vmin, Text()
-                .withText(this.file.name)
-                .withFont(jetbrainsMonoB())
+                .withText(this.path.name)
+                .withFont(googleSansSb())
                 .withColor(BRIGHT_FONT_COLOR)
-                .withSize(75.ph)
+                .withSize(85.ph)
                 .pad(1.5.vmin)
             )
             .add(100.ph - 5.vmin, Axis.row()
@@ -96,14 +107,25 @@ private class Editor(val file: File, fileContent: String) {
             this.lineNumbers.invalidate()
             this.lastScrollY = newScrollY
         }
+        val lastEdit: Long? = this.lastEdit
+        val now: Long = System.currentTimeMillis()
+        if (lastEdit != null && lastEdit + EDITOR_SAVE_DELAY_MS <= now) {
+            this.save()
+        }
+    }
+
+    fun save() {
+        if (this.lastEdit == null) { return }
+        Files.writeString(this.path, this.textInput.valueString)
+        this.lastEdit = null
     }
 
 }
 
 private val FILE_TREE_BACKGROUND: Vector4fc
-        = Vector4f(0.2f, 0.2f, 0.2f, 0.15f)
+        = Vector4f(0.2f, 0.2f, 0.2f, 0.35f)
 private val CODE_EDITOR_BACKGROUND: Vector4fc
-    = Vector4f(0.2f, 0.2f, 0.2f, 0.25f)
+    = Vector4f(0.2f, 0.2f, 0.2f, 0.90f)
 
 fun codeEditingScreen(client: Client): () -> GameScreen = {
     val background = BlurBackground()
@@ -117,7 +139,7 @@ fun codeEditingScreen(client: Client): () -> GameScreen = {
         try {
             content = Files.readString(file.toPath())
         } catch (e: Exception) {
-            return@openFile e.printStackTrace()
+            return e.printStackTrace()
         }
         val newEditor = Editor(file, content)
         editorCont.disposeAll()
@@ -125,6 +147,7 @@ fun codeEditingScreen(client: Client): () -> GameScreen = {
         editor = newEditor
     }
     fun closeFile() {
+        editor?.save()
         editorCont.disposeAll()
         editor = null
     }

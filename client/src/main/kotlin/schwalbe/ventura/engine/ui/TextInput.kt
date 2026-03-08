@@ -397,7 +397,9 @@ class TextInput : GpuUiElement(), Focusable {
     
     private val history: MutableList<Modification> = mutableListOf()
     private val undoHistory: MutableList<Modification> = mutableListOf()
-    
+
+    private var lmbPressed: Boolean = false
+
     override fun captureInput(context: UiElementContext) {
         val mouseInside: Boolean = Mouse.isInsideArea(
             context.visibleAbsLeft, context.visibleAbsTop,
@@ -421,7 +423,7 @@ class TextInput : GpuUiElement(), Focusable {
         }
         val caret: Caret? = this.caret
         if (caret != null) {
-            if (MButton.LEFT.isPressed) {
+            if (this.lmbPressed) {
                 val oldOffset: Int = caret.offset
                 this.moveCaretToCursor(context)
                 this.selection = caret
@@ -434,10 +436,19 @@ class TextInput : GpuUiElement(), Focusable {
                 when (e) {
                     is MButtonDown -> {
                         if (e.button != MButton.LEFT) { continue }
-                        if (Key.LEFT_SHIFT.isPressed) { continue }
-                        this.moveCaretToCursor(context)
-                        this.selection = null
-                        continue // do not remove event, don't record mod
+                        if (!Key.LEFT_SHIFT.isPressed) {
+                            this.moveCaretToCursor(context)
+                            this.selection = null
+                        }
+                        this.lmbPressed = true
+                        context.global.nav.input.remove(e)
+                        continue
+                    }
+                    is MButtonUp -> {
+                        if (e.button != MButton.LEFT) { continue }
+                        this.lmbPressed = false
+                        context.global.nav.input.remove(e)
+                        continue
                     }
                     is CharTyped -> {
                         this.clearSelection()

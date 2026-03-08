@@ -15,7 +15,11 @@ import schwalbe.ventura.engine.ui.loadTtf
 val jetbrainsMonoSb: Resource<Font>
     = Font.loadTtf("res/fonts/JetBrainsMonoNL-SemiBold.ttf")
 val jetbrainsMonoB: Resource<Font>
-    = Font.loadTtf("res/fonts/JetBrainsMonoNL-Bold.ttf")
+        = Font.loadTtf("res/fonts/JetBrainsMonoNL-Bold.ttf")
+val jetbrainsMonoEB: Resource<Font>
+        = Font.loadTtf("res/fonts/JetBrainsMonoNL-ExtraBold.ttf")
+val jetbrainsMonoI: Resource<Font>
+    = Font.loadTtf("res/fonts/JetBrainsMonoNL-Italic.ttf")
 
 val googleSansR: Resource<Font>
     = Font.loadTtf("res/fonts/GoogleSans-Regular.ttf")
@@ -29,7 +33,7 @@ val gridShader: Resource<Shader<GridVert, GridFrag>>
 
 fun submitScreenResources(loader: ResourceLoader) {
     loader.submitAll(
-        jetbrainsMonoSb, jetbrainsMonoB,
+        jetbrainsMonoSb, jetbrainsMonoB, jetbrainsMonoEB, jetbrainsMonoI,
         googleSansR, googleSansSb, googleSansI,
         gridShader, gridQuad
     )

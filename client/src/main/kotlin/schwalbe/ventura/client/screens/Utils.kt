@@ -10,7 +10,7 @@ val SECONDARY_FONT_COLOR: Vector4fc         = Vector4f(128f, 128f, 128f, 255f).d
 val BRIGHT_FONT_COLOR: Vector4fc            = Vector4f(0.9f, 0.9f, 0.9f, 1f)
 val SECONDARY_BRIGHT_FONT_COLOR: Vector4fc  = Vector4f(0.75f, 0.75f, 0.75f, 1f)
 
-val PANEL_BACKGROUND: Vector4fc             = Vector4f(0f, 0f, 0f, 10f).div(255f)
+val PANEL_BACKGROUND: Vector4fc             = Vector4f(0.2f, 0.2f, 0.2f, 0.2f)
 
 val BUTTON_COLOR: Vector4fc                 = Vector4f(25f, 25f, 25f, 25f).div(255f)
 val BUTTON_HOVER_COLOR: Vector4fc           = Vector4f(255f, 255f, 255f, 128f).div(255f)
