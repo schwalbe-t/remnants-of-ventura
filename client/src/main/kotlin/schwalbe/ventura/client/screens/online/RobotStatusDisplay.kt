@@ -135,7 +135,7 @@ class RobotStatusDisplay {
             if (!si.status.isRunning) { BUTTON_ROBOT_START }
             else { BUTTON_ROBOT_STOP }
         this.toggleButtonText.withText(l[toggleButtonLabel])
-        this.toggleButtonClick.withHandler {
+        this.toggleButtonClick.withLeftHandler {
             val action: PacketType<Uuid> =
                 if (!si.status.isRunning) { PacketType.START_ROBOT }
                 else { PacketType.STOP_ROBOT }

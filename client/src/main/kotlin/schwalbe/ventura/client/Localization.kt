@@ -88,6 +88,13 @@ enum class LocalKeys {
     BUTTON_REMOVE_ITEM,
     BUTTON_CANCEL_EDIT,
 
+    // Code Editing Screen
+    BUTTON_CREATE_FILE,
+    BUTTON_CREATE_FOLDER,
+    BUTTON_RENAME_FILE,
+    BUTTON_DELETE_FILE,
+    BUTTON_OPEN_IN_FILE_EXPLORER,
+
     // Escape Menu Screen
     BUTTON_BACK_TO_GAME,
     BUTTON_LOG_OUT,

@@ -13,9 +13,7 @@ import schwalbe.ventura.data.Item
 import schwalbe.ventura.ROBOT_NAME_MAX_LEN
 import java.io.File
 import org.joml.Vector3f
-import java.awt.Desktop
 import kotlin.math.atan
-import kotlin.math.roundToInt
 import kotlin.math.tan
 import kotlin.uuid.Uuid
 
@@ -30,7 +28,7 @@ private fun createBottomPanelButton(text: Text, action: () -> Unit) = Stack()
         .alignCenter()
         .pad(1.75.vmin)
     )
-    .add(ClickArea().withHandler(action))
+    .add(ClickArea().withLeftHandler(action))
     .wrapBorderRadius(0.75.vmin)
 
 private data class BottomButtonHandler(var impl: () -> Unit = {})
@@ -136,115 +134,16 @@ fun requestRobotLogs(client: Client, robotId: Uuid) {
     ))
 }
 
-private fun listDirectory(
-    rootDir: File, dir: File, relDir: List<String>,
-    dest: Stack, onFileSelect: (String) -> Unit
-) {
-    val itemList = Axis.column()
-    fun addFileItem(
-        name: String, bold: Boolean, dark: Boolean, handler: () -> Unit
-    ) {
-        val font = if (bold) googleSansSb() else googleSansR()
-        val color = if (dark) SECONDARY_BRIGHT_FONT_COLOR else BRIGHT_FONT_COLOR
-        itemList.add(5.vmin, Stack()
-            .add(FlatBackground()
-                .withColor(BUTTON_COLOR)
-                .withHoverColor(BUTTON_HOVER_COLOR)
-            )
-            .add(Text()
-                .withText(name)
-                .withColor(color)
-                .withFont(font)
-                .withSize(75.ph)
-                .pad(1.vmin)
-            )
-            .add(ClickArea().withHandler(handler))
-            .wrapBorderRadius(0.75.vmin)
-            .pad(left = 1.vmin, right = 1.vmin, bottom = 1.vmin)
-        )
-    }
-    val dirContents: Array<File> = dir.listFiles() ?: arrayOf()
-    if (relDir.isEmpty() && dirContents.isEmpty()) {
-        itemList.add(10.vmin, Text()
-            .withText(localized()[PLACEHOLDER_NO_SOURCE_FILES])
-            .withSize(1.5.vmin)
-            .withFont(googleSansI())
-            .withColor(BRIGHT_FONT_COLOR)
-            .withWidth(100.pw)
-            .pad(left = 2.5.vmin, right = 2.5.vmin)
-        )
-    }
-    if (relDir.isNotEmpty()) {
-        addFileItem(
-            name = "..",
-            bold = true, dark = true,
-            handler = { listDirectory(
-                rootDir, dir.parentFile, relDir.subList(0, relDir.size - 1),
-                dest, onFileSelect
-            ) }
-        )
-    }
-    for (file in dirContents.sorted()) {
-        val isDir: Boolean = file.isDirectory
-        val symbol: String = if (isDir) "> " else ""
-        addFileItem(
-            name = symbol + file.name,
-            bold = isDir, dark = false,
-            handler = handler@{
-                if (!isDir) {
-                    return@handler onFileSelect(file.relativeTo(rootDir).path)
-                }
-                listDirectory(
-                    rootDir, dir.resolve(file.name), relDir + file.name,
-                    dest, onFileSelect
-                )
-            }
-        )
-    }
-    dest.disposeAll()
-    dest.add(Axis.column()
-        .add(8.vmin, Axis.column()
-            .add(60.ph, Text()
-                .withText(localized()[TITLE_SELECT_SOURCE_FILE])
-                .withColor(BRIGHT_FONT_COLOR)
-                .withFont(googleSansSb())
-                .withSize(85.ph)
-            )
-            .add(40.ph, Text()
-                .withText(">" + relDir.joinToString(
-                    transform = { " $it >" },
-                    separator = ""
-                ))
-                .withColor(SECONDARY_BRIGHT_FONT_COLOR)
-                .withFont(jetbrainsMonoSb())
-                .withSize(85.ph)
-            )
-            .pad(1.5.vmin)
-        )
-        .add(100.ph - 8.vmin, itemList
-            .wrapScrolling()
-            .withThumbColor(BUTTON_COLOR)
-            .withThumbHoverColor(BUTTON_HOVER_COLOR)
-        )
+private fun createSelectFileSection(fileTreeCtx: FileTreeCtx) = Axis.column()
+    .add(6.vmin, Text()
+        .withText(localized()[TITLE_SELECT_SOURCE_FILE])
+        .withColor(BRIGHT_FONT_COLOR)
+        .withFont(googleSansSb())
+        .withSize(75.ph)
+        .pad(1.5.vmin)
     )
-}
-
-private fun createSelectFileSection(onFileSelect: (String) -> Unit): UiElement {
-    val container = Stack()
-    val rootDir = File(USERCODE_DIR)
-    listDirectory(rootDir, rootDir, listOf(), dest = container, onFileSelect)
-    val supportsFolderOpen: Boolean =
-        Desktop.isDesktopSupported() &&
-        Desktop.getDesktop().isSupported(Desktop.Action.OPEN)
-    if (!supportsFolderOpen) { return container }
-    return container.withBottomButton(localized()[BUTTON_OPEN_SOURCE_FILES]) {
-        try {
-            Desktop.getDesktop().open(File(USERCODE_DIR))
-        } catch(e: Exception) {
-            e.printStackTrace()
-        }
-    }
-}
+    .add(100.ph - 8.vmin, createFileTree(fileTreeCtx))
+    .pad(1.vmin)
 
 private fun createRobotSettingsSection(
     client: Client, packetHandler: PacketHandler<Unit>,
@@ -309,7 +208,7 @@ private fun createRobotSettingsSection(
             )
             if (onClick != null) {
                 bg.withHoverColor(BUTTON_HOVER_COLOR)
-                root.add(ClickArea().withHandler(onClick))
+                root.add(ClickArea().withLeftHandler(onClick))
             }
             return root
                 .wrapBorderRadius(0.75.vmin)
@@ -455,6 +354,7 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
     val background = BlurBackground()
         .withRadius(3)
         .withSpread(5)
+    val contextMenu = ContextMenu()
     val packets = PacketHandler.receiveDownPackets<Unit>()
         .addErrorLogging()
         .addWorldHandling(client)
@@ -531,16 +431,19 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
         requestInventoryContents(client)
     }
     fun onAddCodeFile(onFileSelected: (String) -> Unit) {
-        val fileSelect = createSelectFileSection { path ->
-            onFileSelected(path)
-            resetRhs()
-        }
+        val fileTreeCtx = FileTreeCtx(
+            contextMenu,
+            onFileSelect = { file ->
+                onFileSelected(file.relativeTo(File(USERCODE_DIR)).path)
+                resetRhs()
+            }
+        )
         rhs.disposeAll()
-        rhs.add(fileSelect
+        rhs.add(createSelectFileSection(fileTreeCtx)
             .withBottomButton(l[BUTTON_CANCEL_EDIT]) { resetRhs() }
         )
     }
-    screen.add(element = Axis.row()
+    screen.add(layer = 0, element = Axis.row()
         .add(66.6.vw, Stack()
             .add(background)
             .add(FlatBackground().withColor(PANEL_BACKGROUND))
@@ -554,6 +457,7 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
             )
         )
     )
+    screen.add(layer = 1, element = contextMenu)
     packets.onPacketUntil(
         PacketType.WORLD_STATE, until = background::wasDisposed
     ) { ws, _ ->

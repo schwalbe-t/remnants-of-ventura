@@ -32,10 +32,16 @@ class FlatBackground : GpuUiElement(), Colored {
     override val children: List<UiElement> = listOf()
     
     override fun captureInput(context: UiElementContext) {
-        val nowHovering: Boolean = Mouse.isInsideArea(
+        val mouseOver: Boolean = Mouse.isInsideArea(
             context.visibleAbsLeft, context.visibleAbsTop,
             context.visibleAbsRight, context.visibleAbsBottom
         )
+        val nowHovering: Boolean = mouseOver
+            && this.hoverColor != null
+            && context.global.mouseOver == null
+        if (nowHovering) {
+            context.global.mouseOver = this
+        }
         if (nowHovering == this.hovering) { return }
         this.hovering = nowHovering
         this.invalidate()

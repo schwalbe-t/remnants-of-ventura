@@ -41,9 +41,9 @@ class Padding : GpuUiElement() {
     }
    
     override fun render(context: UiElementContext) {
+        this.prepareTarget()
         val inside: UiElement = this.inside ?: return
         val insideTex: Texture = inside.result ?: return
-        this.prepareTarget()
         val insideOffsetX: Int = this.paddingLeft(context).roundToInt()
         val insideOffsetY: Int = this.paddingTop(context).roundToInt()
         blitTexture(
@@ -94,7 +94,6 @@ class Padding : GpuUiElement() {
     }
 
     fun detachContent(): Padding {
-        this.inside?.disposeTree()
         this.inside = null
         this.invalidate()
         return this

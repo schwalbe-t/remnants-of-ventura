@@ -21,6 +21,8 @@ open class UiScreen<S : UiScreen<S>>(
             }
             field = value
         }
+
+    var mouseOver: UiElement? = null
     
     private val elements: MutableList<BaseElement> = mutableListOf()
     
@@ -34,12 +36,15 @@ open class UiScreen<S : UiScreen<S>>(
     }
     
     fun captureInput() {
+        this.mouseOver = null
         val childContext = UiElementContext(
             this, null,
             0, 0, this.nav.output.width, this.nav.output.height,
             0, 0, this.nav.output.width, this.nav.output.height
         )
-        this.elements.forEach { it.element.captureInput(childContext) }
+        this.elements.reversed().forEach {
+            it.element.captureInput(childContext)
+        }
     }
     
     private var lastOutputWidth: Int = 0

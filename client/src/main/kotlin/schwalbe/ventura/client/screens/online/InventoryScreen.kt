@@ -73,7 +73,7 @@ fun addInventoryItem(
             .pad(1.vmin)
         )
     }
-    root.add(ClickArea().withHandler(onClick))
+    root.add(ClickArea().withLeftHandler(onClick))
     items.add(8.vmin, root
         .wrapBorderRadius(0.75.vmin)
         .pad(left = 1.vmin, right = 1.vmin)
@@ -152,7 +152,7 @@ private fun createInventoryItemActionButton(
         .alignCenter()
         .pad(0.75.vmin)
     )
-    .add(ClickArea().withHandler(handler))
+    .add(ClickArea().withLeftHandler(handler))
     .wrapBorderRadius(0.75.vmin)
 
 private fun createSelectedItemSection(

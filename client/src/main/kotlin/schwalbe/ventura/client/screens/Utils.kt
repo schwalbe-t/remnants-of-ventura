@@ -92,5 +92,5 @@ fun createButton(
         .withHoverColor(BUTTON_HOVER_COLOR)
     )
     .add(content)
-    .add(ClickArea().withHandler(handler))
+    .add(ClickArea().withLeftHandler(handler))
     .wrapBorderRadius(0.75.vmin)

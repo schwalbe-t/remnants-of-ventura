@@ -61,6 +61,12 @@
         "BUTTON_REMOVE_ITEM": "Remove Item",
         "BUTTON_CANCEL_EDIT": "Cancel",
 
+        "BUTTON_CREATE_FILE": "New File",
+        "BUTTON_CREATE_FOLDER": "New Folder",
+        "BUTTON_RENAME_FILE": "Rename",
+        "BUTTON_DELETE_FILE": "Delete",
+        "BUTTON_OPEN_IN_FILE_EXPLORER": "Open in File Explorer",
+
         "BUTTON_BACK_TO_GAME": "Back to Game",
         "BUTTON_LOG_OUT": "Log Out",
 

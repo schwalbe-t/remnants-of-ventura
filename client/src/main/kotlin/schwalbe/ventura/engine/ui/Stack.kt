@@ -11,7 +11,16 @@ class Stack : GpuUiElement() {
     
     override val children: List<UiElement>
         get() = this.inside
-        
+
+    override fun captureInput(context: UiElementContext) {
+        val childContext = context.childContext(
+            this, 0, 0, this.pxWidth, this.pxHeight
+        )
+        for (child in this.children.reversed()) {
+            child.captureInput(childContext)
+        }
+    }
+
     override fun render(context: UiElementContext) {
         this.prepareTarget()
         val shader: Shader<PxPos, Blit> = blitShader()

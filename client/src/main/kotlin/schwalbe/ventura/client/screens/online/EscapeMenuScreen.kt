@@ -28,7 +28,7 @@ private fun addOption(
             .withSize(75.ph)
             .pad(2.vmin)
         )
-        .add(ClickArea().withHandler(action))
+        .add(ClickArea().withLeftHandler(action))
         .wrapBorderRadius(0.75.vmin)
         .pad(bottom = 1.vmin)
     )
