@@ -4,15 +4,13 @@ package schwalbe.ventura.client.game
 import schwalbe.ventura.MAX_NUM_REQUESTED_CHUNKS
 import schwalbe.ventura.net.*
 import schwalbe.ventura.data.*
-import schwalbe.ventura.client.Client
-import schwalbe.ventura.client.Renderer
+import schwalbe.ventura.client.*
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
 import kotlin.collections.asSequence
 import org.joml.Matrix4f
 import org.joml.Matrix4fc
 import org.joml.Vector3fc
-import schwalbe.ventura.client.RenderPass
 
 private val objectModels: List<Resource<Model<StaticAnim>>> = ObjectType.entries
     .map { Model.loadFile(
@@ -25,10 +23,12 @@ private fun computeChunkInstances(
     data: ChunkData
 ): List<ChunkLoader.LoadedInstance>
     = data.instances.map { inst ->
+        val position = inst[ObjectProp.Position]
+        val rotation = inst[ObjectProp.Rotation]
         val transform = Matrix4f()
-            .translate(inst.position.x, inst.position.y, inst.position.z)
-            .rotateXYZ(inst.rotation.x, inst.rotation.y, inst.rotation.z)
-            .scale(inst.scale.x, inst.scale.y, inst.scale.z)
+            .translate(position.x, position.y, position.z)
+            .rotateXYZ(rotation.x, rotation.y, rotation.z)
+            .scale(inst[ObjectProp.Scale])
         ChunkLoader.LoadedInstance(inst, transform)
     }
 
@@ -37,9 +37,10 @@ private fun computeChunkColliders(
 ): List<AxisAlignedBox> {
     val colliders = mutableListOf<AxisAlignedBox>()
     for (instance in instances) {
-        if (!instance.obj.type.applyColliders) { continue }
+        val instType: ObjectType = instance.obj[ObjectProp.Type] ?: continue
+        if (!instType.applyColliders) { continue }
         val model: Model<StaticAnim> = objectModels
-            .getOrNull(instance.obj.type.ordinal)?.invoke()
+            .getOrNull(instType.ordinal)?.invoke()
             ?: continue
         model.forEachNode { node ->
             for (meshI in node.meshes) {
@@ -54,7 +55,9 @@ private fun computeChunkColliders(
     return colliders
 }
 
-class ChunkLoader {
+class ChunkLoader(
+    val requestChunks: (List<ChunkRef>) -> List<ChunkRef>
+) {
 
     class LoadedInstance(
         val obj: ObjectInstance,
@@ -85,8 +88,8 @@ class ChunkLoader {
     val requested: MutableSet<ChunkRef> = mutableSetOf()
     val loaded: MutableMap<ChunkRef, LoadedChunkData> = mutableMapOf()
 
-    fun handleReceivedChunks(contents: ChunkContentsPacket) {
-        for ((ref, data) in contents.chunks) {
+    fun onChunksReceived(chunks: List<Pair<ChunkRef, ChunkData>>) {
+        for ((ref, data) in chunks) {
             val instances = computeChunkInstances(data)
             val colliders = computeChunkColliders(instances)
             this.loaded[ref] = LoadedChunkData(instances, colliders)
@@ -94,38 +97,26 @@ class ChunkLoader {
     }
 
     private fun chunksInRange(r: Int): Sequence<ChunkRef>
-        = (-r..+r).asSequence().flatMap { x ->
-            (-r..+r).asSequence().map { z ->
+        = ((-r)..(+r)).asSequence().flatMap { x ->
+            ((-r)..(+r)).asSequence().map { z ->
                 ChunkRef(this.centerX + x, this.centerZ + z)
             }
         }
 
     private fun collectMissingChunks(): List<ChunkRef>
-        = this.chunksInRange(ChunkLoader.LOAD_RADIUS)
+        = this.chunksInRange(LOAD_RADIUS)
         .filter { it !in this.requested }
         .toList()
 
-    private fun requestChunkData(chunks: List<ChunkRef>, client: Client) {
-        var numRequested: Int = 0
-        while (numRequested < chunks.size) {
-            val numRemaining: Int = chunks.size - numRequested
-            val batchSize: Int = minOf(numRemaining, MAX_NUM_REQUESTED_CHUNKS)
-            val batch: List<ChunkRef> = chunks
-                .subList(numRequested, numRequested + batchSize)
-            client.network.outPackets?.send(Packet.serialize(
-                PacketType.REQUEST_CHUNK_CONTENTS,
-                RequestedChunksPacket(batch)
-            ))
-            batch.forEach(this.requested::add)
-            numRequested += batchSize
-        }
+    private fun requestChunkData(chunks: List<ChunkRef>) {
+        this.requested.addAll(this.requestChunks(chunks))
     }
 
     fun update(client: Client, center: Vector3fc) {
         this.centerX = center.x().unitsToChunkIdx()
         this.centerZ = center.z().unitsToChunkIdx()
         val missing: List<ChunkRef> = this.collectMissingChunks()
-        this.requestChunkData(missing, client)
+        this.requestChunkData(missing)
     }
 
     fun intersectsAnyLoaded(b: AxisAlignedBox): Boolean {
@@ -149,8 +140,9 @@ class ChunkLoader {
         val groupedInstances: MutableMap<ObjectType, MutableList<Matrix4fc>>
             = mutableMapOf()
         for (inst in data.instances) {
+            val instType: ObjectType = inst.obj[ObjectProp.Type] ?: continue
             val group: MutableList<Matrix4fc> = groupedInstances
-                .getOrPut(inst.obj.type) { mutableListOf() }
+                .getOrPut(instType) { mutableListOf() }
             group.add(inst.transform)
         }
         for ((type, instances) in groupedInstances) {
@@ -159,21 +151,37 @@ class ChunkLoader {
                 ?: continue
             if (type.renderOutline) {
                 pass.renderOutline(
-                    model, ChunkLoader.OUTLINE_THICKNESS,
-                    animState = null, instances
+                    model, OUTLINE_THICKNESS, animState = null, instances
                 )
             }
-            pass.renderGeometry(
-                model, animState = null, instances
-            )
+            pass.renderGeometry(model, animState = null, instances)
         }
     }
 
     fun render(pass: RenderPass) {
-        for (chunk in this.chunksInRange(ChunkLoader.RENDER_RADIUS)) {
+        for (chunk in this.chunksInRange(RENDER_RADIUS)) {
             val data: LoadedChunkData = this.loaded[chunk] ?: continue
             this.renderChunk(data, pass)
         }
     }
 
+}
+
+fun ChunkLoader.Companion.requestChunksFromNetwork(
+    network: NetworkClient
+): (List<ChunkRef>) -> List<ChunkRef> = request@{ chunks ->
+    val outPackets = network.outPackets ?: return@request listOf()
+    var numRequested = 0
+    while (numRequested < chunks.size) {
+        val numRemaining: Int = chunks.size - numRequested
+        val batchSize: Int = minOf(numRemaining, MAX_NUM_REQUESTED_CHUNKS)
+        val batch: List<ChunkRef> = chunks
+            .subList(numRequested, numRequested + batchSize)
+        outPackets.send(Packet.serialize(
+            PacketType.REQUEST_CHUNK_CONTENTS,
+            RequestedChunksPacket(batch)
+        ))
+        numRequested += batchSize
+    }
+    chunks
 }

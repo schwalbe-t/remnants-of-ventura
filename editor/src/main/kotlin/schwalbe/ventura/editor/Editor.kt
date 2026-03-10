@@ -1,23 +1,22 @@
 
-package schwalbe.ventura.client
+package schwalbe.ventura.editor
 
-import schwalbe.ventura.client.screens.GameScreen
-import schwalbe.ventura.client.game.World
-import schwalbe.ventura.engine.gfx.*
-import schwalbe.ventura.engine.ui.*
+import schwalbe.ventura.client.*
+import schwalbe.ventura.client.game.CameraController
 import schwalbe.ventura.engine.*
+import schwalbe.ventura.engine.gfx.*
+import schwalbe.ventura.engine.ui.UiNavigator
 import kotlin.concurrent.thread
+import org.joml.Vector3f
 import org.joml.Vector4f
 
-class Client {
-
-    val config: Config = Config.read()
+class Editor {
 
     val resLoader = ResourceLoader()
 
     val window = Window(
-        name = "Remnants of Ventura",
-        sizeFactor = 0.75f,
+        name = "Ventura World Editor",
+        sizeFactor = 0.9f,
         iconPath = "res/icon.png"
     )
 
@@ -37,36 +36,28 @@ class Client {
             16, 16, Texture.Filter.NEAREST, Texture.Format.RGBA8
         ))
 
-    val nav = UiNavigator<GameScreen>(this.out2d, this.window.inputEvents)
-
-    var deltaTime: Float = 0f
-
-    val network = NetworkClient()
+    val nav = UiNavigator<EditorScreen>(this.out2d, this.window.inputEvents)
 
     val renderer = Renderer(this.out3d)
-    var username: String = ""
-    var world: World? = null
+
+
+    var position = Vector3f()
+    val cameraMode = CameraController.Mode(
+        lookAt = { _ -> this.position },
+        fovDegrees = 30f
+    )
+    val camController = CameraController(this.cameraMode, 5f, 50f)
 
 }
 
-fun Client.loadResources() {
+fun Editor.loadResources() {
     thread { this.resLoader.loadQueuedRawLoop() }
 }
 
-fun Client.gameloop() {
-    var lastFrameTime: Long = System.nanoTime()
+fun Editor.gameloop() {
     while (!this.window.shouldClose()) {
         this.window.beginFrame()
         this.resLoader.loadQueuedFully()
-
-        this.nav.currentOrNull?.networkState()
-        this.network.handlePackets(this.nav.currentOrNull?.packets)
-
-        val now: Long = System.nanoTime()
-        val deltaTimeNanos: Long = now - lastFrameTime
-        this.deltaTime = (deltaTimeNanos.toDouble() * 0.000_000_001)
-            .toFloat()
-        lastFrameTime = now
 
         val windowBuff: ConstFramebuffer = this.window.framebuffer
         this.out3d.resize(windowBuff.width, windowBuff.height)
@@ -79,7 +70,6 @@ fun Client.gameloop() {
         this.out3d.clearDepth(1f)
         this.nav.currentOrNull?.render()
         this.out3d.blitColorOnto(this.out2d)
-
         this.nav.update()
         this.out2d.blitColorOnto(windowBuff)
 
@@ -87,8 +77,20 @@ fun Client.gameloop() {
     }
 }
 
-fun Client.dispose() {
+fun Editor.update() {
+    this.camController.update(
+        this.renderer.camera, this.renderer, captureInput = true
+    )
+}
+
+fun Editor.render() {
+    this.renderer.update(this.position)
+    this.renderer.forEachPass { pass ->
+
+    }
+}
+
+fun Editor.dispose() {
     this.window.dispose()
     this.resLoader.submit(ResourceLoader.stop)
-    this.network.dispose()
 }

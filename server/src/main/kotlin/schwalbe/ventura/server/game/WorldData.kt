@@ -1,15 +1,7 @@
 
 package schwalbe.ventura.server.game
 
-import schwalbe.ventura.data.ChunkData
-import schwalbe.ventura.data.ChunkRef
-import schwalbe.ventura.data.ConstWorldInfo
-import schwalbe.ventura.data.GroundItem
-import schwalbe.ventura.data.Item
-import schwalbe.ventura.data.MAX_COLLIDER_SIZE_CHUNKS
-import schwalbe.ventura.data.chunksToUnits
-import schwalbe.ventura.data.unitsToChunks
-import schwalbe.ventura.data.unitsToUnitIdx
+import schwalbe.ventura.data.*
 import schwalbe.ventura.net.SerVector3
 import kotlin.uuid.Uuid
 
@@ -42,9 +34,11 @@ private fun collectChunkColliders(
     }
     for (chunkData in chunks.values) {
         for (obj in chunkData.instances) {
-            val objCTx: Int = obj.position.x.unitsToUnitIdx()
-            val objCTz: Int = obj.position.z.unitsToUnitIdx()
-            val r: Int = obj.type.tileColliderRadius - 1
+            val objType: ObjectType = obj[ObjectProp.Type] ?: continue
+            val objPos: SerVector3 = obj[ObjectProp.Position]
+            val objCTx: Int = objPos.x.unitsToUnitIdx()
+            val objCTz: Int = objPos.z.unitsToUnitIdx()
+            val r: Int = objType.tileColliderRadius - 1
             if (r < 0) { continue }
             for (objTx in (objCTx - r)..(objCTx + r)) {
                 for (objTz in (objCTz - r)..(objCTz + r)) {

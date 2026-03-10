@@ -16,15 +16,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.name
 
-private val PLACER_CENTERED = CameraController.Mode(
-    lookAt = { _, w, _ -> Vector3f()
-        .add(w.player.position)
-        .add(0f, +1.25f, 0f)
-    },
-    fovDegrees = 20f,
-    distance = { _ -> 10f }
-)
-
 private val CODE_EDITING_SETTINGS = CodeEditingSettings(
     paired = listOf("()", "[]", "{}", "\"\""),
     autoIndent = true
@@ -153,7 +144,9 @@ fun codeEditingScreen(client: Client): () -> GameScreen = {
     }
     val screen = GameScreen(
         onOpen = {
-            client.world?.camController?.mode = PLACER_CENTERED
+            client.world?.let {
+                it.camController.mode = CameraModes.playerFarCentered(it.player)
+            }
         },
         render = {
             if (Key.ESCAPE.wasPressed || Key.C.wasPressed) {

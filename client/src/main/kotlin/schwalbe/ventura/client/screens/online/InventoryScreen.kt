@@ -205,16 +205,6 @@ private fun createSelectedItemSection(
         )
 }
 
-private val PLAYER_IN_RIGHT_THIRD = CameraController.Mode(
-    lookAt = { _, w, _ -> Vector3f()
-        .add(w.player.position)
-        .add(0f, +1.25f, 0f)
-    },
-    fovDegrees = 20f,
-    offsetAngleX = { _, hh, _ -> atan(tan(hh) * -2f/3f) },
-    distance = { _ -> 10f }
-)
-
 fun inventoryMenuScreen(client: Client): () -> GameScreen = {
     val background = BlurBackground()
         .withRadius(3)
@@ -226,7 +216,10 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
         .updateStoredSources(client)
     val screen = GameScreen(
         onOpen = {
-            client.world?.camController?.mode = PLAYER_IN_RIGHT_THIRD
+            client.world?.let {
+                it.camController.mode =
+                    CameraModes.playerInRightThird(it.player)
+            }
         },
         render = {
             if (Key.ESCAPE.wasPressed || Key.TAB.wasPressed) {

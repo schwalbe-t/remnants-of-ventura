@@ -15,5 +15,5 @@ pluginManagement {
     }
 }
 
-include("common", "client", "server")
+include("common", "client", "server", "editor")
 include("server:bigtonruntime")

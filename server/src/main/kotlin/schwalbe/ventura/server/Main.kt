@@ -59,17 +59,16 @@ fun main() {
     val baseWorldChunks: Map<ChunkRef, ChunkData>
         = (-20..20).flatMap { chunkX -> (-20..20).map { chunkZ ->
             ChunkRef(chunkX, chunkZ) to ChunkData(listOf(
-                ObjectInstance(
-                    ObjectType.ROCK,
-                    Vector3f(
+                ObjectInstance(listOf(
+                    ObjectProp.Type(ObjectType.ROCK),
+                    ObjectProp.Position(Vector3f(
                         chunkX + Math.random().toFloat(), 0f,
                         chunkZ + Math.random().toFloat()
-                    ).chunksToUnits().toSerVector3(),
-                    SerVector3(
+                    ).chunksToUnits().toSerVector3()),
+                    ObjectProp.Rotation(SerVector3(
                         0f, (Math.random() * 2 * kotlin.math.PI).toFloat(), 0f
-                    ),
-                    SerVector3(1f, 1f, 1f)
-                )
+                    ))
+                ))
             ))
         } }
         .toMap()

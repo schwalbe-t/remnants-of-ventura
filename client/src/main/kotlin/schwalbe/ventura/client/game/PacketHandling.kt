@@ -52,7 +52,7 @@ fun PacketHandler<Unit>.addWorldHandling(client: Client) = this
         client.world = null
     }
     .onPacket(PacketType.COMPLETE_WORLD_CHANGE) { entry: WorldEntryPacket, _ ->
-        val world = World()
+        val world = World(client)
         world.player.position.set(entry.position.toVector3f())
         client.world = world
         client.network.outPackets?.send(Packet.serialize(
@@ -66,7 +66,7 @@ fun PacketHandler<Unit>.addWorldHandling(client: Client) = this
     }
     .onPacket(PacketType.CHUNK_CONTENTS) { c: ChunkContentsPacket, _ ->
         val world: World = client.world ?: return@onPacket
-        world.chunks.handleReceivedChunks(c)
+        world.chunks.onChunksReceived(c.chunks)
     }
     .onPacket(PacketType.WORLD_STATE) { s: WorldStatePacket, _ ->
         val world: World = client.world ?: return@onPacket

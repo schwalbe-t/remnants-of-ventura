@@ -22,10 +22,14 @@ private fun computeHalfVert(fov: Float): Float
 private fun computeHalfHoriz(halfVert: Float, aspect: Float): Float
     = atan(tan(halfVert) * aspect)
 
-class CameraController {
+class CameraController(
+    var mode: Mode,
+    val minDist: Float = DEFAULT_MIN_DISTANCE,
+    val maxDist: Float = DEFAULT_MAX_DISTANCE
+) {
 
     class Mode(
-        val lookAt: (Renderer, World, CameraController) -> Vector3f,
+        val lookAt: (CameraController) -> Vector3f,
         fovDegrees: Float,
         val offsetAngleX: (Renderer, Float, Float) -> Float = { _, _, _ -> 0f },
         val offsetAngleY: (Renderer, Float, Float) -> Float = { _, _, _ -> 0f },
@@ -50,26 +54,17 @@ class CameraController {
     }
 
     companion object {
-        const val MIN_DISTANCE: Float = 6f
-        const val MAX_DISTANCE: Float = 30f
+        const val DEFAULT_MIN_DISTANCE: Float = 6f
+        const val DEFAULT_MAX_DISTANCE: Float = 30f
         const val START_DISTANCE: Float = 18f
         const val ZOOM_SPEED: Float = 2f // distance per scrolled notch
         val CAMERA_EYE_OFFSET_DIR: Vector3fc
             = Vector3f(0f, +1.75f, +2f).normalize()
         const val POSITION_RESPONSE: Float = 15f
         const val POSITION_EPSILON: Float = 0.01f
-
-        val PLAYER_AT_CENTER = Mode(
-            lookAt = { _, w, _ -> Vector3f()
-                .add(w.player.position)
-                .add(0f, +1f, 0f)
-            },
-            fovDegrees = 30f
-        )
     }
 
 
-    var mode: Mode = PLAYER_AT_CENTER
     var userDistance: Float = START_DISTANCE
 
     var lookAt: SmoothedVector3f? = null
@@ -83,15 +78,15 @@ class CameraController {
         .smoothed(response = 10f, epsilon = 0.0001f)
 
     fun update(
-        camera: Camera, client: Client, world: World, captureInput: Boolean
+        camera: Camera, renderer: Renderer, captureInput: Boolean
     ) {
         if (captureInput) {
             this.userDistance -= Mouse.scrollOffset.y() * ZOOM_SPEED
             this.userDistance = this.userDistance
-                .coerceIn(MIN_DISTANCE, MAX_DISTANCE)
+                .coerceIn(this.minDist, this.maxDist)
         }
         val m: Mode = this.mode
-        val targetLookAt: Vector3f = m.lookAt(client.renderer, world, this)
+        val targetLookAt: Vector3f = m.lookAt(this)
         val lookAt: SmoothedVector3f = this.lookAt
             ?: Vector3f(targetLookAt)
                 .smoothed(POSITION_RESPONSE, POSITION_EPSILON)
@@ -99,8 +94,8 @@ class CameraController {
         lookAt.target.set(targetLookAt)
         this.distance.target = m.distance(this)
         this.fov.target = m.fovRadians
-        this.offsetAngleX.target = m.computeOffsetAngleX(client.renderer)
-        this.offsetAngleY.target = m.computeOffsetAngleY(client.renderer)
+        this.offsetAngleX.target = m.computeOffsetAngleX(renderer)
+        this.offsetAngleY.target = m.computeOffsetAngleY(renderer)
         lookAt.update()
         this.distance.update()
         this.fov.update()

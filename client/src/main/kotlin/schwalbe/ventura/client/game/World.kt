@@ -23,7 +23,7 @@ object GroundFrag : FragShaderDef<GroundFrag> {
 val groundShader: Resource<Shader<GroundVert, GroundFrag>>
     = Shader.loadGlsl(GroundVert, GroundFrag)
 
-class World {
+class World(client: Client) {
 
     companion object {
         fun submitResources(resLoader: ResourceLoader) {
@@ -35,12 +35,21 @@ class World {
         }
     }
 
-
-    val camController = CameraController()
     val player = Player()
-    val chunks = ChunkLoader()
+    val chunks = ChunkLoader(
+        ChunkLoader.requestChunksFromNetwork(client.network)
+    )
     val state = WorldState()
     val vfx = VisualEffects()
+
+    val playerAtCenterCamMode = CameraController.Mode(
+        lookAt = { _ -> Vector3f()
+            .add(this.player.position)
+            .add(0f, +1f, 0f)
+        },
+        fovDegrees = 30f
+    )
+    val camController = CameraController(this.playerAtCenterCamMode)
 
     var groundColor: Vector4fc = Vector4f(0f, 0f, 0f, 0f)
 
@@ -49,7 +58,7 @@ class World {
 fun World.update(client: Client, captureInput: Boolean) {
     this.player.update(client, captureInput)
     this.camController.update(
-        client.renderer.camera, client, this, captureInput
+        client.renderer.camera, client.renderer, captureInput
     )
     this.chunks.update(client, this.player.position)
     this.state.update(client)

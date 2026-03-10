@@ -338,16 +338,6 @@ private fun createRobotSettingsSection(
         }
 }
 
-private val PLAYER_IN_RIGHT_THIRD = CameraController.Mode(
-    lookAt = { _, w, _ -> Vector3f()
-        .add(w.player.position)
-        .add(0f, +1.25f, 0f)
-    },
-    fovDegrees = 20f,
-    offsetAngleX = { _, hh, _ -> atan(tan(hh) * -2f/3f) },
-    distance = { _ -> 10f }
-)
-
 private const val LOG_REQUEST_INTERVAL: Long = 1000L
 
 fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
@@ -364,7 +354,10 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
     var lastLogRequestTime: Long = 0
     val screen = GameScreen(
         onOpen = {
-            client.world?.camController?.mode = PLAYER_IN_RIGHT_THIRD
+            client.world?.let {
+                it.camController.mode =
+                    CameraModes.playerInRightThird(it.player)
+            }
             client.network.outPackets?.send(Packet.serialize(
                 PacketType.PAUSE_ROBOT, robotId
             ))

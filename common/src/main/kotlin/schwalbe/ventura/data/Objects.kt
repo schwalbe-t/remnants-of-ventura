@@ -25,15 +25,52 @@ enum class ObjectType(
 }
 
 @Serializable
-sealed interface ObjectParam {
-    object None : ObjectParam
+sealed interface ObjectProp<V> {
+
+    val v: V
+
+
+    sealed interface PropType<P : ObjectProp<V>, V>
+    sealed class DefaultPropType<P : ObjectProp<V>, V>(
+        val default: V
+    ) : PropType<P, V>
+
+    @Serializable
+    data class Type(override val v: ObjectType) : ObjectProp<ObjectType> {
+        companion object : PropType<Type, ObjectType>
+    }
+    
+    @Serializable
+    data class Position(override val v: SerVector3) : ObjectProp<SerVector3> {
+        companion object : DefaultPropType<Position, SerVector3>(
+            default = SerVector3(0f, 0f, 0f)
+        )
+    }
+
+    @Serializable
+    data class Rotation(override val v: SerVector3) : ObjectProp<SerVector3> {
+        companion object : DefaultPropType<Rotation, SerVector3>(
+            default = SerVector3(0f, 0f, 0f)
+        )
+    }
+
+    @Serializable
+    data class Scale(override val v: Float) : ObjectProp<Float> {
+        companion object : DefaultPropType<Scale, Float>(default = 1f)
+    }
 }
 
 @Serializable
-data class ObjectInstance(
-    val type: ObjectType,
-    val position: SerVector3,
-    val rotation: SerVector3,
-    val scale: SerVector3,
-    val param: ObjectParam = ObjectParam.None
-)
+data class ObjectInstance(val props: List<ObjectProp<*>>) {
+
+    inline operator fun <reified P : ObjectProp<V>, reified V> get(
+        propType: ObjectProp.PropType<P, V>
+    ): V?
+        = this.props.filterIsInstance<P>().firstOrNull()?.v
+
+    inline operator fun <reified P : ObjectProp<V>, reified V> get(
+        propType: ObjectProp.DefaultPropType<P, V>
+    ): V
+        = this.props.filterIsInstance<P>().firstOrNull()?.v ?: propType.default
+
+}

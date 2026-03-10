@@ -34,23 +34,15 @@ private fun addOption(
     )
 }
 
-private val PLAYER_IN_RIGHT_HALF = CameraController.Mode(
-    lookAt = { _, w, _ -> Vector3f()
-        .add(w.player.position)
-        .add(0f, +1.25f, 0f)
-    },
-    fovDegrees = 20f,
-    offsetAngleX = { _, hh, _ -> atan(tan(hh) * -1f/2f) },
-    distance = { _ -> 10f }
-)
-
 fun escapeMenuScreen(client: Client): () -> GameScreen = {
     val background = BlurBackground()
         .withRadius(3)
         .withSpread(5)
     val screen = GameScreen(
         onOpen = {
-            client.world?.camController?.mode = PLAYER_IN_RIGHT_HALF
+            client.world?.let {
+                it.camController.mode = CameraModes.playerInRightHalf(it.player)
+            }
         },
         render = {
             if (Key.ESCAPE.wasPressed) {

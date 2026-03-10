@@ -35,8 +35,9 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
     val screen = GameScreen(
         onOpen = {
             client.nav.retainCurrent()
-            client.world?.camController?.mode =
-                CameraController.PLAYER_AT_CENTER
+            client.world?.let {
+                it.camController.mode = it.playerAtCenterCamMode
+            }
         },
         render = render@{
             val world: World = client.world ?: return@render
