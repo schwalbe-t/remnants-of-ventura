@@ -39,3 +39,8 @@ data class ChunkRef(val chunkX: Int, val chunkZ: Int)
 data class ChunkData(
     val instances: List<ObjectInstance>
 )
+
+@Serializable
+data class SerializedWorld(
+    val chunks: Map<ChunkRef, ChunkData>
+)

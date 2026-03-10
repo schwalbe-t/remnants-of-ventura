@@ -7,14 +7,15 @@ import schwalbe.ventura.client.game.CameraController
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.ui.UiNavigator
-import kotlin.concurrent.thread
-import org.joml.Vector3f
-import org.joml.Vector4f
 import schwalbe.ventura.client.game.ChunkLoader
 import schwalbe.ventura.engine.input.Key
 import schwalbe.ventura.engine.input.isPressed
+import kotlin.concurrent.thread
+import org.joml.Vector3f
+import org.joml.Vector4f
+import java.nio.file.Path
 
-class Editor {
+class Editor(val worldFilePath: Path) {
 
     companion object {
         const val BOOSTED_SPEED_MULTIPLIER: Float = 2f
@@ -64,6 +65,9 @@ class Editor {
         this.cameraMode, minDist = 5f, maxDist = 100f
     )
 
+
+    var world: MutableWorld = MutableWorld.readFromFile(this.worldFilePath)
+
 }
 
 fun Editor.loadResources() {
@@ -98,6 +102,10 @@ fun Editor.gameloop() {
 
         this.window.endFrame()
     }
+}
+
+fun Editor.saveWorld() {
+    this.world.writeToFile(this.worldFilePath)
 }
 
 private fun Editor.move() {
