@@ -2,6 +2,7 @@
 package schwalbe.ventura.data
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import schwalbe.ventura.net.SerVector3
 import schwalbe.ventura.net.toSerVector3
 import org.joml.Vector3f
@@ -43,4 +44,12 @@ data class ChunkData(
 @Serializable
 data class SerializedWorld(
     val chunks: Map<ChunkRef, ChunkData>
-)
+) {
+    companion object {
+        val SERIALIZER = Json {
+            allowStructuredMapKeys = true
+            prettyPrint = true
+            prettyPrintIndent = " ".repeat(4)
+        }
+    }
+}

@@ -6,6 +6,7 @@ import org.joml.Vector2fc
 import org.joml.Vector3f
 import org.joml.Vector3fc
 import schwalbe.ventura.engine.gfx.ConstFramebuffer
+import kotlin.math.abs
 
 data class Camera(
     val position: Vector3f = Vector3f(0f, 0f, 0f),
@@ -43,3 +44,12 @@ fun Camera.castRay(
 
 fun CameraRay.afterDistance(d: Float): Vector3f
     = Vector3f(this.dir).mul(d).add(this.origin)
+
+fun CameraRay.intersectXZ(y: Float = 0f): Vector3f? {
+    if (abs(this.dir.y()) < 1e-6f) { return null }
+    val toPlane: Float = y - this.origin.y()
+    val distance: Float = toPlane / this.dir.y()
+    if (distance < 0f) { return null }
+    return this.afterDistance(distance)
+}
+

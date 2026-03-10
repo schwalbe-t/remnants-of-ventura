@@ -1,17 +1,19 @@
 
 package schwalbe.ventura.editor
 
-import org.joml.Matrix4f
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.game.CameraController
-import schwalbe.ventura.engine.*
 import schwalbe.ventura.client.game.ChunkLoader
-import schwalbe.ventura.engine.input.Key
-import schwalbe.ventura.engine.input.isPressed
+import schwalbe.ventura.engine.*
+import schwalbe.ventura.engine.input.*
+import schwalbe.ventura.editor.modes.*
 import org.joml.Vector3f
+import org.joml.Matrix4f
 import java.nio.file.Path
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
 
-class Editor : Application<EditorScreen>(
+class Editor : Application<EditorMode>(
     window = Window(
         name = "Ventura World Editor",
         sizeFactor = 0.9f,
@@ -21,6 +23,8 @@ class Editor : Application<EditorScreen>(
 
     companion object {
         const val BOOSTED_SPEED_MULTIPLIER: Float = 2f
+
+        const val WORLD_SAVE_DELAY: Long = 500
     }
 
 
@@ -46,13 +50,38 @@ class Editor : Application<EditorScreen>(
 
     var worldPath: Path? = null
     var world: MutableWorld? = null
+    var saveWorldAfter: Long? = null
 
 }
 
-fun Editor.saveWorld() {
+fun Editor.onWorldEdit() {
+    this.saveWorldAfter = System.currentTimeMillis() + Editor.WORLD_SAVE_DELAY
+}
+
+private fun Editor.autoSaveWorld() {
     val path: Path = this.worldPath ?: return
     val world: MutableWorld = this.world ?: return
+    val saveWorldAfter: Long = this.saveWorldAfter ?: return
+    val now: Long = System.currentTimeMillis()
+    if (saveWorldAfter > now) { return }
     world.writeToFile(path)
+}
+
+private fun Editor.openChosenFile() {
+    if (!Key.LEFT_CONTROL.isPressed) { return }
+    if (!Key.O.wasPressed) { return }
+    try {
+        val chooser = JFileChooser()
+        chooser.fileFilter = FileNameExtensionFilter("World Data File", "json")
+        val status: Int = chooser.showOpenDialog(null)
+        if (status != JFileChooser.APPROVE_OPTION) { return }
+        val chosenPath: Path = chooser.selectedFile.toPath()
+        this.worldPath = chosenPath
+        this.world = MutableWorld.readFromFile(chosenPath)
+        println("Read world file from '$chosenPath'")
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 private fun Editor.move() {
@@ -71,7 +100,28 @@ private fun Editor.move() {
     this.position.add(velocity)
 }
 
+private fun Editor.selectMode() {
+    if (Key.ESCAPE.wasPressed) {
+        this.nav.pop()
+        return
+    }
+    // create local var for current selection
+    this.nav.push(when {
+        Key.C.wasPressed
+            -> return // TODO! deselect, create object mode
+        Key.TAB.wasPressed // && selection != null
+            -> return // TODO! property editor
+        Key.NUM_1.wasPressed // && selection != null
+            -> return // TODO! position mode
+        Key.NUM_2.wasPressed // && selection != null
+            -> return // TODO! rotation mode
+        else -> return
+    })
+}
+
 fun Editor.update() {
+    this.autoSaveWorld()
+    this.openChosenFile()
     this.move()
     this.camController.update(
         this.renderer.camera, this.renderer, captureInput = true
