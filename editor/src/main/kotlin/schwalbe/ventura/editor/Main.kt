@@ -1,13 +1,11 @@
 
 package schwalbe.ventura.editor
 
-import schwalbe.ventura.client.Items
-import schwalbe.ventura.client.Renderer
+import schwalbe.ventura.client.*
+import schwalbe.ventura.engine.*
 import schwalbe.ventura.client.game.World
-import schwalbe.ventura.engine.Resource
-import schwalbe.ventura.engine.ResourceLoader
-import schwalbe.ventura.engine.fromCallback
 import schwalbe.ventura.engine.ui.loadUiResources
+import java.nio.file.Path
 
 fun submitResources(resLoader: ResourceLoader) {
     loadUiResources(resLoader)

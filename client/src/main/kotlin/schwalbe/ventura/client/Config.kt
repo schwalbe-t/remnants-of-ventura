@@ -8,7 +8,7 @@ import kotlin.uuid.Uuid
 
 @Serializable
 data class Config(
-    var language: GameLanguage,
+    var language: GameLanguage = findSystemLanguage(GameLanguage.ENGLISH),
     val servers: MutableList<Server> = mutableListOf(),
     val sessions: MutableMap<String, Session> = mutableMapOf()
 ) {
@@ -30,17 +30,12 @@ data class Config(
     }
 }
 
-fun Config.Companion.makeDefault(): Config {
-    val language = findSystemLanguage(GameLanguage.ENGLISH)
-    return Config(language)
-}
-
 fun Config.Companion.read(): Config {
     try {
         val src: String = File(Config.PATH).readText()
         return Json.decodeFromString(src)
     } catch (e: Exception) {
-        return Config.makeDefault().write()
+        return Config().write()
     }
 }
 
@@ -48,6 +43,7 @@ fun Config.write(): Config {
     val json = Json {
         prettyPrint = true
         prettyPrintIndent = " ".repeat(4)
+        encodeDefaults = true
     }
     val src: String = json.encodeToString(this)
     File(Config.PATH).writeText(src)
