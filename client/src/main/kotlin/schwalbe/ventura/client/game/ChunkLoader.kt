@@ -12,13 +12,6 @@ import org.joml.Matrix4f
 import org.joml.Matrix4fc
 import org.joml.Vector3fc
 
-private val objectModels: List<Resource<Model<StaticAnim>>> = ObjectType.entries
-    .map { Model.loadFile(
-        it.modelPath,
-        Renderer.meshProperties,
-        textureFilter = Texture.Filter.LINEAR
-    ) }
-
 private fun computeChunkInstances(
     data: ChunkData
 ): List<ChunkLoader.LoadedInstance>
@@ -39,7 +32,7 @@ private fun computeChunkColliders(
     for (instance in instances) {
         val instType: ObjectType = instance.obj[ObjectProp.Type] ?: continue
         if (!instType.applyColliders) { continue }
-        val model: Model<StaticAnim> = objectModels
+        val model: Model<StaticAnim> = ChunkLoader.objectModels
             .getOrNull(instType.ordinal)?.invoke()
             ?: continue
         model.forEachNode { node ->
@@ -56,7 +49,9 @@ private fun computeChunkColliders(
 }
 
 class ChunkLoader(
-    val requestChunks: (List<ChunkRef>) -> List<ChunkRef>
+    val requestChunks: (List<ChunkRef>) -> List<ChunkRef>,
+    val loadRadius: Int = DEFAULT_LOAD_RADIUS,
+    val renderRadius: Int = DEFAULT_RENDER_RADIUS
 ) {
 
     class LoadedInstance(
@@ -70,13 +65,20 @@ class ChunkLoader(
     )
 
     companion object {
-        const val LOAD_RADIUS: Int = 5
-        const val RENDER_RADIUS: Int = 2
+        val objectModels: List<Resource<Model<StaticAnim>>> = ObjectType.entries
+            .map { Model.loadFile(
+                it.modelPath,
+                Renderer.meshProperties,
+                textureFilter = Texture.Filter.LINEAR
+            ) }
+
+        const val DEFAULT_LOAD_RADIUS: Int = 5
+        const val DEFAULT_RENDER_RADIUS: Int = 2
 
         const val OUTLINE_THICKNESS: Float = 0.015f
 
         fun submitResources(loader: ResourceLoader) {
-            objectModels.forEach(loader::submit)
+            this.objectModels.forEach(loader::submit)
         }
     }
 
@@ -104,7 +106,7 @@ class ChunkLoader(
         }
 
     private fun collectMissingChunks(): List<ChunkRef>
-        = this.chunksInRange(LOAD_RADIUS)
+        = this.chunksInRange(this.loadRadius)
         .filter { it !in this.requested }
         .toList()
 
@@ -112,7 +114,7 @@ class ChunkLoader(
         this.requested.addAll(this.requestChunks(chunks))
     }
 
-    fun update(client: Client, center: Vector3fc) {
+    fun update(center: Vector3fc) {
         this.centerX = center.x().unitsToChunkIdx()
         this.centerZ = center.z().unitsToChunkIdx()
         val missing: List<ChunkRef> = this.collectMissingChunks()
@@ -159,7 +161,7 @@ class ChunkLoader(
     }
 
     fun render(pass: RenderPass) {
-        for (chunk in this.chunksInRange(RENDER_RADIUS)) {
+        for (chunk in this.chunksInRange(this.renderRadius)) {
             val data: LoadedChunkData = this.loaded[chunk] ?: continue
             this.renderChunk(data, pass)
         }

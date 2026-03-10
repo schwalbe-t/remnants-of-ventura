@@ -2,7 +2,6 @@
 package schwalbe.ventura.client.game
 
 import schwalbe.ventura.client.Camera
-import schwalbe.ventura.client.Client
 import schwalbe.ventura.client.Renderer
 import schwalbe.ventura.engine.gfx.ConstFramebuffer
 import schwalbe.ventura.engine.input.Mouse
@@ -29,7 +28,7 @@ class CameraController(
 ) {
 
     class Mode(
-        val lookAt: (CameraController) -> Vector3f,
+        val lookAt: (CameraController) -> Vector3fc,
         fovDegrees: Float,
         val offsetAngleX: (Renderer, Float, Float) -> Float = { _, _, _ -> 0f },
         val offsetAngleY: (Renderer, Float, Float) -> Float = { _, _, _ -> 0f },
@@ -86,7 +85,7 @@ class CameraController(
                 .coerceIn(this.minDist, this.maxDist)
         }
         val m: Mode = this.mode
-        val targetLookAt: Vector3f = m.lookAt(this)
+        val targetLookAt: Vector3fc = m.lookAt(this)
         val lookAt: SmoothedVector3f = this.lookAt
             ?: Vector3f(targetLookAt)
                 .smoothed(POSITION_RESPONSE, POSITION_EPSILON)

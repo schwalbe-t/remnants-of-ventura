@@ -14,7 +14,8 @@ class EditorScreen(
 fun createEditorScreen(editor: Editor): () -> EditorScreen = {
     val screen = EditorScreen(
         render = {
-
+            editor.update()
+            editor.render()
         },
         navigator = editor.nav
     )

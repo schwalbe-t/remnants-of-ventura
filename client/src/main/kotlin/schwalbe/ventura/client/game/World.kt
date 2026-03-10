@@ -60,7 +60,7 @@ fun World.update(client: Client, captureInput: Boolean) {
     this.camController.update(
         client.renderer.camera, client.renderer, captureInput
     )
-    this.chunks.update(client, this.player.position)
+    this.chunks.update(this.player.position)
     this.state.update(client)
 }
 

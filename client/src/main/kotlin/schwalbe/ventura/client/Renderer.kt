@@ -99,7 +99,8 @@ val discardOutlineShader: Resource<Shader<OutlineVert, DiscardFrag>>
 class Renderer(
     val dest: ConstFramebuffer,
     shadowMapRes: Int = DEFAULT_SHADOW_MAP_RES,
-    val shadowMapSamples: Int = DEFAULT_SHADOW_MAP_SAMPLES
+    val shadowMapSamples: Int = DEFAULT_SHADOW_MAP_SAMPLES,
+    val camera: Camera = Camera()
 ) {
 
     companion object {
@@ -145,7 +146,6 @@ class Renderer(
     }
 
 
-    val camera = Camera()
     var sunDiameter: Float = 32f
 
     var config: RendererConfig = RendererConfig.default

@@ -21,7 +21,7 @@ fun main() {
     editor.loadResources()
     submitResources(editor.resLoader)
     editor.resLoader.submit(Resource.fromCallback {
-        editor.nav.clear(EditorScreen.create(editor))
+        editor.nav.clear(createEditorScreen(editor))
     })
     editor.gameloop()
     editor.dispose()
