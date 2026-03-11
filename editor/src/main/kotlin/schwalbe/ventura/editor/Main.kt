@@ -4,7 +4,7 @@ package schwalbe.ventura.editor
 import schwalbe.ventura.client.*
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.client.game.World
-import schwalbe.ventura.editor.modes.createDefaultMode
+import schwalbe.ventura.editor.modes.defaultMode
 import schwalbe.ventura.engine.ui.loadUiResources
 
 fun submitResources(resLoader: ResourceLoader) {
@@ -19,7 +19,7 @@ fun main() {
     editor.loadResources()
     submitResources(editor.resLoader)
     editor.resLoader.submit(Resource.fromCallback {
-        editor.nav.clear(createDefaultMode(editor))
+        editor.nav.clear(defaultMode(editor))
     })
     editor.gameloop()
     editor.dispose()

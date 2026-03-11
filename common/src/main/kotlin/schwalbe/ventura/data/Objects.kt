@@ -49,26 +49,26 @@ sealed interface ObjectProp<V> {
         val default: V
     ) : PropType<P, V>
 
-    @Serializable @SerialName("type")
+    @Serializable @SerialName("TYPE")
     data class Type(override val v: ObjectType) : ObjectProp<ObjectType> {
         companion object : PropType<Type, ObjectType>
     }
     
-    @Serializable @SerialName("position")
+    @Serializable @SerialName("POSITION")
     data class Position(override val v: SerVector3) : ObjectProp<SerVector3> {
         companion object : DefaultPropType<Position, SerVector3>(
             default = SerVector3(0f, 0f, 0f)
         )
     }
 
-    @Serializable @SerialName("rotation")
+    @Serializable @SerialName("ROTATION")
     data class Rotation(override val v: SerVector3) : ObjectProp<SerVector3> {
         companion object : DefaultPropType<Rotation, SerVector3>(
             default = SerVector3(0f, 0f, 0f)
         )
     }
 
-    @Serializable @SerialName("scale")
+    @Serializable @SerialName("SCALE")
     data class Scale(override val v: Float) : ObjectProp<Float> {
         companion object : DefaultPropType<Scale, Float>(default = 1f)
     }

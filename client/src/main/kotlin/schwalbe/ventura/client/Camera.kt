@@ -2,6 +2,7 @@
 package schwalbe.ventura.client
 
 import org.joml.Matrix4f
+import org.joml.Vector2f
 import org.joml.Vector2fc
 import org.joml.Vector3f
 import org.joml.Vector3fc
@@ -28,6 +29,18 @@ fun Camera.computeViewProj(viewport: ConstFramebuffer): Matrix4f = Matrix4f()
         this.near, this.far
     )
     .lookAt(this.position, this.lookAt, this.up)
+
+fun Camera.projectOnScreen(
+    viewport: ConstFramebuffer, worldPos: Vector3fc
+): Vector2f {
+    val viewProj: Matrix4f = this.computeViewProj(viewport)
+    val screenNdc: Vector3f = viewProj.transformProject(Vector3f(worldPos))
+    val screenNormX: Float = (screenNdc.x() + 1f) / 2f
+    val screenNormY: Float = 1f - ((screenNdc.y() + 1f) / 2f)
+    val screenPxX: Float = screenNormX * viewport.width
+    val screenPxY: Float = screenNormY * viewport.height
+    return Vector2f(screenPxX, screenPxY)
+}
 
 data class CameraRay(val origin: Vector3fc, val dir: Vector3fc)
 

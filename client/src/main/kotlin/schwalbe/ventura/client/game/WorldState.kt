@@ -101,13 +101,9 @@ class WorldState {
             if (username == client.username) { continue }
             displays.add(username)
             val posWorld = Vector3f(player.position).add(PLAYER_NAME_OFFSET)
-            val screenNdc: Vector3f = client.renderer.camViewProj
-                .transformProject(posWorld)
-            val screenNormX: Float = (screenNdc.x() + 1f) / 2f
-            val screenNormY: Float = 1f - ((screenNdc.y() + 1f) / 2f)
-            val screenPxX: Float = screenNormX * client.renderer.dest.width
-            val screenPxY: Float = screenNormY * client.renderer.dest.height
-            displays.update(username, screenPxX, screenPxY)
+            val posScreen: Vector2f = client.renderer.camera
+                .projectOnScreen(client.window.framebuffer, posWorld)
+            displays.update(username, posScreen.x, posScreen.y)
         }
     }
 

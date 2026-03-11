@@ -8,7 +8,6 @@ import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.data.*
 import schwalbe.ventura.net.toSerVector3
 import org.joml.Vector3f
-import org.joml.Vector4f
 
 private class ObjectSelector(
     val type: ObjectType,
@@ -54,7 +53,7 @@ fun createObjectMode(editor: Editor): () -> EditorMode = {
     for (type in ObjectType.entries) {
         val selector = ObjectSelector(type) { s ->
             selected?.background
-                ?.withColor(BACKGROUND_COLOR)
+                ?.withColor(TRANSPARENT)
                 ?.withHoverColor(HOVER_COLOR)
             s.background
                 .withColor(SELECTED_COLOR)
@@ -76,9 +75,7 @@ fun createObjectMode(editor: Editor): () -> EditorMode = {
     )
     mode.add(layer = 0, element = Axis.row()
         .add(1f/5f * fpw, Stack()
-            .add(FlatBackground()
-                .withColor(Vector4f(0.9f, 0.9f, 0.9f, 1f))
-            )
+            .add(FlatBackground().withColor(BACKGROUND_COLOR))
             .add(objectList
                 .wrapScrolling(horiz = false, vert = true)
             )
