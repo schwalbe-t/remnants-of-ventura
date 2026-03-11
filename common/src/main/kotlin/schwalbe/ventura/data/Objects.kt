@@ -1,6 +1,7 @@
 
 package schwalbe.ventura.data
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import schwalbe.ventura.net.SerVector3
 
@@ -21,6 +22,19 @@ enum class ObjectType(
     ROCK(
         modelPath = "res/objects/rock.glb",
         tileColliderRadius = 3
+    ),
+
+    TREE(
+        modelPath = "res/objects/rock.glb",
+        tileColliderRadius = 3
+    ),
+    GRASS(
+        modelPath = "res/objects/rock.glb",
+        tileColliderRadius = 3
+    ),
+    HOUSE(
+        modelPath = "res/objects/rock.glb",
+        tileColliderRadius = 3
     )
 }
 
@@ -35,26 +49,26 @@ sealed interface ObjectProp<V> {
         val default: V
     ) : PropType<P, V>
 
-    @Serializable
+    @Serializable @SerialName("type")
     data class Type(override val v: ObjectType) : ObjectProp<ObjectType> {
         companion object : PropType<Type, ObjectType>
     }
     
-    @Serializable
+    @Serializable @SerialName("position")
     data class Position(override val v: SerVector3) : ObjectProp<SerVector3> {
         companion object : DefaultPropType<Position, SerVector3>(
             default = SerVector3(0f, 0f, 0f)
         )
     }
 
-    @Serializable
+    @Serializable @SerialName("rotation")
     data class Rotation(override val v: SerVector3) : ObjectProp<SerVector3> {
         companion object : DefaultPropType<Rotation, SerVector3>(
             default = SerVector3(0f, 0f, 0f)
         )
     }
 
-    @Serializable
+    @Serializable @SerialName("scale")
     data class Scale(override val v: Float) : ObjectProp<Float> {
         companion object : DefaultPropType<Scale, Float>(default = 1f)
     }

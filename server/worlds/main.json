@@ -1,3 +1,116 @@
 {
-    "chunks": []
+	"chunks": [
+		{
+			"chunkX": 0,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+                {
+					"props": [
+						{
+							"type": "type",
+							"v": "ROCK"
+						},
+						{
+							"type": "position",
+							"v": {
+								"x": 0.0,
+								"y": 0.0,
+								"z": -2.4054031
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "type",
+							"v": "ROCK"
+						},
+						{
+							"type": "position",
+							"v": {
+								"x": 5.7880077,
+								"y": 0.0,
+								"z": -2.7064323
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 0,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "type",
+							"v": "ROCK"
+						},
+						{
+							"type": "position",
+							"v": {
+								"x": 2.9189427,
+								"y": 0.0,
+								"z": 3.310894
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": -1,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "type",
+							"v": "HOUSE"
+						},
+						{
+							"type": "position",
+							"v": {
+								"x": -11.2896805,
+								"y": 0.0,
+								"z": -9.882001
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": -1,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "type",
+							"v": "ROCK"
+						},
+						{
+							"type": "position",
+							"v": {
+								"x": -2.1156266,
+								"y": 0.0,
+								"z": 2.1280928
+							}
+						}
+					]
+				}
+			]
+		}
+	]
 }

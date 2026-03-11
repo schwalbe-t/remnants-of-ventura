@@ -98,6 +98,11 @@ class ChunkLoader(
         }
     }
 
+    fun invalidateChunk(chunk: ChunkRef) {
+        this.requested.remove(chunk)
+        this.loaded.remove(chunk)
+    }
+
     private fun chunksInRange(r: Int): Sequence<ChunkRef>
         = ((-r)..(+r)).asSequence().flatMap { x ->
             ((-r)..(+r)).asSequence().map { z ->

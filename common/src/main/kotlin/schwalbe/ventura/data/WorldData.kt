@@ -49,7 +49,7 @@ data class SerializedWorld(
         val SERIALIZER = Json {
             allowStructuredMapKeys = true
             prettyPrint = true
-            prettyPrintIndent = " ".repeat(4)
+            prettyPrintIndent = "\t"
         }
     }
 }

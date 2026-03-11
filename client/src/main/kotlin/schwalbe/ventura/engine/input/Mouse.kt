@@ -17,7 +17,9 @@ enum class Cursor(val glfwCursorConst: Int) {
 object Mouse {
     
     private val buttonsDown: MutableSet<MButton> = mutableSetOf()
+    private val buttonsDownStarted: MutableSet<MButton> = mutableSetOf()
     val pressedButtons: Set<MButton> = this.buttonsDown
+    val startedPressingButtons: Set<MButton> = this.buttonsDownStarted
     
     private val actualPosition = Vector2f(0f, 0f)
     val position: Vector2fc = this.actualPosition
@@ -28,7 +30,10 @@ object Mouse {
     val scrollOffset: Vector2fc = this.actualScrollOffset
     
     fun handleEvent(e: InputEvent) { when(e) {
-        is MButtonDown -> this.buttonsDown.add(e.button)
+        is MButtonDown -> {
+            this.buttonsDown.add(e.button)
+            this.buttonsDownStarted.add(e.button)
+        }
         is MButtonUp -> this.buttonsDown.remove(e.button)
         is MouseMove -> this.actualPosition.set(e.newPosition)
         is MouseScroll -> this.actualScrollOffset.add(e.offset)
@@ -36,6 +41,7 @@ object Mouse {
     } }
 
     fun onFrameEnd() {
+        this.buttonsDownStarted.clear()
         this.actualScrollOffset.set(0f, 0f)
     }
 
@@ -55,3 +61,6 @@ fun Mouse.isInsideArea(min: Vector2fc, max: Vector2fc): Boolean
 
 val MButton.isPressed: Boolean
     get() = Mouse.pressedButtons.contains(this)
+
+val MButton.wasPressed: Boolean
+    get() = Mouse.startedPressingButtons.contains(this)

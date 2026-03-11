@@ -1,14 +1,13 @@
 
 package schwalbe.ventura.editor
 
-import kotlinx.serialization.json.Json
 import schwalbe.ventura.data.*
 import java.nio.file.Files
 import java.nio.file.Path
 
 
 class MutableWorld(
-    val chunks: MutableMap<ChunkRef, MutableChunkData>
+    val chunks: MutableMap<ChunkRef, MutableChunkData> = mutableMapOf()
 ) {
     companion object
 }
@@ -22,9 +21,12 @@ fun MutableWorld.toSerializedWorld() = SerializedWorld(
     chunks = this.chunks.mapValues { (_, c) -> c.toChunkData() }
 )
 
+fun MutableWorld.getChunk(chunk: ChunkRef): MutableChunkData
+    = this.chunks.getOrPut(chunk) { MutableChunkData() }
+
 
 class MutableChunkData(
-    val instances: MutableList<ObjectInstance>
+    val instances: MutableList<ObjectInstance> = mutableListOf()
 ) {
     companion object
 }

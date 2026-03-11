@@ -7,11 +7,40 @@ import schwalbe.ventura.client.game.ChunkLoader
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.editor.modes.*
+import schwalbe.ventura.data.ChunkRef
 import org.joml.Vector3f
 import org.joml.Matrix4f
 import java.nio.file.Path
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
+
+class LoadedWorld(val path: Path) {
+
+    val world = MutableWorld.readFromFile(this.path)
+    var lastModified: Long? = null
+    val chunkLoader = ChunkLoader(
+        requestChunks = this::loadChunks,
+        loadRadius = 7,
+        renderRadius = 5
+    )
+
+    private fun loadChunks(requested: List<ChunkRef>): List<ChunkRef> {
+        this.chunkLoader.onChunksReceived(requested.mapNotNull { c ->
+            this.world.chunks[c]?.let { c to it.toChunkData() }
+        })
+        return requested
+    }
+
+    fun onEdited() {
+        this.lastModified = System.currentTimeMillis()
+    }
+
+    fun onChunkEdited(chunk: ChunkRef) {
+        this.onEdited()
+        this.chunkLoader.invalidateChunk(chunk)
+    }
+
+}
 
 class Editor : Application<EditorMode>(
     window = Window(
@@ -48,23 +77,16 @@ class Editor : Application<EditorMode>(
     )
 
 
-    var worldPath: Path? = null
-    var world: MutableWorld? = null
-    var saveWorldAfter: Long? = null
+    var world: LoadedWorld? = null
 
-}
-
-fun Editor.onWorldEdit() {
-    this.saveWorldAfter = System.currentTimeMillis() + Editor.WORLD_SAVE_DELAY
 }
 
 private fun Editor.autoSaveWorld() {
-    val path: Path = this.worldPath ?: return
-    val world: MutableWorld = this.world ?: return
-    val saveWorldAfter: Long = this.saveWorldAfter ?: return
+    val world: LoadedWorld = this.world ?: return
+    val lastModified: Long = world.lastModified ?: return
     val now: Long = System.currentTimeMillis()
-    if (saveWorldAfter > now) { return }
-    world.writeToFile(path)
+    if (lastModified + Editor.WORLD_SAVE_DELAY > now) { return }
+    world.world.writeToFile(world.path)
 }
 
 private fun Editor.openChosenFile() {
@@ -76,8 +98,7 @@ private fun Editor.openChosenFile() {
         val status: Int = chooser.showOpenDialog(null)
         if (status != JFileChooser.APPROVE_OPTION) { return }
         val chosenPath: Path = chooser.selectedFile.toPath()
-        this.worldPath = chosenPath
-        this.world = MutableWorld.readFromFile(chosenPath)
+        this.world = LoadedWorld(chosenPath)
         println("Read world file from '$chosenPath'")
     } catch (e: Exception) {
         e.printStackTrace()
@@ -101,14 +122,13 @@ private fun Editor.move() {
 }
 
 private fun Editor.selectMode() {
-    if (Key.ESCAPE.wasPressed) {
-        this.nav.pop()
-        return
-    }
     // create local var for current selection
-    this.nav.push(when {
-        Key.C.wasPressed
-            -> return // TODO! deselect, create object mode
+    this.nav.clear(when {
+        Key.ESCAPE.wasPressed -> createDefaultMode(this)
+        Key.C.wasPressed -> {
+            // TODO! deselect
+            createObjectMode(this)
+        }
         Key.TAB.wasPressed // && selection != null
             -> return // TODO! property editor
         Key.NUM_1.wasPressed // && selection != null
@@ -120,18 +140,19 @@ private fun Editor.selectMode() {
 }
 
 fun Editor.update() {
+    this.selectMode()
     this.autoSaveWorld()
     this.openChosenFile()
     this.move()
     this.camController.update(
         this.renderer.camera, this.renderer, captureInput = true
     )
+    this.world?.chunkLoader?.update(this.position)
 }
 
 fun Editor.render() {
     this.renderer.update(this.position)
     this.renderer.forEachPass { pass ->
-        val model = ChunkLoader.objectModels[0]()
-        pass.renderGeometry(model, null, listOf(Matrix4f()))
+        this.world?.chunkLoader?.render(pass)
     }
 }
