@@ -7,6 +7,8 @@ import schwalbe.ventura.data.ChunkRef
 import schwalbe.ventura.editor.*
 import schwalbe.ventura.engine.ui.*
 import org.joml.*
+import schwalbe.ventura.engine.input.Key
+import schwalbe.ventura.engine.input.wasPressed
 
 private class ObjectHandle {
 
@@ -14,22 +16,26 @@ private class ObjectHandle {
         val SIZE: UiSize = 3.vmin
     }
 
+    var chunkRef: ChunkRef? = null
+    var instanceIdx: Int? = null
+    var world: LoadedWorld? = null
+
     val color = FlatBackground()
         .withColor(255, 0, 0, 255)
-    val clickArea = ClickArea()
     val offset = Stack()
         .add(this.color)
-        .add(this.clickArea)
+        .add(ClickArea().withLeftHandler {
+            this.world?.selectedObject = ObjectInstanceRef(
+                this.chunkRef ?: return@withLeftHandler,
+                this.instanceIdx ?: return@withLeftHandler
+            )
+        })
         .withWidth(SIZE)
         .withHeight(SIZE)
         .pad()
     val root: UiElement = this.offset
 
-    fun update(
-        chunkRef: ChunkRef, instIdx: Int,
-        inst: ChunkLoader.LoadedInstance,
-        world: LoadedWorld, editor: Editor
-    ) {
+    fun update(inst: ChunkLoader.LoadedInstance, editor: Editor) {
         val worldPos: Vector3fc = inst.transform
             .transformPosition(Vector3f(0f, 0f, 0f))
         val screenPos: Vector2fc = editor.renderer.camera
@@ -39,16 +45,13 @@ private class ObjectHandle {
             top = screenPos.y().px - (SIZE / 2),
             right = 0.px, bottom = 0.px
         )
-        val selectedObject: ObjectInstanceRef? = world.selectedObject
+        val selectedObject: ObjectInstanceRef? = this.world?.selectedObject
         val isSelected: Boolean = selectedObject != null
-            && selectedObject.chunk == chunkRef
-            && selectedObject.instanceIdx == instIdx
+            && selectedObject.chunk == this.chunkRef
+            && selectedObject.instanceIdx == this.instanceIdx
         this.color
             .withColor(if (isSelected) SELECTED_COLOR else BACKGROUND_COLOR)
             .withHoverColor(if (isSelected) SELECTED_COLOR else HOVER_COLOR)
-        this.clickArea.onLeftClick = {
-            world.selectedObject = ObjectInstanceRef(chunkRef, instIdx)
-        }
     }
 
 }
@@ -56,8 +59,7 @@ private class ObjectHandle {
 fun defaultMode(editor: Editor): () -> EditorMode = {
     val handleContainer = Stack()
     val allHandles = mutableMapOf<ChunkRef, MutableList<ObjectHandle>>()
-    fun updateHandles() {
-        val world: LoadedWorld = editor.world ?: return
+    fun updateHandles(world: LoadedWorld) {
         for ((chunkRef, handles) in allHandles.toList()) {
             if (chunkRef in world.chunkLoader.loaded) { continue }
             handles.forEach { handleContainer.dispose(it.root) }
@@ -66,26 +68,40 @@ fun defaultMode(editor: Editor): () -> EditorMode = {
         for ((chunkRef, chunk) in world.chunkLoader.loaded) {
             val handles = allHandles.getOrPut(chunkRef) { mutableListOf() }
             if (handles.size > chunk.instances.size) {
-                val removed = handles.subList(0, chunk.instances.size)
-                removed.forEach { handleContainer.dispose(it.root) }
-                removed.clear()
+                val rem = handles.subList(chunk.instances.size, handles.size)
+                rem.forEach { handleContainer.dispose(it.root) }
+                rem.clear()
             }
             (handles.size..<chunk.instances.size).forEach { _ ->
                 val added = ObjectHandle()
                 handleContainer.add(added.root)
                 handles.add(added)
             }
-            for (i in handles.indices) {
-                handles[i].update(
-                    chunkRef, i, chunk.instances[i], world, editor
-                )
+            for ((i, handle) in handles.withIndex()) {
+                handle.chunkRef = chunkRef
+                handle.instanceIdx = i
+                handle.world = world
+                handle.update(chunk.instances[i], editor)
             }
         }
     }
     val mode = EditorMode(
         render = {
+            val world: LoadedWorld? = editor.world
+            val selectedObject: ObjectInstanceRef? = world?.selectedObject
+            val deleteSelected: Boolean = world != null
+                && selectedObject != null
+                && (Key.DELETE.wasPressed || Key.BACKSPACE.wasPressed)
+            if (deleteSelected) {
+                val chunk = world.world.getChunk(selectedObject.chunk)
+                chunk.instances.removeAt(selectedObject.instanceIdx)
+                world.onChunkEdited(selectedObject.chunk)
+                world.selectedObject = null
+            }
             editor.update()
-            updateHandles()
+            if (world != null) {
+                updateHandles(world)
+            }
             editor.render()
         },
         navigator = editor.nav
