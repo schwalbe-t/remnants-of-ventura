@@ -1,31 +1,7 @@
 {
 	"chunks": [
 		{
-			"chunkX": -2,
-			"chunkZ": 0
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "ROCK"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -18.55958,
-								"y": 0.0,
-								"z": 10.307835
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": -2,
+			"chunkX": -1,
 			"chunkZ": -1
 		},
 		{
@@ -36,55 +12,49 @@
 			"chunkZ": 0
 		},
 		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "ROCK"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.25784,
-								"y": 0.0,
-								"z": 6.2300415
-							}
-						}
-					]
-				}
-			]
+			"instances": []
 		},
 		{
-			"chunkX": -2,
-			"chunkZ": 1
+			"chunkX": 0,
+			"chunkZ": 0
 		},
 		{
 			"instances": []
 		},
 		{
-			"chunkX": -23,
-			"chunkZ": 2
+			"chunkX": 0,
+			"chunkZ": -4
+		},
+		{
+			"instances": []
+		},
+		{
+			"chunkX": 0,
+			"chunkZ": -1
 		},
 		{
 			"instances": [
 				{
 					"props": [
 						{
+							"type": "POSITION",
+							"v": {
+								"x": 0.0,
+								"y": 0.0,
+								"z": -5.0
+							}
+						},
+						{
 							"type": "TYPE",
 							"v": "ROCK"
 						},
 						{
-							"type": "POSITION",
+							"type": "ROTATION",
 							"v": {
-								"x": -22.545996,
+								"x": 0.0,
 								"y": 0.0,
-								"z": 2.6113777
+								"z": 0.0
 							}
-						},
-						{
-							"type": "SCALE",
-							"v": 1.0
 						}
 					]
 				}

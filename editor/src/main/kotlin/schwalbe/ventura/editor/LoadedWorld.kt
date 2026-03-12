@@ -43,7 +43,7 @@ class LoadedWorld(val path: Path) {
         val newObj: ObjectInstance = f(oldObj)
         val newObjPos: SerVector3 = newObj[ObjectProp.Position]
         val newObjChunkRef = ChunkRef(
-            newObjPos.x.unitsToUnitIdx(), newObjPos.z.unitsToUnitIdx()
+            newObjPos.x.unitsToChunkIdx(), newObjPos.z.unitsToChunkIdx()
         )
         val newObjChunk = this.world.getChunk(newObjChunkRef)
         val newObjInstIdx: Int = newObjChunk.instances.size

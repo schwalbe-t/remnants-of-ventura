@@ -60,19 +60,17 @@ private class ObjectPropEditor(
             this.resetValueInput()
         })
 
+    val valueInputText = Text()
+        .withSize(70.ph)
     val valueInput = TextInput()
-        .withContent(Text()
-            .withSize(70.ph)
-        )
-        .let { inp ->
-            inp.withTypedCodepoints {
+        .withContent(this.valueInputText)
+        .let { inp -> inp
+            .withTypedCodepoints {
                 if (this.enabled) { inp.writeText(it) }
             }
         }
         .withValueChangedHandler {
-            // TODO! get serializer of default value, attempt to serialize
-            // and construct property, insert
-            // on error change text input color, else make normal color
+            this.writeEnteredPropValue()
         }
 
     val root: UiElement = Axis.column(LINE_HEIGHT)
@@ -108,6 +106,27 @@ private class ObjectPropEditor(
             val valueStr = SERIALIZER.encodeToString(serializer, value)
             this.valueInput.withValue(valueStr)
         }
+    }
+
+    private fun writeEnteredPropValue() {
+        val serializer = SERIALIZER.serializersModule
+            .serializer(this.propType.default::class.java)
+        val prop: ObjectProp<*>
+        try {
+            val value: Any = SERIALIZER.decodeFromString(
+                serializer, this.valueInput.valueString
+            )
+            prop = this.propTypeClass.constructors
+                .first { it.parameters.size == 1 }
+                .call(value)
+        } catch (e: Exception) {
+            this.valueInputText.withColor(255, 0, 0)
+            return
+        }
+        this.modifyProps { props ->
+            props.filter { !this.propTypeClass.isInstance(it) } + listOf(prop)
+        }
+        this.valueInputText.withColor(null)
     }
 
     private fun modifyProps(f: (List<ObjectProp<*>>) -> List<ObjectProp<*>>) {

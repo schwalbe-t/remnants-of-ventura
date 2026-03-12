@@ -717,6 +717,8 @@ class TextInput : GpuUiElement(), Focusable {
     fun withValue(value: String): TextInput {
         this.actualValue.clear()
         this.actualValue = value.codePoints().asSequence().toMutableList()
+        this.caret = null
+        this.selection = null
         this.updateDisplayedValue()
         this.invalidate()
         return this
