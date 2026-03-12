@@ -6,7 +6,6 @@ import schwalbe.ventura.engine.UsageAfterDisposalException
 import schwalbe.ventura.engine.Resource
 import java.io.File
 import java.io.IOException
-import java.nio.ByteBuffer
 import java.nio.IntBuffer
 import java.nio.FloatBuffer
 import java.nio.file.Paths
@@ -387,13 +386,20 @@ private fun readExpandBaseShader(path: String): String {
     val processed: String = contents.joinToString("\n") {
         l -> processShaderLine(l, absPath, absDir, bannedIncludes)
     }
-    return SHADER_VERSION_STRING + "\n" + processed
+    return processed
 }
 
 fun <V : VertShaderDef<V>, F : FragShaderDef<F>> Shader.Companion.loadGlsl(
-    vertDef: V, fragDef: F
+    vertDef: V, fragDef: F,
+    macros: Map<String, String?> = mapOf()
 ) = Resource<Shader<V, F>> {
-    val vertSrc: String = readExpandBaseShader(vertDef.path)
-    val fragSrc: String = readExpandBaseShader(fragDef.path)
+    val versionStr: String = SHADER_VERSION_STRING + "\n"
+    val macroStr: String = macros
+        .map { (n, v) -> if (v != null) "#define $n $v\n" else "#define $n\n" }
+        .joinToString(separator = "")
+    val vertSrc: String = versionStr + macroStr +
+        readExpandBaseShader(vertDef.path)
+    val fragSrc: String = versionStr + macroStr +
+        readExpandBaseShader(fragDef.path)
     return@Resource { Shader(vertSrc, fragSrc, vertDef.path, fragDef.path) }
 }

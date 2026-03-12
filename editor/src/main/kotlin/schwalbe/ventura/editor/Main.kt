@@ -11,7 +11,7 @@ fun submitResources(resLoader: ResourceLoader) {
     loadUiResources(resLoader)
     Renderer.submitResources(resLoader)
     World.submitResources(resLoader)
-    Items.submitResources(resLoader)
+    Editor.submitResources(resLoader)
 }
 
 fun main() {

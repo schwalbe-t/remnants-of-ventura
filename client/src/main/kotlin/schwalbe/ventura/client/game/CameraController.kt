@@ -24,7 +24,8 @@ private fun computeHalfHoriz(halfVert: Float, aspect: Float): Float
 class CameraController(
     var mode: Mode,
     val minDist: Float = DEFAULT_MIN_DISTANCE,
-    val maxDist: Float = DEFAULT_MAX_DISTANCE
+    val maxDist: Float = DEFAULT_MAX_DISTANCE,
+    startDist: Float = DEFAULT_START_DISTANCE
 ) {
 
     class Mode(
@@ -55,7 +56,7 @@ class CameraController(
     companion object {
         const val DEFAULT_MIN_DISTANCE: Float = 6f
         const val DEFAULT_MAX_DISTANCE: Float = 30f
-        const val START_DISTANCE: Float = 18f
+        const val DEFAULT_START_DISTANCE: Float = 18f
         const val ZOOM_SPEED: Float = 2f // distance per scrolled notch
         val CAMERA_EYE_OFFSET_DIR: Vector3fc
             = Vector3f(0f, +1.75f, +2f).normalize()
@@ -64,10 +65,10 @@ class CameraController(
     }
 
 
-    var userDistance: Float = START_DISTANCE
+    var userDistance: Float = startDist
 
     var lookAt: SmoothedVector3f? = null
-    val distance: SmoothedFloat = START_DISTANCE
+    val distance: SmoothedFloat = startDist
         .smoothed(response = 10f, epsilon = 0.01f)
     val fov: SmoothedFloat = this.mode.fovRadians
         .smoothed(response = 10f, epsilon = 0.0001f)

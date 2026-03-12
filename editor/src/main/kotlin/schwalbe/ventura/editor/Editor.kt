@@ -7,66 +7,18 @@ import schwalbe.ventura.client.game.ChunkLoader
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.editor.modes.*
-import schwalbe.ventura.data.*
-import schwalbe.ventura.net.SerVector3
+import schwalbe.ventura.engine.gfx.*
+import schwalbe.ventura.data.ObjectProp
+import schwalbe.ventura.data.ObjectType
 import org.joml.Vector3f
 import java.nio.file.Path
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
-data class ObjectInstanceRef(
-    val chunk: ChunkRef,
-    val instanceIdx: Int
-)
-
-class LoadedWorld(val path: Path) {
-
-    val world = MutableWorld.readFromFile(this.path)
-    var lastModified: Long? = null
-    val chunkLoader = ChunkLoader(
-        requestChunks = this::loadChunks,
-        loadRadius = 5,
-        renderRadius = 5
-    )
-    var selectedObject: ObjectInstanceRef? = null
-
-    private fun loadChunks(requested: List<ChunkRef>): List<ChunkRef> {
-        this.chunkLoader.onChunksReceived(requested.mapNotNull { c ->
-            this.world.chunks[c]?.let { c to it.toChunkData() }
-        })
-        return requested
-    }
-
-    fun onEdited() {
-        this.lastModified = System.currentTimeMillis()
-    }
-
-    fun onChunkEdited(chunk: ChunkRef) {
-        this.onEdited()
-        this.chunkLoader.invalidateChunk(chunk)
-    }
-
-    fun withObjectEdit(
-        oldObjRef: ObjectInstanceRef,
-        f: (ObjectInstance) -> ObjectInstance
-    ): ObjectInstanceRef {
-        val oldObj: ObjectInstance = this.world.getChunk(oldObjRef.chunk)
-            .instances.removeAt(oldObjRef.instanceIdx)
-        this.onChunkEdited(oldObjRef.chunk)
-        val newObj: ObjectInstance = f(oldObj)
-        val newObjPos: SerVector3 = newObj[ObjectProp.Position]
-        val newObjChunkRef = ChunkRef(
-            newObjPos.x.unitsToUnitIdx(), newObjPos.z.unitsToUnitIdx()
-        )
-        val newObjChunk = this.world.getChunk(newObjChunkRef)
-        val newObjInstIdx: Int = newObjChunk.instances.size
-        newObjChunk.instances.add(newObj)
-        this.onChunkEdited(newObjChunkRef)
-        val newObjRef = ObjectInstanceRef(newObjChunkRef, newObjInstIdx)
-        return newObjRef
-    }
-
-}
+private val whiteOutlineShader: Resource<Shader<OutlineVert, OutlineFrag>>
+    = Shader.loadGlsl(OutlineVert, OutlineFrag, macros = mapOf(
+        "OUTLINE_COLOR_OVERRIDE" to "vec4(0.5, 0.5, 0.9, 1.0)"
+    ))
 
 class Editor : Application<EditorMode>(
     window = Window(
@@ -80,6 +32,10 @@ class Editor : Application<EditorMode>(
         const val BOOSTED_SPEED_MULTIPLIER: Float = 2f
 
         const val WORLD_SAVE_DELAY: Long = 500
+
+        fun submitResources(loader: ResourceLoader) = loader.submitAll(
+            whiteOutlineShader
+        )
     }
 
 
@@ -99,7 +55,9 @@ class Editor : Application<EditorMode>(
         fovDegrees = 30f
     )
     val camController = CameraController(
-        this.cameraMode, minDist = 5f, maxDist = 100f
+        this.cameraMode,
+        minDist = 5f, maxDist = 100f,
+        startDist = 100f
     )
 
 
@@ -148,18 +106,18 @@ private fun Editor.move() {
 }
 
 private fun Editor.selectMode() {
-    // create local var for current selection
+    val hasSelection: Boolean = this.world?.selectedObject != null
     this.nav.clear(when {
         Key.ESCAPE.wasPressed -> defaultMode(this)
         Key.C.wasPressed -> {
             this.world?.selectedObject = null
             createObjectMode(this)
         }
-        Key.TAB.wasPressed // && selection != null
-            -> return // TODO! property editor
-        Key.NUM_1.wasPressed // && selection != null
+        Key.TAB.wasPressed && hasSelection
+            -> propEditMode(this)
+        Key.NUM_1.wasPressed && hasSelection
             -> return // TODO! position mode
-        Key.NUM_2.wasPressed // && selection != null
+        Key.NUM_2.wasPressed && hasSelection
             -> return // TODO! rotation mode
         else -> return
     })
@@ -176,9 +134,27 @@ fun Editor.update() {
     this.world?.chunkLoader?.update(this.position)
 }
 
+private fun Editor.renderSelectedObject(pass: RenderPass) {
+    val world: LoadedWorld = this.world ?: return
+    val objectRef: ObjectInstanceRef = world.selectedObject ?: return
+    val chunk = world.chunkLoader.loaded[objectRef.chunk] ?: return
+    val inst = chunk.instances[objectRef.instanceIdx]
+    val instType: ObjectType = inst.obj[ObjectProp.Type] ?: return
+    val model: Model<StaticAnim> = ChunkLoader.objectModels
+        .getOrNull(instType.ordinal)?.invoke() ?: return
+    val shader = whiteOutlineShader()
+    shader[OutlineVert.outlineThickness] = 0.25f
+    pass.render(
+        model, shader, OutlineVert.renderer, OutlineFrag.renderer,
+        animState = null, listOf(inst.transform),
+        FaceCulling.FRONT
+    )
+}
+
 fun Editor.render() {
     this.renderer.update(this.position)
     this.renderer.forEachPass { pass ->
         this.world?.chunkLoader?.render(pass)
+        this.renderSelectedObject(pass)
     }
 }
