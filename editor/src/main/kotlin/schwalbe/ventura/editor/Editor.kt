@@ -11,6 +11,8 @@ import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.data.ObjectProp
 import schwalbe.ventura.data.ObjectType
 import org.joml.Vector3f
+import schwalbe.ventura.data.ChunkData
+import schwalbe.ventura.data.ObjectInstance
 import java.nio.file.Path
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
@@ -63,6 +65,13 @@ class Editor : Application<EditorMode>(
 
     var world: LoadedWorld? = null
 
+}
+
+fun Editor.getSelectedObject(): ObjectInstance? {
+    val world: LoadedWorld = this.world ?: return null
+    val selectedRef: ObjectInstanceRef = world.selectedObject ?: return null
+    val chunk: MutableChunkData = world.world.getChunk(selectedRef.chunk)
+    return chunk.instances[selectedRef.instanceIdx]
 }
 
 private fun Editor.autoSaveWorld() {
@@ -139,7 +148,7 @@ private fun Editor.renderSelectedObject(pass: RenderPass) {
     val objectRef: ObjectInstanceRef = world.selectedObject ?: return
     val chunk = world.chunkLoader.loaded[objectRef.chunk] ?: return
     val inst = chunk.instances[objectRef.instanceIdx]
-    val instType: ObjectType = inst.obj[ObjectProp.Type] ?: return
+    val instType: ObjectType = inst.obj[ObjectProp.Type]
     val model: Model<StaticAnim> = ChunkLoader.objectModels
         .getOrNull(instType.ordinal)?.invoke() ?: return
     val shader = whiteOutlineShader()

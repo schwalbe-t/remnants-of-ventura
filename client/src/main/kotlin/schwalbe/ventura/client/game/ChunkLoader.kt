@@ -30,7 +30,7 @@ private fun computeChunkColliders(
 ): List<AxisAlignedBox> {
     val colliders = mutableListOf<AxisAlignedBox>()
     for (instance in instances) {
-        val instType: ObjectType = instance.obj[ObjectProp.Type] ?: continue
+        val instType: ObjectType = instance.obj[ObjectProp.Type]
         if (!instType.applyColliders) { continue }
         val model: Model<StaticAnim> = ChunkLoader.objectModels
             .getOrNull(instType.ordinal)?.invoke()
@@ -147,7 +147,7 @@ class ChunkLoader(
         val groupedInstances: MutableMap<ObjectType, MutableList<Matrix4fc>>
             = mutableMapOf()
         for (inst in data.instances) {
-            val instType: ObjectType = inst.obj[ObjectProp.Type] ?: continue
+            val instType: ObjectType = inst.obj[ObjectProp.Type]
             val group: MutableList<Matrix4fc> = groupedInstances
                 .getOrPut(instType) { mutableListOf() }
             group.add(inst.transform)

@@ -44,33 +44,32 @@ sealed interface ObjectProp<V> {
     val v: V
 
 
-    sealed interface PropType<P : ObjectProp<V>, V>
-    sealed class DefaultPropType<P : ObjectProp<V>, V>(
-        val default: V
-    ) : PropType<P, V>
+    sealed class PropType<P : ObjectProp<V>, V>(val default: V)
 
     @Serializable @SerialName("TYPE")
     data class Type(override val v: ObjectType) : ObjectProp<ObjectType> {
-        companion object : PropType<Type, ObjectType>
+        companion object : PropType<Type, ObjectType>(
+            default = ObjectType.ROCK
+        )
     }
     
     @Serializable @SerialName("POSITION")
     data class Position(override val v: SerVector3) : ObjectProp<SerVector3> {
-        companion object : DefaultPropType<Position, SerVector3>(
+        companion object : PropType<Position, SerVector3>(
             default = SerVector3(0f, 0f, 0f)
         )
     }
 
     @Serializable @SerialName("ROTATION")
     data class Rotation(override val v: SerVector3) : ObjectProp<SerVector3> {
-        companion object : DefaultPropType<Rotation, SerVector3>(
+        companion object : PropType<Rotation, SerVector3>(
             default = SerVector3(0f, 0f, 0f)
         )
     }
 
     @Serializable @SerialName("SCALE")
     data class Scale(override val v: Float) : ObjectProp<Float> {
-        companion object : DefaultPropType<Scale, Float>(default = 1f)
+        companion object : PropType<Scale, Float>(default = 1f)
     }
 }
 
@@ -79,11 +78,6 @@ data class ObjectInstance(val props: List<ObjectProp<*>>) {
 
     inline operator fun <reified P : ObjectProp<V>, reified V> get(
         propType: ObjectProp.PropType<P, V>
-    ): V?
-        = this.props.filterIsInstance<P>().firstOrNull()?.v
-
-    inline operator fun <reified P : ObjectProp<V>, reified V> get(
-        propType: ObjectProp.DefaultPropType<P, V>
     ): V
         = this.props.filterIsInstance<P>().firstOrNull()?.v ?: propType.default
 

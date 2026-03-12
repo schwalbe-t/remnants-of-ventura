@@ -34,7 +34,7 @@ private fun collectChunkColliders(
     }
     for (chunkData in chunks.values) {
         for (obj in chunkData.instances) {
-            val objType: ObjectType = obj[ObjectProp.Type] ?: continue
+            val objType: ObjectType = obj[ObjectProp.Type]
             val objPos: SerVector3 = obj[ObjectProp.Position]
             val objCTx: Int = objPos.x.unitsToUnitIdx()
             val objCTz: Int = objPos.z.unitsToUnitIdx()
