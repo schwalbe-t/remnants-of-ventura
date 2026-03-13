@@ -43,6 +43,7 @@ data class ChunkData(
 
 @Serializable
 data class SerializedWorld(
+    val groundColor: String,
     val chunks: Map<ChunkRef, ChunkData>
 ) {
     companion object {

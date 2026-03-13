@@ -1,36 +1,12 @@
 {
+	"groundColor": "main_ground.png",
 	"chunks": [
 		{
 			"chunkX": -1,
 			"chunkZ": -1
 		},
 		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "ROCK"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -5.801797,
-								"y": 0.0,
-								"z": -11.269653
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 0.0,
-								"z": 0.0
-							}
-						}
-					]
-				}
-			]
+			"instances": []
 		},
 		{
 			"chunkX": -1,
@@ -44,7 +20,16 @@
 			"chunkZ": 0
 		},
 		{
-			"instances": []
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						}
+					]
+				}
+			]
 		},
 		{
 			"chunkX": 0,

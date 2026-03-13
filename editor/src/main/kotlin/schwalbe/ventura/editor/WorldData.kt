@@ -7,17 +7,20 @@ import java.nio.file.Path
 
 
 class MutableWorld(
-    val chunks: MutableMap<ChunkRef, MutableChunkData> = mutableMapOf()
+    val groundColor: String,
+    val chunks: MutableMap<ChunkRef, MutableChunkData> = mutableMapOf(),
 ) {
     companion object
 }
 
 fun SerializedWorld.toMutableWorld() = MutableWorld(
+    groundColor = this.groundColor,
     chunks = this.chunks
         .mapValuesTo(mutableMapOf()) { (_, c) -> c.toMutableChunkData() }
 )
 
 fun MutableWorld.toSerializedWorld() = SerializedWorld(
+    groundColor = this.groundColor,
     chunks = this.chunks.mapValues { (_, c) -> c.toChunkData() }
 )
 

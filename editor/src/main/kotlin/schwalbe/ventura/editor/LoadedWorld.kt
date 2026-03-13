@@ -4,11 +4,16 @@ package schwalbe.ventura.editor
 import schwalbe.ventura.client.game.ChunkLoader
 import schwalbe.ventura.data.*
 import schwalbe.ventura.net.SerVector3
+import schwalbe.ventura.net.SharedChunkData
+import schwalbe.ventura.utils.GroundColorReader
 import java.nio.file.Path
 
 class LoadedWorld(val path: Path) {
 
     val world = MutableWorld.readFromFile(this.path)
+    val groundColor = GroundColorReader(
+        textureFile = this.path.parent.resolve(this.world.groundColor).toFile()
+    )
     var lastModified: Long? = null
     val chunkLoader = ChunkLoader(
         requestChunks = this::loadChunks,
@@ -18,8 +23,14 @@ class LoadedWorld(val path: Path) {
     var selectedObject: ObjectInstanceRef? = null
 
     private fun loadChunks(requested: List<ChunkRef>): List<ChunkRef> {
-        this.chunkLoader.onChunksReceived(requested.mapNotNull { c ->
-            this.world.chunks[c]?.let { c to it.toChunkData() }
+        this.chunkLoader.onChunksReceived(requested.map { c ->
+            this.world.chunks[c].let { c to SharedChunkData(
+                instances = it?.instances ?: listOf(),
+                groundColorTL = this.groundColor[c.chunkX,      c.chunkZ    ],
+                groundColorTR = this.groundColor[c.chunkX + 1,  c.chunkZ    ],
+                groundColorBL = this.groundColor[c.chunkX,      c.chunkZ + 1],
+                groundColorBR = this.groundColor[c.chunkX + 1,  c.chunkZ + 1]
+            ) }
         })
         return requested
     }

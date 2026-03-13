@@ -73,9 +73,6 @@ data class PacketType<P>(
     val REQUEST_ROBOT_LOGS          = up<Uuid>()
     val ROBOT_LOGS                  = down<RobotLogsPacket>()
 
-    val PICK_UP_ITEM                = up<Uuid>()
-    val ITEM_PICKED_UP              = down<Uuid>()
-
     val NUM_PACKET_TYPES: Int = this.pollNextPacketId()
 
 } }
@@ -148,7 +145,16 @@ data class WorldEntryPacket(val position: SerVector3)
 data class RequestedChunksPacket(val chunks: List<ChunkRef>)
 
 @Serializable
-data class ChunkContentsPacket(val chunks: List<Pair<ChunkRef, ChunkData>>)
+data class SharedChunkData(
+    val instances: List<ObjectInstance>,
+    val groundColorTL: SerVector3, val groundColorTR: SerVector3,
+    val groundColorBL: SerVector3, val groundColorBR: SerVector3
+)
+
+@Serializable
+data class ChunkContentsPacket(
+    val chunks: List<Pair<ChunkRef, SharedChunkData>>
+)
 
 
 @Serializable

@@ -11,9 +11,28 @@ import kotlin.collections.asSequence
 import org.joml.Matrix4f
 import org.joml.Matrix4fc
 import org.joml.Vector3fc
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.ShortBuffer
+import kotlin.math.abs
+
+object GroundVert : VertShaderDef<GroundVert> {
+    override val path: String = "shaders/ground.vert.glsl"
+
+    val renderer = RendererVert<GroundVert>()
+}
+
+object GroundFrag : FragShaderDef<GroundFrag> {
+    override val path: String = "shaders/ground.frag.glsl"
+
+    val renderer = RendererFrag<GroundFrag>()
+}
+
+val groundShader: Resource<Shader<GroundVert, GroundFrag>>
+    = Shader.loadGlsl(GroundVert, GroundFrag)
 
 private fun computeChunkInstances(
-    data: ChunkData
+    data: SharedChunkData
 ): List<ChunkLoader.LoadedInstance>
     = data.instances.map { inst ->
         val position = inst[ObjectProp.Position]
@@ -48,6 +67,47 @@ private fun computeChunkColliders(
     return colliders
 }
 
+fun buildChunkGroundGeometry(ref: ChunkRef, data: SharedChunkData): Geometry {
+    val vertSize: Int = ChunkLoader.GROUND_GEOMETRY_ATTRIBS
+        .sumOf { it.numBytes }
+    val vbo = ByteBuffer
+        .allocateDirect(vertSize * 4)
+        .order(ByteOrder.nativeOrder())
+    fun ByteBuffer.putVertex(chX: Int, chZ: Int, color: SerVector3) {
+        // vec3 position
+        putFloat(chX.chunksToUnits().toFloat())
+        putFloat(0f)
+        putFloat(chZ.chunksToUnits().toFloat())
+        // vec3 color
+        putFloat(color.x)
+        putFloat(color.y)
+        putFloat(color.z)
+    }
+    vbo.putVertex(ref.chunkX,       ref.chunkZ,     data.groundColorTL) // [0]
+    vbo.putVertex(ref.chunkX + 1,   ref.chunkZ,     data.groundColorTR) // [1]
+    vbo.putVertex(ref.chunkX,       ref.chunkZ + 1, data.groundColorBL) // [2]
+    vbo.putVertex(ref.chunkX + 1,   ref.chunkZ + 1, data.groundColorBR) // [3]
+    vbo.flip()
+    val ebo = ByteBuffer
+        .allocateDirect(6 /* length */ * 2 /* sizeof(short) */)
+        .order(ByteOrder.nativeOrder())
+        .asShortBuffer()
+    fun ShortBuffer.putElement(a: Short, b: Short, c: Short) {
+        put(a)
+        put(b)
+        put(c)
+    }
+    if (Math.random() < 0.5) {
+        ebo.putElement(2, 1, 0) // bl -> tr -> tl
+        ebo.putElement(1, 2, 3) // tr -> bl -> br
+    } else {
+        ebo.putElement(2, 3, 0) // bl -> br -> tl
+        ebo.putElement(1, 0, 3) // tr -> tl -> br
+    }
+    ebo.flip()
+    return Geometry(ChunkLoader.GROUND_GEOMETRY_ATTRIBS, vbo, ebo)
+}
+
 class ChunkLoader(
     val requestChunks: (List<ChunkRef>) -> List<ChunkRef>,
     val loadRadius: Int = DEFAULT_LOAD_RADIUS,
@@ -61,7 +121,8 @@ class ChunkLoader(
 
     class LoadedChunkData(
         val instances: List<LoadedInstance>,
-        val colliders: List<AxisAlignedBox>
+        val colliders: List<AxisAlignedBox>,
+        val ground: Geometry
     )
 
     companion object {
@@ -77,8 +138,15 @@ class ChunkLoader(
 
         const val OUTLINE_THICKNESS: Float = 0.015f
 
+        val GROUND_GEOMETRY_ATTRIBS: List<Geometry.Attribute> = listOf(
+            Geometry.float(3),
+            Geometry.float(3)
+        )
+        val GROUND_INSTANCES: List<Matrix4fc> = listOf(Matrix4f())
+
         fun submitResources(loader: ResourceLoader) {
             this.objectModels.forEach(loader::submit)
+            loader.submit(groundShader)
         }
     }
 
@@ -90,17 +158,32 @@ class ChunkLoader(
     val requested: MutableSet<ChunkRef> = mutableSetOf()
     val loaded: MutableMap<ChunkRef, LoadedChunkData> = mutableMapOf()
 
-    fun onChunksReceived(chunks: List<Pair<ChunkRef, ChunkData>>) {
+    fun onChunksReceived(chunks: List<Pair<ChunkRef, SharedChunkData>>) {
         for ((ref, data) in chunks) {
             val instances = computeChunkInstances(data)
             val colliders = computeChunkColliders(instances)
-            this.loaded[ref] = LoadedChunkData(instances, colliders)
+            val ground = buildChunkGroundGeometry(ref, data)
+            this.loaded[ref] = LoadedChunkData(instances, colliders, ground)
         }
+    }
+
+    private fun removeLoaded(ref: ChunkRef) {
+        val removed = this.loaded.remove(ref) ?: return
+        removed.ground.dispose()
     }
 
     fun invalidateChunk(chunk: ChunkRef) {
         this.requested.remove(chunk)
-        this.loaded.remove(chunk)
+        this.removeLoaded(chunk)
+    }
+
+    private fun unloadChunks() {
+        for (ref in this.loaded.keys.toList()) {
+            val dx: Int = abs(ref.chunkX - this.centerX)
+            val dz: Int = abs(ref.chunkZ - this.centerZ)
+            if (maxOf(dx, dz) <= this.loadRadius) { continue }
+            this.invalidateChunk(ref)
+        }
     }
 
     private fun chunksInRange(r: Int): Sequence<ChunkRef>
@@ -122,8 +205,11 @@ class ChunkLoader(
     fun update(center: Vector3fc) {
         this.centerX = center.x().unitsToChunkIdx()
         this.centerZ = center.z().unitsToChunkIdx()
+        this.unloadChunks()
         val missing: List<ChunkRef> = this.collectMissingChunks()
-        this.requestChunkData(missing)
+        if (missing.isNotEmpty()) {
+            this.requestChunkData(missing)
+        }
     }
 
     fun intersectsAnyLoaded(b: AxisAlignedBox): Boolean {
@@ -163,6 +249,11 @@ class ChunkLoader(
             }
             pass.renderGeometry(model, animState = null, instances)
         }
+        pass.render(
+            data.ground, groundShader(),
+            GroundVert.renderer, GroundFrag.renderer,
+            GROUND_INSTANCES
+        )
     }
 
     fun render(pass: RenderPass) {

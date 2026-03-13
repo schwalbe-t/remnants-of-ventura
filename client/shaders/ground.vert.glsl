@@ -1,14 +1,18 @@
 
 #include "common/renderer.vert.glsl"
 
-layout(location = 0) in vec2 vTexCoords;
+layout(location = 0) in vec3 vPosition;
+layout(location = 1) in vec3 vColor;
 
 out vec3 fPosWorld;
+out vec3 fColor;
 
 void main(void) {
-    mat4 instance = instances[gl_InstanceID];
-    vec4 posHomo = vec4(vTexCoords.x - 0.5, 0.0, vTexCoords.y - 0.5, 1.0);
-    vec4 posWorld = instances[gl_InstanceID] * uLocalTransform * posHomo;
+    vec4 posWorld
+        = instances[gl_InstanceID]
+        * uLocalTransform
+        * vec4(vPosition, 1.0);
     fPosWorld = posWorld.xyz;
     gl_Position = uViewProjection * posWorld;
+    fColor = vColor;
 }
