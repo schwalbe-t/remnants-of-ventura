@@ -97,7 +97,8 @@ fun buildChunkGroundGeometry(ref: ChunkRef, data: SharedChunkData): Geometry {
         put(b)
         put(c)
     }
-    if (Math.random() < 0.5) {
+    val cutDir = ((ref.chunkX * 73856093) xor (ref.chunkZ * 19349663)) and 1
+    if (cutDir == 0) {
         ebo.putElement(2, 1, 0) // bl -> tr -> tl
         ebo.putElement(1, 2, 3) // tr -> bl -> br
     } else {
