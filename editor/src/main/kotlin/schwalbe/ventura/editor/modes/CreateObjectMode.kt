@@ -49,9 +49,11 @@ private fun Editor.placeSelectedObject(selectedType: ObjectType) {
 
 fun createObjectMode(editor: Editor): () -> EditorMode = {
     var selected: ObjectSelector? = null
+    val selectedText = Text()
     val objectList: SizedAxis = Axis.column(ObjectSelector.HEIGHT)
     for (type in ObjectType.entries) {
         val selector = ObjectSelector(type) { s ->
+            selectedText.withText(s.type.name)
             selected?.background
                 ?.withColor(TRANSPARENT)
                 ?.withHoverColor(HOVER_COLOR)
@@ -80,6 +82,12 @@ fun createObjectMode(editor: Editor): () -> EditorMode = {
                 .wrapScrolling(horiz = false, vert = true)
             )
         )
+        .add((2f/3f - 1/5f) * fpw, Space())
+        .add(1/3f * fpw, createModeDisplay(
+            "Object Creation Mode",
+            selectedText.toModeStatusText()
+                .alignRight()
+        ))
     )
     mode
 }

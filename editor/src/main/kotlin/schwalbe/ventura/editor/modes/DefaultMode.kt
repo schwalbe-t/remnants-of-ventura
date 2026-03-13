@@ -107,5 +107,9 @@ fun defaultMode(editor: Editor): () -> EditorMode = {
         navigator = editor.nav
     )
     mode.add(layer = 0, element = handleContainer)
+    mode.add(layer = 1, element = Axis.row()
+        .add(2f/3f * fpw, Space())
+        .add(1f/3f * fpw, createModeDisplay("Selection Mode", Space()))
+    )
     mode
 }

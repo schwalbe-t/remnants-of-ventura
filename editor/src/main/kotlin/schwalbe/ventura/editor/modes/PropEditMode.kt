@@ -167,7 +167,9 @@ fun propEditMode(editor: Editor): () -> EditorMode = {
     val world: LoadedWorld? = editor.world
     val selected: ObjectInstance? = editor.getSelectedObject()
     if (world != null && selected != null) {
-        for (propTypeClass in ObjectProp::class.allConcreteSealedSubclasses()) {
+        val propTypeClasses = ObjectProp::class.allConcreteSealedSubclasses()
+            .sortedBy { it.simpleName ?: it.jvmName }
+        for (propTypeClass in propTypeClasses) {
             val propType = propTypeClass.companionObjectInstance
                 as? ObjectProp.PropType<*, *> ?: continue
             val editor = ObjectPropEditor(
@@ -191,13 +193,15 @@ fun propEditMode(editor: Editor): () -> EditorMode = {
         },
         navigator = editor.nav
     )
-    mode.add(layer = 0, element = Axis.row()
-        .add(1f/3f * fpw, Stack()
+    mode.add(layer = 0, element = Axis.row(fpw / 3f)
+        .add(Stack()
             .add(FlatBackground().withColor(BACKGROUND_COLOR))
             .add(propList
                 .wrapScrolling(horiz = false, vert = true)
             )
         )
+        .add(Space())
+        .add(createModeDisplay("Property Edit Mode", Space()))
     )
     mode
 }

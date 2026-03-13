@@ -8,11 +8,8 @@ import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.editor.modes.*
 import schwalbe.ventura.engine.gfx.*
-import schwalbe.ventura.data.ObjectProp
-import schwalbe.ventura.data.ObjectType
+import schwalbe.ventura.data.*
 import org.joml.Vector3f
-import schwalbe.ventura.data.ChunkData
-import schwalbe.ventura.data.ObjectInstance
 import java.nio.file.Path
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
@@ -125,9 +122,9 @@ private fun Editor.selectMode() {
         Key.TAB.wasPressed && hasSelection
             -> propEditMode(this)
         Key.NUM_1.wasPressed && hasSelection
-            -> return // TODO! position mode
+            -> positionMode(this)
         Key.NUM_2.wasPressed && hasSelection
-            -> return // TODO! rotation mode
+            -> rotationMode(this)
         else -> return
     })
 }
