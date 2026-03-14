@@ -4,6 +4,7 @@ package schwalbe.ventura.server.game
 import schwalbe.ventura.*
 import schwalbe.ventura.net.*
 import schwalbe.ventura.data.*
+import schwalbe.ventura.utils.GroundColorReader
 import schwalbe.ventura.utils.insideSquareRadiusXZ
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.PI
@@ -14,7 +15,11 @@ import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.uuid.Uuid
 
-class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
+class World(
+    val registry: WorldRegistry,
+    val id: Long,
+    val data: WorldInstanceData
+) {
 
     companion object {
         const val ENEMIES_PER_UNSAFE_PLAYER: Int = 5
@@ -111,7 +116,8 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             val pos = player.data.worlds.last().state.position
             val px: Int = pos.x.unitsToUnitIdx()
             val pz: Int = pos.z.unitsToUnitIdx()
-            this.data.peaceAreas.none { area -> area.contains(px, pz) }
+            this.data.static.world.peaceAreas
+                .none { area -> area.contains(px, pz) }
         }
         val enemyLimit: Int = unsafePlayers.size * ENEMIES_PER_UNSAFE_PLAYER
         while (this.data.enemyRobots.size < enemyLimit) {
@@ -124,7 +130,9 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
             val rtz: Int = (sin(angle) * dist).unitsToUnitIdx()
             val tx: Int = aroundPos.x.unitsToUnitIdx() + rtx
             val tz: Int = aroundPos.z.unitsToUnitIdx() + rtz
-            if (this.data.peaceAreas.any { it.contains(tx, tz) }) { continue }
+            if (this.data.static.world.peaceAreas.any { it.contains(tx, tz) }) {
+                continue
+            }
             val spawned = EnemyRobot(
                 EnemyRobotConfig.BASIC,
                 SerVector3(tx.toFloat(), 0f, tz.toFloat())
@@ -250,8 +258,9 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
         }
     }
 
-    private val constWorldInfo: Packet
-        = Packet.serialize(PacketType.CONST_WORLD_INFO, data.info)
+    private val constWorldInfo: Packet = Packet.serialize(
+        PacketType.CONST_WORLD_INFO, this.data.static.world.info
+    )
 
     init {
         val ph = this.packetHandler
@@ -271,9 +280,16 @@ class World(val registry: WorldRegistry, val id: Long, val data: WorldData) {
                     TaggedErrorPacket.TOO_MANY_CHUNKS_REQUESTED
                 ))
             }
-            val chunks: List<Pair<ChunkRef, ChunkData>> = r.chunks.mapNotNull {
-                val data = this.data.chunks[it] ?: return@mapNotNull null
-                it to data
+            val groundColor: GroundColorReader = this.data.static.groundColor
+            val chunks = r.chunks.map {
+                val data = this.data.static.world.chunks[it]
+                it to SharedChunkData(
+                    instances = data?.instances ?: listOf(),
+                    groundColorTL = groundColor[it.chunkX, it.chunkZ],
+                    groundColorTR = groundColor[it.chunkX + 1, it.chunkZ],
+                    groundColorBL = groundColor[it.chunkX, it.chunkZ + 1],
+                    groundColorBR = groundColor[it.chunkX + 1, it.chunkZ + 1],
+                )
             }
             if (chunks.isEmpty()) { return@onPacket }
             pl.connection.outgoing.send(Packet.serialize(

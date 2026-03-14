@@ -158,6 +158,9 @@ private fun Editor.renderSelectedObject(pass: RenderPass) {
 }
 
 fun Editor.render() {
+    this.world?.let { world ->
+        this.renderer.config = world.world.info.rendererConfig
+    }
     this.renderer.update(this.position)
     this.renderer.forEachPass { pass ->
         this.world?.chunkLoader?.render(pass)

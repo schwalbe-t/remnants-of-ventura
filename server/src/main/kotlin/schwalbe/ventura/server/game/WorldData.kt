@@ -3,6 +3,7 @@ package schwalbe.ventura.server.game
 
 import schwalbe.ventura.data.*
 import schwalbe.ventura.net.SerVector3
+import schwalbe.ventura.utils.GroundColorReader
 import kotlin.uuid.Uuid
 
 private fun findChunkBounds(
@@ -72,20 +73,16 @@ class ChunkCollisions(
     }
 }
 
-data class EnemyPeaceArea(
-    val minX: Int, val minZ: Int, val untilX: Int, val untilZ: Int
-) {
-    fun contains(x: Int, z: Int): Boolean =
-        this.minX <= x && x < this.untilX &&
-        this.minZ <= z && z < this.untilZ
-}
+class StaticWorldData(
+    val world: SerializedWorld,
+    val groundColor: GroundColorReader
+)
 
-class WorldData(
-    val info: ConstWorldInfo,
-    val chunks: Map<ChunkRef, ChunkData>,
-    val peaceAreas: List<EnemyPeaceArea> = listOf()
+class WorldInstanceData(
+    val static: StaticWorldData
 ) {
-    val chunkCollisions: ChunkCollisions = ChunkCollisions(this.chunks)
+    val chunkCollisions: ChunkCollisions
+        = ChunkCollisions(this.static.world.chunks)
     val enemyRobots: MutableMap<Uuid, EnemyRobot> = mutableMapOf()
     val groundItems: MutableMap<Uuid, GroundItem> = mutableMapOf()
 }

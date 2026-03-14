@@ -32,8 +32,6 @@ class World(client: Client) {
     )
     val camController = CameraController(this.playerAtCenterCamMode)
 
-    var groundColor: Vector4fc = Vector4f(0f, 0f, 0f, 0f)
-
 }
 
 fun World.update(client: Client, captureInput: Boolean) {

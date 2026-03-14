@@ -13,7 +13,6 @@ class RendererConfig(
     val baseColorFactor: SerVector3,
     val shadowColorFactor: SerVector3,
     val outlineColorFactor: SerVector3,
-    val groundColor: SerVector3,
     val defaultLit: Boolean
 ) {
     companion object {
@@ -22,7 +21,6 @@ class RendererConfig(
             baseColorFactor = SerVector3(1f, 1f, 1f),
             shadowColorFactor = SerVector3(0.7f, 0.85f, 1.1f),
             outlineColorFactor = SerVector3(0.55f, 0.65f, 0.75f),
-            groundColor = Vector3f(151f, 134f, 111f).div(255f).toSerVector3(),
             defaultLit = true
         )
     }
@@ -42,9 +40,27 @@ data class ChunkData(
 )
 
 @Serializable
+data class EnemyPeaceArea(
+    val minX: Int, val minZ: Int, val untilX: Int, val untilZ: Int
+) {
+    fun contains(x: Int, z: Int): Boolean =
+        this.minX <= x && x < this.untilX &&
+                this.minZ <= z && z < this.untilZ
+}
+
+@Serializable
+enum class WorldInstanceMode {
+    CONSTANT,
+    TEMPORARY
+}
+
+@Serializable
 data class SerializedWorld(
+    val info: ConstWorldInfo,
     val groundColor: String,
-    val chunks: Map<ChunkRef, ChunkData>
+    val peaceAreas: List<EnemyPeaceArea> = listOf(),
+    val chunks: Map<ChunkRef, ChunkData> = mapOf(),
+    val instanceMode: WorldInstanceMode = WorldInstanceMode.CONSTANT
 ) {
     companion object {
         val SERIALIZER = Json {

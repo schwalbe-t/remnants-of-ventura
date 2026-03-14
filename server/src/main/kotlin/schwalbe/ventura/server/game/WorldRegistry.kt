@@ -1,17 +1,41 @@
 
 package schwalbe.ventura.server.game
 
+import schwalbe.ventura.data.WorldInstanceMode
 import schwalbe.ventura.server.Workers
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class WorldRegistry(
     val workers: Workers,
-    baseWorldData: WorldData
+    baseWorldData: StaticWorldData
 ) {
 
-    private val worlds: MutableMap<Long, World> = mutableMapOf()
+    sealed class Entry(val name: String?) {
+        abstract val instance: World?
+        abstract fun getInstance(registry: WorldRegistry, entryId: Long): World
+    }
+
+    class ConstantEntry(
+        val staticData: StaticWorldData,
+        name: String? = null
+    ) : Entry(name) {
+        override var instance: World? = null
+
+        override fun getInstance(
+            registry: WorldRegistry, entryId: Long
+        ): World {
+            val world: World = this.instance
+                ?: World(registry, entryId, WorldInstanceData(this.staticData))
+            this.instance = world
+            return world
+        }
+    }
+
+
+    private val entriesById: MutableMap<Long, Entry> = mutableMapOf()
     private var nextId: Long = 0
+    private val entryIdsByName: MutableMap<String, Long> = mutableMapOf()
 
     private val updatePool: ExecutorService
 
@@ -20,35 +44,46 @@ class WorldRegistry(
     init {
         val nproc: Int = Runtime.getRuntime().availableProcessors()
         this.updatePool = Executors.newFixedThreadPool(nproc)
-        this.baseWorld = this.createWorld(baseWorldData)
+        this.baseWorld = this.add(baseWorldData)
     }
 
-    fun createWorld(data: WorldData): World {
-        synchronized(this) {
-            val id: Long = this.nextId
-            this.nextId += 1
-            val world = World(this, id, data)
-            this.worlds[world.id] = world
-            return world
+    @Synchronized
+    private fun insertEntry(entry: Entry): Long {
+        val id: Long = this.nextId
+        this.nextId += 1
+        this.entriesById[id] = entry
+        entry.name?.let { name -> this.entryIdsByName[name] = id }
+        return id
+    }
+
+    @Synchronized
+    fun add(data: StaticWorldData, name: String? = null): World {
+        val entry: Entry = when (data.world.instanceMode) {
+            WorldInstanceMode.CONSTANT -> ConstantEntry(data, name)
+            WorldInstanceMode.TEMPORARY -> TODO("not yet implemented")
         }
+        val id: Long = this.insertEntry(entry)
+        return entry.getInstance(this, id)
     }
 
+    @Synchronized
     fun remove(worldId: Long) {
-        synchronized(this) {
-            this.worlds.remove(worldId)
-        }
+        val removed: Entry = this.entriesById.remove(worldId) ?: return
+        this.entryIdsByName.remove(removed.name)
     }
 
-    operator fun get(worldId: Long): World? {
-        synchronized(this) {
-            return this.worlds.getOrDefault(worldId, null)
-        }
-    }
+    @Synchronized
+    operator fun get(worldId: Long): World?
+        = this.entriesById[worldId]?.getInstance(this, worldId)
+
+    @Synchronized
+    operator fun get(worldName: String): World?
+        = this.entryIdsByName[worldName]?.let { id -> this[id] }
 
     fun updateAll() {
         val worlds: List<World>
         synchronized(this) {
-            worlds = this.worlds.values.toList()
+            worlds = this.entriesById.values.mapNotNull { it.instance }
         }
         for (world in worlds) {
             this.updatePool.submit {
@@ -60,7 +95,8 @@ class WorldRegistry(
     fun handlePlayerDisconnect(player: Player) {
         this.workers.playerWriter.add(player)
         synchronized(this) {
-            for (world in this.worlds.values) {
+            for (entry in this.entriesById.values) {
+                val world: World = entry.instance ?: continue
                 world.handlePlayerDisconnect(player) 
             }
         }

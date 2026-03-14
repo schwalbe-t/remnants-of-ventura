@@ -2,11 +2,10 @@
 package schwalbe.ventura.server
 
 import schwalbe.ventura.bigton.runtime.loadBigtonRuntime
-import schwalbe.ventura.net.*
 import schwalbe.ventura.data.*
 import schwalbe.ventura.server.game.CompilationQueue
 import schwalbe.ventura.server.game.WorldRegistry
-import schwalbe.ventura.server.game.WorldData
+import schwalbe.ventura.server.game.StaticWorldData
 import schwalbe.ventura.server.persistence.*
 import kotlinx.coroutines.*
 import kotlin.concurrent.thread
@@ -14,8 +13,12 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.datetime.*
-import org.joml.Vector3f
-import schwalbe.ventura.server.game.EnemyPeaceArea
+import schwalbe.ventura.utils.GroundColorReader
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.extension
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.nameWithoutExtension
 import kotlin.system.exitProcess
 
 fun getKeyStorePath(): String = System.getenv("VENTURA_KEYSTORE_PATH")
@@ -32,6 +35,9 @@ fun getPort(): Int = System.getenv("VENTURA_PORT")?.toInt()
 
 fun getBigtonRuntimeDir(): String = System.getenv("VENTURA_BIGTON_LIB_DIR")
     ?: "bigtonruntime/build/libs/main"
+
+const val WORLD_FILES_DIR: String = "worlds"
+const val MAIN_WORLD_NAME: String = "main"
 
 private fun scheduled(interval: Duration, f: () -> Unit) {
     thread {
@@ -52,37 +58,36 @@ class Workers {
     val compilationQueue = CompilationQueue()
 }
 
+
+
+fun loadWorlds(dirPath: Path): Map<String, StaticWorldData> {
+    val loaded = mutableMapOf<String, StaticWorldData>()
+    for (worldFile in dirPath.listDirectoryEntries()) {
+        if (worldFile.extension != "json") { continue }
+        val rawData: String = Files.readString(worldFile)
+        val serData: SerializedWorld = SerializedWorld.SERIALIZER
+            .decodeFromString(rawData)
+        val groundColor = GroundColorReader(
+            worldFile.parent.resolve(serData.groundColor).toFile()
+        )
+        loaded[worldFile.nameWithoutExtension] = StaticWorldData(
+            serData, groundColor
+        )
+    }
+    return loaded
+}
+
 fun main() {
     loadBigtonRuntime(getBigtonRuntimeDir(), name = "bigtonruntime")
     initDatabase()
 
-    val baseWorldChunks: Map<ChunkRef, ChunkData>
-        = (-20..20).flatMap { chunkX -> (-20..20).map { chunkZ ->
-            ChunkRef(chunkX, chunkZ) to ChunkData(listOf(
-                ObjectInstance(listOf(
-                    ObjectProp.Type(ObjectType.ROCK),
-                    ObjectProp.Position(Vector3f(
-                        chunkX + Math.random().toFloat(), 0f,
-                        chunkZ + Math.random().toFloat()
-                    ).chunksToUnits().toSerVector3()),
-                    ObjectProp.Rotation(SerVector3(
-                        0f, (Math.random() * 2 * kotlin.math.PI).toFloat(), 0f
-                    ))
-                ))
-            ))
-        } }
-        .toMap()
-    val baseWorld = WorldData(
-        ConstWorldInfo(rendererConfig = RendererConfig.default),
-        baseWorldChunks,
-        peaceAreas = listOf(EnemyPeaceArea(
-            minX = (-2).chunksToUnits(), minZ = (-2).chunksToUnits(),
-            untilX = (+2).chunksToUnits(), untilZ = (+2).chunksToUnits()
-        ))
-    )
+    val worldData: Map<String, StaticWorldData>
+        = loadWorlds(Path.of(WORLD_FILES_DIR))
+    val baseWorldData: StaticWorldData = worldData[MAIN_WORLD_NAME]!!
+    println("Loaded ${worldData.size} world(s)")
 
     val workers = Workers()
-    val worlds = WorldRegistry(workers, baseWorld)
+    val worlds = WorldRegistry(workers, baseWorldData)
 
     val port: Int = getPort()
     val server = Server(

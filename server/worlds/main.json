@@ -1,5 +1,38 @@
 {
+    "info": {
+        "rendererConfig": {
+            "groundToSun": {
+                "x": 0.750030839854554,
+                "y": 0.6614028570145979,
+                "z": 0.0
+            },
+            "baseColorFactor": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "shadowColorFactor": {
+                "x": 0.7,
+                "y": 0.85,
+                "z": 1.1
+            },
+            "outlineColorFactor": {
+                "x": 0.55,
+                "y": 0.65,
+                "z": 0.75
+            },
+            "defaultLit": true
+        }
+    },
 	"groundColor": "main_ground.png",
+    "peaceAreas": [
+        {
+            "minX": -2,
+            "minZ": -2,
+            "untilX": 2,
+            "untilZ": 2
+        }
+    ],
 	"chunks": [
 		{
 			"chunkX": -1,
