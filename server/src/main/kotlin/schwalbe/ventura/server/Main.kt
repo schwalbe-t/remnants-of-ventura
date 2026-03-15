@@ -83,11 +83,11 @@ fun main() {
 
     val worldData: Map<String, StaticWorldData>
         = loadWorlds(Path.of(WORLD_FILES_DIR))
-    val baseWorldData: StaticWorldData = worldData[MAIN_WORLD_NAME]!!
     println("Loaded ${worldData.size} world(s)")
 
     val workers = Workers()
-    val worlds = WorldRegistry(workers, baseWorldData)
+    val worlds = WorldRegistry(workers, MAIN_WORLD_NAME)
+    worldData.forEach { (name, data) -> worlds.add(name, data) }
 
     val port: Int = getPort()
     val server = Server(

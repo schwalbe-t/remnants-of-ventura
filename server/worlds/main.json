@@ -1,38 +1,38 @@
 {
-    "info": {
-        "rendererConfig": {
-            "groundToSun": {
-                "x": 0.750030839854554,
-                "y": 0.6614028570145979,
-                "z": 0.0
-            },
-            "baseColorFactor": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
-            },
-            "shadowColorFactor": {
-                "x": 0.7,
-                "y": 0.85,
-                "z": 1.1
-            },
-            "outlineColorFactor": {
-                "x": 0.55,
-                "y": 0.65,
-                "z": 0.75
-            },
-            "defaultLit": true
-        }
-    },
+	"info": {
+		"rendererConfig": {
+			"groundToSun": {
+				"x": 0.7500308,
+				"y": 0.6614029,
+				"z": 0.0
+			},
+			"baseColorFactor": {
+				"x": 1.0,
+				"y": 1.0,
+				"z": 1.0
+			},
+			"shadowColorFactor": {
+				"x": 0.7,
+				"y": 0.85,
+				"z": 1.1
+			},
+			"outlineColorFactor": {
+				"x": 0.55,
+				"y": 0.65,
+				"z": 0.75
+			},
+			"defaultLit": true
+		}
+	},
 	"groundColor": "main_ground.png",
-    "peaceAreas": [
-        {
-            "minX": -2,
-            "minZ": -2,
-            "untilX": 2,
-            "untilZ": 2
-        }
-    ],
+	"peaceAreas": [
+		{
+			"minX": -32,
+			"minZ": -32,
+			"untilX": 32,
+			"untilZ": 32
+		}
+	],
 	"chunks": [
 		{
 			"chunkX": -1,
@@ -92,7 +92,24 @@
 			"chunkZ": -1
 		},
 		{
-			"instances": []
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 5.2052455,
+								"y": 0.0,
+								"z": -15.113754
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						}
+					]
+				}
+			]
 		},
 		{
 			"chunkX": -1,
@@ -166,7 +183,36 @@
 			"chunkZ": -2
 		},
 		{
-			"instances": []
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						},
+						{
+							"type": "SCALE",
+							"v": 10.0
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -0.32397676,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -19.238962,
+								"y": 0.0,
+								"z": -26.80891
+							}
+						}
+					]
+				}
+			]
 		},
 		{
 			"chunkX": 1,
@@ -344,6 +390,13 @@
 		{
 			"chunkX": 1,
 			"chunkZ": 3
+		},
+		{
+			"instances": []
+		},
+		{
+			"chunkX": -2,
+			"chunkZ": -3
 		},
 		{
 			"instances": []

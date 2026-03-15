@@ -53,6 +53,9 @@ class World(
         )
 
     @Synchronized
+    fun hasPlayers(): Boolean = this.players.isNotEmpty()
+
+    @Synchronized
     private fun handleIncomingPlayers() {
         while (true) {
             val player: Player = this.incoming.poll() ?: break
@@ -85,6 +88,13 @@ class World(
     @Synchronized
     fun handlePlayerLeaving(player: Player) {
         this.mutPlayers.remove(player.username)
+    }
+
+    @Synchronized
+    fun handleWorldClosing() {
+        for (player in this.players.values) {
+            player.popWorld(this.registry)
+        }
     }
 
     fun tileIsOccupied(tx: Int, tz: Int): Boolean {
