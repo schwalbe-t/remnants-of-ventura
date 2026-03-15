@@ -9,13 +9,16 @@ import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.editor.modes.*
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.data.*
+import schwalbe.ventura.net.toVector3f
 import org.joml.Vector3f
+import java.io.File
 import java.nio.file.Path
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
 private val whiteOutlineShader: Resource<Shader<OutlineVert, OutlineFrag>>
     = Shader.loadGlsl(OutlineVert, OutlineFrag, macros = mapOf(
+        "PRESERVE_TRANSPARENT" to null,
         "OUTLINE_COLOR_OVERRIDE" to "vec4(0.5, 0.5, 0.9, 1.0)"
     ))
 
@@ -76,19 +79,21 @@ private fun Editor.autoSaveWorld() {
     val lastModified: Long = world.lastModified ?: return
     val now: Long = System.currentTimeMillis()
     if (lastModified + Editor.WORLD_SAVE_DELAY > now) { return }
-    world.world.writeToFile(world.path)
+    world.world.clean().writeToFile(world.path)
 }
 
 private fun Editor.openChosenFile() {
     if (!Key.LEFT_CONTROL.isPressed) { return }
     if (!Key.O.wasPressed) { return }
     try {
-        val chooser = JFileChooser()
+        val chooser = JFileChooser(File(".").canonicalFile)
         chooser.fileFilter = FileNameExtensionFilter("World Data File", "json")
         val status: Int = chooser.showOpenDialog(null)
         if (status != JFileChooser.APPROVE_OPTION) { return }
         val chosenPath: Path = chooser.selectedFile.toPath()
-        this.world = LoadedWorld(chosenPath)
+        val world = LoadedWorld(chosenPath)
+        this.world = world
+        this.position = world.world.startPosition.toVector3f()
         println("Read world file from '$chosenPath'")
     } catch (e: Exception) {
         e.printStackTrace()

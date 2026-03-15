@@ -2,6 +2,7 @@
 package schwalbe.ventura.editor
 
 import schwalbe.ventura.data.*
+import schwalbe.ventura.net.SerVector3
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -11,7 +12,8 @@ class MutableWorld(
     val groundColor: String,
     val peaceAreas: List<EnemyPeaceArea>,
     val chunks: MutableMap<ChunkRef, MutableChunkData> = mutableMapOf(),
-    val instanceMode: WorldInstanceMode
+    val instanceMode: WorldInstanceMode,
+    val startPosition: SerVector3
 ) {
     companion object
 }
@@ -22,7 +24,8 @@ fun SerializedWorld.toMutableWorld() = MutableWorld(
     peaceAreas = this.peaceAreas,
     chunks = this.chunks
         .mapValuesTo(mutableMapOf()) { (_, c) -> c.toMutableChunkData() },
-    instanceMode = this.instanceMode
+    instanceMode = this.instanceMode,
+    startPosition = this.startPosition
 )
 
 fun MutableWorld.toSerializedWorld() = SerializedWorld(
@@ -30,11 +33,17 @@ fun MutableWorld.toSerializedWorld() = SerializedWorld(
     groundColor = this.groundColor,
     peaceAreas = this.peaceAreas,
     chunks = this.chunks.mapValues { (_, c) -> c.toChunkData() },
-    instanceMode = this.instanceMode
+    instanceMode = this.instanceMode,
+    startPosition = this.startPosition
 )
 
 fun MutableWorld.getChunk(chunk: ChunkRef): MutableChunkData
     = this.chunks.getOrPut(chunk) { MutableChunkData() }
+
+fun MutableWorld.clean(): MutableWorld {
+    this.chunks.values.removeIf { it.instances.isEmpty() }
+    return this
+}
 
 
 class MutableChunkData(

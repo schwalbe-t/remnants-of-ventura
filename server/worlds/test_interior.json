@@ -1,0 +1,196 @@
+{
+	"instanceMode": "CONSTANT",
+	"info": {
+		"rendererConfig": {
+			"groundToSun": {
+				"x": 0.7500308,
+				"y": 0.6614029,
+				"z": 0.0
+			},
+			"baseColorFactor": {
+				"x": 1.0,
+				"y": 1.0,
+				"z": 1.0
+			},
+			"shadowColorFactor": {
+				"x": 0.7,
+				"y": 0.85,
+				"z": 1.1
+			},
+			"outlineColorFactor": {
+				"x": 0.55,
+				"y": 0.65,
+				"z": 0.75
+			},
+			"defaultLit": false
+		}
+	},
+	"groundColor": "test_interior_ground.png",
+	"startPosition": {
+		"x": 0.0,
+		"y": 0.0,
+		"z": 0.0
+	},
+	"peaceAreas": [
+		{
+			"minX": -9999,
+			"minZ": -9999,
+			"untilX": 9999,
+			"untilZ": 9999
+		}
+	],
+	"chunks": [
+		{
+			"chunkX": -1,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "SCALE",
+							"v": 0.2
+						},
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -1.3754706,
+								"y": 0.0,
+								"z": -8.026115
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "LEAVE_WORLD",
+							"v": {}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -0.22984023,
+								"y": 0.0,
+								"z": -8.282938
+							}
+						},
+						{
+							"type": "SCALE",
+							"v": 1.5
+						},
+						{
+							"type": "TYPE",
+							"v": "TRIGGER"
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 0,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						},
+						{
+							"type": "SCALE",
+							"v": 0.2
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 1.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": -1,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -5.0,
+								"y": 0.0,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.8064111,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "SCALE",
+							"v": 0.75
+						},
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 0,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						},
+						{
+							"type": "SCALE",
+							"v": 0.85
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 5.0,
+								"y": 0.0,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 2.7215328,
+								"z": 0.0
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

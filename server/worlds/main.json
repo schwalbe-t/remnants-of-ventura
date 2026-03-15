@@ -1,4 +1,5 @@
 {
+	"instanceMode": "CONSTANT",
 	"info": {
 		"rendererConfig": {
 			"groundToSun": {
@@ -25,6 +26,11 @@
 		}
 	},
 	"groundColor": "main_ground.png",
+	"startPosition": {
+		"x": 0.0,
+		"y": 0.0,
+		"z": 0.0
+	},
 	"peaceAreas": [
 		{
 			"minX": -32,
@@ -35,20 +41,6 @@
 	],
 	"chunks": [
 		{
-			"chunkX": -1,
-			"chunkZ": -1
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": -1,
-			"chunkZ": 0
-		},
-		{
-			"instances": []
-		},
-		{
 			"chunkX": 0,
 			"chunkZ": 0
 		},
@@ -56,10 +48,6 @@
 			"instances": [
 				{
 					"props": [
-						{
-							"type": "TYPE",
-							"v": "ROCK"
-						},
 						{
 							"type": "POSITION",
 							"v": {
@@ -75,17 +63,14 @@
 								"y": 1.558903,
 								"z": 0.0
 							}
+						},
+						{
+							"type": "TYPE",
+							"v": "ROCK"
 						}
 					]
 				}
 			]
-		},
-		{
-			"chunkX": 0,
-			"chunkZ": -4
-		},
-		{
-			"instances": []
 		},
 		{
 			"chunkX": 0,
@@ -106,24 +91,58 @@
 						{
 							"type": "TYPE",
 							"v": "ROCK"
+						},
+						{
+							"type": "SCALE",
+							"v": 0.25
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						},
+						{
+							"type": "SCALE",
+							"v": 0.25
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 8.907706,
+								"y": 0.0,
+								"z": -15.126593
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "ENTER_WORLD",
+							"v": "test_interior"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 6.942938,
+								"y": 0.0,
+								"z": -15.340826
+							}
+						},
+						{
+							"type": "SCALE",
+							"v": 2.0
+						},
+						{
+							"type": "TYPE",
+							"v": "TRIGGER"
 						}
 					]
 				}
 			]
-		},
-		{
-			"chunkX": -1,
-			"chunkZ": -2
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": 0,
-			"chunkZ": -2
-		},
-		{
-			"instances": []
 		},
 		{
 			"chunkX": -2,
@@ -133,10 +152,6 @@
 			"instances": [
 				{
 					"props": [
-						{
-							"type": "TYPE",
-							"v": "ROCK"
-						},
 						{
 							"type": "POSITION",
 							"v": {
@@ -152,31 +167,14 @@
 								"y": -0.9719302,
 								"z": 0.0
 							}
+						},
+						{
+							"type": "TYPE",
+							"v": "ROCK"
 						}
 					]
 				}
 			]
-		},
-		{
-			"chunkX": -2,
-			"chunkZ": -1
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": -1,
-			"chunkZ": -3
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": -1,
-			"chunkZ": -4
-		},
-		{
-			"instances": []
 		},
 		{
 			"chunkX": -2,
@@ -187,53 +185,24 @@
 				{
 					"props": [
 						{
+							"type": "SCALE",
+							"v": 2.0
+						},
+						{
 							"type": "TYPE",
 							"v": "ROCK"
 						},
 						{
-							"type": "SCALE",
-							"v": 10.0
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -0.32397676,
-								"z": 0.0
-							}
-						},
-						{
 							"type": "POSITION",
 							"v": {
-								"x": -19.238962,
+								"x": -18.146969,
 								"y": 0.0,
-								"z": -26.80891
+								"z": -22.759605
 							}
 						}
 					]
 				}
 			]
-		},
-		{
-			"chunkX": 1,
-			"chunkZ": 1
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": 0,
-			"chunkZ": 1
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": 0,
-			"chunkZ": -3
-		},
-		{
-			"instances": []
 		},
 		{
 			"chunkX": -1,
@@ -243,10 +212,6 @@
 			"instances": [
 				{
 					"props": [
-						{
-							"type": "TYPE",
-							"v": "ROCK"
-						},
 						{
 							"type": "POSITION",
 							"v": {
@@ -262,31 +227,14 @@
 								"y": 1.295907,
 								"z": 0.0
 							}
+						},
+						{
+							"type": "TYPE",
+							"v": "ROCK"
 						}
 					]
 				}
 			]
-		},
-		{
-			"chunkX": -3,
-			"chunkZ": -1
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": -3,
-			"chunkZ": 0
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": -1,
-			"chunkZ": 2
-		},
-		{
-			"instances": []
 		},
 		{
 			"chunkX": 0,
@@ -297,8 +245,12 @@
 				{
 					"props": [
 						{
-							"type": "TYPE",
-							"v": "ROCK"
+							"type": "POSITION",
+							"v": {
+								"x": 0.78213054,
+								"y": 0.0,
+								"z": 32.506493
+							}
 						},
 						{
 							"type": "ROTATION",
@@ -309,23 +261,12 @@
 							}
 						},
 						{
-							"type": "POSITION",
-							"v": {
-								"x": 0.78213054,
-								"y": 0.0,
-								"z": 32.506493
-							}
+							"type": "TYPE",
+							"v": "ROCK"
 						}
 					]
 				}
 			]
-		},
-		{
-			"chunkX": 1,
-			"chunkZ": 0
-		},
-		{
-			"instances": []
 		},
 		{
 			"chunkX": 1,
@@ -335,10 +276,6 @@
 			"instances": [
 				{
 					"props": [
-						{
-							"type": "TYPE",
-							"v": "ROCK"
-						},
 						{
 							"type": "POSITION",
 							"v": {
@@ -354,52 +291,14 @@
 								"y": 0.6325238,
 								"z": 0.0
 							}
+						},
+						{
+							"type": "TYPE",
+							"v": "ROCK"
 						}
 					]
 				}
 			]
-		},
-		{
-			"chunkX": 0,
-			"chunkZ": 3
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": -1,
-			"chunkZ": 3
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": -2,
-			"chunkZ": 2
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": 1,
-			"chunkZ": 2
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": 1,
-			"chunkZ": 3
-		},
-		{
-			"instances": []
-		},
-		{
-			"chunkX": -2,
-			"chunkZ": -3
-		},
-		{
-			"instances": []
 		}
 	]
 }

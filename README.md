@@ -40,6 +40,8 @@ The server can be configured using the following environmental variables:
 - `VENTURA_KEYSTORE_ALIAS` - Alias of the certificate in the keystore (defaults to `ventura`)
 - `VENTURA_KEYSTORE_PASS` - Password for the keystore (defaults to `labubu`)
 - `VENTURA_PORT` - Port to listen for clients on (defaults to `8443`)
+- `VENTURA_WORLD_FILES_DIR` - Directory path containing the static world data files (defaults to `worlds`)
+- `VENTURA_MAIN_WORLD_NAME` - Name of the main world (defaults to `main`)
 - `VENTURA_DB_URL` - Url of the database (defaults to `jdbc:postgresql://localhost:5432/ventura`)
 - `VENTURA_DB_USER` - Username in the database (defaults to `ventura`)
 - `VENTURA_DB_PASS` - Password for the database **(has no default)**

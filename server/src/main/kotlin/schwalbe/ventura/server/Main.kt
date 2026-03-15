@@ -36,8 +36,11 @@ fun getPort(): Int = System.getenv("VENTURA_PORT")?.toInt()
 fun getBigtonRuntimeDir(): String = System.getenv("VENTURA_BIGTON_LIB_DIR")
     ?: "bigtonruntime/build/libs/main"
 
-const val WORLD_FILES_DIR: String = "worlds"
-const val MAIN_WORLD_NAME: String = "main"
+fun getWorldFileDir(): String = System.getenv("VENTURA_WORLD_FILES_DIR")
+    ?: "worlds"
+
+fun getMainWorldName(): String = System.getenv("VENTURA_MAIN_WORLD_NAME")
+    ?: "main"
 
 private fun scheduled(interval: Duration, f: () -> Unit) {
     thread {
@@ -82,11 +85,11 @@ fun main() {
     initDatabase()
 
     val worldData: Map<String, StaticWorldData>
-        = loadWorlds(Path.of(WORLD_FILES_DIR))
+        = loadWorlds(Path.of(getWorldFileDir()))
     println("Loaded ${worldData.size} world(s)")
 
     val workers = Workers()
-    val worlds = WorldRegistry(workers, MAIN_WORLD_NAME)
+    val worlds = WorldRegistry(workers, getMainWorldName())
     worldData.forEach { (name, data) -> worlds.add(name, data) }
 
     val port: Int = getPort()

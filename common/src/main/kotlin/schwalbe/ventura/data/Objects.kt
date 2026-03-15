@@ -19,23 +19,16 @@ enum class ObjectType(
     val applyColliders: Boolean = true,
     val tileColliderRadius: Int
 ) {
+    TRIGGER(
+        modelPath = "res/objects/trigger.glb",
+        renderOutline = false,
+        applyColliders = false,
+        tileColliderRadius = 1
+    ),
     ROCK(
         modelPath = "res/objects/rock.glb",
         tileColliderRadius = 3
     ),
-
-    TREE(
-        modelPath = "res/objects/rock.glb",
-        tileColliderRadius = 3
-    ),
-    GRASS(
-        modelPath = "res/objects/rock.glb",
-        tileColliderRadius = 3
-    ),
-    HOUSE(
-        modelPath = "res/objects/rock.glb",
-        tileColliderRadius = 3
-    )
 }
 
 @Serializable
@@ -70,6 +63,16 @@ sealed interface ObjectProp<V> {
     @Serializable @SerialName("SCALE")
     data class Scale(override val v: Float) : ObjectProp<Float> {
         companion object : PropType<Scale, Float>(default = 1f)
+    }
+
+    @Serializable @SerialName("ENTER_WORLD")
+    data class EnterWorldTrigger(override val v: String) : ObjectProp<String> {
+        companion object : PropType<EnterWorldTrigger, String>(default = "")
+    }
+
+    @Serializable @SerialName("LEAVE_WORLD")
+    data class LeaveWorldTrigger(override val v: Unit) : ObjectProp<Unit> {
+        companion object : PropType<LeaveWorldTrigger, Unit>(default = Unit)
     }
 }
 

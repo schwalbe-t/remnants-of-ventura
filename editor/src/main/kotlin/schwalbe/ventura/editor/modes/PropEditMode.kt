@@ -31,8 +31,6 @@ private class ObjectPropEditor(
         val LINE_HEIGHT: UiSize = 3.5.vmin
         val HEIGHT: UiSize = 2 * LINE_HEIGHT
         val TOGGLE_BUTTON_WIDTH: UiSize = 10.vmin
-
-        val SERIALIZER = Json {}
     }
 
     var enabled: Boolean = instance.props.any { propTypeClass.isInstance(it) }
@@ -101,19 +99,19 @@ private class ObjectPropEditor(
         if (!this.enabled || value == null) {
             this.valueInput.withValue("")
         } else {
-            val serializer = SERIALIZER.serializersModule
+            val serializer = Json.serializersModule
                 .serializer(value::class.java)
-            val valueStr = SERIALIZER.encodeToString(serializer, value)
+            val valueStr = Json.encodeToString(serializer, value)
             this.valueInput.withValue(valueStr)
         }
     }
 
     private fun writeEnteredPropValue() {
-        val serializer = SERIALIZER.serializersModule
+        val serializer = Json.serializersModule
             .serializer(this.propType.default::class.java)
         val prop: ObjectProp<*>
         try {
-            val value: Any = SERIALIZER.decodeFromString(
+            val value: Any = Json.decodeFromString(
                 serializer, this.valueInput.valueString
             )
             prop = this.propTypeClass.constructors

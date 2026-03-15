@@ -56,17 +56,19 @@ enum class WorldInstanceMode {
 
 @Serializable
 data class SerializedWorld(
+    val instanceMode: WorldInstanceMode = WorldInstanceMode.CONSTANT,
     val info: ConstWorldInfo,
     val groundColor: String,
+    val startPosition: SerVector3 = SerVector3(0f, 0f, 0f),
     val peaceAreas: List<EnemyPeaceArea> = listOf(),
     val chunks: Map<ChunkRef, ChunkData> = mapOf(),
-    val instanceMode: WorldInstanceMode = WorldInstanceMode.CONSTANT
 ) {
     companion object {
         val SERIALIZER = Json {
             allowStructuredMapKeys = true
             prettyPrint = true
             prettyPrintIndent = "\t"
+            encodeDefaults = true
         }
     }
 }

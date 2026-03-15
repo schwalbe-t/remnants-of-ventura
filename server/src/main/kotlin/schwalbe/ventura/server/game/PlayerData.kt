@@ -20,7 +20,7 @@ data class PlayerData(
 
     @Serializable
     data class WorldEntry(
-        val worldId: Long,
+        val worldId: Uuid,
         var state: SharedPlayerInfo
     )
 

@@ -4,6 +4,7 @@ package schwalbe.ventura.server.game
 import schwalbe.ventura.net.Packet
 import schwalbe.ventura.net.PacketType
 import schwalbe.ventura.server.Server
+import kotlin.uuid.Uuid
 
 class Player(
     val username: String,
@@ -14,7 +15,7 @@ class Player(
 fun Player.getCurrentWorld(worlds: WorldRegistry): World {
     var world: World? = null
     while (this.data.worlds.isNotEmpty()) {
-        val worldId: Long = this.data.worlds.last().worldId
+        val worldId: Uuid = this.data.worlds.last().worldId
         val found: World? = worlds[worldId]
         if (found != null) {
             world = found
@@ -29,10 +30,10 @@ fun Player.getCurrentWorld(worlds: WorldRegistry): World {
     return world
 }
 
-fun Player.pushWorld(newWorldId: Long, worlds: WorldRegistry): Boolean {
+fun Player.pushWorld(newWorldId: Uuid, worlds: WorldRegistry): Boolean {
     val newWorld: World = worlds[newWorldId]
         ?: return false
-    val currentWorldId: Long? = this.data.worlds.lastOrNull()?.worldId
+    val currentWorldId: Uuid? = this.data.worlds.lastOrNull()?.worldId
     if (currentWorldId != null) {
         val currentWorld: World? = worlds[currentWorldId]
         currentWorld?.handlePlayerLeaving(this)
@@ -45,7 +46,7 @@ fun Player.pushWorld(newWorldId: Long, worlds: WorldRegistry): Boolean {
 }
 
 fun Player.popWorld(worlds: WorldRegistry) {
-    val leftWorldId: Long? = this.data.worlds.removeLastOrNull()?.worldId
+    val leftWorldId: Uuid? = this.data.worlds.removeLastOrNull()?.worldId
     if (leftWorldId != null) {
         val leftWorld: World? = worlds[leftWorldId]
         leftWorld?.handlePlayerLeaving(this)

@@ -8,7 +8,9 @@ out vec4 oColor;
 
 void main(void) {
     vec4 texColor = texture(uTexture, fTexCoords);
-    if (texColor.a == 0.0) { discard; }
+    #ifndef PRESERVE_TRANSPARENT
+        if (texColor.a == 0.0) { discard; }
+    #endif
     #ifdef OUTLINE_COLOR_OVERRIDE
         oColor = OUTLINE_COLOR_OVERRIDE;
     #else

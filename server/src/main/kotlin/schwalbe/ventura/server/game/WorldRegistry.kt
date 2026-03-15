@@ -5,6 +5,7 @@ import schwalbe.ventura.data.WorldInstanceMode
 import schwalbe.ventura.server.Workers
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.uuid.Uuid
 
 class WorldRegistry(
     val workers: Workers,
@@ -12,15 +13,15 @@ class WorldRegistry(
 ) {
 
     sealed interface Entry {
-        fun getInstanceId(registry: WorldRegistry): Long
+        fun getInstanceId(registry: WorldRegistry): Uuid
         fun update(registry: WorldRegistry) {}
     }
 
     class ConstantEntry(val staticData: StaticWorldData) : Entry {
-        var currentInstanceId: Long? = null
+        var currentInstanceId: Uuid? = null
 
-        override fun getInstanceId(registry: WorldRegistry): Long {
-            val instanceId: Long = this.currentInstanceId
+        override fun getInstanceId(registry: WorldRegistry): Uuid {
+            val instanceId: Uuid = this.currentInstanceId
                 ?: registry.createWorldInstance(this.staticData)
             this.currentInstanceId = instanceId
             return instanceId
@@ -28,7 +29,7 @@ class WorldRegistry(
     }
 
     class TemporaryEntry(val staticData: StaticWorldData) : Entry {
-        class Session(val id: Long, var time: Long)
+        class Session(val id: Uuid, var time: Long)
 
         companion object {
             const val OPEN_DURATION_MS: Long = 5 * 60_000
@@ -38,10 +39,10 @@ class WorldRegistry(
         var open: Session? = null
         val closed: MutableList<Session> = mutableListOf()
 
-        override fun getInstanceId(registry: WorldRegistry): Long {
+        override fun getInstanceId(registry: WorldRegistry): Uuid {
             val open: Session? = this.open
             if (open != null) { return open.id }
-            val newId: Long = registry.createWorldInstance(this.staticData)
+            val newId: Uuid = registry.createWorldInstance(this.staticData)
             this.open = Session(newId, System.currentTimeMillis())
             return newId
         }
@@ -68,8 +69,7 @@ class WorldRegistry(
         }
     }
 
-    private val worldsById: MutableMap<Long, World> = mutableMapOf()
-    private var nextId: Long = 0
+    private val worldsById: MutableMap<Uuid, World> = mutableMapOf()
     private val entryIdsByName: MutableMap<String, Entry> = mutableMapOf()
 
     private val updatePool: ExecutorService
@@ -87,9 +87,8 @@ class WorldRegistry(
     }
 
     @Synchronized
-    private fun createWorldInstance(data: StaticWorldData): Long {
-        val id: Long = this.nextId
-        this.nextId += 1
+    private fun createWorldInstance(data: StaticWorldData): Uuid {
+        val id = Uuid.random()
         val world = World(this, id, WorldInstanceData(data))
         this.worldsById[id] = world
         println("Created world #$id (${data.world.instanceMode})")
@@ -105,14 +104,14 @@ class WorldRegistry(
     }
 
     @Synchronized
-    fun remove(worldId: Long) {
+    fun remove(worldId: Uuid) {
         val removed: World = this.worldsById.remove(worldId) ?: return
         removed.handleWorldClosing()
         println("Closed world #$worldId")
     }
 
     @Synchronized
-    operator fun get(worldId: Long): World?
+    operator fun get(worldId: Uuid): World?
         = this.worldsById[worldId]
 
     @Synchronized

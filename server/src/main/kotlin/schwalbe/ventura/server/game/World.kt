@@ -17,7 +17,7 @@ import kotlin.uuid.Uuid
 
 class World(
     val registry: WorldRegistry,
-    val id: Long,
+    val id: Uuid,
     val data: WorldInstanceData
 ) {
 
@@ -46,7 +46,7 @@ class World(
         = PlayerData.WorldEntry(
             worldId = this.id,
             state = SharedPlayerInfo(
-                position = SerVector3(0f, 0f, 0f),
+                position = this.data.static.world.startPosition,
                 rotation = 0f,
                 animation = SharedPlayerInfo.Animation.IDLE
             )
