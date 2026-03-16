@@ -70,6 +70,7 @@
         "BUTTON_CANCEL_FILE_ACTION": "Abbrechen",
 
         "BUTTON_BACK_TO_GAME": "Zurück zum Spiel",
+        "BUTTON_LEAVE_INTERIOR": "Innenbereich verlassen",
         "BUTTON_LOG_OUT": "Abmelden",
 
         "ERROR_INVALID_ACCOUNT_PARAMS": "Benutzername ist bereits vergeben",

@@ -41,27 +41,25 @@ private fun computeChunkInstances(
             .translate(position.x, position.y, position.z)
             .rotateXYZ(rotation.x, rotation.y, rotation.z)
             .scale(inst[ObjectProp.Scale])
-        ChunkLoader.LoadedInstance(inst, transform)
+        val colliders = computeInstanceColliders(inst, transform)
+        ChunkLoader.LoadedInstance(inst, transform, colliders)
     }
 
-private fun computeChunkColliders(
-    instances: List<ChunkLoader.LoadedInstance>
+private fun computeInstanceColliders(
+    obj: ObjectInstance, transform: Matrix4fc
 ): List<AxisAlignedBox> {
     val colliders = mutableListOf<AxisAlignedBox>()
-    for (instance in instances) {
-        val instType: ObjectType = instance.obj[ObjectProp.Type]
-        if (!instType.applyColliders) { continue }
-        val model: Model<StaticAnim> = ChunkLoader.objectModels
-            .getOrNull(instType.ordinal)?.invoke()
-            ?: continue
-        model.forEachNode { node ->
-            for (meshI in node.meshes) {
-                val mesh = model.meshes.getOrNull(meshI) ?: continue
-                val collider = mesh.bounds.toMutableAxisBox()
-                    .transform(node.localTransform)
-                    .transform(instance.transform)
-                colliders.add(collider)
-            }
+    val instType: ObjectType = obj[ObjectProp.Type]
+    val model: Model<StaticAnim> = ChunkLoader.objectModels
+        .getOrNull(instType.ordinal)?.invoke()
+        ?: return listOf()
+    model.forEachNode { node ->
+        for (meshI in node.meshes) {
+            val mesh = model.meshes.getOrNull(meshI) ?: continue
+            val collider = mesh.bounds.toMutableAxisBox()
+                .transform(node.localTransform)
+                .transform(transform)
+            colliders.add(collider)
         }
     }
     return colliders
@@ -117,12 +115,12 @@ class ChunkLoader(
 
     class LoadedInstance(
         val obj: ObjectInstance,
-        val transform: Matrix4fc
+        val transform: Matrix4fc,
+        val colliders: List<AxisAlignedBox>
     )
 
     class LoadedChunkData(
         val instances: List<LoadedInstance>,
-        val colliders: List<AxisAlignedBox>,
         val ground: Geometry
     )
 
@@ -162,9 +160,8 @@ class ChunkLoader(
     fun onChunksReceived(chunks: List<Pair<ChunkRef, SharedChunkData>>) {
         for ((ref, data) in chunks) {
             val instances = computeChunkInstances(data)
-            val colliders = computeChunkColliders(instances)
             val ground = buildChunkGroundGeometry(ref, data)
-            this.loaded[ref] = LoadedChunkData(instances, colliders, ground)
+            this.loaded[ref] = LoadedChunkData(instances, ground)
         }
     }
 
@@ -213,7 +210,9 @@ class ChunkLoader(
         }
     }
 
-    fun intersectsAnyLoaded(b: AxisAlignedBox): Boolean {
+    fun findIntersecting(
+        b: AxisAlignedBox, includeAll: Boolean = false
+    ): ObjectInstance? {
         val mcsc: Int = MAX_COLLIDER_SIZE_CHUNKS
         val minChunkX: Int = b.min.x().unitsToChunkIdx() - mcsc
         val maxChunkX: Int = b.max.x().unitsToChunkIdx() + mcsc
@@ -222,12 +221,16 @@ class ChunkLoader(
         for (chunkX in minChunkX..maxChunkX) {
             for (chunkZ in minChunkZ..maxChunkZ) {
                 val chunk = this.loaded[ChunkRef(chunkX, chunkZ)] ?: continue
-                if (chunk.colliders.any { it.intersects(b) }) {
-                    return true
+                for (instance in chunk.instances) {
+                    val type = instance.obj[ObjectProp.Type]
+                    if (!type.applyColliders && !includeAll) { continue }
+                    if (instance.colliders.any { it.intersects(b) }) {
+                        return instance.obj
+                    }
                 }
             }
         }
-        return false
+        return null
     }
 
     private fun renderChunk(data: LoadedChunkData, pass: RenderPass) {

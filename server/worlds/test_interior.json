@@ -1,5 +1,5 @@
 {
-	"instanceMode": "CONSTANT",
+	"instanceMode": "TEMPORARY",
 	"info": {
 		"rendererConfig": {
 			"groundToSun": {

@@ -6,7 +6,6 @@ import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.net.*
 import schwalbe.ventura.data.ConstWorldInfo
-import org.joml.Vector4f
 
 private enum class VersionDiff { CLIENT_OUTDATED, SERVER_OUTDATED, MATCH }
 
@@ -51,16 +50,11 @@ fun PacketHandler<Unit>.addWorldHandling(client: Client) = this
     .onPacket(PacketType.BEGIN_WORLD_CHANGE) { _, _ ->
         client.world = null
     }
-    .onPacket(PacketType.COMPLETE_WORLD_CHANGE) { entry: WorldEntryPacket, _ ->
-        val world = World(client)
-        world.player.position.set(entry.position.toVector3f())
+    .onPacket(PacketType.COMPLETE_WORLD_CHANGE) { info: WorldInfoPacket, _ ->
+        val world = World(client, info.worldId, info.isMainWorld)
+        world.player.position.set(info.position.toVector3f())
         client.world = world
-        client.network.outPackets?.send(Packet.serialize(
-            PacketType.REQUEST_WORLD_INFO, Unit
-        ))
-    }
-    .onPacket(PacketType.CONST_WORLD_INFO) { i: ConstWorldInfo, _ ->
-        client.renderer.config = i.rendererConfig
+        client.renderer.config = info.worldInfo.rendererConfig
     }
     .onPacket(PacketType.CHUNK_CONTENTS) { c: ChunkContentsPacket, _ ->
         val world: World = client.world ?: return@onPacket

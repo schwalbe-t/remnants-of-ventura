@@ -99,6 +99,7 @@ enum class LocalKeys {
 
     // Escape Menu Screen
     BUTTON_BACK_TO_GAME,
+    BUTTON_LEAVE_INTERIOR,
     BUTTON_LOG_OUT,
 
     // Error Strings

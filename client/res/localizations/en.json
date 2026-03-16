@@ -70,6 +70,7 @@
         "BUTTON_CANCEL_FILE_ACTION": "Cancel",
 
         "BUTTON_BACK_TO_GAME": "Back to Game",
+        "BUTTON_LEAVE_INTERIOR": "Leave Interior",
         "BUTTON_LOG_OUT": "Log Out",
 
         "ERROR_INVALID_ACCOUNT_PARAMS": "Username already exists",

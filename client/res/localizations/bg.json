@@ -70,6 +70,7 @@
         "BUTTON_CANCEL_FILE_ACTION": "Откажи",
 
         "BUTTON_BACK_TO_GAME": "Върни се към играта",
+        "BUTTON_LEAVE_INTERIOR": "Напусни интериора",
         "BUTTON_LOG_OUT": "Изход от акаунта",
 
         "ERROR_INVALID_ACCOUNT_PARAMS": "Потребителското име вече съществува",

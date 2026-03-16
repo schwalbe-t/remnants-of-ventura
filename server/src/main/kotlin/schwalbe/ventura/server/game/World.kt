@@ -17,6 +17,7 @@ import kotlin.uuid.Uuid
 
 class World(
     val registry: WorldRegistry,
+    val name: String,
     val id: Uuid,
     val data: WorldInstanceData
 ) {
@@ -60,13 +61,13 @@ class World(
         while (true) {
             val player: Player = this.incoming.poll() ?: break
             this.mutPlayers[player.username] = player
-            if (player.data.worlds.last().worldId != this.id) {
-                player.data.worlds.add(this.createPlayerEntry())
-            }
             this.registry.workers.playerWriter.add(player)
             player.connection.outgoing.send(Packet.serialize(
                 PacketType.COMPLETE_WORLD_CHANGE,
-                WorldEntryPacket(
+                WorldInfoPacket(
+                    worldId = this.id,
+                    isMainWorld = this.name == registry.baseWorldName,
+                    worldInfo = this.data.static.world.info,
                     position = player.data.worlds.last().state.position
                 )
             ))
@@ -268,10 +269,6 @@ class World(
         }
     }
 
-    private val constWorldInfo: Packet = Packet.serialize(
-        PacketType.CONST_WORLD_INFO, this.data.static.world.info
-    )
-
     init {
         val ph = this.packetHandler
 
@@ -279,9 +276,6 @@ class World(
             player.connection.outgoing.send(Packet.serialize(
                 PacketType.GENERIC_ERROR, GenericErrorPacket(error)
             ))
-        }
-        ph.onPacket(PacketType.REQUEST_WORLD_INFO) { _, pl ->
-            pl.connection.outgoing.send(this.constWorldInfo)
         }
         ph.onPacket(PacketType.REQUEST_CHUNK_CONTENTS) { r, pl ->
             if (r.chunks.size > MAX_NUM_REQUESTED_CHUNKS) {
@@ -306,11 +300,29 @@ class World(
                 PacketType.CHUNK_CONTENTS, ChunkContentsPacket(chunks)
             ))
         }
+        ph.onPacket(PacketType.REQUEST_WORLD_ENTER) { request, pl ->
+            fun unknownWorld() = pl.connection.outgoing.send(Packet.serialize(
+                PacketType.TAGGED_ERROR,
+                TaggedErrorPacket.REQUESTED_WORLD_DOES_NOT_EXIST
+            ))
+            val world: World = this.registry[request.name]
+                ?: return@onPacket unknownWorld()
+            if (pl.data.worlds.size >= PlayerData.MAX_NUM_WORLDS) {
+                return@onPacket pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.TAGGED_ERROR,
+                    TaggedErrorPacket.PLAYER_INSIDE_TOO_MANY_WORLDS
+                ))
+            }
+            if (!pl.pushWorld(world.id, this.registry)) {
+                return@onPacket unknownWorld()
+            }
+        }
         ph.onPacket(PacketType.REQUEST_WORLD_LEAVE) { _, pl ->
             pl.popWorld(this.registry)
         }
 
         ph.onPacket(PacketType.PLAYER_STATE) { pi, pl ->
+            if (pl.username !in this.players.keys) { return@onPacket }
             pl.data.worlds.last().state = pi
         }
 

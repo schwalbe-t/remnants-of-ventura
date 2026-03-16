@@ -38,11 +38,10 @@ data class PacketType<P>(
     val LOGIN_SESSION_SUCCESS       = down<Unit>()
 
     val BEGIN_WORLD_CHANGE          = down<Unit>()
-    val COMPLETE_WORLD_CHANGE       = down<WorldEntryPacket>()
-    val REQUEST_WORLD_INFO          = up<Unit>()
-    val CONST_WORLD_INFO            = down<ConstWorldInfo>()
+    val COMPLETE_WORLD_CHANGE       = down<WorldInfoPacket>()
     val REQUEST_CHUNK_CONTENTS      = up<RequestedChunksPacket>()
     val CHUNK_CONTENTS              = down<ChunkContentsPacket>()
+    val REQUEST_WORLD_ENTER         = up<EnterWorldPacket>()
     val REQUEST_WORLD_LEAVE         = up<Unit>()
 
     val PLAYER_STATE                = up<SharedPlayerInfo>()
@@ -96,6 +95,10 @@ enum class TaggedErrorPacket {
 
     // chunk data request asked for too many chunks
     TOO_MANY_CHUNKS_REQUESTED,
+    // requested joined world does not exist
+    REQUESTED_WORLD_DOES_NOT_EXIST,
+    // player is too deep on the world stack
+    PLAYER_INSIDE_TOO_MANY_WORLDS,
 
     // too many source files
     TOO_MANY_PLAYER_SOURCE_FILES,
@@ -139,7 +142,12 @@ data class SessionCredPacket(val username: String, val token: Uuid)
 
 
 @Serializable
-data class WorldEntryPacket(val position: SerVector3)
+data class WorldInfoPacket(
+    val worldId: Uuid,
+    val isMainWorld: Boolean,
+    val worldInfo: ConstWorldInfo,
+    val position: SerVector3
+)
 
 @Serializable
 data class RequestedChunksPacket(val chunks: List<ChunkRef>)
@@ -155,6 +163,9 @@ data class SharedChunkData(
 data class ChunkContentsPacket(
     val chunks: List<Pair<ChunkRef, SharedChunkData>>
 )
+
+@Serializable
+data class EnterWorldPacket(val name: String)
 
 
 @Serializable

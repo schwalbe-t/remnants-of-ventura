@@ -16,7 +16,9 @@ data class PlayerData(
     val sourceFiles: SourceFiles = SourceFiles()
 ) {
 
-    companion object;
+    companion object {
+        const val MAX_NUM_WORLDS: Int = 64
+    }
 
     @Serializable
     data class WorldEntry(

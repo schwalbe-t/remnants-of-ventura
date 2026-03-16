@@ -8,6 +8,9 @@ import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.utils.*
 import schwalbe.ventura.net.*
 import org.joml.*
+import schwalbe.ventura.data.ObjectInstance
+import schwalbe.ventura.data.ObjectProp
+import kotlin.uuid.Uuid
 
 object PlayerAnim : Animations<PlayerAnim> {
     val idle = anim("idle")
@@ -76,6 +79,7 @@ class Player {
         const val OUTLINE_THICKNESS: Float = 0.015f
 
         const val PACKET_SEND_INTERVAL_MS: Long = 1000L / 20L
+        const val WORLD_LEAVE_COOLDOWN: Long = 5_000
 
         val relCollider: AxisAlignedBox = axisBoxOf(
             Vector3f(-0.125f, 0f, -0.125f),
@@ -110,29 +114,31 @@ class Player {
     }
 
     private fun move(world: World, client: Client): Boolean {
-        val collidingBefore: Boolean = world.chunks
-            .intersectsAnyLoaded(Player.relCollider.translate(this.position))
+        val collidingBefore: ObjectInstance? = world.chunks
+            .findIntersecting(Player.relCollider.translate(this.position))
         val velocity = Vector3f()
         if (Key.W.isPressed) { velocity.z -= 1f; }
         if (Key.S.isPressed) { velocity.z += 1f; }
         if (Key.A.isPressed) { velocity.x -= 1f; }
         if (Key.D.isPressed) { velocity.x += 1f; }
-        if (velocity.length() == 0f) { return false }
+        if (velocity.lengthSquared() == 0f) { return false }
         velocity.normalize()
-        this.rotateAlong(velocity)
         velocity.mul(Player.WALK_SPEED).mul(client.deltaTime)
         val newPosX = this.position.add(velocity.x(), 0f, 0f, Vector3f())
         val newPosZ = this.position.add(0f, 0f, velocity.z(), Vector3f())
-        val collidingAfterX: Boolean = world.chunks
-            .intersectsAnyLoaded(Player.relCollider.translate(newPosX))
-        val collidingAfterZ: Boolean = world.chunks
-            .intersectsAnyLoaded(Player.relCollider.translate(newPosZ))
-        if (!collidingAfterX || collidingBefore) {
-            this.position.add(velocity.x(), 0f, 0f)
+        val collidingAfterX: ObjectInstance? = world.chunks
+            .findIntersecting(Player.relCollider.translate(newPosX))
+        val collidingAfterZ: ObjectInstance? = world.chunks
+            .findIntersecting(Player.relCollider.translate(newPosZ))
+        if (collidingAfterX != null && collidingBefore == null) {
+            velocity.x = 0f
         }
-        if (!collidingAfterZ || collidingBefore) {
-            this.position.add(0f, 0f, velocity.z())
+        if (collidingAfterZ != null && collidingBefore == null) {
+            velocity.z = 0f
         }
+        if (velocity.lengthSquared() == 0f) { return false }
+        this.rotateAlong(velocity)
+        this.position.add(velocity)
         return true
     }
 
@@ -167,6 +173,36 @@ class Player {
         ))
     }
 
+    private var allowWorldLeaveAfter: Long?
+        = System.currentTimeMillis() + WORLD_LEAVE_COOLDOWN
+
+    private fun handleWorldChangeColliders(world: World, client: Client) {
+        val allowWorldLeaveAfter: Long = this.allowWorldLeaveAfter ?: return
+        if (System.currentTimeMillis() <= allowWorldLeaveAfter) { return }
+        val colliding: ObjectInstance? = world.chunks.findIntersecting(
+            Player.relCollider.translate(this.position),
+            includeAll = true
+        )
+        fun sendPacket(packet: () -> Packet) {
+            client.network.outPackets?.send(packet())
+            this.allowWorldLeaveAfter = null
+        }
+        for (prop in colliding?.props ?: listOf()) when (prop) {
+            is ObjectProp.EnterWorldTrigger -> sendPacket {
+                Packet.serialize(
+                    PacketType.REQUEST_WORLD_ENTER,
+                    EnterWorldPacket(name = prop.v)
+                )
+            }
+            is ObjectProp.LeaveWorldTrigger if !world.isMain -> sendPacket {
+                Packet.serialize(
+                    PacketType.REQUEST_WORLD_LEAVE, Unit
+                )
+            }
+            else -> {}
+        }
+    }
+
     fun update(client: Client, captureInput: Boolean) {
         val world: World = client.world ?: return
         val moving: Boolean? = if (!captureInput) { null }
@@ -177,6 +213,7 @@ class Player {
         }
         this.updateAnimations(moving, client.deltaTime)
         this.sendPositionUpdatePacket(client)
+        this.handleWorldChangeColliders(world, client)
     }
 
     fun facePoint(target: Vector3fc) {

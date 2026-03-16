@@ -9,15 +9,17 @@ import schwalbe.ventura.client.screens.offline.serverConnectingScreen
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.engine.ui.*
+import schwalbe.ventura.net.Packet
 import schwalbe.ventura.net.PacketHandler
-import org.joml.Vector3f
-import kotlin.math.atan
-import kotlin.math.tan
+import schwalbe.ventura.net.PacketType
+
+private val OPTION_HEIGHT: UiSize = 6.5.vmin
+private val OPTION_PADDING: UiSize = 1.vmin
 
 private fun addOption(
     options: Axis, name: String, action: () -> Unit
 ) {
-    options.add(7.5.vmin, Stack()
+    options.add(OPTION_HEIGHT + OPTION_PADDING, Stack()
         .add(FlatBackground()
             .withColor(BUTTON_COLOR)
             .withHoverColor(BUTTON_HOVER_COLOR)
@@ -35,6 +37,7 @@ private fun addOption(
 }
 
 fun escapeMenuScreen(client: Client): () -> GameScreen = {
+    val world: World? = client.world
     val background = BlurBackground()
         .withRadius(3)
         .withSpread(5)
@@ -69,11 +72,18 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
             .updateStoredSources(client),
         navigator = client.nav
     )
-    val areaSize: UiSize = (3 * 7.5 + 2).vmin
     val options = Axis.column()
     addOption(options, localized()[BUTTON_BACK_TO_GAME], action = {
         client.nav.pop()
     })
+    if (world != null && !world.isMain) {
+        addOption(options, localized()[BUTTON_LEAVE_INTERIOR], action = {
+            client.network.outPackets?.send(Packet.serialize(
+                PacketType.REQUEST_WORLD_LEAVE, Unit
+            ))
+            client.nav.pop()
+        })
+    }
     addOption(options, localized()[BUTTON_LOG_OUT], action = {
         val s: NetworkClient.State = client.network.state
         if (s !is NetworkClient.Connected) { return@addOption }
@@ -86,16 +96,18 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
         client.nav.pop()
         client.nav.pop()
     })
+    val areaHeight: UiSize = options.children.size * OPTION_HEIGHT +
+        (options.children.size - 1) * OPTION_PADDING
     screen.add(Axis.row()
         .add(50.vw, Stack()
             .add(background)
             .add(FlatBackground().withColor(PANEL_BACKGROUND))
             .add(Axis.column()
-                .add(50.ph - (areaSize / 2), Space())
-                .add(areaSize, options
+                .add(50.ph - (areaHeight / 2), Space())
+                .add(areaHeight, options
                     .pad(left = 5.vmin, right = 5.vmin)
                 )
-                .add(50.ph - (areaSize / 2), Space())
+                .add(50.ph - (areaHeight / 2), Space())
             )
         )
     )

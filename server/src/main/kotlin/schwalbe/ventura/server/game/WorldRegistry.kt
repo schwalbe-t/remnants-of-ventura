@@ -13,18 +13,26 @@ class WorldRegistry(
 ) {
 
     sealed interface Entry {
-        fun getInstanceId(registry: WorldRegistry): Uuid
-        fun update(registry: WorldRegistry) {}
+        fun getInstanceId(name: String, registry: WorldRegistry): Uuid
+        fun update(name: String, registry: WorldRegistry) {}
     }
 
     class ConstantEntry(val staticData: StaticWorldData) : Entry {
         var currentInstanceId: Uuid? = null
 
-        override fun getInstanceId(registry: WorldRegistry): Uuid {
-            val instanceId: Uuid = this.currentInstanceId
-                ?: registry.createWorldInstance(this.staticData)
-            this.currentInstanceId = instanceId
-            return instanceId
+        override fun getInstanceId(
+            name: String, registry: WorldRegistry
+        ): Uuid {
+            val existingId: Uuid? = this.currentInstanceId
+            if (existingId != null) { return existingId }
+            val newId: Uuid = Uuid.fromLongs(0L, name.hashCode().toLong())
+            registry.createWorldInstance(name, newId, this.staticData)
+            this.currentInstanceId = newId
+            return newId
+        }
+
+        override fun update(name: String, registry: WorldRegistry) {
+            this.getInstanceId(name, registry)
         }
     }
 
@@ -39,15 +47,19 @@ class WorldRegistry(
         var open: Session? = null
         val closed: MutableList<Session> = mutableListOf()
 
-        override fun getInstanceId(registry: WorldRegistry): Uuid {
+        override fun getInstanceId(
+            name: String, registry: WorldRegistry
+        ): Uuid {
             val open: Session? = this.open
             if (open != null) { return open.id }
-            val newId: Uuid = registry.createWorldInstance(this.staticData)
+            val newId = registry.createWorldInstance(
+                name, Uuid.random(), this.staticData
+            )
             this.open = Session(newId, System.currentTimeMillis())
             return newId
         }
 
-        override fun update(registry: WorldRegistry) {
+        override fun update(name: String, registry: WorldRegistry) {
             val now: Long = System.currentTimeMillis()
             val open: Session? = this.open
             if (open != null && open.time + OPEN_DURATION_MS < now) {
@@ -84,14 +96,19 @@ class WorldRegistry(
     init {
         val nproc: Int = Runtime.getRuntime().availableProcessors()
         this.updatePool = Executors.newFixedThreadPool(nproc)
+        this.updateEntries()
     }
 
     @Synchronized
-    private fun createWorldInstance(data: StaticWorldData): Uuid {
-        val id = Uuid.random()
-        val world = World(this, id, WorldInstanceData(data))
+    private fun createWorldInstance(
+        name: String, id: Uuid, data: StaticWorldData
+    ): Uuid {
+        check(id !in this.worldsById.keys) {
+            "World ID collision: Attempt to register $id more than once"
+        }
+        val world = World(this, name, id, WorldInstanceData(data))
         this.worldsById[id] = world
-        println("Created world #$id (${data.world.instanceMode})")
+        println("Created ${data.world.instanceMode} world instance $id for '$name'")
         return id
     }
 
@@ -107,7 +124,7 @@ class WorldRegistry(
     fun remove(worldId: Uuid) {
         val removed: World = this.worldsById.remove(worldId) ?: return
         removed.handleWorldClosing()
-        println("Closed world #$worldId")
+        println("Closed world $worldId")
     }
 
     @Synchronized
@@ -117,12 +134,20 @@ class WorldRegistry(
     @Synchronized
     operator fun get(worldName: String): World?
         = this.entryIdsByName[worldName]
-            ?.getInstanceId(this)
+            ?.getInstanceId(worldName, this)
             ?.let { id -> this[id] }
+
+    @Synchronized
+    private fun updateEntries() {
+        for ((name, entry) in this.entryIdsByName) {
+            entry.update(name, this)
+        }
+    }
 
     fun updateAll() {
         val worlds: List<World>
         synchronized(this) {
+            this.updateEntries()
             worlds = this.worldsById.values.toList()
         }
         for (world in worlds) {

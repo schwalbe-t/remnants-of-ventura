@@ -38,6 +38,7 @@ fun Player.pushWorld(newWorldId: Uuid, worlds: WorldRegistry): Boolean {
         val currentWorld: World? = worlds[currentWorldId]
         currentWorld?.handlePlayerLeaving(this)
     }
+    this.data.worlds.add(newWorld.createPlayerEntry())
     this.connection.outgoing.send(Packet.serialize(
         PacketType.BEGIN_WORLD_CHANGE, Unit
     ))
@@ -46,11 +47,10 @@ fun Player.pushWorld(newWorldId: Uuid, worlds: WorldRegistry): Boolean {
 }
 
 fun Player.popWorld(worlds: WorldRegistry) {
-    val leftWorldId: Uuid? = this.data.worlds.removeLastOrNull()?.worldId
-    if (leftWorldId != null) {
-        val leftWorld: World? = worlds[leftWorldId]
-        leftWorld?.handlePlayerLeaving(this)
-    }
+    if (this.data.worlds.size <= 1) { return }
+    val leftWorldId: Uuid = this.data.worlds.removeLast().worldId
+    val leftWorld: World? = worlds[leftWorldId]
+    leftWorld?.handlePlayerLeaving(this)
     val current: World = this.getCurrentWorld(worlds)
     this.connection.outgoing.send(Packet.serialize(
         PacketType.BEGIN_WORLD_CHANGE, Unit

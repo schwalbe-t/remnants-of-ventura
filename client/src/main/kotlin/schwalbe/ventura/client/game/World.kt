@@ -4,8 +4,13 @@ package schwalbe.ventura.client.game
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.client.*
 import org.joml.*
+import kotlin.uuid.Uuid
 
-class World(client: Client) {
+class World(
+    client: Client,
+    val id: Uuid,
+    val isMain: Boolean
+) {
 
     companion object {
         fun submitResources(resLoader: ResourceLoader) {
