@@ -4,21 +4,21 @@ package schwalbe.ventura.data
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import schwalbe.ventura.net.SerVector3
-import schwalbe.ventura.net.toSerVector3
-import org.joml.Vector3f
 
 @Serializable
 class RendererConfig(
     val groundToSun: SerVector3,
     val baseColorFactor: SerVector3,
+    val highlightColorFactor: SerVector3,
     val shadowColorFactor: SerVector3,
     val outlineColorFactor: SerVector3,
     val defaultLit: Boolean
 ) {
     companion object {
         val default = RendererConfig(
-            groundToSun = Vector3f(1.134f, 1f, 0f).normalize().toSerVector3(),
+            groundToSun = SerVector3(1.134f, 1f, 0f),
             baseColorFactor = SerVector3(1f, 1f, 1f),
+            highlightColorFactor = SerVector3(1.5f, 1.45f, 1.35f),
             shadowColorFactor = SerVector3(0.7f, 0.85f, 1.1f),
             outlineColorFactor = SerVector3(0.55f, 0.65f, 0.75f),
             defaultLit = true

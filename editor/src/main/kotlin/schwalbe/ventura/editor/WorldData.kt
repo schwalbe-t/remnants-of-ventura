@@ -74,9 +74,3 @@ fun MutableWorld.writeToFile(path: Path) {
         .encodeToString(serWorld)
     Files.writeString(path, jsonWorld)
 }
-
-
-data class ObjectInstanceRef(
-    val chunk: ChunkRef,
-    val instanceIdx: Int
-)

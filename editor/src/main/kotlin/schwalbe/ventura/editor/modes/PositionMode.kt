@@ -3,8 +3,7 @@ package schwalbe.ventura.editor.modes
 
 import schwalbe.ventura.editor.*
 import schwalbe.ventura.engine.input.*
-import schwalbe.ventura.data.ObjectInstance
-import schwalbe.ventura.data.ObjectProp
+import schwalbe.ventura.data.*
 import schwalbe.ventura.net.SerVector3
 import schwalbe.ventura.engine.ui.*
 import org.joml.Vector3fc

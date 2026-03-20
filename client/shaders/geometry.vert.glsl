@@ -32,4 +32,5 @@ void main(void) {
         = mat3(instance)
         * mat3(uLocalTransform)
         * normalSkinned;
+    fNormal = normalize(fNormal);
 }

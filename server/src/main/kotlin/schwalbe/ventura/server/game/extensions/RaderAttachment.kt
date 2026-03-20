@@ -53,7 +53,7 @@ fun makeRadarAttachmentModule(
             }
         }
         if (state.includeRogue) {
-            state.foundRobots.addAll(ctx.world.data.enemyRobots.values)
+            state.foundRobots.addAll(ctx.world.enemyRobots.values)
         }
         val rx: Int = ctx.robot.tileX
         val rz: Int = ctx.robot.tileZ

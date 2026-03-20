@@ -3,14 +3,19 @@
 	"info": {
 		"rendererConfig": {
 			"groundToSun": {
-				"x": 0.7500308,
-				"y": 0.6614029,
+				"x": 1.134,
+				"y": 1.0,
 				"z": 0.0
 			},
 			"baseColorFactor": {
 				"x": 1.0,
 				"y": 1.0,
 				"z": 1.0
+			},
+			"highlightColorFactor": {
+				"x": 1.5,
+				"y": 1.45,
+				"z": 1.35
 			},
 			"shadowColorFactor": {
 				"x": 0.7,

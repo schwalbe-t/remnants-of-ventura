@@ -4,11 +4,12 @@ package schwalbe.ventura.editor.modes
 import schwalbe.ventura.client.game.ChunkLoader
 import schwalbe.ventura.client.projectOnScreen
 import schwalbe.ventura.data.ChunkRef
+import schwalbe.ventura.data.ObjectInstanceRef
 import schwalbe.ventura.editor.*
 import schwalbe.ventura.engine.ui.*
-import org.joml.*
 import schwalbe.ventura.engine.input.Key
 import schwalbe.ventura.engine.input.wasPressed
+import org.joml.*
 
 private class ObjectHandle {
 

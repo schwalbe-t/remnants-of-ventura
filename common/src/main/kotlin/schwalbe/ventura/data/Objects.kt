@@ -74,6 +74,21 @@ sealed interface ObjectProp<V> {
     data class LeaveWorldTrigger(override val v: Unit) : ObjectProp<Unit> {
         companion object : PropType<LeaveWorldTrigger, Unit>(default = Unit)
     }
+
+    @Serializable @SerialName("TRIGGERABLE")
+    data class Triggerable(override val v: String) : ObjectProp<String> {
+        companion object : PropType<Triggerable, String>(default = "unnamed")
+    }
+
+    @Serializable @SerialName("TRIGGER_FOR")
+    class TriggerFor(
+        override val v: Array<String>
+    ) : ObjectProp<Array<String>> {
+        companion object : PropType<TriggerFor, Array<String>>(
+            default = arrayOf()
+        )
+    }
+
 }
 
 @Serializable
@@ -85,3 +100,9 @@ data class ObjectInstance(val props: List<ObjectProp<*>>) {
         = this.props.filterIsInstance<P>().firstOrNull()?.v ?: propType.default
 
 }
+
+@Serializable
+data class ObjectInstanceRef(
+    val chunk: ChunkRef,
+    val instanceIdx: Int
+)

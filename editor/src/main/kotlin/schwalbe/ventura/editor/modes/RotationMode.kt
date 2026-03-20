@@ -1,14 +1,12 @@
 
 package schwalbe.ventura.editor.modes
 
-import org.joml.Vector2f
-import org.joml.Vector2fc
 import schwalbe.ventura.editor.*
 import schwalbe.ventura.engine.ui.*
-import schwalbe.ventura.data.ObjectInstance
-import schwalbe.ventura.data.ObjectProp
+import schwalbe.ventura.data.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.net.SerVector3
+import org.joml.Vector2f
 import kotlin.math.PI
 import kotlin.math.roundToInt
 

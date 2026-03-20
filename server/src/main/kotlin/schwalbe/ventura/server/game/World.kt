@@ -19,7 +19,7 @@ class World(
     val registry: WorldRegistry,
     val name: String,
     val id: Uuid,
-    val data: WorldInstanceData
+    val static: StaticWorldData
 ) {
 
     companion object {
@@ -32,6 +32,7 @@ class World(
 
         const val ITEM_SPREAD: Float = 0.5f
     }
+
 
 
     private val incoming = ConcurrentLinkedQueue<Player>()
@@ -47,7 +48,7 @@ class World(
         = PlayerData.WorldEntry(
             worldId = this.id,
             state = SharedPlayerInfo(
-                position = this.data.static.world.startPosition,
+                position = this.static.world.startPosition,
                 rotation = 0f,
                 animation = SharedPlayerInfo.Animation.IDLE
             )
@@ -67,7 +68,7 @@ class World(
                 WorldInfoPacket(
                     worldId = this.id,
                     isMainWorld = this.name == registry.baseWorldName,
-                    worldInfo = this.data.static.world.info,
+                    worldInfo = this.static.world.info,
                     position = player.data.worlds.last().state.position
                 )
             ))
@@ -98,13 +99,20 @@ class World(
         }
     }
 
+
+
+    val chunkCollisions: ChunkCollisions
+        = ChunkCollisions(this.static.world.chunks)
+    val enemyRobots: MutableMap<Uuid, EnemyRobot> = mutableMapOf()
+    val groundItems: MutableMap<Uuid, GroundItem> = mutableMapOf()
+
     fun tileIsOccupied(tx: Int, tz: Int): Boolean {
-        if (this.data.chunkCollisions[tx, tz]) { return true }
+        if (this.chunkCollisions[tx, tz]) { return true }
         fun robotOccupiesTile(r: Robot) = r.tileX == tx && r.tileZ == tz
         val byPlayerRobot: Boolean = this.players.values
             .any { it.data.deployedRobots.values.any(::robotOccupiesTile) }
         if (byPlayerRobot) { return true }
-        val byEnemyRobot: Boolean = this.data.enemyRobots.values
+        val byEnemyRobot: Boolean = this.enemyRobots.values
             .any(::robotOccupiesTile)
         return byEnemyRobot
     }
@@ -119,7 +127,7 @@ class World(
             origin.z + sin(angle) * ITEM_SPREAD
         )
         val item = GroundItem(pos, item, count, ownerName)
-        this.data.groundItems[item.id] = item
+        this.groundItems[item.id] = item
     }
 
     private fun spawnEnemyRobots() {
@@ -127,11 +135,11 @@ class World(
             val pos = player.data.worlds.last().state.position
             val px: Int = pos.x.unitsToUnitIdx()
             val pz: Int = pos.z.unitsToUnitIdx()
-            this.data.static.world.peaceAreas
+            this.static.world.peaceAreas
                 .none { area -> area.contains(px, pz) }
         }
         val enemyLimit: Int = unsafePlayers.size * ENEMIES_PER_UNSAFE_PLAYER
-        while (this.data.enemyRobots.size < enemyLimit) {
+        while (this.enemyRobots.size < enemyLimit) {
             val aroundPlayer: Player = unsafePlayers.random()
             val aroundPos = aroundPlayer.data.worlds.last().state.position
             val angle: Float = (Math.random() * 2f * PI).toFloat()
@@ -141,20 +149,20 @@ class World(
             val rtz: Int = (sin(angle) * dist).unitsToUnitIdx()
             val tx: Int = aroundPos.x.unitsToUnitIdx() + rtx
             val tz: Int = aroundPos.z.unitsToUnitIdx() + rtz
-            if (this.data.static.world.peaceAreas.any { it.contains(tx, tz) }) {
+            if (this.static.world.peaceAreas.any { it.contains(tx, tz) }) {
                 continue
             }
             val spawned = EnemyRobot(
                 EnemyRobotConfig.BASIC,
                 SerVector3(tx.toFloat(), 0f, tz.toFloat())
             )
-            this.data.enemyRobots[spawned.id] = spawned
+            this.enemyRobots[spawned.id] = spawned
         }
     }
 
     private fun despawnEnemyRobots() {
         val despawnTileDist: Int = ceil(ENEMY_MAX_DIST * 2).toInt()
-        for (robot in this.data.enemyRobots.values.toList()) {
+        for (robot in this.enemyRobots.values.toList()) {
             val closestDist: Int = this.players.values.minOfOrNull { player ->
                 val playerPos = player.data.worlds.last().state.position
                 val playerTx: Int = playerPos.x.unitsToUnitIdx()
@@ -162,27 +170,27 @@ class World(
                 abs(playerTx - robot.tileX) + abs(playerTz - robot.tileZ)
             } ?: Int.MAX_VALUE
             if (closestDist <= despawnTileDist) { continue }
-            this.data.enemyRobots.remove(robot.id)
+            this.enemyRobots.remove(robot.id)
         }
     }
 
     private fun updateEnemyRobots() {
         this.spawnEnemyRobots()
         this.despawnEnemyRobots()
-        for (robot in this.data.enemyRobots.values.filter { it.health <= 0f }) {
+        for (robot in this.enemyRobots.values.filter { it.health <= 0f }) {
             robot.config.lootTable.generateLoot().forEach {
                 this.spawnItem(robot.position, it)
             }
-            this.data.enemyRobots.remove(robot.id)
+            this.enemyRobots.remove(robot.id)
         }
-        for (robot in this.data.enemyRobots.values) {
+        for (robot in this.enemyRobots.values) {
             robot.update(this)
         }
     }
 
     private fun updateGroundItems() {
         val lastCreate = System.currentTimeMillis() - GroundItem.DESPAWN_DELAY
-        this.data.groundItems.values.removeIf {
+        this.groundItems.values.removeIf {
             if (it.creationTime <= lastCreate) {
                 return@removeIf true
             }
@@ -217,10 +225,10 @@ class World(
                     id to r.buildSharedInfo()
                 }
             }.toMap()
-        val enemyRobotStates = this.data.enemyRobots.values
+        val enemyRobotStates = this.enemyRobots.values
             .associateBy({ it.id }, { it.buildSharedInfo() })
         val robotStates = playerRobotStates + enemyRobotStates
-        val groundItems = this.data.groundItems
+        val groundItems = this.groundItems
         val now: Long = System.currentTimeMillis()
         fun worldStateAt(observer: SerVector3, pl: Player): WorldStatePacket {
             val r: Float = WORLD_STATE_CONTENT_RADIUS
@@ -284,9 +292,9 @@ class World(
                     TaggedErrorPacket.TOO_MANY_CHUNKS_REQUESTED
                 ))
             }
-            val groundColor: GroundColorReader = this.data.static.groundColor
+            val groundColor: GroundColorReader = this.static.groundColor
             val chunks = r.chunks.map {
-                val data = this.data.static.world.chunks[it]
+                val data = this.static.world.chunks[it]
                 it to SharedChunkData(
                     instances = data?.instances ?: listOf(),
                     groundColorTL = groundColor[it.chunkX, it.chunkZ],

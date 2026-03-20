@@ -29,7 +29,9 @@ object GroundFrag : FragShaderDef<GroundFrag> {
 }
 
 val groundShader: Resource<Shader<GroundVert, GroundFrag>>
-    = Shader.loadGlsl(GroundVert, GroundFrag)
+    = Shader.loadGlsl(GroundVert, GroundFrag, macros = mapOf(
+        "SPECULAR_THRESHOLD" to "999.0"
+    ))
 
 private fun computeChunkInstances(
     data: SharedChunkData

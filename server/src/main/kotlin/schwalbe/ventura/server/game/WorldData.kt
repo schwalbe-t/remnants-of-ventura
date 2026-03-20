@@ -77,12 +77,3 @@ class StaticWorldData(
     val world: SerializedWorld,
     val groundColor: GroundColorReader
 )
-
-class WorldInstanceData(
-    val static: StaticWorldData
-) {
-    val chunkCollisions: ChunkCollisions
-        = ChunkCollisions(this.static.world.chunks)
-    val enemyRobots: MutableMap<Uuid, EnemyRobot> = mutableMapOf()
-    val groundItems: MutableMap<Uuid, GroundItem> = mutableMapOf()
-}

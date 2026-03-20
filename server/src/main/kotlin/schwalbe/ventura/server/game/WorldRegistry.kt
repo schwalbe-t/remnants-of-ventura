@@ -106,7 +106,7 @@ class WorldRegistry(
         check(id !in this.worldsById.keys) {
             "World ID collision: Attempt to register $id more than once"
         }
-        val world = World(this, name, id, WorldInstanceData(data))
+        val world = World(this, name, id, data)
         this.worldsById[id] = world
         println("Created ${data.world.instanceMode} world instance $id for '$name'")
         return id

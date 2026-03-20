@@ -3,11 +3,10 @@ package schwalbe.ventura.editor.modes
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
-import org.joml.Vector4f
-import schwalbe.ventura.data.ObjectInstance
-import schwalbe.ventura.data.ObjectProp
+import schwalbe.ventura.data.*
 import schwalbe.ventura.editor.*
 import schwalbe.ventura.engine.ui.*
+import org.joml.Vector4f
 import kotlin.reflect.KClass
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.jvm.jvmName

@@ -50,7 +50,7 @@ private fun implementLaserShoot(
         (ox + dx * maxDist).toFloat() + 0.5f, 1f,
         (oz + dz * maxDist).toFloat() + 0.5f
     )
-    for (hitRobot in ctx.world.data.enemyRobots.values) {
+    for (hitRobot in ctx.world.enemyRobots.values) {
         val rx: Int = hitRobot.tileX
         val rz: Int = hitRobot.tileZ
         if (rx != ox && rz != oz) { continue }

@@ -4,10 +4,12 @@
 uniform sampler2D uTexture;
 
 uniform vec3 uBaseFactor;
+uniform vec3 uHighlightFactor;
 uniform vec3 uShadowFactor;
 uniform vec3 uOutlineFactor;
 
 uniform vec3 uGroundToSun;
+uniform vec3 uViewPos;
 uniform mat4 uSunViewProjection;
 uniform sampler2DMS uShadowMap;
 uniform int uShadowMapSamples;
