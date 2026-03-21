@@ -10,25 +10,6 @@ vec4 baseShadedColor(vec4 texColor) {
 }
 
 
-#ifndef SHININESS
-    #define SHININESS 1.5
-#endif
-
-float specularStrengthOf(vec3 posWorld, vec3 normal) {
-    vec3 viewDir = normalize(uViewPos - posWorld);
-    vec3 reflectDir = reflect(-uGroundToSun, normal);
-    return pow(max(dot(viewDir, reflectDir), 0.0), SHININESS);
-}
-
-#ifndef SPECULAR_THRESHOLD
-    #define SPECULAR_THRESHOLD 0.65
-#endif
-
-bool isSpecularHighlight(vec3 posWorld, vec3 normal) {
-    return specularStrengthOf(posWorld, normal) >= SPECULAR_THRESHOLD;
-}
-
-
 float diffuseIntensityOf(vec3 normal) {
     return dot(normalize(normal), uGroundToSun);
 }
@@ -64,10 +45,7 @@ vec4 shadedColor(vec4 texColor, vec3 posWorld, vec3 normal) {
     vec4 baseColor = baseShadedColor(texColor);
     float shadowStrength = isInDiffuseShadow(normal) ? 1.0
         : mappedShadowStrength(posWorld, normal);
-    float highlightStrength = shadowStrength >= 0.05 ? 0.0
-        : isSpecularHighlight(posWorld, normal) ? 1.0 : 0.0;
     vec4 shadedColor = baseColor;
-    shadedColor.rgb *= mix(vec3(1.0), uHighlightFactor, highlightStrength);
     shadedColor.rgb *= mix(vec3(1.0), uShadowFactor, shadowStrength);
     return shadedColor;
 }

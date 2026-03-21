@@ -12,11 +12,6 @@
 				"y": 1.0,
 				"z": 1.0
 			},
-			"highlightColorFactor": {
-				"x": 1.5,
-				"y": 1.45,
-				"z": 1.35
-			},
 			"shadowColorFactor": {
 				"x": 0.7,
 				"y": 0.85,
@@ -144,6 +139,38 @@
 						{
 							"type": "TYPE",
 							"v": "TRIGGER"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "NOR_GATE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 0.0,
+								"y": 0.0,
+								"z": -7.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "OR_GATE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 0.0,
+								"y": 0.0,
+								"z": -5.0
+							}
 						}
 					]
 				}
@@ -300,6 +327,66 @@
 						{
 							"type": "TYPE",
 							"v": "ROCK"
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": -1,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -5.0,
+								"y": 0.0,
+								"z": -5.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "button0"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "AND_GATE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.0,
+								"y": 0.0,
+								"z": -5.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "NAND_GATE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.0,
+								"y": 0.0,
+								"z": -7.0
+							}
 						}
 					]
 				}

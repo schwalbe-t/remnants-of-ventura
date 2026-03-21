@@ -25,6 +25,29 @@ enum class ObjectType(
         applyColliders = false,
         tileColliderRadius = 1
     ),
+    BUTTON(
+        modelPath = "res/objects/button.glb",
+        renderOutline = false,
+        applyColliders = false,
+        tileColliderRadius = 0
+    ),
+    AND_GATE(
+        modelPath = "res/objects/and_gate.glb",
+        tileColliderRadius = 1
+    ),
+    OR_GATE(
+        modelPath = "res/objects/or_gate.glb",
+        tileColliderRadius = 1
+    ),
+    NAND_GATE(
+        modelPath = "res/objects/nand_gate.glb",
+        tileColliderRadius = 1
+    ),
+    NOR_GATE(
+        modelPath = "res/objects/nor_gate.glb",
+        tileColliderRadius = 1
+    ),
+
     ROCK(
         modelPath = "res/objects/rock.glb",
         tileColliderRadius = 3

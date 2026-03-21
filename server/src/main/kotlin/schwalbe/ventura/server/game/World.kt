@@ -15,6 +15,11 @@ import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.uuid.Uuid
 
+class StaticWorldData(
+    val world: SerializedWorld,
+    val groundColor: GroundColorReader
+)
+
 class World(
     val registry: WorldRegistry,
     val name: String,
@@ -105,6 +110,7 @@ class World(
         = ChunkCollisions(this.static.world.chunks)
     val enemyRobots: MutableMap<Uuid, EnemyRobot> = mutableMapOf()
     val groundItems: MutableMap<Uuid, GroundItem> = mutableMapOf()
+    val triggerables: Triggerables = Triggerables(this.static.world)
 
     fun tileIsOccupied(tx: Int, tz: Int): Boolean {
         if (this.chunkCollisions[tx, tz]) { return true }
@@ -214,6 +220,7 @@ class World(
         }
         this.updateEnemyRobots()
         this.updateGroundItems()
+        this.triggerables.update(this)
     }
 
     private fun sendWorldStatePacket() {

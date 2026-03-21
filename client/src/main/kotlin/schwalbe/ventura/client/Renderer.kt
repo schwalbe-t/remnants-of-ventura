@@ -32,12 +32,10 @@ class RendererFrag<S : FragShaderDef<S>> : FragShaderDef<S> {
 
     val texture = sampler2D("uTexture")
     val baseFactor = vec3("uBaseFactor")
-    val highlightFactor = vec3("uHighlightFactor")
     val shadowFactor = vec3("uShadowFactor")
     val outlineFactor = vec3("uOutlineFactor")
 
     val groundToSun = vec3("uGroundToSun")
-    val viewPos = vec3("uViewPos")
     val sunViewProjection = mat4("uSunViewProjection")
     val shadowMap = sampler2DMS("uShadowMap")
     val shadowMapSamples = int("uShadowMapSamples")
@@ -238,13 +236,10 @@ class TypedRenderPass<
         val cfg = this.renderer.config
         shader[vertShader.viewProjection] = this.viewProj
         shader[fragShader.baseFactor] = cfg.baseColorFactor.toVector3f()
-        shader[fragShader.highlightFactor] = cfg.highlightColorFactor
-            .toVector3f()
         shader[fragShader.shadowFactor] = cfg.shadowColorFactor.toVector3f()
         shader[fragShader.outlineFactor] = cfg.outlineColorFactor.toVector3f()
         shader[fragShader.groundToSun] = cfg.groundToSun
             .toVector3f().normalize()
-        shader[fragShader.viewPos] = this.renderer.camera.position
         shader[fragShader.sunViewProjection] = this.renderer.sunViewProj
         shader[fragShader.shadowMap] = this.renderer.shadowMapTex
         shader[fragShader.shadowMapSamples] = this.renderer.shadowMapSamples

@@ -9,7 +9,6 @@ import schwalbe.ventura.net.SerVector3
 class RendererConfig(
     val groundToSun: SerVector3,
     val baseColorFactor: SerVector3,
-    val highlightColorFactor: SerVector3,
     val shadowColorFactor: SerVector3,
     val outlineColorFactor: SerVector3,
     val defaultLit: Boolean
@@ -18,7 +17,6 @@ class RendererConfig(
         val default = RendererConfig(
             groundToSun = SerVector3(1.134f, 1f, 0f),
             baseColorFactor = SerVector3(1f, 1f, 1f),
-            highlightColorFactor = SerVector3(1.5f, 1.45f, 1.35f),
             shadowColorFactor = SerVector3(0.7f, 0.85f, 1.1f),
             outlineColorFactor = SerVector3(0.55f, 0.65f, 0.75f),
             defaultLit = true

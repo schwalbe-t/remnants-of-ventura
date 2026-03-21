@@ -3,8 +3,6 @@ package schwalbe.ventura.server.game
 
 import schwalbe.ventura.data.*
 import schwalbe.ventura.net.SerVector3
-import schwalbe.ventura.utils.GroundColorReader
-import kotlin.uuid.Uuid
 
 private fun findChunkBounds(
     chunks: Collection<ChunkRef>
@@ -72,8 +70,3 @@ class ChunkCollisions(
         return chunk[chunkFlatIdx(relTileX, relTileZ)]
     }
 }
-
-class StaticWorldData(
-    val world: SerializedWorld,
-    val groundColor: GroundColorReader
-)
