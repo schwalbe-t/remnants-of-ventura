@@ -3,7 +3,7 @@ package schwalbe.ventura.server.game
 
 import org.joml.Vector3f
 import schwalbe.ventura.data.*
-import schwalbe.ventura.net.SerVector3
+import schwalbe.ventura.utils.SerVector3
 import schwalbe.ventura.utils.sign
 import kotlin.math.abs
 

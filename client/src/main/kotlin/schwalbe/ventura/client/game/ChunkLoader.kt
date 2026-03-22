@@ -7,6 +7,7 @@ import schwalbe.ventura.data.*
 import schwalbe.ventura.client.*
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
+import schwalbe.ventura.utils.SerVector3
 import kotlin.collections.asSequence
 import org.joml.Matrix4f
 import org.joml.Matrix4fc

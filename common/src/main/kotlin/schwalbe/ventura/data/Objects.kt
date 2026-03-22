@@ -1,9 +1,9 @@
 
 package schwalbe.ventura.data
 
+import schwalbe.ventura.utils.SerVector3
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import schwalbe.ventura.net.SerVector3
 
 // The maximum size in chunks of any client or server side colliders.
 // This number determines the radius of the area that is searched when looking
@@ -23,7 +23,7 @@ enum class ObjectType(
         modelPath = "res/objects/trigger.glb",
         renderOutline = false,
         applyColliders = false,
-        tileColliderRadius = 1
+        tileColliderRadius = 0
     ),
     BUTTON(
         modelPath = "res/objects/button.glb",

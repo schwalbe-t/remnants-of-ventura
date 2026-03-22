@@ -7,10 +7,9 @@ import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.utils.*
 import schwalbe.ventura.net.*
-import org.joml.*
 import schwalbe.ventura.data.ObjectInstance
 import schwalbe.ventura.data.ObjectProp
-import kotlin.uuid.Uuid
+import org.joml.*
 
 object PlayerAnim : Animations<PlayerAnim> {
     val idle = anim("idle")

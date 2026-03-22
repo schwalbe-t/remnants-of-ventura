@@ -4,7 +4,9 @@ package schwalbe.ventura.server.game
 import schwalbe.ventura.*
 import schwalbe.ventura.net.*
 import schwalbe.ventura.data.*
+import schwalbe.ventura.server.persistence.serialize
 import schwalbe.ventura.utils.GroundColorReader
+import schwalbe.ventura.utils.SerVector3
 import schwalbe.ventura.utils.insideSquareRadiusXZ
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.PI
@@ -63,11 +65,21 @@ class World(
     fun hasPlayers(): Boolean = this.players.isNotEmpty()
 
     @Synchronized
+    private fun prepareIncomingPlayer(player: Player) {
+        val playerPosition = player.data.worlds.last().state.position
+        for (robot in player.data.deployedRobots.values) {
+            val newPos = PlayerRobot.allocatePosition(playerPosition, this)
+            robot.resetPosition(newPos)
+        }
+    }
+
+    @Synchronized
     private fun handleIncomingPlayers() {
         while (true) {
             val player: Player = this.incoming.poll() ?: break
             this.mutPlayers[player.username] = player
-            this.registry.workers.playerWriter.add(player)
+            this.prepareIncomingPlayer(player)
+            this.registry.workers.playerWriter.add(player.serialize())
             player.connection.outgoing.send(Packet.serialize(
                 PacketType.COMPLETE_WORLD_CHANGE,
                 WorldInfoPacket(
@@ -123,6 +135,7 @@ class World(
         return byEnemyRobot
     }
 
+    @Synchronized
     fun spawnItem(
         origin: SerVector3, item: Item, count: Int = 1,
         ownerName: String? = null
@@ -136,6 +149,7 @@ class World(
         this.groundItems[item.id] = item
     }
 
+    @Synchronized
     private fun spawnEnemyRobots() {
         val unsafePlayers: List<Player> = this.players.values.filter { player ->
             val pos = player.data.worlds.last().state.position
@@ -166,6 +180,7 @@ class World(
         }
     }
 
+    @Synchronized
     private fun despawnEnemyRobots() {
         val despawnTileDist: Int = ceil(ENEMY_MAX_DIST * 2).toInt()
         for (robot in this.enemyRobots.values.toList()) {
@@ -180,6 +195,7 @@ class World(
         }
     }
 
+    @Synchronized
     private fun updateEnemyRobots() {
         this.spawnEnemyRobots()
         this.despawnEnemyRobots()
@@ -194,6 +210,7 @@ class World(
         }
     }
 
+    @Synchronized
     private fun updateGroundItems() {
         val lastCreate = System.currentTimeMillis() - GroundItem.DESPAWN_DELAY
         this.groundItems.values.removeIf {
@@ -214,6 +231,7 @@ class World(
         }
     }
 
+    @Synchronized
     private fun updateState() {
         for (player in this.players.values) {
             player.updateState(this)
@@ -223,6 +241,7 @@ class World(
         this.triggerables.update(this)
     }
 
+    @Synchronized
     private fun sendWorldStatePacket() {
         val playerStates = this.players.map { (name, pl) ->
                 name to pl.data.worlds.last().state
@@ -269,6 +288,7 @@ class World(
         this.sendWorldStatePacket()
     }
 
+    @Synchronized
     fun broadcastVfx(vfx: VisualEffect, origin: SerVector3) {
         val now: Long = System.currentTimeMillis()
         val maxDist = VisualEffect.MAX_BROADCAST_DIST
@@ -398,8 +418,10 @@ class World(
                 ))
                 return@onPacket
             }
-            val position = pl.data.worlds.last().state.position
-            val robot = PlayerRobot(d.robotType, d.item, position)
+            val playerPosition = pl.data.worlds.last().state.position
+            val robotPosition = PlayerRobot
+                .allocatePosition(center = playerPosition, this)
+            val robot = PlayerRobot(d.robotType, d.item, robotPosition)
             pl.data.deployedRobots[robot.id] = robot
             pl.connection.outgoing.send(Packet.serialize(
                 PacketType.ROBOT_DEPLOYED,

@@ -1,7 +1,6 @@
 
 package schwalbe.ventura.utils
 
-import schwalbe.ventura.net.SerVector3
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import java.io.File

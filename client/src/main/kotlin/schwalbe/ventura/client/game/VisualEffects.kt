@@ -8,7 +8,7 @@ import schwalbe.ventura.data.VisualEffect
 import schwalbe.ventura.engine.Resource
 import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.engine.gfx.*
-import schwalbe.ventura.net.toVector3f
+import schwalbe.ventura.utils.toVector3f
 import org.joml.*
 
 class VisualEffects {

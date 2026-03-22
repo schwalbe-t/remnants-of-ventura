@@ -2,7 +2,8 @@
 package schwalbe.ventura.server.game
 
 import schwalbe.ventura.data.*
-import schwalbe.ventura.net.SerVector3
+import schwalbe.ventura.utils.SerVector3
+import kotlin.math.roundToInt
 
 private fun findChunkBounds(
     chunks: Collection<ChunkRef>
@@ -35,9 +36,10 @@ private fun collectChunkColliders(
         for (obj in chunkData.instances) {
             val objType: ObjectType = obj[ObjectProp.Type]
             val objPos: SerVector3 = obj[ObjectProp.Position]
+            val objScale: Float = obj[ObjectProp.Scale]
             val objCTx: Int = objPos.x.unitsToUnitIdx()
             val objCTz: Int = objPos.z.unitsToUnitIdx()
-            val r: Int = objType.tileColliderRadius - 1
+            val r = (objType.tileColliderRadius * objScale).roundToInt() - 1
             if (r < 0) { continue }
             for (objTx in (objCTx - r)..(objCTx + r)) {
                 for (objTz in (objCTz - r)..(objCTz + r)) {

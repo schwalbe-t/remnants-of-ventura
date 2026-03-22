@@ -8,15 +8,22 @@ import schwalbe.ventura.server.game.Player
 import schwalbe.ventura.server.game.PlayerData
 import schwalbe.ventura.server.QueuedWorker
 
-class PlayerWriter : QueuedWorker<Player>() {
+class SerializedPlayerData(
+    val username: String,
+    val bytes: ByteArray
+)
 
-    override fun completeTasks(tasks: List<Player>) {
+fun Player.serialize(): SerializedPlayerData = SerializedPlayerData(
+    this.username,
+    Cbor.encodeToByteArray(serializer<PlayerData>(), this.data)
+)
+
+class PlayerWriter : QueuedWorker<SerializedPlayerData>() {
+
+    override fun completeTasks(tasks: List<SerializedPlayerData>) {
         transaction {
             for (player in tasks) {
-                val bytes: ByteArray = Cbor.encodeToByteArray(
-                    serializer<PlayerData>(), player.data
-                )
-                Account.writePlayerData(player.username, bytes)
+                Account.writePlayerData(player.username, player.bytes)
             }
         }
     }

@@ -7,6 +7,8 @@ import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.net.*
 import schwalbe.ventura.data.GroundItem
 import schwalbe.ventura.data.Item
+import schwalbe.ventura.utils.SerVector3
+import schwalbe.ventura.utils.toVector3f
 import kotlin.uuid.Uuid
 import org.joml.*
 

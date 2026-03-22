@@ -1,4 +1,5 @@
-package schwalbe.ventura.net
+
+package schwalbe.ventura.utils
 
 import kotlinx.serialization.Serializable
 import org.joml.Vector3f

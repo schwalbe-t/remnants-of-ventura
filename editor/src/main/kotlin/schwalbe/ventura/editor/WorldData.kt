@@ -2,7 +2,7 @@
 package schwalbe.ventura.editor
 
 import schwalbe.ventura.data.*
-import schwalbe.ventura.net.SerVector3
+import schwalbe.ventura.utils.SerVector3
 import java.nio.file.Files
 import java.nio.file.Path
 

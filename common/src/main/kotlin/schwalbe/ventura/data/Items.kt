@@ -2,9 +2,9 @@
 package schwalbe.ventura.data
 
 import kotlinx.serialization.Serializable
+import schwalbe.ventura.utils.SerVector3
 import org.joml.Vector3fc
 import org.joml.Vector3f
-import schwalbe.ventura.net.SerVector3
 import kotlin.uuid.Uuid
 
 

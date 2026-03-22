@@ -9,7 +9,7 @@ import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.editor.modes.*
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.data.*
-import schwalbe.ventura.net.toVector3f
+import schwalbe.ventura.utils.toVector3f
 import org.joml.Vector3f
 import java.io.File
 import java.nio.file.Path

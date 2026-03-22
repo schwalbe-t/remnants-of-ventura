@@ -1,9 +1,9 @@
 
 package schwalbe.ventura.data
 
+import schwalbe.ventura.utils.SerVector3
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import schwalbe.ventura.net.SerVector3
 
 @Serializable
 class RendererConfig(

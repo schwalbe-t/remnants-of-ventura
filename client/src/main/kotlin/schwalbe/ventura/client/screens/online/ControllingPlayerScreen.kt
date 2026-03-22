@@ -8,7 +8,7 @@ import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.net.PacketHandler
 import schwalbe.ventura.net.WorldStatePacket
-import schwalbe.ventura.net.toVector3f
+import schwalbe.ventura.utils.toVector3f
 import org.joml.Vector3fc
 import kotlin.uuid.Uuid
 

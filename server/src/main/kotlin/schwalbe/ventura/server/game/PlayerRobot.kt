@@ -7,10 +7,12 @@ import schwalbe.ventura.bigton.runtime.*
 import schwalbe.ventura.data.*
 import schwalbe.ventura.net.*
 import schwalbe.ventura.server.game.extensions.*
+import schwalbe.ventura.utils.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.abs
 
 class RobotStats(
     val processor: ProcessorInfo,
@@ -359,4 +361,46 @@ class PlayerRobot(
     fun collectContainedItems(): List<Item>
         = listOf(this.baseItem) + this.attachments.filterNotNull()
 
+}
+
+private const val MAX_ALLOCATION_DIST: Int = 8
+
+fun PlayerRobot.Companion.allocatePosition(
+    center: SerVector3, world: World,
+    tileIsOccupied: (Int, Int) -> Boolean = world::tileIsOccupied
+): SerVector3 {
+    val centerTx: Int = center.x.unitsToUnitIdx()
+    val centerTz: Int = center.z.unitsToUnitIdx()
+    val queue: ArrayDeque<Long> = ArrayDeque()
+    val discovered: MutableSet<Long> = mutableSetOf()
+    fun enqueue(tx: Int, tz: Int) {
+        val tile = IntPair(tx, tz)
+        if (tile.packed in discovered) { return }
+        discovered.add(tile.packed)
+        val dist: Int = abs(tx - centerTx) + abs(tz - centerTz)
+        if (dist > MAX_ALLOCATION_DIST) { return }
+        if (world.chunkCollisions[tx, tz]) { return }
+        queue.add(tile.packed)
+    }
+    fun posOfTile(tx: Int, tz: Int) = SerVector3(tx + 0.5f, 0.0f, tz + 0.5f)
+    enqueue(centerTx, centerTz)
+    if (queue.isEmpty()) {
+        // if center is not valid position (queue empty), return it as tile
+        return posOfTile(centerTx, centerTz)
+    }
+    while (queue.isNotEmpty()) {
+        val curr: IntPair = queue.removeFirst().toIntPair()
+        if (!tileIsOccupied(curr.x, curr.z)) {
+            return posOfTile(curr.x, curr.z)
+        }
+        enqueue(curr.x - 1, curr.z      )
+        enqueue(curr.x + 1, curr.z      )
+        enqueue(curr.x,     curr.z - 1  )
+        enqueue(curr.x,     curr.z + 1  )
+    }
+    // no valid tile could be found;
+    // fall back to allowing any tile that isn't a collider
+    return PlayerRobot.allocatePosition(
+        center, world, tileIsOccupied = { _, _ -> false }
+    )
 }

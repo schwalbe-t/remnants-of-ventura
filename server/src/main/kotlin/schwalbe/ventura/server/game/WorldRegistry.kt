@@ -3,6 +3,7 @@ package schwalbe.ventura.server.game
 
 import schwalbe.ventura.data.WorldInstanceMode
 import schwalbe.ventura.server.Workers
+import schwalbe.ventura.server.persistence.serialize
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.uuid.Uuid
@@ -158,7 +159,7 @@ class WorldRegistry(
     }
 
     fun handlePlayerDisconnect(player: Player) {
-        this.workers.playerWriter.add(player)
+        this.workers.playerWriter.add(player.serialize())
         synchronized(this) {
             for (world in this.worldsById.values) {
                 world.handlePlayerDisconnect(player)

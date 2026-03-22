@@ -1,7 +1,6 @@
 
 package schwalbe.ventura.utils
 
-import schwalbe.ventura.net.SerVector3
 import org.joml.Vector4fc
 import org.joml.Vector4f
 import kotlin.math.abs

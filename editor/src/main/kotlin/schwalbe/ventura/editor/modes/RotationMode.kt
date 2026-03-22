@@ -5,7 +5,7 @@ import schwalbe.ventura.editor.*
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.data.*
 import schwalbe.ventura.engine.input.*
-import schwalbe.ventura.net.SerVector3
+import schwalbe.ventura.utils.SerVector3
 import org.joml.Vector2f
 import kotlin.math.PI
 import kotlin.math.roundToInt

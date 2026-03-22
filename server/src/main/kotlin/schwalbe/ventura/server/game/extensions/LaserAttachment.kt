@@ -6,7 +6,7 @@ import org.joml.Vector3f
 import schwalbe.ventura.bigton.BigtonModule
 import schwalbe.ventura.bigton.runtime.*
 import schwalbe.ventura.data.VisualEffect
-import schwalbe.ventura.net.SerVector3
+import schwalbe.ventura.utils.SerVector3
 import schwalbe.ventura.utils.sign
 import kotlin.math.abs
 import kotlin.math.max

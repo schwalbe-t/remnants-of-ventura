@@ -15,3 +15,7 @@ const val MAX_NUM_ROBOT_SOURCE_FILES: Int = 32
 const val MAX_NUM_PLAYER_SOURCE_FILES: Int = 128
 const val MAX_SOURCE_FILE_SIZE: Int = 1024 * 32 // in bytes
 const val ROBOT_NAME_MAX_LEN: Int = 32
+
+fun test() {
+    schwalbe.ventura.utils.IntPair(0, 1)
+}

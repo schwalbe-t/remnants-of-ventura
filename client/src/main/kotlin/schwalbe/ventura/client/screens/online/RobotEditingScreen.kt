@@ -12,9 +12,7 @@ import schwalbe.ventura.net.*
 import schwalbe.ventura.data.Item
 import schwalbe.ventura.ROBOT_NAME_MAX_LEN
 import java.io.File
-import org.joml.Vector3f
-import kotlin.math.atan
-import kotlin.math.tan
+import schwalbe.ventura.utils.toVector3f
 import kotlin.uuid.Uuid
 
 private fun createBottomPanelButton(text: Text, action: () -> Unit) = Stack()

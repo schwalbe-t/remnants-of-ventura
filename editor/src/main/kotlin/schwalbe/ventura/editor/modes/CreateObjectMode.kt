@@ -6,7 +6,7 @@ import schwalbe.ventura.editor.*
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.data.*
-import schwalbe.ventura.net.toSerVector3
+import schwalbe.ventura.utils.toSerVector3
 import org.joml.Vector3f
 
 private class ObjectSelector(

@@ -2,9 +2,7 @@
 package schwalbe.ventura.server.game
 
 import schwalbe.ventura.data.*
-import schwalbe.ventura.net.SerVector3
-import org.joml.Vector3fc
-import schwalbe.ventura.net.toVector3f
+import schwalbe.ventura.utils.SerVector3
 
 private fun SerializedWorld.triggerables(): Sequence<ObjectInstance> {
     val world: SerializedWorld = this

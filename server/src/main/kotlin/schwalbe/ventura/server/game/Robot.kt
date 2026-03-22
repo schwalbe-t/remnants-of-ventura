@@ -96,6 +96,12 @@ abstract class Robot {
         ))
     }
 
+    fun resetPosition(position: SerVector3) {
+        this.position = position
+        this.alignPosition()
+        this.movementSteps.clear()
+    }
+
     fun update() {
         val movementStep: MovementStep? = this.movementSteps.firstOrNull()
         if (movementStep != null) {

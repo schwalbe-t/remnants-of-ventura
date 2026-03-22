@@ -4,7 +4,7 @@ package schwalbe.ventura.client
 import schwalbe.ventura.engine.Resource
 import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.engine.gfx.*
-import schwalbe.ventura.net.toVector3f
+import schwalbe.ventura.utils.toVector3f
 import schwalbe.ventura.data.RendererConfig
 import kotlin.collections.toMutableList
 import java.nio.ByteBuffer

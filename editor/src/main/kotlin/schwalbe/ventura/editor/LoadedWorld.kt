@@ -3,7 +3,7 @@ package schwalbe.ventura.editor
 
 import schwalbe.ventura.client.game.ChunkLoader
 import schwalbe.ventura.data.*
-import schwalbe.ventura.net.SerVector3
+import schwalbe.ventura.utils.SerVector3
 import schwalbe.ventura.net.SharedChunkData
 import schwalbe.ventura.utils.GroundColorReader
 import java.nio.file.Path
