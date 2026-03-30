@@ -20,7 +20,8 @@ class WorldState {
         val players: MutableMap<String, PlayerState> = mutableMapOf(),
         val robots: MutableMap<Uuid, RobotState> = mutableMapOf(),
         var ownedRobots: Map<Uuid, PrivateRobotInfo> = mapOf(),
-        var groundItems: Map<Uuid, GroundItem> = mapOf()
+        var groundItems: Map<Uuid, GroundItem> = mapOf(),
+        var triggeredObjects: Set<String> = setOf()
     )
 
     open class AgentState<A : Animations<A>>(startingAnim: AnimationRef<A>) {
@@ -147,6 +148,7 @@ class WorldState {
         }
         this.interpolated.ownedRobots = after.ownedRobots
         this.interpolated.groundItems = after.groundItems
+        this.interpolated.triggeredObjects = after.triggeredObjects
         val dt: Float = client.deltaTime
         this.interpolated.players.values.forEach { it.update(dt) }
         this.interpolated.robots.values.forEach { it.update(dt) }

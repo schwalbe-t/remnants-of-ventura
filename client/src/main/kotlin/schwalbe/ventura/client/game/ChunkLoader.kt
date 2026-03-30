@@ -30,20 +30,13 @@ object GroundFrag : FragShaderDef<GroundFrag> {
 }
 
 val groundShader: Resource<Shader<GroundVert, GroundFrag>>
-    = Shader.loadGlsl(GroundVert, GroundFrag, macros = mapOf(
-        "SPECULAR_THRESHOLD" to "999.0"
-    ))
+    = Shader.loadGlsl(GroundVert, GroundFrag)
 
 private fun computeChunkInstances(
     data: SharedChunkData
 ): List<ChunkLoader.LoadedInstance>
     = data.instances.map { inst ->
-        val position = inst[ObjectProp.Position]
-        val rotation = inst[ObjectProp.Rotation]
-        val transform = Matrix4f()
-            .translate(position.x, position.y, position.z)
-            .rotateXYZ(rotation.x, rotation.y, rotation.z)
-            .scale(inst[ObjectProp.Scale])
+        val transform = Objects.baseTransform(inst)
         val colliders = computeInstanceColliders(inst, transform)
         ChunkLoader.LoadedInstance(inst, transform, colliders)
     }
@@ -118,9 +111,17 @@ class ChunkLoader(
 
     class LoadedInstance(
         val obj: ObjectInstance,
-        val transform: Matrix4fc,
-        val colliders: List<AxisAlignedBox>
-    )
+        var transform: Matrix4fc,
+        var colliders: List<AxisAlignedBox>
+    ) {
+        fun update(state: ObjectStateProvider) {
+            Objects.update(state, this.obj)
+            val newTransf: Matrix4f = Objects.transform(state, this.obj)
+                ?: return
+            this.transform = newTransf
+            this.colliders = computeInstanceColliders(this.obj, newTransf)
+        }
+    }
 
     class LoadedChunkData(
         val instances: List<LoadedInstance>,
@@ -137,8 +138,6 @@ class ChunkLoader(
 
         const val DEFAULT_LOAD_RADIUS: Int = 5
         const val DEFAULT_RENDER_RADIUS: Int = 2
-
-        const val OUTLINE_THICKNESS: Float = 0.015f
 
         val GROUND_GEOMETRY_ATTRIBS: List<Geometry.Attribute> = listOf(
             Geometry.float(3),
@@ -203,13 +202,18 @@ class ChunkLoader(
         this.requested.addAll(this.requestChunks(chunks))
     }
 
-    fun update(center: Vector3fc) {
+    fun update(center: Vector3fc, state: ObjectStateProvider) {
         this.centerX = center.x().unitsToChunkIdx()
         this.centerZ = center.z().unitsToChunkIdx()
         this.unloadChunks()
         val missing: List<ChunkRef> = this.collectMissingChunks()
         if (missing.isNotEmpty()) {
             this.requestChunkData(missing)
+        }
+        for (chunk in this.loaded.values) {
+            for (inst in chunk.instances) {
+                inst.update(state)
+            }
         }
     }
 
@@ -236,25 +240,24 @@ class ChunkLoader(
         return null
     }
 
-    private fun renderChunk(data: LoadedChunkData, pass: RenderPass) {
+    private fun renderChunk(
+        state: ObjectStateProvider, data: LoadedChunkData, pass: RenderPass
+    ) {
         val groupedInstances: MutableMap<ObjectType, MutableList<Matrix4fc>>
             = mutableMapOf()
         for (inst in data.instances) {
-            val instType: ObjectType = inst.obj[ObjectProp.Type]
-            val group: MutableList<Matrix4fc> = groupedInstances
-                .getOrPut(instType) { mutableListOf() }
-            group.add(inst.transform)
+            Objects.render(pass, state, inst.obj, inst.transform) otherwise@{
+                val instType: ObjectType = inst.obj[ObjectProp.Type]
+                val group: MutableList<Matrix4fc> = groupedInstances
+                    .getOrPut(instType) { mutableListOf() }
+                group.add(inst.transform)
+            }
         }
         for ((type, instances) in groupedInstances) {
             val model: Model<StaticAnim> = objectModels
                 .getOrNull(type.ordinal)?.invoke()
                 ?: continue
-            if (type.renderOutline) {
-                pass.renderOutline(
-                    model, OUTLINE_THICKNESS, animState = null, instances
-                )
-            }
-            pass.renderGeometry(model, animState = null, instances)
+            Objects.renderBatch(pass, type.renderOutline, model, instances)
         }
         pass.render(
             data.ground, groundShader(),
@@ -263,10 +266,10 @@ class ChunkLoader(
         )
     }
 
-    fun render(pass: RenderPass) {
+    fun render(pass: RenderPass, state: ObjectStateProvider) {
         for (chunk in this.chunksInRange(this.renderRadius)) {
             val data: LoadedChunkData = this.loaded[chunk] ?: continue
-            this.renderChunk(data, pass)
+            this.renderChunk(state, data, pass)
         }
     }
 

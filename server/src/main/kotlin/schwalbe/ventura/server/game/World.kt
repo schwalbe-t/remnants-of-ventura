@@ -255,6 +255,10 @@ class World(
             .associateBy({ it.id }, { it.buildSharedInfo() })
         val robotStates = playerRobotStates + enemyRobotStates
         val groundItems = this.groundItems
+        val triggeredObjects = this.triggerables.objects.asSequence()
+            .filter { (_, obj) -> obj.isTriggered }
+            .map { (name, _) -> name }
+            .toSet()
         val now: Long = System.currentTimeMillis()
         fun worldStateAt(observer: SerVector3, pl: Player): WorldStatePacket {
             val r: Float = WORLD_STATE_CONTENT_RADIUS
@@ -269,7 +273,8 @@ class World(
                 .filterValues { insideSquareRadiusXZ(it.position, observer, r) }
             return WorldStatePacket(
                 relTimestamp = now - pl.connection.connectedSince,
-                fPlayerStates, fRobotStates, ownedRobots, fGroundItems
+                fPlayerStates, fRobotStates, ownedRobots, fGroundItems,
+                triggeredObjects
             )
         }
         for (player in this.players.values) {

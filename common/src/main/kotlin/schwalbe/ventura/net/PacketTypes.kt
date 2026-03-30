@@ -213,7 +213,8 @@ data class WorldStatePacket(
     val players: Map<String, SharedPlayerInfo>,
     val allRobots: Map<Uuid, SharedRobotInfo>,
     val ownedRobots: Map<Uuid, PrivateRobotInfo>,
-    val groundItems: Map<Uuid, GroundItem>
+    val groundItems: Map<Uuid, GroundItem>,
+    val triggeredObjects: Set<String>
 )
 
 @Serializable
