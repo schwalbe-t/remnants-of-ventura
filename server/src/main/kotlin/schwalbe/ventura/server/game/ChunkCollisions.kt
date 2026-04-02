@@ -1,8 +1,13 @@
 
 package schwalbe.ventura.server.game
 
+import org.joml.Matrix4f
+import org.joml.Vector3f
 import schwalbe.ventura.data.*
+import schwalbe.ventura.utils.IntPair
 import schwalbe.ventura.utils.SerVector3
+import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.roundToInt
 
 private fun findChunkBounds(
@@ -19,6 +24,26 @@ private fun findChunkBounds(
 private fun chunkFlatIdx(relTx: Int, relTz: Int): Int
     = relTz * 1.chunksToUnits() + relTx
 
+private inline fun forEachCollidingTile(
+    obj: ObjectInstance, crossinline f: (Int, Int) -> Unit
+) {
+    val coll = obj[ObjectProp.Type].tileColliderSize ?: return
+    val transf: Matrix4f = obj.buildTransform()
+    val posTl = transf.transformPosition(Vector3f(coll.left, 0f, coll.top))
+    val posTr = transf.transformPosition(Vector3f(coll.right, 0f, coll.top))
+    val posBl = transf.transformPosition(Vector3f(coll.left, 0f, coll.bottom))
+    val posBr = transf.transformPosition(Vector3f(coll.right, 0f, coll.bottom))
+    val minX: Float = minOf(posTl.x, posTr.x, posBl.x, posBr.x)
+    val maxX: Float = maxOf(posTl.x, posTr.x, posBl.x, posBr.x)
+    val minZ: Float = minOf(posTl.z, posTr.z, posBl.z, posBr.z)
+    val maxZ: Float = maxOf(posTl.z, posTr.z, posBl.z, posBr.z)
+    for (tx in minX.unitsToUnitIdx()..maxX.unitsToUnitIdx()) {
+        for (tz in minZ.unitsToUnitIdx()..maxZ.unitsToUnitIdx()) {
+            f(tx, tz)
+        }
+    }
+}
+
 private fun collectChunkColliders(
     chunks: Map<ChunkRef, ChunkData>
 ): Map<ChunkRef, BooleanArray> {
@@ -34,23 +59,14 @@ private fun collectChunkColliders(
     }
     for (chunkData in chunks.values) {
         for (obj in chunkData.instances) {
-            val objType: ObjectType = obj[ObjectProp.Type]
-            val objPos: SerVector3 = obj[ObjectProp.Position]
-            val objScale: Float = obj[ObjectProp.Scale]
-            val objCTx: Int = objPos.x.unitsToUnitIdx()
-            val objCTz: Int = objPos.z.unitsToUnitIdx()
-            val r = (objType.tileColliderRadius * objScale).roundToInt() - 1
-            if (r < 0) { continue }
-            for (objTx in (objCTx - r)..(objCTx + r)) {
-                for (objTz in (objCTz - r)..(objCTz + r)) {
-                    val objChx: Int = objTx.unitsToChunks()
-                    val objChz: Int = objTz.unitsToChunks()
-                    val objCh = ChunkRef(objChx, objChz)
-                    val chunkColl: BooleanArray = colliders[objCh] ?: continue
-                    val objRTx: Int = objTx - (objChx * chunkTiles)
-                    val objRTz: Int = objTz - (objChz * chunkTiles)
-                    chunkColl[chunkFlatIdx(objRTx, objRTz)] = true
-                }
+            forEachCollidingTile(obj) f@{ absTx, absTz ->
+                val chunkX: Int = absTx.unitsToChunks()
+                val chunkZ: Int = absTz.unitsToChunks()
+                val chunkR = ChunkRef(chunkX, chunkZ)
+                val chunk: BooleanArray = colliders[chunkR] ?: return@f
+                val relTx: Int = absTx - chunkX.chunksToUnits()
+                val relTz: Int = absTz - chunkZ.chunksToUnits()
+                chunk[chunkFlatIdx(relTx, relTz)] = true
             }
         }
     }

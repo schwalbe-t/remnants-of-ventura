@@ -4,6 +4,7 @@ package schwalbe.ventura.data
 import schwalbe.ventura.utils.SerVector3
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.joml.Matrix4f
 
 // The maximum size in chunks of any client or server side colliders.
 // This number determines the radius of the area that is searched when looking
@@ -12,45 +13,50 @@ import kotlinx.serialization.Serializable
 // computed properly by client and server collision systems.
 const val MAX_COLLIDER_SIZE_CHUNKS: Int = 1
 
+data class ObjectTileCollider(
+    val left: Float, val right: Float,
+    val top: Float, val bottom: Float
+)
+
 @Serializable
 enum class ObjectType(
     val modelPath: String,
     val renderOutline: Boolean = true,
     val applyColliders: Boolean = true,
-    val tileColliderRadius: Int
+    val tileColliderSize: ObjectTileCollider?
 ) {
     TRIGGER(
         modelPath = "res/objects/trigger.glb",
         renderOutline = false,
         applyColliders = false,
-        tileColliderRadius = 0
+        tileColliderSize = null
     ),
     BUTTON(
         modelPath = "res/objects/button.glb",
         renderOutline = false,
         applyColliders = false,
-        tileColliderRadius = 0
+        tileColliderSize = null
     ),
     AND_GATE(
         modelPath = "res/objects/and_gate.glb",
-        tileColliderRadius = 1
+        tileColliderSize = ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
     ),
     OR_GATE(
         modelPath = "res/objects/or_gate.glb",
-        tileColliderRadius = 1
+        tileColliderSize = ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
     ),
     NAND_GATE(
         modelPath = "res/objects/nand_gate.glb",
-        tileColliderRadius = 1
+        tileColliderSize = ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
     ),
     NOR_GATE(
         modelPath = "res/objects/nor_gate.glb",
-        tileColliderRadius = 1
+        tileColliderSize = ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
     ),
 
     ROCK(
         modelPath = "res/objects/rock.glb",
-        tileColliderRadius = 3
+        tileColliderSize = ObjectTileCollider(-1.5f, +1.5f, -1.5f, +1.5f)
     ),
 }
 
@@ -122,6 +128,15 @@ data class ObjectInstance(val props: List<ObjectProp<*>>) {
     ): V
         = this.props.filterIsInstance<P>().firstOrNull()?.v ?: propType.default
 
+}
+
+fun ObjectInstance.buildTransform(): Matrix4f {
+    val position = this[ObjectProp.Position]
+    val rotation = this[ObjectProp.Rotation]
+    return Matrix4f()
+        .translate(position.x, position.y, position.z)
+        .rotateXYZ(rotation.x, rotation.y, rotation.z)
+        .scale(this[ObjectProp.Scale])
 }
 
 @Serializable

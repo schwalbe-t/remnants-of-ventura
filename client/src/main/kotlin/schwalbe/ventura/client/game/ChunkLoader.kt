@@ -36,7 +36,7 @@ private fun computeChunkInstances(
     data: SharedChunkData
 ): List<ChunkLoader.LoadedInstance>
     = data.instances.map { inst ->
-        val transform = Objects.baseTransform(inst)
+        val transform = inst.buildTransform()
         val colliders = computeInstanceColliders(inst, transform)
         ChunkLoader.LoadedInstance(inst, transform, colliders)
     }
