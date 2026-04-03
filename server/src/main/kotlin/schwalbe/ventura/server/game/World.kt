@@ -233,6 +233,7 @@ class World(
 
     @Synchronized
     private fun updateState() {
+        this.chunkCollisions.updateDynamic(this)
         for (player in this.players.values) {
             player.updateState(this)
         }

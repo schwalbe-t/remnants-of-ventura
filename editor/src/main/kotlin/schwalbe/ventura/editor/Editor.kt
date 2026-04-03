@@ -2,8 +2,7 @@
 package schwalbe.ventura.editor
 
 import schwalbe.ventura.client.*
-import schwalbe.ventura.client.game.CameraController
-import schwalbe.ventura.client.game.ChunkLoader
+import schwalbe.ventura.client.game.*
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.editor.modes.*
@@ -38,6 +37,10 @@ class Editor : Application<EditorMode>(
         fun submitResources(loader: ResourceLoader) = loader.submitAll(
             whiteOutlineShader
         )
+    }
+
+    object WorldObjectStateProvider : ObjectStateProvider {
+        override fun isTriggered(obj: ObjectInstance): Boolean = false
     }
 
 
@@ -142,7 +145,9 @@ fun Editor.update() {
     this.camController.update(
         this.renderer.camera, this.renderer, captureInput = true
     )
-    this.world?.chunkLoader?.update(this.position)
+    this.world?.chunkLoader?.update(
+        this.position, Editor.WorldObjectStateProvider
+    )
 }
 
 private fun Editor.renderSelectedObject(pass: RenderPass) {
@@ -168,7 +173,7 @@ fun Editor.render() {
     }
     this.renderer.update(this.position)
     this.renderer.forEachPass { pass ->
-        this.world?.chunkLoader?.render(pass)
+        this.world?.chunkLoader?.render(pass, Editor.WorldObjectStateProvider)
         this.renderSelectedObject(pass)
     }
 }

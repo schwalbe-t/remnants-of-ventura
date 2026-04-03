@@ -39,7 +39,8 @@ enum class ObjectType(
     ),
     AND_GATE(
         modelPath = "res/objects/and_gate.glb",
-        tileColliderSize = ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
+//        tileColliderSize = ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
+        tileColliderSize = null
     ),
     OR_GATE(
         modelPath = "res/objects/or_gate.glb",
@@ -126,7 +127,17 @@ data class ObjectInstance(val props: List<ObjectProp<*>>) {
     inline operator fun <reified P : ObjectProp<V>, reified V> get(
         propType: ObjectProp.PropType<P, V>
     ): V
-        = this.props.filterIsInstance<P>().firstOrNull()?.v ?: propType.default
+        = this.getOrNull(propType) ?: propType.default
+
+    inline fun <reified P : ObjectProp<V>, reified V> getOrNull(
+        @Suppress("UNUSED_PARAMETER") propType: ObjectProp.PropType<P, V>
+    ): V?
+        = this.props.filterIsInstance<P>().firstOrNull()?.v
+
+    inline operator fun <reified P : ObjectProp<V>, reified V> contains(
+        @Suppress("UNUSED_PARAMETER") propType: ObjectProp.PropType<P, V>
+    ): Boolean
+        = this.props.any { it is P }
 
 }
 

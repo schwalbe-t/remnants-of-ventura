@@ -2,13 +2,9 @@
 package schwalbe.ventura.server.game
 
 import org.joml.Matrix4f
+import org.joml.Matrix4fc
 import org.joml.Vector3f
 import schwalbe.ventura.data.*
-import schwalbe.ventura.utils.IntPair
-import schwalbe.ventura.utils.SerVector3
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.roundToInt
 
 private fun findChunkBounds(
     chunks: Collection<ChunkRef>
@@ -24,21 +20,33 @@ private fun findChunkBounds(
 private fun chunkFlatIdx(relTx: Int, relTz: Int): Int
     = relTz * 1.chunksToUnits() + relTx
 
-private inline fun forEachCollidingTile(
-    obj: ObjectInstance, crossinline f: (Int, Int) -> Unit
-) {
-    val coll = obj[ObjectProp.Type].tileColliderSize ?: return
-    val transf: Matrix4f = obj.buildTransform()
-    val posTl = transf.transformPosition(Vector3f(coll.left, 0f, coll.top))
-    val posTr = transf.transformPosition(Vector3f(coll.right, 0f, coll.top))
-    val posBl = transf.transformPosition(Vector3f(coll.left, 0f, coll.bottom))
-    val posBr = transf.transformPosition(Vector3f(coll.right, 0f, coll.bottom))
+private fun ObjectTileCollider.applyTransform(
+    transf: Matrix4fc
+): ObjectTileCollider {
+    val posTl = transf.transformPosition(Vector3f(this.left, 0f, this.top))
+    val posTr = transf.transformPosition(Vector3f(this.right, 0f, this.top))
+    val posBl = transf.transformPosition(Vector3f(this.left, 0f, this.bottom))
+    val posBr = transf.transformPosition(Vector3f(this.right, 0f, this.bottom))
     val minX: Float = minOf(posTl.x, posTr.x, posBl.x, posBr.x)
     val maxX: Float = maxOf(posTl.x, posTr.x, posBl.x, posBr.x)
     val minZ: Float = minOf(posTl.z, posTr.z, posBl.z, posBr.z)
     val maxZ: Float = maxOf(posTl.z, posTr.z, posBl.z, posBr.z)
-    for (tx in minX.unitsToUnitIdx()..maxX.unitsToUnitIdx()) {
-        for (tz in minZ.unitsToUnitIdx()..maxZ.unitsToUnitIdx()) {
+    return ObjectTileCollider(minX, maxX, minZ, maxZ)
+}
+
+private fun ObjectTileCollider.contains(tileX: Int, tileZ: Int): Boolean =
+    this.left.unitsToUnitIdx() <= tileX &&
+    tileX <= this.right.unitsToUnitIdx() &&
+    this.top.unitsToUnitIdx() <= tileZ &&
+    tileZ <= this.bottom.unitsToUnitIdx()
+
+private inline fun forEachCollidingTile(
+    obj: ObjectInstance, crossinline f: (Int, Int) -> Unit
+) {
+    val relColl = obj[ObjectProp.Type].tileColliderSize ?: return
+    val coll = relColl.applyTransform(obj.buildTransform())
+    for (tx in coll.left.unitsToUnitIdx()..coll.right.unitsToUnitIdx()) {
+        for (tz in coll.top.unitsToUnitIdx()..coll.bottom.unitsToUnitIdx()) {
             f(tx, tz)
         }
     }
@@ -74,17 +82,55 @@ private fun collectChunkColliders(
 }
 
 class ChunkCollisions(
-    chunks: Map<ChunkRef, ChunkData>
+    val staticChunks: Map<ChunkRef, ChunkData>
 ) {
-    private val byChunk: Map<ChunkRef, BooleanArray>
-        = collectChunkColliders(chunks)
+    typealias DynColliderGenerator = (
+        ObjectInstance, World, MutableList<ObjectTileCollider>
+    ) -> Unit
 
-    operator fun get(tileX: Int, tileZ: Int): Boolean {
+    companion object {
+        val DYNAMIC_COLLIDERS: Map<ObjectType, DynColliderGenerator> = mapOf(
+            ObjectType.AND_GATE to ::andGateDynColliders
+        )
+    }
+
+    private val byChunk: Map<ChunkRef, BooleanArray>
+        = collectChunkColliders(this.staticChunks)
+    private val dynamic: MutableList<ObjectTileCollider>
+        = mutableListOf()
+
+    fun updateDynamic(world: World) {
+        this.dynamic.clear()
+        for (chunk in this.staticChunks.values) {
+            for (obj in chunk.instances) {
+                DYNAMIC_COLLIDERS[obj[ObjectProp.Type]]
+                    ?.invoke(obj, world, this.dynamic)
+            }
+        }
+    }
+
+    private fun collidesWithStatic(tileX: Int, tileZ: Int): Boolean {
         val chunkRef = ChunkRef(tileX.unitsToChunks(), tileZ.unitsToChunks())
-        val chunk = this.byChunk[chunkRef] ?: return false
+        val chunk: BooleanArray = this.byChunk[chunkRef] ?: return false
         val chunkTiles: Int = 1.chunksToUnits()
         val relTileX: Int = tileX - (chunkRef.chunkX * chunkTiles)
         val relTileZ: Int = tileZ - (chunkRef.chunkZ * chunkTiles)
         return chunk[chunkFlatIdx(relTileX, relTileZ)]
     }
+
+    private fun collidesWithDynamic(tileX: Int, tileZ: Int): Boolean
+        = this.dynamic.any { it.contains(tileX, tileZ) }
+
+    operator fun get(tileX: Int, tileZ: Int): Boolean =
+        this.collidesWithStatic(tileX, tileZ) ||
+        this.collidesWithDynamic(tileX, tileZ)
+}
+
+private fun andGateDynColliders(
+    obj: ObjectInstance, world: World, out: MutableList<ObjectTileCollider>
+) {
+    if (world.triggerables.isTriggered(obj[ObjectProp.Triggerable])) { return }
+    out.add(ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
+        .applyTransform(obj.buildTransform())
+    )
 }
