@@ -231,13 +231,17 @@ class TypedRenderPass<
     fun <V : VertShaderDef<V>, F : FragShaderDef<F>> configureShader(
         shader: Shader<V, F>,
         vertShader: RendererVert<V>,
-        fragShader: RendererFrag<F>
+        fragShader: RendererFrag<F>,
+        shadowFactorOverride: Vector3fc? = null,
+        outlineFactorOverride: Vector3fc? = null
     ) {
         val cfg = this.renderer.config
         shader[vertShader.viewProjection] = this.viewProj
         shader[fragShader.baseFactor] = cfg.baseColorFactor.toVector3f()
-        shader[fragShader.shadowFactor] = cfg.shadowColorFactor.toVector3f()
-        shader[fragShader.outlineFactor] = cfg.outlineColorFactor.toVector3f()
+        shader[fragShader.shadowFactor] = shadowFactorOverride
+            ?: cfg.shadowColorFactor.toVector3f()
+        shader[fragShader.outlineFactor] = outlineFactorOverride
+            ?: cfg.outlineColorFactor.toVector3f()
         shader[fragShader.groundToSun] = cfg.groundToSun
             .toVector3f().normalize()
         shader[fragShader.sunViewProjection] = this.renderer.sunViewProj
@@ -255,7 +259,8 @@ class TypedRenderPass<
         faceCulling: FaceCulling = FaceCulling.DISABLED,
         depthTesting: DepthTesting = DepthTesting.ENABLED,
         renderedMeshes: Collection<String>? = null,
-        meshTextureOverrides: Map<String, Texture>? = null
+        meshTextureOverrides: Map<String, Texture>? = null,
+        shadowFactorOverride: Vector3fc? = null
     ) {
         this.render(
             model,
@@ -263,7 +268,7 @@ class TypedRenderPass<
             GeometryVert.renderer, this.geometryFragShader,
             animState, instances,
             faceCulling, depthTesting,
-            renderedMeshes, meshTextureOverrides
+            renderedMeshes, meshTextureOverrides, shadowFactorOverride
         )
     }
 
@@ -274,7 +279,8 @@ class TypedRenderPass<
         instances: Iterable<Matrix4fc> = listOf(Matrix4f()),
         depthTesting: DepthTesting = DepthTesting.ENABLED,
         renderedMeshes: Collection<String>? = null,
-        meshTextureOverrides: Map<String, Texture>? = null
+        meshTextureOverrides: Map<String, Texture>? = null,
+        outlineFactorOverride: Vector3fc? = null
     ) {
         val shader = this.outlineShader()
         shader[OutlineVert.outlineThickness] = outlineThickness
@@ -283,7 +289,8 @@ class TypedRenderPass<
             shader, OutlineVert.renderer, this.outlineFragShader,
             animState, instances,
             FaceCulling.FRONT, depthTesting,
-            renderedMeshes, meshTextureOverrides
+            renderedMeshes, meshTextureOverrides,
+            outlineFactorOverride = outlineFactorOverride
         )
     }
 
@@ -316,9 +323,14 @@ class TypedRenderPass<
         faceCulling: FaceCulling = FaceCulling.DISABLED,
         depthTesting: DepthTesting = DepthTesting.ENABLED,
         renderedMeshes: Collection<String>? = null,
-        meshTextureOverrides: Map<String, Texture>? = null
+        meshTextureOverrides: Map<String, Texture>? = null,
+        shadowFactorOverride: Vector3fc? = null,
+        outlineFactorOverride: Vector3fc? = null
     ) {
-        this.configureShader(shader, vertShader, fragShader)
+        this.configureShader(
+            shader, vertShader, fragShader,
+            shadowFactorOverride, outlineFactorOverride
+        )
         this.withInstanceBatches(instances) { batchSize, buff ->
             shader[vertShader.instances] = buff
             model.render(

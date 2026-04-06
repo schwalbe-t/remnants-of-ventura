@@ -6,7 +6,6 @@ import schwalbe.ventura.engine.UsageAfterDisposalException
 import org.lwjgl.opengl.GL33.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.FloatBuffer
 
 class UniformBuffer(val writeHint: BufferWriteFreq) : Disposable {
     

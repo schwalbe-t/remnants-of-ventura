@@ -33,14 +33,12 @@ enum class ObjectType(
     ),
     BUTTON(
         modelPath = "res/objects/button.glb",
-        renderOutline = false,
         applyColliders = false,
         tileColliderSize = null
     ),
     AND_GATE(
         modelPath = "res/objects/and_gate.glb",
-//        tileColliderSize = ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
-        tileColliderSize = null
+        tileColliderSize = ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
     ),
     OR_GATE(
         modelPath = "res/objects/or_gate.glb",
@@ -53,6 +51,10 @@ enum class ObjectType(
     NOR_GATE(
         modelPath = "res/objects/nor_gate.glb",
         tileColliderSize = ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
+    ),
+    LAMP(
+        modelPath = "res/objects/lamp.glb",
+        tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
     ),
 
     ROCK(

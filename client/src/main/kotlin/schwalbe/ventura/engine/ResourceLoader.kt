@@ -4,7 +4,11 @@ package schwalbe.ventura.engine
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-class Resource<T>(private val loadChain: () -> () -> T) {
+class Resource<T>(
+    val allowReset: Boolean = false,
+    private val dispose: T.() -> Unit = {},
+    private val loadChain: () -> () -> T
+) {
     
     companion object Companion
     
@@ -32,6 +36,17 @@ class Resource<T>(private val loadChain: () -> () -> T) {
         this.loadFully = null
         this.loaded = loadFully()
     }
+
+    fun dispose() {
+        this.dispose(this.loaded ?: return)
+    }
+
+    fun reset() {
+        check(this.allowReset) { "Resource may not be reset" }
+        this.dispose()
+        this.loadFully = null
+        this.loaded = null
+    }
     
 }
 
@@ -49,7 +64,8 @@ class ResourceLoader {
     
     
     private val lock = ReentrantLock()
-    
+
+    private var completed: MutableList<Resource<*>> = mutableListOf()
     private var queued: MutableList<Resource<*>> = mutableListOf()
     private val hasQueued = this.lock.newCondition()
     
@@ -65,6 +81,20 @@ class ResourceLoader {
     
     fun submitAll(vararg resources: Resource<*>)
         = resources.forEach { this.submit(it) }
+
+    // Must be called from main thread!
+    fun resubmitAll() {
+        val previous: List<Resource<*>>
+        this.lock.withLock {
+            previous = this.completed
+            this.completed = mutableListOf()
+        }
+        for (r in previous) {
+            if (!r.allowReset) { continue }
+            r.reset()
+            this.submit(r)
+        }
+    }
     
     fun loadQueuedRawLoop() {
         while (true) {
@@ -96,6 +126,19 @@ class ResourceLoader {
         for (r in queued) {
             r.load()
         }
+        this.lock.withLock {
+            this.completed.addAll(queued)
+        }
+    }
+
+    // Must be called from main thread!
+    fun disposeAll() {
+        val previous: List<Resource<*>>
+        this.lock.withLock {
+            previous = this.completed
+            this.completed = mutableListOf()
+        }
+        previous.forEach { it.dispose() }
     }
     
 }

@@ -441,7 +441,7 @@ fun <A : Animations<A>> Model.Companion.loadFile(
     animations: A,
     textureFilter: Texture.Filter = Texture.Filter.NEAREST,
     indexType: Model.IndexType = Model.IndexType.SHORT
-): Resource<Model<A>> = Resource {
+): Resource<Model<A>> = Resource(allowReset = true) {
     val scene: AIScene? = aiImportFile(path, ASSIMP_FLAGS)
     check(scene != null) {
         val error: String = aiGetErrorString() ?: "<unknown error>"

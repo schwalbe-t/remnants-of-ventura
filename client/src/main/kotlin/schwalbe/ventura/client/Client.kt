@@ -4,13 +4,15 @@ package schwalbe.ventura.client
 import schwalbe.ventura.client.screens.GameScreen
 import schwalbe.ventura.client.game.World
 import schwalbe.ventura.engine.*
+import schwalbe.ventura.engine.input.*
 
 class Client : Application<GameScreen>(
     window = Window(
         name = "Remnants of Ventura",
         sizeFactor = 0.75f,
         iconPath = "res/icon.png"
-    )
+    ),
+    shouldReloadResources = { Key.LEFT_CONTROL.isPressed && Key.R.wasPressed }
 ) {
 
     val config: Config = Config.read()
@@ -34,6 +36,7 @@ class Client : Application<GameScreen>(
     override fun dispose() {
         super.dispose()
         this.network.dispose()
+        this.resLoader.disposeAll()
     }
 
 }

@@ -148,6 +148,7 @@ class ChunkLoader(
         fun submitResources(loader: ResourceLoader) {
             this.objectModels.forEach(loader::submit)
             loader.submit(groundShader)
+            Objects.submitResources(loader)
         }
     }
 

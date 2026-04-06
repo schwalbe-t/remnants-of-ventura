@@ -68,7 +68,8 @@ class Triggerables(
             ObjectType.AND_GATE to AND_GATE_BEHAVIOR,
             ObjectType.OR_GATE to OR_GATE_BEHAVIOR,
             ObjectType.NAND_GATE to NAND_GATE_BEHAVIOR,
-            ObjectType.NOR_GATE to NOR_GATE_BEHAVIOR
+            ObjectType.NOR_GATE to NOR_GATE_BEHAVIOR,
+            ObjectType.LAMP to LAMP_BEHAVIOR
         )
     }
 
@@ -87,13 +88,13 @@ class Triggerables(
             val changedObjects: List<ObjectState>
                 = this.objects.values.filter { it.outputHasChanged }
             if (changedObjects.isEmpty()) { return }
-            changedObjects.forEach { changed ->
-                changed.triggerFor.forEach { invalidatedId ->
-                    val obj = this.objects[invalidatedId] ?: return@forEach
+            for (changed in changedObjects) {
+                changed.outputHasChanged = false
+                for (invalidatedId in changed.triggerFor) {
+                    val obj = this.objects[invalidatedId] ?: continue
                     BEHAVIORS[obj.instance[ObjectProp.Type]]
                         ?.updateChained(obj, world, this)
                 }
-                changed.outputHasChanged = false
             }
         }
         if (this.showedIterationWarning) { return }
@@ -153,4 +154,7 @@ private val NAND_GATE_BEHAVIOR
     = chainedBehavior { _, inputs -> inputs.values.any { !it } }
 
 private val NOR_GATE_BEHAVIOR
-    = chainedBehavior { _, inputs -> inputs.values.none { it } }
+    = chainedBehavior { _, inputs -> inputs.values.none() }
+
+private val LAMP_BEHAVIOR
+    = chainedBehavior { _, inputs -> inputs.values.any { it } }

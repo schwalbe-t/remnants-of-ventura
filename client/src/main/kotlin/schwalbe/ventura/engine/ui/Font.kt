@@ -16,7 +16,7 @@ class Font(internal val baseFont: AwtFont) {
     
 }
 
-fun Font.Companion.loadTtf(path: String) = Resource<Font> {
+fun Font.Companion.loadTtf(path: String) = Resource<Font>(allowReset = true) {
     val baseFont: AwtFont
     try {
         baseFont = AwtFont.createFont(AwtFont.TRUETYPE_FONT, File(path))

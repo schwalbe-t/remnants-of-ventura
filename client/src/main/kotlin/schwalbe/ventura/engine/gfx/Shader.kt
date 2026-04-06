@@ -392,7 +392,7 @@ private fun readExpandBaseShader(path: String): String {
 fun <V : VertShaderDef<V>, F : FragShaderDef<F>> Shader.Companion.loadGlsl(
     vertDef: V, fragDef: F,
     macros: Map<String, String?> = mapOf()
-) = Resource<Shader<V, F>> {
+) = Resource<Shader<V, F>>(allowReset = true) {
     val versionStr: String = SHADER_VERSION_STRING + "\n"
     val macroStr: String = macros
         .map { (n, v) -> if (v != null) "#define $n $v\n" else "#define $n\n" }

@@ -7,16 +7,21 @@ import schwalbe.ventura.client.game.ChunkLoader.Companion.objectModels
 import schwalbe.ventura.data.ObjectProp
 import schwalbe.ventura.data.ObjectType
 import schwalbe.ventura.data.buildTransform
-import schwalbe.ventura.engine.gfx.Model
-import schwalbe.ventura.engine.gfx.StaticAnim
+import schwalbe.ventura.engine.gfx.*
+import schwalbe.ventura.engine.ResourceLoader
+import schwalbe.ventura.engine.Resource
 import org.joml.Matrix4fc
 import org.joml.Matrix4f
+import org.joml.Vector3f
+import org.joml.Vector3fc
 
 interface ObjectStateProvider {
     fun isTriggered(obj: ObjectInstance): Boolean
 }
 
 interface ObjectOverrides {
+    fun submitResources(loader: ResourceLoader) {}
+
     fun update(state: ObjectStateProvider, obj: ObjectInstance) {}
 
     fun transform(
@@ -39,6 +44,10 @@ object Objects {
 
     const val OUTLINE_THICKNESS: Float = 0.015f
 
+    fun submitResources(resLoader: ResourceLoader) {
+        this.OVERRIDES.values.forEach { it.submitResources(resLoader) }
+    }
+
     fun update(state: ObjectStateProvider, obj: ObjectInstance) {
         val overrides = this.OVERRIDES[obj[ObjectProp.Type]] ?: return
         overrides.update(state, obj)
@@ -51,14 +60,26 @@ object Objects {
 
     fun renderBatch(
         pass: RenderPass, renderOutline: Boolean,
-        model: Model<StaticAnim>, instances: Iterable<Matrix4fc>
+        model: Model<StaticAnim>, instances: Iterable<Matrix4fc>,
+        faceCulling: FaceCulling = FaceCulling.DISABLED,
+        depthTesting: DepthTesting = DepthTesting.ENABLED,
+        renderedMeshes: Collection<String>? = null,
+        meshTextureOverrides: Map<String, Texture>? = null,
+        shadowFactorOverride: Vector3fc? = null,
+        outlineFactorOverride: Vector3fc? = null
     ) {
         if (renderOutline) {
             pass.renderOutline(
-                model, this.OUTLINE_THICKNESS, animState = null, instances
+                model, this.OUTLINE_THICKNESS, animState = null, instances,
+                depthTesting, renderedMeshes, meshTextureOverrides,
+                outlineFactorOverride
             )
         }
-        pass.renderGeometry(model, animState = null, instances)
+        pass.renderGeometry(
+            model, animState = null, instances,
+            faceCulling, depthTesting, renderedMeshes, meshTextureOverrides,
+            shadowFactorOverride
+        )
     }
     inline fun render(
         pass: RenderPass, state: ObjectStateProvider, obj: ObjectInstance,
@@ -70,6 +91,80 @@ object Objects {
         overrides.render(pass, state, obj, transform)
     }
 
-    val OVERRIDES: Map<ObjectType, ObjectOverrides> = mapOf()
+    val OVERRIDES: Map<ObjectType, ObjectOverrides> = mapOf(
+        ObjectType.BUTTON to ButtonOverrides,
+        ObjectType.LAMP to LampOverrides
+    )
+
+}
+
+private object ButtonOverrides : ObjectOverrides {
+
+    const val HEAD_TRIGGER_OFFSET: Float = -0.08f
+
+    override fun render(
+        pass: RenderPass, state: ObjectStateProvider, obj: ObjectInstance,
+        transform: Matrix4fc
+    ) {
+        val model: Model<StaticAnim> = objectModels
+            .getOrNull(ObjectType.BUTTON.ordinal)?.invoke() ?: return
+        val isDown: Boolean = state.isTriggered(obj)
+        val headTransf: Matrix4fc = Matrix4f(transform)
+            .translateLocal(0f, if (isDown) HEAD_TRIGGER_OFFSET else 0f, 0f)
+        Objects.renderBatch(
+            pass, renderOutline = true, model, instances = listOf(transform),
+            renderedMeshes = listOf("button_base")
+        )
+        Objects.renderBatch(
+            pass, renderOutline = true, model, instances = listOf(headTransf),
+            renderedMeshes = listOf("button_head")
+        )
+    }
+
+}
+
+private object LampOverrides : ObjectOverrides {
+
+    val lampOffTexture: Resource<Texture>
+        = Texture.loadImage("res/objects/lamp_off.png", Texture.Filter.NEAREST)
+    val lampOnTexture: Resource<Texture>
+        = Texture.loadImage("res/objects/lamp_on.png", Texture.Filter.NEAREST)
+
+    override fun submitResources(loader: ResourceLoader)
+        = loader.submitAll(this.lampOffTexture, this.lampOnTexture)
+
+    override fun render(
+        pass: RenderPass, state: ObjectStateProvider, obj: ObjectInstance,
+        transform: Matrix4fc
+    ) {
+        val model: Model<StaticAnim> = objectModels
+            .getOrNull(ObjectType.LAMP.ordinal)?.invoke() ?: return
+        val instances = listOf(transform)
+        val isOn: Boolean = state.isTriggered(obj)
+        val tex: Texture
+            = if (isOn) this.lampOnTexture() else this.lampOffTexture()
+        val texOverrides: Map<String, Texture> = mapOf(
+            "lamp_base" to tex, "lamp_filament" to tex, "lamp_glass" to tex
+        )
+        val litShadowFactor = if (isOn) Vector3f(1f, 1f, 1f) else null
+        Objects.renderBatch(
+            pass, renderOutline = true, model, instances,
+            renderedMeshes = listOf("lamp_base"),
+            meshTextureOverrides = texOverrides
+        )
+        Objects.renderBatch(
+            pass, renderOutline = true, model, instances,
+            renderedMeshes = listOf("lamp_filament"),
+            meshTextureOverrides = texOverrides,
+            shadowFactorOverride = litShadowFactor
+        )
+        pass.renderGeometry(
+            model, animState = null, instances,
+            faceCulling = FaceCulling.BACK,
+            renderedMeshes = listOf("lamp_glass"),
+            meshTextureOverrides = texOverrides,
+            shadowFactorOverride = litShadowFactor
+        )
+    }
 
 }

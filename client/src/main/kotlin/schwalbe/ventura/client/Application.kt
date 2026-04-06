@@ -1,21 +1,23 @@
 
 package schwalbe.ventura.client
 
-import org.joml.Vector4f
-import schwalbe.ventura.engine.ResourceLoader
-import schwalbe.ventura.engine.Window
-import schwalbe.ventura.engine.gfx.ConstFramebuffer
-import schwalbe.ventura.engine.gfx.Framebuffer
-import schwalbe.ventura.engine.gfx.Texture
+import schwalbe.ventura.engine.*
+import schwalbe.ventura.engine.fromCallback
+import schwalbe.ventura.engine.gfx.*
+import schwalbe.ventura.engine.input.isPressed
 import schwalbe.ventura.engine.ui.UiNavigator
 import schwalbe.ventura.engine.ui.UiScreen
+import org.joml.Vector4f
 import kotlin.concurrent.thread
 
 interface ApplicationScreen<S : UiScreen<S>> {
     val render: () -> Unit
 }
 
-open class Application<S>(val window: Window)
+open class Application<S>(
+    val window: Window,
+    val shouldReloadResources: () -> Boolean = { false }
+)
 where S : UiScreen<S>, S : ApplicationScreen<S> {
 
     val resLoader = ResourceLoader()
@@ -34,6 +36,7 @@ where S : UiScreen<S>, S : ApplicationScreen<S> {
 
     val nav = UiNavigator<S>(this.out2d, this.window.inputEvents)
 
+    var isSuspended: Boolean = false
     var deltaTime: Float = 0f
 
 
@@ -50,11 +53,25 @@ fun Application<*>.loadResources() {
     thread { this.resLoader.loadQueuedRawLoop() }
 }
 
+fun Application<*>.reloadAllResources() {
+    this.isSuspended = true
+    this.resLoader.resubmitAll()
+    this.resLoader.submit(Resource.fromCallback {
+        this.isSuspended = false
+        println("Reloaded all resources")
+    })
+}
+
 fun Application<*>.gameloop() {
     var lastFrameTime: Long = System.nanoTime()
     while (!this.window.shouldClose()) {
         this.window.beginFrame()
         this.resLoader.loadQueuedFully()
+
+        if (this.isSuspended) {
+            this.window.endFrame()
+            continue
+        }
 
         this.beforeRender()
 
@@ -78,6 +95,10 @@ fun Application<*>.gameloop() {
 
         this.nav.update()
         this.out2d.blitColorOnto(windowBuff)
+
+        if (this.shouldReloadResources()) {
+            this.reloadAllResources()
+        }
 
         this.window.endFrame()
     }

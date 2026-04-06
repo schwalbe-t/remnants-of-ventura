@@ -116,7 +116,7 @@ fun Texture.Companion.loadBytes(
 
 fun Texture.Companion.loadImage(
     path: String, filter: Texture.Filter
-) = Resource<Texture> {
+) = Resource<Texture>(allowReset = true) {
     val decoded: ByteBuffer?
     val width: Int
     val height: Int

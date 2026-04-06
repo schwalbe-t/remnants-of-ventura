@@ -26,7 +26,8 @@ class Editor : Application<EditorMode>(
         name = "Ventura World Editor",
         sizeFactor = 0.9f,
         iconPath = "res/icon.png"
-    )
+    ),
+    shouldReloadResources = { Key.LEFT_CONTROL.isPressed && Key.R.wasPressed }
 ) {
 
     companion object {
