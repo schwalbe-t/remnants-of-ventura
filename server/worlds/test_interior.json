@@ -153,6 +153,148 @@
 							"v": "ROCK"
 						}
 					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.0,
+								"y": 0.0,
+								"z": 14.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "or_lamp"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -4.0,
+								"y": 0.0,
+								"z": 7.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "left_lamp"
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -5.0,
+								"y": 0.0,
+								"z": 14.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "and_lamp"
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -5.0,
+								"y": 0.0,
+								"z": 11.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"and_lamp"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "and"
+						},
+						{
+							"type": "TYPE",
+							"v": "AND_GATE"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.0,
+								"y": 0.0,
+								"z": 11.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"or_lamp"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "or"
+						},
+						{
+							"type": "TYPE",
+							"v": "OR_GATE"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.0,
+								"y": 1.9073486E-6,
+								"z": 7.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"left_lamp",
+								"and",
+								"or",
+								"nand",
+								"nor"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "left"
+						},
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
+						}
+					]
 				}
 			]
 		},
@@ -187,6 +329,148 @@
 								"y": 2.7215328,
 								"z": 0.0
 							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 1.0,
+								"y": 0.0,
+								"z": 14.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "nand_lamp"
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 1.0,
+								"y": 0.0,
+								"z": 11.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"nand_lamp"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "nand"
+						},
+						{
+							"type": "TYPE",
+							"v": "NAND_GATE"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.0,
+								"y": 0.0,
+								"z": 7.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "right_lamp"
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.0,
+								"y": 0.0,
+								"z": 14.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "nor_lamp"
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.0,
+								"y": 0.0,
+								"z": 11.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"nor_lamp"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "nor"
+						},
+						{
+							"type": "TYPE",
+							"v": "NOR_GATE"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 2.0,
+								"y": 0.0,
+								"z": 7.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"right_lamp",
+								"and",
+								"or",
+								"nand",
+								"nor"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "right"
+						},
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
 						}
 					]
 				}

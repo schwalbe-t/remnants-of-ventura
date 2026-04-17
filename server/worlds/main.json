@@ -141,38 +141,6 @@
 							"v": "TRIGGER"
 						}
 					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "NOR_GATE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 0.0,
-								"y": 0.0,
-								"z": -7.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "OR_GATE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 0.0,
-								"y": 0.0,
-								"z": -5.0
-							}
-						}
-					]
 				}
 			]
 		},
@@ -217,20 +185,16 @@
 				{
 					"props": [
 						{
-							"type": "SCALE",
-							"v": 2.0
-						},
-						{
-							"type": "TYPE",
-							"v": "ROCK"
-						},
-						{
 							"type": "POSITION",
 							"v": {
 								"x": -18.146969,
 								"y": 0.0,
 								"z": -22.759605
 							}
+						},
+						{
+							"type": "TYPE",
+							"v": "ROCK"
 						}
 					]
 				}
@@ -327,194 +291,6 @@
 						{
 							"type": "TYPE",
 							"v": "ROCK"
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": -1,
-			"chunkZ": -1
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "NAND_GATE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -2.0,
-								"y": 0.0,
-								"z": -7.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -8.0,
-								"y": 0.0,
-								"z": -5.0
-							}
-						},
-						{
-							"type": "TRIGGER_FOR",
-							"v": [
-								"labubu_and_gate",
-								"button_1_lamp"
-							]
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "button_1"
-						},
-						{
-							"type": "TYPE",
-							"v": "BUTTON"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -5.512824,
-								"y": 0.0,
-								"z": -6.5588083
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 5.7642536,
-								"z": 0.0
-							}
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "button_2_lamp"
-						},
-						{
-							"type": "TYPE",
-							"v": "LAMP"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -5.0,
-								"y": 0.0,
-								"z": -5.0
-							}
-						},
-						{
-							"type": "TRIGGER_FOR",
-							"v": [
-								"labubu_and_gate",
-								"button_2_lamp"
-							]
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "button_2"
-						},
-						{
-							"type": "TYPE",
-							"v": "BUTTON"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -2.0,
-								"y": 0.0,
-								"z": -5.0
-							}
-						},
-						{
-							"type": "TRIGGER_FOR",
-							"v": [
-								"labubu_lamp"
-							]
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "labubu_and_gate"
-						},
-						{
-							"type": "TYPE",
-							"v": "AND_GATE"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -1.3819313,
-								"y": 0.0,
-								"z": -3.3420544
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 2.4132152,
-								"z": 0.0
-							}
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "labubu_lamp"
-						},
-						{
-							"type": "TYPE",
-							"v": "LAMP"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -8.527043,
-								"y": 0.0,
-								"z": -6.6088104
-							}
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "button_1_lamp"
-						},
-						{
-							"type": "TYPE",
-							"v": "LAMP"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 0.31158543,
-								"z": 0.0
-							}
 						}
 					]
 				}

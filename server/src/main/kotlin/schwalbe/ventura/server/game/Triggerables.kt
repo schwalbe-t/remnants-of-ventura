@@ -115,6 +115,7 @@ private fun baseBehavior(
     f: Triggerables.ObjectState.(World) -> Boolean
 ) = Triggerables.Behavior(updateBase = { world ->
     this.isTriggered = f(world)
+    this.outputHasChanged = true
 })
 
 private fun chainedBehavior(
@@ -154,7 +155,7 @@ private val NAND_GATE_BEHAVIOR
     = chainedBehavior { _, inputs -> inputs.values.any { !it } }
 
 private val NOR_GATE_BEHAVIOR
-    = chainedBehavior { _, inputs -> inputs.values.none() }
+    = chainedBehavior { _, inputs -> inputs.values.none { it } }
 
 private val LAMP_BEHAVIOR
     = chainedBehavior { _, inputs -> inputs.values.any { it } }
