@@ -8,6 +8,7 @@ import schwalbe.ventura.client.*
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.utils.SerVector3
+import schwalbe.ventura.client.game.ObjectOverrides.RenderMethod
 import kotlin.collections.asSequence
 import org.joml.Matrix4f
 import org.joml.Matrix4fc
@@ -244,21 +245,21 @@ class ChunkLoader(
     private fun renderChunk(
         state: ObjectStateProvider, data: LoadedChunkData, pass: RenderPass
     ) {
-        val groupedInstances: MutableMap<ObjectType, MutableList<Matrix4fc>>
+        val batches: MutableMap<ObjectType, MutableList<Matrix4fc>>
             = mutableMapOf()
         for (inst in data.instances) {
-            Objects.render(pass, state, inst.obj, inst.transform) otherwise@{
-                val instType: ObjectType = inst.obj[ObjectProp.Type]
-                val group: MutableList<Matrix4fc> = groupedInstances
-                    .getOrPut(instType) { mutableListOf() }
-                group.add(inst.transform)
+            when (val render = Objects.renderMethodOf(inst.obj)) {
+                is RenderMethod.Single
+                    -> render.f(pass, state, inst.obj, inst.transform)
+                is RenderMethod.Batched
+                    -> batches
+                    .getOrPut(inst.obj[ObjectProp.Type]) { mutableListOf() }
+                    .add(inst.transform)
             }
         }
-        for ((type, instances) in groupedInstances) {
-            val model: Model<StaticAnim> = objectModels
-                .getOrNull(type.ordinal)?.invoke()
-                ?: continue
-            Objects.renderBatch(pass, type.renderOutline, model, instances)
+        for ((type, instances) in batches) {
+            (Objects.renderMethodOf(type) as? RenderMethod.Batched)
+                ?.f(pass, state, type, instances)
         }
         pass.render(
             data.ground, groundShader(),

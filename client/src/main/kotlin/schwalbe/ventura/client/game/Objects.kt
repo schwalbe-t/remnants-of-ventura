@@ -14,30 +14,43 @@ import org.joml.Matrix4fc
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector3fc
+import schwalbe.ventura.client.OutlineVert
 
 interface ObjectStateProvider {
     fun isTriggered(obj: ObjectInstance): Boolean
 }
 
-interface ObjectOverrides {
-    fun submitResources(loader: ResourceLoader) {}
+abstract class ObjectOverrides {
+    open fun submitResources(loader: ResourceLoader) {}
 
-    fun update(state: ObjectStateProvider, obj: ObjectInstance) {}
+    open fun update(state: ObjectStateProvider, obj: ObjectInstance) {}
 
-    fun transform(
+    open fun transform(
         state: ObjectStateProvider, obj: ObjectInstance
     ): Matrix4f
         = obj.buildTransform()
 
-    fun render(
-        pass: RenderPass, state: ObjectStateProvider, obj: ObjectInstance,
-        transform: Matrix4fc
-    ) {
-        val type: ObjectType = obj[ObjectProp.Type]
-        val model: Model<StaticAnim> = objectModels
-            .getOrNull(type.ordinal)?.invoke() ?: return
-        Objects.renderBatch(pass, type.renderOutline, model, listOf(transform))
+    sealed interface RenderMethod {
+        companion object {
+            val DEFAULT: RenderMethod = Batched { p, _, type, transf ->
+                val model: Model<StaticAnim> = objectModels
+                    .getOrNull(type.ordinal)?.invoke() ?: return@Batched
+                Objects.renderBatch(p, type.renderOutline, model, transf)
+            }
+        }
+
+        class Single(val f: (
+            pass: RenderPass, state: ObjectStateProvider,
+            obj: ObjectInstance, transform: Matrix4fc
+        ) -> Unit) : RenderMethod
+
+        class Batched(val f: (
+            pass: RenderPass, state: ObjectStateProvider,
+            objType: ObjectType, transforms: Iterable<Matrix4fc>
+        ) -> Unit) : RenderMethod
     }
+
+    open val render: RenderMethod = RenderMethod.DEFAULT
 }
 
 object Objects {
@@ -81,15 +94,12 @@ object Objects {
             shadowFactorOverride
         )
     }
-    inline fun render(
-        pass: RenderPass, state: ObjectStateProvider, obj: ObjectInstance,
-        transform: Matrix4fc,
-        crossinline otherwise: () -> Unit
-    ) {
-        val overrides = this.OVERRIDES[obj[ObjectProp.Type]]
-            ?: return otherwise()
-        overrides.render(pass, state, obj, transform)
-    }
+
+    fun renderMethodOf(objType: ObjectType): ObjectOverrides.RenderMethod
+        = OVERRIDES[objType]?.render ?: ObjectOverrides.RenderMethod.DEFAULT
+
+    fun renderMethodOf(obj: ObjectInstance): ObjectOverrides.RenderMethod
+        = this.renderMethodOf(obj[ObjectProp.Type])
 
     val OVERRIDES: Map<ObjectType, ObjectOverrides> = mapOf(
         ObjectType.BUTTON to ButtonOverrides,
@@ -98,16 +108,13 @@ object Objects {
 
 }
 
-private object ButtonOverrides : ObjectOverrides {
+private object ButtonOverrides : ObjectOverrides() {
 
     const val HEAD_TRIGGER_OFFSET: Float = -0.08f
 
-    override fun render(
-        pass: RenderPass, state: ObjectStateProvider, obj: ObjectInstance,
-        transform: Matrix4fc
-    ) {
+    override val render = RenderMethod.Single { pass, state, obj, transform ->
         val model: Model<StaticAnim> = objectModels
-            .getOrNull(ObjectType.BUTTON.ordinal)?.invoke() ?: return
+            .getOrNull(ObjectType.BUTTON.ordinal)?.invoke() ?: return@Single
         val isDown: Boolean = state.isTriggered(obj)
         val headTransf: Matrix4fc = Matrix4f(transform)
             .translateLocal(0f, if (isDown) HEAD_TRIGGER_OFFSET else 0f, 0f)
@@ -123,7 +130,7 @@ private object ButtonOverrides : ObjectOverrides {
 
 }
 
-private object LampOverrides : ObjectOverrides {
+private object LampOverrides : ObjectOverrides() {
 
     val lampOffTexture: Resource<Texture>
         = Texture.loadImage("res/objects/lamp_off.png", Texture.Filter.NEAREST)
@@ -133,16 +140,13 @@ private object LampOverrides : ObjectOverrides {
     override fun submitResources(loader: ResourceLoader)
         = loader.submitAll(this.lampOffTexture, this.lampOnTexture)
 
-    override fun render(
-        pass: RenderPass, state: ObjectStateProvider, obj: ObjectInstance,
-        transform: Matrix4fc
-    ) {
+    override val render = RenderMethod.Single { pass, state, obj, transform ->
         val model: Model<StaticAnim> = objectModels
-            .getOrNull(ObjectType.LAMP.ordinal)?.invoke() ?: return
+            .getOrNull(ObjectType.LAMP.ordinal)?.invoke() ?: return@Single
         val instances = listOf(transform)
         val isOn: Boolean = state.isTriggered(obj)
         val tex: Texture
-            = if (isOn) this.lampOnTexture() else this.lampOffTexture()
+                = if (isOn) this.lampOnTexture() else this.lampOffTexture()
         val texOverrides: Map<String, Texture> = mapOf(
             "lamp_base" to tex, "lamp_filament" to tex, "lamp_glass" to tex
         )
