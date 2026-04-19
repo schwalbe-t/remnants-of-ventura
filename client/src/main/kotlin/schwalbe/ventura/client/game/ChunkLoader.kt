@@ -47,12 +47,14 @@ private fun computeInstanceColliders(
 ): List<AxisAlignedBox> {
     val colliders = mutableListOf<AxisAlignedBox>()
     val instType: ObjectType = obj[ObjectProp.Type]
+    val meshWhitelist: Iterable<String>? = instType.applyCollidersOf
     val model: Model<StaticAnim> = ChunkLoader.objectModels
         .getOrNull(instType.ordinal)?.invoke()
         ?: return listOf()
     model.forEachNode { node ->
         for (meshI in node.meshes) {
             val mesh = model.meshes.getOrNull(meshI) ?: continue
+            if (!(meshWhitelist?.contains(mesh.name) ?: true)) { continue }
             val collider = mesh.bounds.toMutableAxisBox()
                 .transform(node.localTransform)
                 .transform(transform)

@@ -24,13 +24,12 @@ class Resource<T>(
         = this.loaded ?: throw IllegalStateException("Resource not yet loaded")
     
     fun loadRaw() {
-        check(this.loadFully == null) { "Raw resource already loaded" }
-        check(!this.isLoaded) { "Resource already loaded" }
+        if (this.loadFully != null || this.isLoaded) { return }
         this.loadFully = this.loadChain()
     }
     
     fun load() {
-        check(!this.isLoaded) { "Resource already loaded" }
+        if (this.isLoaded) { return }
         val loadFully: () -> T = this.loadFully
             ?: throw IllegalStateException("Raw resource not yet loaded")
         this.loadFully = null

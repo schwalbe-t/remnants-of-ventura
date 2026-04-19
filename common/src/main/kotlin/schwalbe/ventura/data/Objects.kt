@@ -23,6 +23,7 @@ enum class ObjectType(
     val modelPath: String,
     val renderOutline: Boolean = true,
     val applyColliders: Boolean = true,
+    val applyCollidersOf: Iterable<String>? = null,
     val tileColliderSize: ObjectTileCollider?
 ) {
     TRIGGER(
@@ -61,6 +62,26 @@ enum class ObjectType(
         modelPath = "res/objects/rock.glb",
         tileColliderSize = ObjectTileCollider(-1.5f, +1.5f, -1.5f, +1.5f)
     ),
+    TREE_GREEN(
+        modelPath = "res/objects/tree.glb",
+        applyCollidersOf = listOf("collider"),
+        tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
+    ),
+    TREE_ORANGE(
+        modelPath = "res/objects/tree.glb",
+        applyCollidersOf = listOf("collider"),
+        tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
+    ),
+    TREE_RED(
+        modelPath = "res/objects/tree.glb",
+        applyCollidersOf = listOf("collider"),
+        tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
+    ),
+    TREE_PINK(
+        modelPath = "res/objects/tree.glb",
+        applyCollidersOf = listOf("collider"),
+        tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
+    )
 }
 
 @Serializable

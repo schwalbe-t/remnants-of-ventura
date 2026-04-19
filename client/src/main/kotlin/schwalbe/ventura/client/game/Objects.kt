@@ -1,7 +1,7 @@
 
 package schwalbe.ventura.client.game
 
-import schwalbe.ventura.client.RenderPass
+import schwalbe.ventura.client.*
 import schwalbe.ventura.data.ObjectInstance
 import schwalbe.ventura.client.game.ChunkLoader.Companion.objectModels
 import schwalbe.ventura.data.ObjectProp
@@ -10,11 +10,12 @@ import schwalbe.ventura.data.buildTransform
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.engine.Resource
+import schwalbe.ventura.utils.parseRgbHex
 import org.joml.Matrix4fc
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector3fc
-import schwalbe.ventura.client.OutlineVert
+import org.joml.Vector4fc
 
 interface ObjectStateProvider {
     fun isTriggered(obj: ObjectInstance): Boolean
@@ -102,9 +103,76 @@ object Objects {
         = this.renderMethodOf(obj[ObjectProp.Type])
 
     val OVERRIDES: Map<ObjectType, ObjectOverrides> = mapOf(
+        ObjectType.TREE_GREEN to TreeOverrides(
+            colorBottom = parseRgbHex("437f5d"),
+            colorTop    = parseRgbHex("86a063")
+        ),
+        ObjectType.TREE_ORANGE to TreeOverrides(
+            colorBottom = parseRgbHex("cc785b"),
+            colorTop    = parseRgbHex("d3925b")
+        ),
+        ObjectType.TREE_RED to TreeOverrides(
+            colorBottom = parseRgbHex("94554d"),
+            colorTop    = parseRgbHex("cc785b")
+        ),
+        ObjectType.TREE_PINK to TreeOverrides(
+            colorBottom = parseRgbHex("aa749e"),
+            colorTop    = parseRgbHex("d4a488")
+        ),
         ObjectType.BUTTON to ButtonOverrides,
         ObjectType.LAMP to LampOverrides
     )
+
+}
+
+private class TreeOverrides(
+    val colorBottom: Vector3fc, val colorTop: Vector3fc
+) : ObjectOverrides() {
+
+    companion object {
+        const val BOTTOM: Float = +1.5f
+        const val TOP: Float = +6f
+
+        val treeModel: Resource<Model<StaticAnim>> = Model.loadFile(
+            path = "res/objects/tree.glb",
+            properties = Renderer.meshProperties,
+            textureFilter = Texture.Filter.NEAREST
+        )
+
+        object FoliageFrag : FragShaderDef<FoliageFrag> {
+            override val path: String = "shaders/foliage.frag.glsl"
+
+            val renderer = RendererFrag<FoliageFrag>()
+            val bottomHeight = float("uBottomHeight")
+            val bottomColor = vec3("uBottomColor")
+            val topHeight = float("uTopHeight")
+            val topColor = vec3("uTopColor")
+        }
+
+        val foliageShader: Resource<Shader<GeometryVert, FoliageFrag>>
+                = Shader.loadGlsl(GeometryVert, FoliageFrag)
+    }
+
+    override fun submitResources(loader: ResourceLoader)
+        = loader.submitAll(treeModel, foliageShader)
+
+    override val render = RenderMethod.Batched { pass, _, _, transforms ->
+        val model: Model<StaticAnim> = treeModel()
+        val shader: Shader<GeometryVert, FoliageFrag> = foliageShader()
+        shader[FoliageFrag.bottomHeight] = BOTTOM
+        shader[FoliageFrag.bottomColor] = this.colorBottom
+        shader[FoliageFrag.topHeight] = TOP
+        shader[FoliageFrag.topColor] = this.colorTop
+        pass.render(
+            model, shader, GeometryVert.renderer, FoliageFrag.renderer,
+            animState = null, transforms,
+            renderedMeshes = listOf("leaves")
+        )
+        Objects.renderBatch(
+            pass, renderOutline = true, model, transforms,
+            renderedMeshes = listOf("trunk")
+        )
+    }
 
 }
 

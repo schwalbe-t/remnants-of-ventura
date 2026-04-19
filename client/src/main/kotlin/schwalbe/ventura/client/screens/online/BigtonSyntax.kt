@@ -1,22 +1,22 @@
 
 package schwalbe.ventura.client.screens.online
 
-import schwalbe.ventura.utils.parseHexColor
+import schwalbe.ventura.utils.parseRgbaHex
 import schwalbe.ventura.engine.ui.Span
 import schwalbe.ventura.engine.ui.Font
 import schwalbe.ventura.client.screens.jetbrainsMonoI
 import schwalbe.ventura.client.screens.jetbrainsMonoEB
 import org.joml.Vector4fc
 
-private val WHITE: Vector4fc = parseHexColor("fffdec")
-private val GRAY: Vector4fc = parseHexColor("a1a3ad")
-private val PINK: Vector4fc = parseHexColor("f95fa3")
-private val PURPLE: Vector4fc = parseHexColor("8d65d4")
-private val MAGENTA: Vector4fc = parseHexColor("d0a8ff")
-private val ORANGE: Vector4fc = parseHexColor("f8634f")
-private val CYAN: Vector4fc = parseHexColor("5cd5dc")
-private val GREEN: Vector4fc = parseHexColor("56b49e")
-private val YELLOW: Vector4fc = parseHexColor("d0bf69")
+private val WHITE: Vector4fc = parseRgbaHex("fffdec")
+private val GRAY: Vector4fc = parseRgbaHex("a1a3ad")
+private val PINK: Vector4fc = parseRgbaHex("f95fa3")
+private val PURPLE: Vector4fc = parseRgbaHex("8d65d4")
+private val MAGENTA: Vector4fc = parseRgbaHex("d0a8ff")
+private val ORANGE: Vector4fc = parseRgbaHex("f8634f")
+private val CYAN: Vector4fc = parseRgbaHex("5cd5dc")
+private val GREEN: Vector4fc = parseRgbaHex("56b49e")
+private val YELLOW: Vector4fc = parseRgbaHex("d0bf69")
 
 private val BASE_COLOR: Vector4fc = WHITE
 private val COMMENT_COLOR: Vector4fc = GRAY
