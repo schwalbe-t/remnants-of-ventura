@@ -48,11 +48,13 @@ fun PacketHandler<Unit>.addErrorLogging() = this
 
 fun PacketHandler<Unit>.addWorldHandling(client: Client) = this
     .onPacket(PacketType.BEGIN_WORLD_CHANGE) { _, _ ->
+        client.world?.dispose()
         client.world = null
     }
     .onPacket(PacketType.COMPLETE_WORLD_CHANGE) { info: WorldInfoPacket, _ ->
         val world = World(client, info.worldId, info.isMainWorld)
         world.player.position.set(info.position.toVector3f())
+        client.world?.dispose()
         client.world = world
         client.renderer.config = info.worldInfo.rendererConfig
     }

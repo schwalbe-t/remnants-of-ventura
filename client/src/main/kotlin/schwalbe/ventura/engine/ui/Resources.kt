@@ -22,6 +22,10 @@ val quad: Resource<Geometry> = Resource { {
 
 val blitShader: Resource<Shader<PxPos, Blit>>
     = Shader.loadGlsl(PxPos, Blit)
+val blitShaderPreMultiply: Resource<Shader<PxPos, Blit>>
+    = Shader.loadGlsl(PxPos, Blit, macros = mapOf(
+        "PREMULTIPLY_ALPHA" to ""
+    ))
 val flatBgShader: Resource<Shader<FullBuffer, FlatBg>>
     = Shader.loadGlsl(FullBuffer, FlatBg)
 val fillColorShader: Resource<Shader<PxPos, FlatBg>>
@@ -35,7 +39,7 @@ val roundedBlitShader: Resource<Shader<FullBuffer, RoundedBlit>>
     
 fun loadUiResources(loader: ResourceLoader): Unit = loader.submitAll(
     quad,
-    blitShader,
+    blitShader, blitShaderPreMultiply,
     flatBgShader, fillColorShader,
     gaussianDistribShader, blurBgShader,
     roundedBlitShader

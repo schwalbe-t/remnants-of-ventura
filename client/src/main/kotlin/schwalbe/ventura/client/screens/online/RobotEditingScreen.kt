@@ -17,11 +17,10 @@ import kotlin.uuid.Uuid
 
 private fun createBottomPanelButton(text: Text, action: () -> Unit) = Stack()
     .add(FlatBackground()
-        .withColor(BUTTON_COLOR)
-        .withHoverColor(BUTTON_HOVER_COLOR)
+        .withColor(Theme.BUTTON_COLOR)
+        .withHoverColor(Theme.BUTTON_HOVER_COLOR)
     )
     .add(text
-        .withColor(BRIGHT_FONT_COLOR)
         .withSize(75.ph)
         .alignCenter()
         .pad(1.75.vmin)
@@ -116,10 +115,7 @@ private fun createRobotInfoSection(
         .add(100.ph - topSection, logText
             .withSize(1.3.vmin)
             .withFont(jetbrainsMonoSb())
-            .withColor(BRIGHT_FONT_COLOR)
-            .wrapScrolling(vert = true, horiz = false)
-            .withThumbColor(BUTTON_COLOR)
-            .withThumbHoverColor(BUTTON_HOVER_COLOR)
+            .wrapThemedScrolling(vert = true, horiz = false)
             .withStickToBottom()
         )
         .pad(1.vmin)
@@ -135,7 +131,6 @@ fun requestRobotLogs(client: Client, robotId: Uuid) {
 private fun createSelectFileSection(fileTreeCtx: FileTreeCtx) = Axis.column()
     .add(6.vmin, Text()
         .withText(localized()[TITLE_SELECT_SOURCE_FILE])
-        .withColor(BRIGHT_FONT_COLOR)
         .withFont(googleSansSb())
         .withSize(75.ph)
         .pad(1.5.vmin)
@@ -152,9 +147,7 @@ private fun createRobotSettingsSection(
     val subsectionTitleSize: UiSize = 4.5.vmin
     fun subsectionTitle(text: String) = Text()
         .withText(text)
-        .withFont(googleSansR())
         .withSize(80.ph)
-        .withColor(BRIGHT_FONT_COLOR)
         .pad(1.vmin)
     val l = localized()
     val topSection: UiSize = 8.vmin
@@ -195,17 +188,16 @@ private fun createRobotSettingsSection(
             onClick: (() -> Unit)? = null
         ): UiElement {
             val root = Stack()
-            val bg = FlatBackground().withColor(BUTTON_COLOR)
+            val bg = FlatBackground().withColor(Theme.BUTTON_COLOR)
             root.add(bg)
             root.add(Text()
                 .withText(text)
-                .withColor(BRIGHT_FONT_COLOR)
                 .withSize(75.ph)
                 .withAlignment(alignment)
                 .pad(1.vmin)
             )
             if (onClick != null) {
-                bg.withHoverColor(BUTTON_HOVER_COLOR)
+                bg.withHoverColor(Theme.BUTTON_HOVER_COLOR)
                 root.add(ClickArea().withLeftHandler(onClick))
             }
             return root
@@ -275,7 +267,6 @@ private fun createRobotSettingsSection(
             .add(60.ph, TextInput()
                 .withContent(Text()
                     .withFont(googleSansSb())
-                    .withColor(BRIGHT_FONT_COLOR)
                     .withSize(75.ph)
                 )
                 .withValue(initialState?.name ?: "")
@@ -293,7 +284,7 @@ private fun createRobotSettingsSection(
             )
             .add(40.ph, Text()
                 .withText(subtitle)
-                .withColor(SECONDARY_BRIGHT_FONT_COLOR)
+                .withColor(Theme.SECONDARY_FONT_COLOR)
                 .withSize(75.ph)
             )
             .pad(1.5.vmin)
@@ -304,9 +295,7 @@ private fun createRobotSettingsSection(
                     subsectionTitle(l[TITLE_ROBOT_ATTACHMENTS])
                 )
                 .add(100.ph - subsectionTitleSize, attachmentList
-                    .wrapScrolling()
-                    .withThumbColor(BUTTON_COLOR)
-                    .withThumbHoverColor(BUTTON_HOVER_COLOR)
+                    .wrapThemedScrolling()
                     .pad(bottom = 2.vmin)
                 )
             )
@@ -315,9 +304,7 @@ private fun createRobotSettingsSection(
                     subsectionTitle(l[TITLE_ROBOT_CODE_FILES])
                 )
                 .add(100.ph - subsectionTitleSize, codeFileList
-                    .wrapScrolling()
-                    .withThumbColor(BUTTON_COLOR)
-                    .withThumbHoverColor(BUTTON_HOVER_COLOR)
+                    .wrapThemedScrolling()
                     .pad(bottom = 2.vmin)
                 )
             )
@@ -437,7 +424,7 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
     screen.add(layer = 0, element = Axis.row()
         .add(66.6.vw, Stack()
             .add(background)
-            .add(FlatBackground().withColor(PANEL_BACKGROUND))
+            .add(FlatBackground().withColor(Theme.PANEL_BACKGROUND))
             .add(Axis.row()
                 .add(50.pw, createRobotSettingsSection(
                     client, packets, robotId, sharedRobotInfo,

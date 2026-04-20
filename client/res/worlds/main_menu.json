@@ -1,0 +1,1120 @@
+{
+	"instanceMode": "CONSTANT",
+	"info": {
+		"rendererConfig": {
+			"groundToSun": {
+				"x": 0.2,
+				"y": 0.25,
+				"z": 0.0
+			},
+			"baseColorFactor": {
+				"x": 1.15,
+				"y": 0.85,
+				"z": 0.65
+			},
+			"shadowColorFactor": {
+				"x": 0.6,
+				"y": 0.7,
+				"z": 0.95
+			},
+			"outlineColorFactor": {
+				"x": 0.55,
+				"y": 0.65,
+				"z": 0.75
+			},
+			"defaultLit": true
+		}
+	},
+	"groundColor": "main_menu_ground.png",
+	"startPosition": {
+		"x": 0.0,
+		"y": 0.0,
+		"z": 0.0
+	},
+	"peaceAreas": [
+		{
+			"minX": -99999999,
+			"minZ": -99999999,
+			"untilX": 99999999,
+			"untilZ": 99999999
+		}
+	],
+	"chunks": [
+		{
+			"chunkX": 0,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 13.682676,
+								"y": 0.0,
+								"z": 3.9158058
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.8072891,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.92822576,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 7.8793573,
+								"y": 0.0,
+								"z": 6.6474304
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.0252047,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 0.32323027,
+								"y": 0.0,
+								"z": 4.19508
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 6.4997935,
+								"y": 1.9073486E-6,
+								"z": 9.973675
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 6.3352013,
+								"y": 0.0,
+								"z": 3.2286339
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 2.671889,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 6.510409,
+								"y": 1.9073486E-6,
+								"z": 1.6716938
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_ORANGE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 6.5106635,
+								"y": 0.0,
+								"z": 0.5135155
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 8.819785,
+								"y": 0.0,
+								"z": 2.8482265
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 2.589644,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.369916,
+								"y": -1.9073486E-6,
+								"z": 5.144843
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.5130469,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 12.678133,
+								"y": 0.0,
+								"z": 1.0440941
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 4.098594,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 1.8295507,
+								"y": 0.0,
+								"z": 12.395456
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 2.899076,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.6990533,
+								"y": 0.0,
+								"z": 12.724749
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 3.7804093,
+								"y": 0.0,
+								"z": 14.175337
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 3.2562256,
+								"y": 0.0,
+								"z": 1.915184
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "NOR_GATE"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 2.6567793,
+								"y": 1.9073486E-6,
+								"z": 1.4253712
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.957342,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "nor_lamp"
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 0,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.5686345,
+								"y": 0.0,
+								"z": -4.4186287
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 2.2274659,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 11.232893,
+								"y": 0.0,
+								"z": -0.329731
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 1.8231444,
+								"y": 0.0,
+								"z": -10.031956
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 3.0220191,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 7.8459616,
+								"y": 0.0,
+								"z": -8.046423
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 4.434599,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.889505,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 12.706594,
+								"y": 0.0,
+								"z": -1.7240887
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 5.621874,
+								"y": 0.0,
+								"z": -12.021963
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 11.459525,
+								"y": 0.0,
+								"z": -9.08988
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 1.1120428,
+								"y": 0.0,
+								"z": -6.5179634
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.4763664,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 7.1028028,
+								"y": 0.0,
+								"z": -3.70228
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.003472386,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.964727,
+								"y": 0.0,
+								"z": -3.9768925
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 8.51931,
+								"y": 0.0,
+								"z": -1.5186043
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_PINK"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.3317426,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 0.80547404,
+								"y": 0.0,
+								"z": -0.85154533
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.4179296,
+								"y": 0.0,
+								"z": -1.197609
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.7119643,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 3.6206985,
+								"y": 0.0,
+								"z": -2.7887726
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": -1,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -8.649519,
+								"y": 1.9073486E-6,
+								"z": -4.324423
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -3.749095,
+								"y": 1.9073486E-6,
+								"z": -4.7260857
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.129157,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -7.226026,
+								"y": 0.0,
+								"z": -8.680012
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.7928743,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -5.9301333,
+								"y": 0.0,
+								"z": -4.361635
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.13078924,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -3.08042,
+								"y": 0.0,
+								"z": -9.389059
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -1.6992112,
+								"y": 1.9073486E-6,
+								"z": -10.544476
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 3.4996924,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "ROCK"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 3.7511888,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -0.20351648,
+								"y": 0.0,
+								"z": -3.7078705
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_RED"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -5.575485,
+								"y": -1.9073486E-6,
+								"z": -0.38570786
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.8450036,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.7387341,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.2648025,
+								"y": 0.0,
+								"z": -0.90023994
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": -1,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -3.8120346,
+								"y": 1.9073486E-6,
+								"z": 6.517477
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.0838966,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -6.6540065,
+								"y": 0.0,
+								"z": 3.2775612
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.7378682,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -8.049991,
+								"y": 1.9073486E-6,
+								"z": 2.7810516
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.51559,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -6.5583167,
+								"y": 0.0,
+								"z": 6.977579
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -0.7783165,
+								"y": 0.0,
+								"z": 9.223948
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -4.588106,
+								"y": 0.0,
+								"z": 9.541121
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.316055,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.7449036,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.2943647,
+								"y": 0.0,
+								"z": 3.2564049
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -0.15621601,
+								"y": 0.0,
+								"z": 12.384679
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 4.9031405,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.2422287,
+								"y": 0.0,
+								"z": 11.261612
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 4.445616,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -5.3108106,
+								"y": 0.0,
+								"z": 11.736812
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.3280965,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "TREE_GREEN"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.3110793,
+								"y": 0.0,
+								"z": 13.752003
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

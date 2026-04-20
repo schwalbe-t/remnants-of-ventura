@@ -3,10 +3,11 @@ package schwalbe.ventura.client.screens
 
 import schwalbe.ventura.engine.Resource
 import schwalbe.ventura.engine.ResourceLoader
-import schwalbe.ventura.engine.gfx.Shader
-import schwalbe.ventura.engine.gfx.loadGlsl
 import schwalbe.ventura.engine.ui.Font
 import schwalbe.ventura.engine.ui.loadTtf
+import org.joml.Vector3f
+import schwalbe.ventura.client.Camera
+import kotlin.math.PI
 
 // Note: Names of font files must be preserved 1:1 in code files.
 //       The build script searches through the source code for font names
@@ -28,13 +29,23 @@ val googleSansSb: Resource<Font>
 val googleSansI: Resource<Font>
     = Font.loadTtf("res/fonts/GoogleSans-Italic.ttf")
 
-val gridShader: Resource<Shader<GridVert, GridFrag>>
-    = Shader.loadGlsl(GridVert, GridFrag)
+val backgroundWorld: Resource<WorldBackground.World> = Resource { {
+    WorldBackground.World(
+        worldFile = "res/worlds/main_menu.json",
+        camera = Camera(
+            position = Vector3f(0f, +15f, +25f),
+            lookAt = Vector3f(0f, 0f, 0f),
+            fov = PI.toFloat() / 9f // 180/9 = 20 deg
+        ),
+        triggered = setOf("nor_lamp")
+    )
+} }
 
 fun submitScreenResources(loader: ResourceLoader) {
     loader.submitAll(
         jetbrainsMonoSb, jetbrainsMonoB, jetbrainsMonoEB, jetbrainsMonoI,
         googleSansR, googleSansSb, googleSansI,
-        gridShader, gridQuad
+        backgroundWorld
     )
+    Icons.submit(loader)
 }

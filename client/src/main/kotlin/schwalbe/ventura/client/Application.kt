@@ -45,6 +45,7 @@ where S : UiScreen<S>, S : ApplicationScreen<S> {
     open fun dispose() {
         this.window.dispose()
         this.resLoader.submit(ResourceLoader.stop)
+        this.resLoader.disposeAll()
     }
 
 }

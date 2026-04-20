@@ -13,27 +13,29 @@ fun serverEditScreen(
     client: Client,
     result: (Config.Server) -> Unit
 ): () -> GameScreen = {
+    val background = WorldBackground(backgroundWorld(), client)
     val screen = GameScreen(
-        render = renderGridBackground(client),
+        render = background::render,
         networkState = noNetworkConnections(client),
-        navigator = client.nav
+        navigator = client.nav,
+        onClose = background::dispose
     )
     val l = localized()
     val settings = Axis.column()
-    val nameInput = addLabelledInput(
+    val nameInput = Theme.addLabelledInput(
         settings, l[LABEL_SERVER_NAME], l[PLACEHOLDER_SERVER_NAME],
-        server?.name ?: "", googleSansR()
+        server?.name ?: ""
     )
-    val addrInput = addLabelledInput(
+    val addrInput = Theme.addLabelledInput(
         settings, l[LABEL_SERVER_ADDRESS], l[PLACEHOLDER_SERVER_ADDRESS],
-        server?.address ?: "", jetbrainsMonoSb()
+        server?.address ?: "", valFont = jetbrainsMonoSb()
     )
-    val portInput = addLabelledInput(
+    val portInput = Theme.addLabelledInput(
         settings, l[LABEL_SERVER_PORT], l[PLACEHOLDER_SERVER_PORT],
-        server?.port?.toString() ?: "", jetbrainsMonoSb()
+        server?.port?.toString() ?: "", valFont = jetbrainsMonoSb()
     )
     settings.add(6.vmin,
-        createTextButton(
+        Theme.button(
             content = l[BUTTON_SERVER_CONFIRM],
             handler = handler@{
                 val port: String = portInput.valueString.trim()
@@ -53,7 +55,7 @@ fun serverEditScreen(
         ).pad(top = 2.vmin, left = 30.pw, right = 30.pw)
     )
     settings.add(5.vmin,
-        createTextButton(
+        Theme.button(
             content = l[BUTTON_SERVER_DISCARD],
             handler = {
                 client.nav.pop()

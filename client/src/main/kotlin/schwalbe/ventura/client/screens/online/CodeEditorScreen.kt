@@ -8,7 +8,6 @@ import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.net.PacketHandler
-import org.joml.Vector3f
 import org.joml.Vector4f
 import org.joml.Vector4fc
 import java.io.File
@@ -38,7 +37,7 @@ private class Editor(val file: File, fileContent: String) {
         val fontSize: UiSize = 1.5.vmin
         this.lineNumbers = Text()
             .withFont(jetbrainsMonoSb())
-            .withColor(SECONDARY_BRIGHT_FONT_COLOR)
+            .withColor(Theme.SECONDARY_FONT_COLOR)
             .withSize(fontSize)
             .alignRight()
         this.lineNumberCont = Padding()
@@ -47,7 +46,6 @@ private class Editor(val file: File, fileContent: String) {
         this.textInput = TextInput()
             .withContent(Text()
                 .withFont(jetbrainsMonoSb())
-                .withColor(BRIGHT_FONT_COLOR)
                 .withSize(fontSize)
             )
             .withDisplayedSpans(::syntaxHighlightBigton)
@@ -60,14 +58,11 @@ private class Editor(val file: File, fileContent: String) {
                 this.lastEdit = System.currentTimeMillis()
             }
         this.textScroll = this.textInput
-            .wrapScrolling(horiz = true, vert = true)
-            .withThumbColor(BUTTON_COLOR)
-            .withThumbHoverColor(BUTTON_HOVER_COLOR)
+            .wrapThemedScrolling(horiz = true, vert = true)
         this.root = Axis.column()
             .add(5.vmin, Text()
                 .withText(this.path.name)
                 .withFont(googleSansSb())
-                .withColor(BRIGHT_FONT_COLOR)
                 .withSize(85.ph)
                 .pad(1.5.vmin)
             )

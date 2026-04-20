@@ -1,54 +1,92 @@
 
 package schwalbe.ventura.client.screens.offline
 
+import org.joml.Vector4f
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.screens.*
 
-private fun createServerOption(
-    server: Config.Server, i: Int,
-    addrName: String, loggedUsername: String?,
-    client: Client
-): UiElement = Axis.row()
-    .add(80.pw, createButton(
-        content = Axis.column()
-            .add(60.ph, Text()
-                .withFont(googleSansSb())
-                .withText(server.name)
-                .withSize(70.ph)
-            )
-            .add(40.ph, Text()
-                .withText(listOf(
-                    Span(
-                        text = addrName,
-                        font = jetbrainsMonoSb()
-                    ),
-                    Span(
-                        text = if (loggedUsername == null) { "" } else {
-                            "    ${localized()[LABEL_LOGGED_IN_AS]} "
-                        }
-                    ),
-                    Span(
-                        text = loggedUsername ?: "",
-                        font = googleSansSb()
-                    )
-                ))
-                .withSize(70.ph)
-                .withColor(SECONDARY_FONT_COLOR)
-            )
-            .pad(1.5.vmin),
-        handler = {
-            client.nav.push(serverConnectingScreen(
-                server.address, server.port, client
-            ))
+private val NAV_BAR_HEIGHT: UiSize = 5.vmin
+
+private fun createNavbarAction(icon: Icon, action: () -> Unit) = Stack()
+    .add(FlatBackground()
+        .withColor(Vector4f(0f, 0f, 0f, 0f))
+        .withHoverColor(Theme.BUTTON_HOVER_COLOR)
+    )
+    .add(icon.create(2.vmin)
+        .pad(horizontal = 4.vmin, vertical = 1.5.vmin)
+    )
+    .add(ClickArea().withLeftHandler(action))
+
+private val SERVER_ACTION_SIZE: UiSize = floor(5.vmin)
+
+private class ServerAction(
+    val icon: Icon?,
+    val iconPad: UiSize = 0.25.vmin,
+    val content: UiElement? = null,
+    val action: () -> Unit = {}
+)
+
+private fun createServerListItem(
+    actions: Iterable<ServerAction>
+): UiElement {
+    val container = Axis.row()
+    var currContW: UiSize = 0.px
+    for (action in actions) {
+        if (container.children.isNotEmpty()) {
+            container.add(1.vmin, Space())
+            currContW += 1.vmin
         }
-    ))
-    .add(20.pw - 5.vmin, Axis.column()
-        .add(50.ph - 0.5.vmin,
-            createTextButton(
-                content = localized()[BUTTON_EDIT_SERVER],
-                handler = {
+        val buttonW: UiSize = if (action.content == null) 4.vmin
+            else 100.pw - currContW
+        val icon: Icon? = action.icon
+        if (icon != null) {
+            val contents = Axis.row()
+            val iconSize: UiSize = 3.vmin - (2 * action.iconPad)
+            contents.add(3.vmin, icon.create(iconSize).pad(action.iconPad))
+            action.content?.let { c ->
+                contents.add(0.5.vmin, Space())
+                contents.add(100.pw - 0.5.vmin - 3.vmin, c)
+            }
+            container.add(buttonW, Theme.button(
+                content = contents.pad(0.5.vmin),
+                handler = action.action
+            ))
+        } else {
+            container.add(buttonW, Space())
+        }
+        currContW += buttonW
+    }
+    return container.pad(top = 0.5.vmin, bottom = 0.5.vmin, right = 1.vmin)
+}
+
+fun serverSelectScreen(client: Client): () -> GameScreen = {
+    val background = WorldBackground(backgroundWorld(), client)
+    val screen = GameScreen(
+        render = background::render,
+        networkState = noNetworkConnections(client),
+        navigator = client.nav,
+        onClose = background::dispose
+    )
+    val serverList = Axis.column(SERVER_ACTION_SIZE)
+    for ((i, server) in client.config.servers.withIndex()) {
+        val addrName = if (server.port == DEFAULT_SERVER_PORT) server.address
+            else "${server.address}:${server.port}"
+        serverList.add(createServerListItem(listOf(
+            ServerAction(
+                icon = Icons.DELETE,
+                iconPad = 0.5.vmin,
+                action = {
+                    client.config.servers.removeAt(i)
+                    client.config.write()
+                    client.nav.replace(serverSelectScreen(client))
+                }
+            ),
+            ServerAction(
+                icon = Icons.EDIT,
+                iconPad = 0.5.vmin,
+                action = {
                     val edited = client.config.servers[i]
                     client.nav.push(serverEditScreen(edited, client) { r ->
                         client.config.servers[i] = r
@@ -56,102 +94,78 @@ private fun createServerOption(
                         client.nav.replace(serverSelectScreen(client))
                     })
                 }
-            ))
-        .add(1.vmin, Space())
-        .add(50.ph - 0.5.vmin,
-            createTextButton(
-                content = localized()[BUTTON_DELETE_SERVER],
-                handler = {
-                    client.config.servers.removeAt(i)
+            ),
+            ServerAction(
+                icon = Icons.PLAY,
+                content = Axis.row()
+                    .add(60.pw, Text()
+                        .withText(server.name)
+                        .withFont(googleSansSb())
+                        .withSize(80.ph)
+                        .pad(horizontal = 0.px, vertical = 0.5.vmin)
+                    )
+                    .add(40.pw, Text()
+                        .withText(addrName)
+                        .withFont(jetbrainsMonoSb())
+                        .withSize(80.ph)
+                        .withColor(Theme.SECONDARY_FONT_COLOR)
+                        .alignRight()
+                        .pad(top = 0.75.vmin, bottom = 0.75.vmin, right = 0.5.vmin)
+                    ),
+                action = {
+                    client.nav.push(serverConnectingScreen(
+                        server.address, server.port, client
+                    ))
+                }
+            )
+        )))
+    }
+    serverList.add(createServerListItem(listOf(
+        ServerAction(null),
+        ServerAction(null),
+        ServerAction(
+            icon = Icons.ADD,
+            content = Text().withText(localized()[BUTTON_ADD_SERVER])
+                .withSize(80.ph)
+                .pad(horizontal = 0.px, vertical = 0.5.vmin),
+            action = {
+                client.nav.push(serverEditScreen(null, client) { r ->
+                    client.config.servers.add(r)
                     client.config.write()
                     client.nav.replace(serverSelectScreen(client))
-                }
-            ))
-        .pad(left = 1.vmin)
-    )
-    .add(5.vmin, Axis.column()
-        .add(50.ph - 0.5.vmin, createTextButton(
-            content = "↑",
-            handler = {
-                val servers = client.config.servers
-                val moved = servers.removeAt(i)
-                val destI: Int = if (i >= 1) { i - 1 } else { servers.size }
-                servers.add(destI, moved)
-                client.config.write()
-                client.nav.replace(serverSelectScreen(client))
+                })
             }
-        ))
-        .add(1.vmin, Space())
-        .add(50.ph - 0.5.vmin, createTextButton(
-            content = "↓",
-            handler = {
-                val servers = client.config.servers
-                val moved = servers.removeAt(i)
-                val destI: Int = if (i + 1 <= servers.size) { i + 1 } else { 0 }
-                servers.add(destI, moved)
-                client.config.write()
-                client.nav.replace(serverSelectScreen(client))
-            }
-        ))
-        .pad(left = 1.vmin)
-    )
-    .pad(bottom = 1.5.vmin)
-
-fun serverSelectScreen(client: Client): () -> GameScreen = {
-    val screen = GameScreen(
-        render = renderGridBackground(
-            client
-        ),
-        networkState = noNetworkConnections(
-            client
-        ),
-        navigator = client.nav
-    )
-    val serverList = Axis.column()
-    for ((i, server) in client.config.servers.withIndex()) {
-        val addrName = "${server.address}:${server.port}"
-        val loggedUsername = client.config.sessions[addrName]?.username
-        serverList.add(9.5.vmin, createServerOption(
-            server, i, addrName, loggedUsername, client
-        ))
-    }
-    if (client.config.servers.isEmpty()) {
-        serverList.add(5.vmin, Text()
-            .withText(localized()[PLACEHOLDER_NO_SERVERS])
-            .withSize(2.vmin)
-            .withColor(SECONDARY_FONT_COLOR)
         )
-    }
-    serverList.add(50.ph, Space())
+    )))
+    val serverListH: UiSize = serverList.children.size * SERVER_ACTION_SIZE
+    val serverListP: UiSize = floor(maxOf((100.ph - serverListH) / 2, 5.vmin))
     screen.add(layer = 0, element = Axis.column()
-        .add(7.ph, Axis.row()
-            .add(100.pw - 30.vmin, Text()
-                .withFont(googleSansSb())
-                .withText(localized()[TITLE_SELECT_SERVER])
-                .withSize(2.5.vmin)
+        .add(NAV_BAR_HEIGHT, Stack()
+            .add(BlurBackground()
+                .withRadius(5)
             )
-            .add(30.vmin, createTextButton(
-                content = localized()[BUTTON_ADD_SERVER],
-                handler = {
-                    client.nav.push(serverEditScreen(null, client) { r ->
-                        client.config.servers.add(r)
-                        client.config.write()
-                        client.nav.replace(serverSelectScreen(client))
-                    })
-                }
-            ))
-            .pad(bottom = 2.vmin)
+            .add(FlatBackground().withColor(Theme.BUTTON_COLOR))
+            .add(Axis.row(10.vmin)
+                .add(createNavbarAction(Icons.SETTINGS) {
+
+                })
+                .add(createNavbarAction(Icons.TRANSLATE) {
+                    client.nav.push(languageSelectScreen(client))
+                })
+                .add(createNavbarAction(Icons.POWER) {
+                    client.window.close()
+                })
+            )
         )
-        .add(93.ph - 5.vmin, serverList
-            .wrapScrolling()
+        .add(100.ph - NAV_BAR_HEIGHT, Axis.row()
+            .add(50.pw + 1.vmin, Axis.column()
+                .add(serverListP, Space())
+                .add(serverListH, serverList)
+                .add(serverListP, Space())
+                .wrapThemedScrolling(horiz = false, vert = true)
+                .pad(left = 1.vmin)
+            )
         )
-        .add(5.vmin, createTextButton(
-            content = localized()[BUTTON_GO_BACK],
-            handler = {
-                client.nav.pop()
-            }
-        ).pad(top = 1.vmin, right = 100.pw - 30.vmin))
-        .pad(5.vmin)
     )
     screen
 }

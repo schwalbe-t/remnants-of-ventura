@@ -78,14 +78,16 @@ fun serverAuthenticationScreen(
             client.username = username
             client.nav.replace(controllingPlayerScreen(client))
         }
+    val background = WorldBackground(backgroundWorld(), client)
     val screen = GameScreen(
-        render = renderGridBackground(client),
+        render = background::render,
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
             client.nav.replace(serverConnectionFailedScreen(reason, client))
             client.network.clearError()
         }),
         packets = packets,
-        client.nav
+        navigator = client.nav,
+        onClose = background::dispose
     )
     val savedSession: Config.Session? = client.config.sessions[name]
     if (savedSession != null) {
@@ -103,16 +105,16 @@ fun serverAuthenticationScreen(
         .withText(localized()[TITLE_LOGIN])
         .withSize(2.5.vmin)
     )
-    val loginUsername = addLabelledInput(
+    val loginUsername = Theme.addLabelledInput(
         login, l[LABEL_USERNAME], l[PLACEHOLDER_USERNAME],
-        "", googleSansR(), maxLength = ACCOUNT_NAME_MAX_LEN
+        "", maxLength = ACCOUNT_NAME_MAX_LEN
     )
-    val loginPassword = addLabelledInput(
+    val loginPassword = Theme.addLabelledInput(
         login, l[LABEL_PASSWORD], l[PLACEHOLDER_PASSWORD],
-        "", googleSansR(), passwordDisp, maxLength = ACCOUNT_PASSWORD_MAX_LEN
+        "", disp = passwordDisp, maxLength = ACCOUNT_PASSWORD_MAX_LEN
     )
     login.add(6.vmin,
-        createTextButton(
+        Theme.button(
             content = l[BUTTON_LOG_IN],
             handler = {
                 username = loginUsername.valueString.trim()
@@ -131,20 +133,20 @@ fun serverAuthenticationScreen(
         .withText(localized()[TITLE_SIGN_UP])
         .withSize(2.5.vmin)
     )
-    val signUpUsername = addLabelledInput(
+    val signUpUsername = Theme.addLabelledInput(
         signUp, l[LABEL_USERNAME], l[PLACEHOLDER_USERNAME],
-        "", googleSansR(), maxLength = ACCOUNT_NAME_MAX_LEN
+        "", maxLength = ACCOUNT_NAME_MAX_LEN
     )
-    val signUpPassword = addLabelledInput(
+    val signUpPassword = Theme.addLabelledInput(
         signUp, l[LABEL_PASSWORD], l[PLACEHOLDER_PASSWORD],
-        "", googleSansR(), passwordDisp, maxLength = ACCOUNT_PASSWORD_MAX_LEN
+        "", disp = passwordDisp, maxLength = ACCOUNT_PASSWORD_MAX_LEN
     )
-    val signUpPasswordRepeat = addLabelledInput(
+    val signUpPasswordRepeat = Theme.addLabelledInput(
         signUp, l[LABEL_REPEAT_PASSWORD], l[PLACEHOLDER_REPEAT_PASSWORD],
-        "", googleSansR(), passwordDisp, maxLength = ACCOUNT_PASSWORD_MAX_LEN
+        "", disp = passwordDisp, maxLength = ACCOUNT_PASSWORD_MAX_LEN
     )
     signUp.add(6.vmin,
-        createTextButton(
+        Theme.button(
             content = l[BUTTON_SIGN_UP],
             handler = signUp@{
                 username = signUpUsername.valueString.trim()
@@ -180,7 +182,7 @@ fun serverAuthenticationScreen(
             .withSize(2.vmin)
             .alignCenter()
         )
-        .add(5.vmin, createTextButton(
+        .add(5.vmin, Theme.button(
             content = localized()[BUTTON_DISCONNECT],
             handler = {
                 client.nav.pop()

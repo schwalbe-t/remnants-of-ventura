@@ -8,34 +8,34 @@ import schwalbe.ventura.client.screens.*
 
 private fun createLanguageOption(
     language: GameLanguage, client: Client
-): UiElement = createButton(
+): UiElement = Theme.button(
     content = Axis.column()
-        .add(
-            60.ph, Text()
-                .withFont(googleSansSb())
-                .withText(language.nativeName)
-                .withSize(70.ph)
+        .add(60.ph, Text()
+            .withFont(googleSansSb())
+            .withText(language.nativeName)
+            .withSize(70.ph)
         )
-        .add(
-            40.ph, Text()
-                .withText(language.englishName)
-                .withSize(70.ph)
-                .withColor(SECONDARY_FONT_COLOR)
+        .add(40.ph, Text()
+            .withText(language.englishName)
+            .withSize(70.ph)
+            .withColor(Theme.SECONDARY_FONT_COLOR)
         )
         .pad(1.5.vmin),
     handler = {
         client.config.language = language
         client.config.write()
         localized().changeLanguage(language)
-        client.nav.clear(mainScreen(client))
+        client.nav.clear(serverSelectScreen(client))
     }
 ).pad(bottom = 1.5.vmin)
 
 fun languageSelectScreen(client: Client): () -> GameScreen = {
+    val background = WorldBackground(backgroundWorld(), client)
     val screen = GameScreen(
-        render = renderGridBackground(client),
+        render = background::render,
         networkState = noNetworkConnections(client),
-        navigator = client.nav
+        navigator = client.nav,
+        onClose = background::dispose
     )
     val languageList = Axis.column()
     for (language in GameLanguage.entries) {
@@ -51,7 +51,7 @@ fun languageSelectScreen(client: Client): () -> GameScreen = {
         .add(93.ph - 5.vmin, languageList
             .wrapScrolling()
         )
-        .add(5.vmin, createTextButton(
+        .add(5.vmin, Theme.button(
             content = localized()[BUTTON_GO_BACK],
             handler = {
                 client.nav.pop()

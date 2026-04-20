@@ -10,32 +10,27 @@ import schwalbe.ventura.data.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.net.*
-import org.joml.Vector3f
 import kotlin.math.PI
-import kotlin.math.atan
-import kotlin.math.tan
 
 fun createInventoryItemTitle(item: Item, count: Int): List<Span> {
     val l = localized()
     val itemTitle = mutableListOf<Span>()
     itemTitle.add(Span(
         text = l[item.type.localNameKey],
-        font = googleSansSb(),
-        color = BRIGHT_FONT_COLOR
+        font = googleSansSb()
     ))
     val variant: ItemVariant? = item.variant
     if (variant != null) {
         itemTitle.add(Span(
             text = " (" + l[variant.localNameKey] + ")",
-            font = googleSansR(),
-            color = BRIGHT_FONT_COLOR
+            font = googleSansR()
         ))
     }
     if (count > 1) {
         itemTitle.add(Span(
             text = " ×$count",
             font = googleSansR(),
-            color = SECONDARY_BRIGHT_FONT_COLOR
+            color = Theme.SECONDARY_FONT_COLOR
         ))
     }
     return itemTitle
@@ -46,20 +41,19 @@ fun addInventoryItem(
 ) {
     val root = Stack()
     root.add(FlatBackground()
-        .withColor(BUTTON_COLOR)
-        .withHoverColor(BUTTON_HOVER_COLOR)
+        .withColor(Theme.BUTTON_COLOR)
+        .withHoverColor(Theme.BUTTON_HOVER_COLOR)
     )
     if (item != null) {
         root.add(Axis.row()
             .add(100.pw - 1.vmin - 100.ph, Axis.column()
                 .add(60.ph, Text()
                     .withText(createInventoryItemTitle(item, count))
-                    .withColor(BRIGHT_FONT_COLOR)
                     .withSize(75.ph)
                 )
                 .add(40.ph, Text()
                     .withText(localized()[item.type.category.localNameKey])
-                    .withColor(SECONDARY_BRIGHT_FONT_COLOR)
+                    .withColor(Theme.SECONDARY_FONT_COLOR)
                     .withSize(75.ph)
                 )
                 .pad(top = 1.vmin, bottom = 1.vmin)
@@ -109,7 +103,6 @@ fun createItemListSection(
                 .withText(l[PLACEHOLDER_INVENTORY_EMPTY])
                 .withSize(1.5.vmin)
                 .withFont(googleSansI())
-                .withColor(BRIGHT_FONT_COLOR)
                 .pad(left = 2.5.vmin, right = 2.5.vmin)
             )
         }
@@ -119,16 +112,11 @@ fun createItemListSection(
     return Axis.column()
         .add(8.vmin, Text()
             .withText(l[TITLE_INVENTORY])
-            .withColor(BRIGHT_FONT_COLOR)
             .withFont(googleSansSb())
             .withSize(75.ph)
             .pad(2.5.vmin)
         )
-        .add(100.ph - 8.vmin, itemList
-            .wrapScrolling()
-            .withThumbColor(BUTTON_COLOR)
-            .withThumbHoverColor(BUTTON_HOVER_COLOR)
-        )
+        .add(100.ph - 8.vmin, itemList.wrapThemedScrolling(horiz = false))
         .pad(bottom = 1.vmin)
 }
 
@@ -142,12 +130,11 @@ private fun createInventoryItemActionButton(
     content: String, handler: () -> Unit
 ): UiElement = Stack()
     .add(FlatBackground()
-        .withColor(BUTTON_COLOR)
-        .withHoverColor(BUTTON_HOVER_COLOR)
+        .withColor(Theme.BUTTON_COLOR)
+        .withHoverColor(Theme.BUTTON_HOVER_COLOR)
     )
     .add(Text()
         .withText(content)
-        .withColor(BRIGHT_FONT_COLOR)
         .withSize(70.ph)
         .alignCenter()
         .pad(0.75.vmin)
@@ -180,7 +167,7 @@ private fun createSelectedItemSection(
             )
             .add(40.ph, Text()
                 .withText(l[item.type.category.localNameKey])
-                .withColor(SECONDARY_BRIGHT_FONT_COLOR)
+                .withColor(Theme.SECONDARY_FONT_COLOR)
                 .withSize(75.ph)
             )
             .pad(1.5.vmin)
@@ -197,10 +184,7 @@ private fun createSelectedItemSection(
         .add(20.ph, Text()
             .withText(l[item.type.localDescKey])
             .withSize(1.5.vmin)
-            .withColor(BRIGHT_FONT_COLOR)
-            .wrapScrolling()
-            .withThumbColor(BUTTON_COLOR)
-            .withThumbHoverColor(BUTTON_HOVER_COLOR)
+            .wrapThemedScrolling(horiz = false)
             .pad(1.5.vmin)
         )
 }
@@ -284,7 +268,7 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
     screen.add(layer = 0, element = Axis.row()
         .add(fpw * (2f/3f), Stack()
             .add(background)
-            .add(FlatBackground().withColor(PANEL_BACKGROUND))
+            .add(FlatBackground().withColor(Theme.PANEL_BACKGROUND))
             .add(Axis.row()
                 .add(50.pw, itemListSection)
                 .add(50.pw, selectedItemSection)

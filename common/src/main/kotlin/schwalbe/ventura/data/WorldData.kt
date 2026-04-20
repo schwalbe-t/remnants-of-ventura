@@ -15,9 +15,9 @@ class RendererConfig(
 ) {
     companion object {
         val default = RendererConfig(
-            groundToSun = SerVector3(1.134f, 1f, 0f),
-            baseColorFactor = SerVector3(1f, 1f, 1f),
-            shadowColorFactor = SerVector3(0.7f, 0.85f, 1.1f),
+            groundToSun = SerVector3(0.2f, 0.25f, 0f),
+            baseColorFactor = SerVector3(1.2f, 0.95f, 0.75f),
+            shadowColorFactor = SerVector3(0.7f, 0.75f, 0.9f),
             outlineColorFactor = SerVector3(0.55f, 0.65f, 0.75f),
             defaultLit = true
         )

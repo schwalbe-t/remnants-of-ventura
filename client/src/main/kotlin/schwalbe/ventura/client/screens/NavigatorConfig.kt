@@ -6,5 +6,5 @@ import schwalbe.ventura.engine.ui.*
 fun configureNavigator(ui: UiNavigator<GameScreen>) {
     ui.defaultFont = googleSansR()
     ui.defaultFontSize = 16.px
-    ui.defaultFontColor = BASE_FONT_COLOR
+    ui.defaultFontColor = Theme.FONT_COLOR
 }

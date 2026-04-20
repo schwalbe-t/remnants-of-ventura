@@ -4,7 +4,7 @@ package schwalbe.ventura.client
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.game.*
 import schwalbe.ventura.engine.*
-import schwalbe.ventura.client.screens.offline.mainScreen
+import schwalbe.ventura.client.screens.offline.serverSelectScreen
 import schwalbe.ventura.client.screens.submitScreenResources
 import schwalbe.ventura.engine.ui.loadUiResources
 
@@ -24,7 +24,7 @@ fun main() {
     client.resLoader.submit(Resource.fromCallback {
         configureNavigator(client.nav)
         localized().changeLanguage(client.config.language)
-        client.nav.clear(mainScreen(client))
+        client.nav.clear(serverSelectScreen(client))
     })
     client.gameloop()
     client.dispose()

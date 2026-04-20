@@ -11,10 +11,12 @@ import schwalbe.ventura.engine.gfx.Texture
 
 fun blitTexture(
     texture: Texture?, dest: ConstFramebuffer,
-    destPos: Vector2fc, destSize: Vector2fc
+    destPos: Vector2fc, destSize: Vector2fc,
+    preMultiplyAlpha: Boolean = false
 ) {
     if (texture == null) { return }
-    val shader: Shader<PxPos, Blit> = blitShader()
+    val shader: Shader<PxPos, Blit>
+        = if (preMultiplyAlpha) blitShaderPreMultiply() else blitShader()
     shader[PxPos.bufferSizePx] = Vector2f(
         dest.width.toFloat(), dest.height.toFloat()
     )
@@ -27,11 +29,13 @@ fun blitTexture(
 fun blitTexture(
     texture: Texture?, dest: ConstFramebuffer,
     destX: Int = 0, destY: Int = 0,
-    destW: Int = dest.width, destH: Int = dest.height
+    destW: Int = dest.width, destH: Int = dest.height,
+    preMultiplyAlpha: Boolean = false
 ) = blitTexture(
     texture, dest,
     Vector2f(destX.toFloat(), destY.toFloat()),
-    Vector2f(destW.toFloat(), destH.toFloat())
+    Vector2f(destW.toFloat(), destH.toFloat()),
+    preMultiplyAlpha
 )
 
 fun fillColor(

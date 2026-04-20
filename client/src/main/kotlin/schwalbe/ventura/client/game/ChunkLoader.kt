@@ -129,7 +129,11 @@ class ChunkLoader(
     class LoadedChunkData(
         val instances: List<LoadedInstance>,
         val ground: Geometry
-    )
+    ) {
+        fun dispose() {
+            this.ground.dispose()
+        }
+    }
 
     companion object {
         val objectModels: List<Resource<Model<StaticAnim>>> = ObjectType.entries
@@ -173,7 +177,7 @@ class ChunkLoader(
 
     private fun removeLoaded(ref: ChunkRef) {
         val removed = this.loaded.remove(ref) ?: return
-        removed.ground.dispose()
+        removed.dispose()
     }
 
     fun invalidateChunk(chunk: ChunkRef) {
@@ -275,6 +279,10 @@ class ChunkLoader(
             val data: LoadedChunkData = this.loaded[chunk] ?: continue
             this.renderChunk(state, data, pass)
         }
+    }
+
+    fun dispose() {
+        this.loaded.values.forEach(LoadedChunkData::dispose)
     }
 
 }

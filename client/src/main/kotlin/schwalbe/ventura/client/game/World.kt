@@ -48,6 +48,10 @@ class World(
     )
     val camController = CameraController(this.playerAtCenterCamMode)
 
+    fun dispose() {
+        this.chunks.dispose()
+    }
+
 }
 
 fun World.update(client: Client, captureInput: Boolean) {
@@ -60,7 +64,7 @@ fun World.update(client: Client, captureInput: Boolean) {
 }
 
 fun World.render(client: Client) {
-    client.renderer.sunDiameter = 5f + this.camController.distance.value
+    client.renderer.sunDiameter = 5f + this.camController.distance.value * 1.25f
     val sunTarget = Vector3f(0f, 0f, -this.camController.distance.value * 0.25f)
         .add(this.player.position)
     client.renderer.update(sunTarget)

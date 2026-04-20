@@ -1,8 +1,7 @@
 
 package schwalbe.ventura.client.screens.online
 
-import schwalbe.ventura.client.screens.BRIGHT_FONT_COLOR
-import schwalbe.ventura.client.screens.PANEL_BACKGROUND
+import schwalbe.ventura.client.screens.Theme
 import schwalbe.ventura.client.screens.googleSansSb
 import schwalbe.ventura.engine.ui.*
 
@@ -14,11 +13,10 @@ object NameDisplay {
             .withSpread(2)
         )
         .add(FlatBackground()
-            .withColor(PANEL_BACKGROUND)
+            .withColor(Theme.PANEL_BACKGROUND)
         )
         .add(Text()
             .withText(username)
-            .withColor(BRIGHT_FONT_COLOR)
             .withFont(googleSansSb())
             .withSize(1.2.vmin)
             .withWrapping(enabled = false)

@@ -36,7 +36,8 @@ class Client : Application<GameScreen>(
     override fun dispose() {
         super.dispose()
         this.network.dispose()
-        this.resLoader.disposeAll()
+        this.renderer.dispose()
+        this.world?.dispose()
     }
 
 }

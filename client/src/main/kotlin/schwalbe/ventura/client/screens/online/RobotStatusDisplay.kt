@@ -3,7 +3,6 @@ package schwalbe.ventura.client.screens.online
 
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
-import schwalbe.ventura.client.game.WorldState
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.data.RobotStatus
 import schwalbe.ventura.engine.ui.*
@@ -18,11 +17,9 @@ class RobotStatusDisplay {
         fun createStatusProp(nameText: Text, valueText: Text) = Axis.row()
             .add(100.pw - 5.vmin, nameText
                 .withSize(80.ph)
-                .withColor(BRIGHT_FONT_COLOR)
             )
             .add(5.vmin, valueText
                 .withSize(75.ph)
-                .withColor(BRIGHT_FONT_COLOR)
                 .withFont(jetbrainsMonoSb())
                 .alignRight()
             )
@@ -71,7 +68,6 @@ class RobotStatusDisplay {
         .add(3.vmin, this.nameText
             .withSize(75.ph)
             .withFont(googleSansSb())
-            .withColor(BRIGHT_FONT_COLOR)
             .withWrapping(enabled = false)
         )
         .add(2.5.vmin, this.statusText
@@ -82,12 +78,11 @@ class RobotStatusDisplay {
             .add(100.pw - 1.5.vmin - 100.ph, Axis.column(100.ph / 4)
                 .add(Stack()
                     .add(FlatBackground()
-                        .withColor(BUTTON_COLOR)
-                        .withHoverColor(BUTTON_HOVER_COLOR)
+                        .withColor(Theme.BUTTON_COLOR)
+                        .withHoverColor(Theme.BUTTON_HOVER_COLOR)
                     )
                     .add(this.toggleButtonText
                         .withSize(75.ph)
-                        .withColor(BRIGHT_FONT_COLOR)
                         .alignCenter()
                         .pad(0.1.vmin)
                     )
@@ -116,7 +111,7 @@ class RobotStatusDisplay {
             .withRadius(2)
             .withSpread(4)
         )
-        .add(FlatBackground().withColor(PANEL_BACKGROUND))
+        .add(FlatBackground().withColor(Theme.PANEL_BACKGROUND))
         .add(this.content.pad(1.5.vmin))
         .wrapBorderRadius(0.75.vmin)
         .pad()
@@ -157,9 +152,7 @@ class RobotStatusDisplayManager {
     val entries: MutableMap<Uuid, RobotStatusDisplay> = mutableMapOf()
     val entryRoots: Axis = Axis.row()
     val container: Padding = this.entryRoots
-        .wrapScrolling(vert = true, horiz = true)
-        .withThumbColor(BUTTON_COLOR)
-        .withThumbHoverColor(BUTTON_HOVER_COLOR)
+        .wrapThemedScrolling(vert = true, horiz = true)
         .withScrollInputFunc { dx, dy -> Pair(dx + dy, 0f) }
         .pad()
 }

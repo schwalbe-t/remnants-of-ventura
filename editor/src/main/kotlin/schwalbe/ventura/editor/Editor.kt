@@ -69,6 +69,13 @@ class Editor : Application<EditorMode>(
 
     var world: LoadedWorld? = null
 
+
+    override fun dispose() {
+        super.dispose()
+        this.renderer.dispose()
+        this.world?.dispose()
+    }
+
 }
 
 fun Editor.getSelectedObject(): ObjectInstance? {
@@ -96,6 +103,7 @@ private fun Editor.openChosenFile() {
         if (status != JFileChooser.APPROVE_OPTION) { return }
         val chosenPath: Path = chooser.selectedFile.toPath()
         val world = LoadedWorld(chosenPath)
+        this.world?.dispose()
         this.world = world
         this.position = world.world.startPosition.toVector3f()
         println("Read world file from '$chosenPath'")

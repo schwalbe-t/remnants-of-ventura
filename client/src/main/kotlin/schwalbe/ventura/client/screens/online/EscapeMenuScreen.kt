@@ -21,12 +21,11 @@ private fun addOption(
 ) {
     options.add(OPTION_HEIGHT + OPTION_PADDING, Stack()
         .add(FlatBackground()
-            .withColor(BUTTON_COLOR)
-            .withHoverColor(BUTTON_HOVER_COLOR)
+            .withColor(Theme.BUTTON_COLOR)
+            .withHoverColor(Theme.BUTTON_HOVER_COLOR)
         )
         .add(Text()
             .withText(name)
-            .withColor(BRIGHT_FONT_COLOR)
             .withSize(75.ph)
             .pad(2.vmin)
         )
@@ -101,7 +100,7 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
     screen.add(Axis.row()
         .add(50.vw, Stack()
             .add(background)
-            .add(FlatBackground().withColor(PANEL_BACKGROUND))
+            .add(FlatBackground().withColor(Theme.PANEL_BACKGROUND))
             .add(Axis.column()
                 .add(50.ph - (areaHeight / 2), Space())
                 .add(areaHeight, options

@@ -12,8 +12,9 @@ fun serverConnectingScreen(
 ): () -> GameScreen = {
     client.network.connect(address, port)
     val name = "$address:$port"
+    val background = WorldBackground(backgroundWorld(), client)
     val screen = GameScreen(
-        render = renderGridBackground(client),
+        render = background::render,
         networkState = establishNetworkConnection(
             client,
             onSuccess = {
@@ -24,27 +25,37 @@ fun serverConnectingScreen(
                 client.network.clearError()
             }
         ),
-        navigator = client.nav
+        navigator = client.nav,
+        onClose = background::dispose
     )
-    val contSize: UiSize = 20.vmin
+    val contSize: UiSize = 22.vmin
     screen.add(layer = 0, element = Axis.column()
         .add(50.ph - (contSize / 2), Space())
         .add(contSize, Axis.column()
-            .add(5.vmin, Text()
-                .withText(localized()[TITLE_CONNECTING_TO_SERVER])
-                .withSize(70.ph)
-                .alignCenter()
+            .add(5.vmin + 5.vmin + 2.vmin, Stack()
+                .add(BlurBackground().withRadius(5))
+                .add(FlatBackground().withColor(Theme.PANEL_BACKGROUND))
+                .add(Axis.column()
+                    .add(5.vmin, Text()
+                        .withText(localized()[TITLE_CONNECTING_TO_SERVER])
+                        .withSize(70.ph)
+                        .alignCenter()
+                    )
+                    .add(5.vmin, Text()
+                        .withText(name)
+                        .withFont(jetbrainsMonoSb())
+                        .withColor(Theme.SECONDARY_FONT_COLOR)
+                        .withSize(2.vmin)
+                        .alignCenter()
+                    )
+                    .pad(1.vmin)
+                )
+                .wrapBorderRadius(0.75.vmin)
+                .pad(left = 20.pw, right = 20.pw)
             )
-            .add(3.vmin, Text()
-                .withText(name)
-                .withFont(jetbrainsMonoSb())
-                .withColor(SECONDARY_FONT_COLOR)
-                .withSize(70.ph)
-                .alignCenter()
-            )
-            .add(7.vmin, Space())
+            .add(3.vmin, Space())
             .add(5.vmin,
-                createTextButton(
+                Theme.button(
                     content = localized()[BUTTON_CANCEL_CONNECTION],
                     handler = {
                         client.nav.pop()

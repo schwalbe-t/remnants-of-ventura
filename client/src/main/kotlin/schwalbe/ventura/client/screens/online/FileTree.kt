@@ -44,7 +44,6 @@ private fun createFileNameButton(text: Text, onClick: () -> Unit) = Stack()
     .add(text
         .alignCenter()
         .withFont(googleSansSb())
-        .withColor(BRIGHT_FONT_COLOR)
         .withSize(85.ph)
         .pad(0.35.vmin)
     )
@@ -62,7 +61,6 @@ private fun createFileNameMenu(
     val inputText = Text()
         .withFont(googleSansR())
         .withSize(1.65.vmin)
-        .withColor(BRIGHT_FONT_COLOR)
     val cancelText = Text().withText(l[BUTTON_CANCEL_FILE_ACTION])
     val confirmText = Text().withText(l[actionKey])
     var inputValid = true
@@ -75,11 +73,11 @@ private fun createFileNameMenu(
                 && newValue.all { it !in ILLEGAL_FILE_NAME_CHARS }
                 && (!exists || newValue == initialValue)
             inputText.withColor(
-                if (inputValid) BRIGHT_FONT_COLOR
+                if (inputValid) Theme.FONT_COLOR
                 else FILE_NAME_INVALID_COLOR
             )
             confirmText.withColor(
-                if (inputValid) BRIGHT_FONT_COLOR
+                if (inputValid) Theme.FONT_COLOR
                 else FILE_MENU_BUTTON
             )
         }
@@ -96,7 +94,6 @@ private fun createFileNameMenu(
             .add(titleH, Text()
                 .withText(localized()[TITLE_ENTER_FILE_NAME])
                 .withFont(googleSansSb())
-                .withColor(BRIGHT_FONT_COLOR)
                 .withSize(100.ph)
                 .pad(1.5.vmin)
             )
@@ -138,7 +135,6 @@ private fun createContextMenuItem(text: String, font: Font) = Text()
     .withText(text)
     .withSize(75.ph)
     .withFont(font)
-    .withColor(BRIGHT_FONT_COLOR)
     .pad(0.5.vmin)
 
 private fun createContextMenuAction(
@@ -310,8 +306,6 @@ val FILE_PADDING: UiSize = 0.5.vmin
 
 private fun createFileText(text: String) = Text()
     .withText(text)
-    .withFont(googleSansR())
-    .withColor(BRIGHT_FONT_COLOR)
     .withSize(75.ph)
 
 private fun createFileEntry(
@@ -321,7 +315,7 @@ private fun createFileEntry(
     .add(100.pw - FILE_INDENT, Stack()
         .add(FlatBackground()
             .withColor(0, 0, 0, 0)
-            .withHoverColor(BUTTON_HOVER_COLOR)
+            .withHoverColor(Theme.BUTTON_HOVER_COLOR)
             .wrapBorderRadius(0.5.vmin)
         )
         .add(createFileText(file.name)
@@ -372,7 +366,7 @@ private fun createFolderSubTree(
             .withText("⌄")
             .alignRight()
             .withFont(jetbrainsMonoB())
-            .withColor(SECONDARY_BRIGHT_FONT_COLOR)
+            .withColor(Theme.SECONDARY_FONT_COLOR)
             .withSize(60.ph)
             .pad(FILE_PADDING)
             .withHeight(FILE_HEIGHT)
@@ -396,8 +390,6 @@ fun createFileTree(ctx: FileTreeCtx): UiElement {
     }
     ctx.updateTree()
     return paddedContainer
-        .wrapScrolling(vert = true, horiz = true)
-        .withThumbColor(BUTTON_COLOR)
-        .withThumbHoverColor(BUTTON_HOVER_COLOR)
+        .wrapThemedScrolling(vert = true, horiz = true)
         .pad(0.5.vmin)
 }

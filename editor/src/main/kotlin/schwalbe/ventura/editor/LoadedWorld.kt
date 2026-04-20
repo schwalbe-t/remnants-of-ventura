@@ -64,4 +64,8 @@ class LoadedWorld(val path: Path) {
         return newObjRef
     }
 
+    fun dispose() {
+        this.chunkLoader.dispose()
+    }
+
 }
