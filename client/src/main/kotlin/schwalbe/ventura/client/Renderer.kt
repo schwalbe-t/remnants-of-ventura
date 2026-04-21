@@ -149,7 +149,7 @@ class Renderer(
 
     var sunDiameter: Float = 32f
 
-    var config: RendererConfig = RendererConfig.default
+    var config: RendererConfig = RendererConfig.DEFAULT
 
     private var mutCamViewProj = Matrix4f()
     private var mutSunViewProj = Matrix4f()

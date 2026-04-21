@@ -1,6 +1,7 @@
 {
 	"instanceMode": "CONSTANT",
 	"info": {
+        "trackList": "MAIN_MENU",
 		"rendererConfig": {
 			"groundToSun": {
 				"x": 0.2,

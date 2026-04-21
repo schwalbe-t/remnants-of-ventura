@@ -3,18 +3,9 @@
         "BUTTON_GO_BACK": "Go Back",
         "BUTTON_DISCONNECT": "Disconnect",
 
-        "BUTTON_PLAY": "Play",
-        "BUTTON_CHANGE_LANGUAGE": "Change Language",
-        "BUTTON_EXIT": "Exit",
-
         "TITLE_SELECT_LANGUAGE": "Select Language",
 
-        "TITLE_SELECT_SERVER": "Select Game Server",
         "BUTTON_ADD_SERVER": "Add Server",
-        "BUTTON_EDIT_SERVER": "Edit",
-        "BUTTON_DELETE_SERVER": "Delete",
-        "PLACEHOLDER_NO_SERVERS": "You do not have any saved servers. Press \"Add Server\" to add a server.",
-        "LABEL_LOGGED_IN_AS": "Logged in as:",
 
         "TITLE_EDIT_SERVER": "Edit Server",
         "LABEL_SERVER_NAME": "Name",

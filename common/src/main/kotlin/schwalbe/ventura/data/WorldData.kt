@@ -14,7 +14,7 @@ class RendererConfig(
     val defaultLit: Boolean
 ) {
     companion object {
-        val default = RendererConfig(
+        val DEFAULT = RendererConfig(
             groundToSun = SerVector3(0.2f, 0.25f, 0f),
             baseColorFactor = SerVector3(1.2f, 0.95f, 0.75f),
             shadowColorFactor = SerVector3(0.7f, 0.75f, 0.9f),
@@ -26,7 +26,8 @@ class RendererConfig(
 
 @Serializable
 data class ConstWorldInfo(
-    val rendererConfig: RendererConfig
+    val trackList: TrackList = TrackList.NONE,
+    val rendererConfig: RendererConfig = RendererConfig.DEFAULT
 )
 
 @Serializable

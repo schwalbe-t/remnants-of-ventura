@@ -3,18 +3,9 @@
         "BUTTON_GO_BACK": "Назад",
         "BUTTON_DISCONNECT": "Прекъсване",
 
-        "BUTTON_PLAY": "Играй",
-        "BUTTON_CHANGE_LANGUAGE": "Смени езика",
-        "BUTTON_EXIT": "Изход",
-
         "TITLE_SELECT_LANGUAGE": "Избор на език",
 
-        "TITLE_SELECT_SERVER": "Избор на сървър",
         "BUTTON_ADD_SERVER": "Добави сървър",
-        "BUTTON_EDIT_SERVER": "Редактирай",
-        "BUTTON_DELETE_SERVER": "Изтрий",
-        "PLACEHOLDER_NO_SERVERS": "Няма запазени сървъри. Натисни \"Добави сървър\", за да добавиш сървър.",
-        "LABEL_LOGGED_IN_AS": "Влязъл като:",
 
         "TITLE_EDIT_SERVER": "Редактиране на сървър",
         "LABEL_SERVER_NAME": "Име",

@@ -29,7 +29,7 @@ val googleSansSb: Resource<Font>
 val googleSansI: Resource<Font>
     = Font.loadTtf("res/fonts/GoogleSans-Italic.ttf")
 
-val backgroundWorld: Resource<WorldBackground.World> = Resource { {
+val backgroundWorld = Resource(allowReset = true) { {
     WorldBackground.World(
         worldFile = "res/worlds/main_menu.json",
         camera = Camera(

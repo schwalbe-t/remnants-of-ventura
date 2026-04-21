@@ -21,21 +21,11 @@ enum class LocalKeys {
     BUTTON_GO_BACK,
     BUTTON_DISCONNECT,
 
-    // Main Menu Screen
-    BUTTON_PLAY,
-    BUTTON_CHANGE_LANGUAGE,
-    BUTTON_EXIT,
-
     // Language Select Screen
     TITLE_SELECT_LANGUAGE,
 
     // Server List Screen
-    TITLE_SELECT_SERVER,
     BUTTON_ADD_SERVER,
-    BUTTON_EDIT_SERVER,
-    BUTTON_DELETE_SERVER,
-    PLACEHOLDER_NO_SERVERS,
-    LABEL_LOGGED_IN_AS,
 
     // Server Edit Screen
     TITLE_EDIT_SERVER,

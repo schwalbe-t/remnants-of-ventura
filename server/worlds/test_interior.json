@@ -1,6 +1,7 @@
 {
 	"instanceMode": "TEMPORARY",
 	"info": {
+        "trackList": "RUINS",
 		"rendererConfig": {
             "groundToSun": {
                 "x": 0.2,

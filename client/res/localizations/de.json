@@ -3,18 +3,9 @@
         "BUTTON_GO_BACK": "Zurück",
         "BUTTON_DISCONNECT": "Verbindung trennen",
 
-        "BUTTON_PLAY": "Spielen",
-        "BUTTON_CHANGE_LANGUAGE": "Sprache ändern",
-        "BUTTON_EXIT": "Spiel beenden",
-
         "TITLE_SELECT_LANGUAGE": "Sprachauswahl",
 
-        "TITLE_SELECT_SERVER": "Serverauswahl",
         "BUTTON_ADD_SERVER": "Server hinzufügen",
-        "BUTTON_EDIT_SERVER": "Bearbeiten",
-        "BUTTON_DELETE_SERVER": "Löschen",
-        "PLACEHOLDER_NO_SERVERS": "Du hast keine gespeicherten Server. Klicke \"Server hinzufügen\", um einen hinzuzufügen.",
-        "LABEL_LOGGED_IN_AS": "Eingeloggt als:",
 
         "TITLE_EDIT_SERVER": "Server bearbeiten",
         "LABEL_SERVER_NAME": "Name",

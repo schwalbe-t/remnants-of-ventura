@@ -94,6 +94,7 @@ class Texture(
     override fun dispose() {
         val oldId: Int = this.texId ?: return
         glDeleteTextures(oldId)
+        this.texId = null
     }
 
 }

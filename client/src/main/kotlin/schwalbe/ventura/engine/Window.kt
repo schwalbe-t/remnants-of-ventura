@@ -14,6 +14,9 @@ import org.lwjgl.glfw.GLFWVidMode
 import org.lwjgl.system.MemoryUtil.NULL
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.*
+import org.lwjgl.openal.ALC10.*
+import org.lwjgl.openal.ALC
+import org.lwjgl.openal.AL
 import org.lwjgl.stb.STBImage.stbi_load
 import org.lwjgl.stb.STBImage.stbi_set_flip_vertically_on_load
 import org.lwjgl.system.MemoryStack
@@ -53,10 +56,10 @@ class Window : Disposable {
             ?: throw IllegalStateException("Failed to get primary monitor")
         glfwDefaultWindowHints()
         if (sizeFactor == null) {
-            glfwWindowHint(GLFW_RED_BITS, vidMode.redBits());
-            glfwWindowHint(GLFW_GREEN_BITS, vidMode.greenBits());
-            glfwWindowHint(GLFW_BLUE_BITS, vidMode.blueBits());
-            glfwWindowHint(GLFW_REFRESH_RATE, vidMode.refreshRate());
+            glfwWindowHint(GLFW_RED_BITS, vidMode.redBits())
+            glfwWindowHint(GLFW_GREEN_BITS, vidMode.greenBits())
+            glfwWindowHint(GLFW_BLUE_BITS, vidMode.blueBits())
+            glfwWindowHint(GLFW_REFRESH_RATE, vidMode.refreshRate())
         }
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
@@ -75,6 +78,7 @@ class Window : Disposable {
         }
         glfwMakeContextCurrent(windowId)
         this.initGraphics()
+        this.initAudio()
         this.inputEvents = InputEventQueue(windowId)
         if (iconPath != null) {
             this.loadIcon(iconPath)
@@ -89,13 +93,20 @@ class Window : Disposable {
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
     }
 
+    private fun initAudio() {
+        val device = alcOpenDevice(null as ByteBuffer?)
+        val context = alcCreateContext(device, intArrayOf(0))
+        alcMakeContextCurrent(context)
+        AL.createCapabilities(ALC.createCapabilities(device))
+    }
+
     private fun loadIcon(path: String) = MemoryStack.stackPush().use { stack ->
         val widthPtr = stack.mallocInt(1)
         val heightPtr = stack.mallocInt(1)
         val channelsPtr = stack.mallocInt(1)
         stbi_set_flip_vertically_on_load(false)
         val decoded: ByteBuffer
-            = stbi_load(path, widthPtr, heightPtr, channelsPtr, 4) ?: return
+            = stbi_load(path, widthPtr, heightPtr, channelsPtr, 4) ?: return@use
         val images = GLFWImage.calloc(1, stack)
         images[0].run {
             width(widthPtr.get(0))
