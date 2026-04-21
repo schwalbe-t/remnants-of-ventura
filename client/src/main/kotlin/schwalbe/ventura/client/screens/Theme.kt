@@ -16,6 +16,8 @@ object Theme {
     val BUTTON_HOVER_COLOR: Vector4fc = Vector4f(255f, 255f, 255f, 128f).div(255f)
     val INPUT_COLOR: Vector4fc = BUTTON_COLOR
 
+    val TITLE_BAR_HEIGHT: UiSize = 5.vmin
+
     fun textInput(
         input: TextInput,
         placeholder: String,
@@ -139,3 +141,16 @@ fun UiElement.wrapThemedScrolling(
     .wrapScrolling(horiz, vert)
     .withThumbColor(Theme.BUTTON_COLOR)
     .withThumbHoverColor(Theme.BUTTON_HOVER_COLOR)
+
+fun UiElement.withTitlebar(text: String) = Axis.column()
+    .add(Theme.TITLE_BAR_HEIGHT, Stack()
+        .add(BlurBackground().withRadius(5))
+        .add(FlatBackground().withColor(Theme.BUTTON_COLOR))
+        .add(Text()
+            .withText(text)
+            .withSize(75.ph)
+            .withFont(googleSansSb())
+            .pad(top = 1.25.vmin, bottom = 1.25.vmin, left = 2.vmin)
+        )
+    )
+    .add(100.ph - Theme.TITLE_BAR_HEIGHT, this)

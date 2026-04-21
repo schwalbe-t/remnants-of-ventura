@@ -84,10 +84,12 @@ enum class ObjectType(
     ),
     LUSH_GRASS(
         modelPath = "res/objects/grass.glb",
+        applyColliders = false,
         tileColliderSize = null
     ),
     DRY_GRASS(
         modelPath = "res/objects/grass.glb",
+        applyColliders = false,
         tileColliderSize = null
     )
 }

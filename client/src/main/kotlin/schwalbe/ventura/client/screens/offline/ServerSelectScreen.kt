@@ -7,8 +7,6 @@ import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.screens.*
 
-private val NAV_BAR_HEIGHT: UiSize = 5.vmin
-
 private fun createNavbarAction(icon: Icon, action: () -> Unit) = Stack()
     .add(FlatBackground()
         .withColor(Vector4f(0f, 0f, 0f, 0f))
@@ -144,7 +142,7 @@ fun serverSelectScreen(client: Client): () -> GameScreen = {
     val serverListH: UiSize = serverList.children.size * SERVER_ACTION_SIZE
     val serverListP: UiSize = floor(maxOf((100.ph - serverListH) / 2, 5.vmin))
     root.add(Axis.column()
-        .add(NAV_BAR_HEIGHT, Stack()
+        .add(Theme.TITLE_BAR_HEIGHT, Stack()
             .add(BlurBackground()
                 .withRadius(5)
             )
@@ -161,7 +159,7 @@ fun serverSelectScreen(client: Client): () -> GameScreen = {
                 })
             )
         )
-        .add(100.ph - NAV_BAR_HEIGHT, Axis.row()
+        .add(100.ph - Theme.TITLE_BAR_HEIGHT, Axis.row()
             .add(50.pw + 1.vmin, Axis.column()
                 .add(serverListP, Space())
                 .add(serverListH, serverList)

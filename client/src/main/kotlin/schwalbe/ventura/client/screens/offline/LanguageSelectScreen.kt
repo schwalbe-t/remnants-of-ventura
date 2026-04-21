@@ -47,12 +47,7 @@ fun languageSelectScreen(client: Client): () -> GameScreen = {
     }
     languageList.add(50.ph, Space())
     root.add(Axis.column()
-        .add(7.ph, Text()
-            .withFont(googleSansSb())
-            .withText(localized()[TITLE_SELECT_LANGUAGE])
-            .withSize(2.5.vmin)
-        )
-        .add(93.ph - 5.vmin, languageList
+        .add(100.ph - 5.vmin, languageList
             .wrapScrolling()
         )
         .add(5.vmin, Theme.button(
@@ -62,6 +57,7 @@ fun languageSelectScreen(client: Client): () -> GameScreen = {
             }
         ).pad(top = 1.vmin, right = 100.pw - 30.vmin))
         .pad(5.vmin)
+        .withTitlebar(localized()[TITLE_SELECT_LANGUAGE])
     )
     screen.add(layer = 0, element = root)
     screen

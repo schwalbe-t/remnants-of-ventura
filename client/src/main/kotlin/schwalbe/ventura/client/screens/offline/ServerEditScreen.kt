@@ -66,14 +66,9 @@ fun serverEditScreen(
             }
         ).pad(top = 1.vmin, left = 30.pw, right = 30.pw)
     )
-    root.add(Axis.column()
-        .add(7.ph, Text()
-            .withFont(googleSansSb())
-            .withText(l[TITLE_EDIT_SERVER])
-            .withSize(2.5.vmin)
-        )
-        .add((100 - 7).ph, settings)
+    root.add(settings
         .pad(5.vmin)
+        .withTitlebar(localized()[TITLE_EDIT_SERVER])
     )
     screen.add(layer = 0, element = root)
     screen
