@@ -11,3 +11,5 @@ layout(std140) uniform uInstances {
 uniform mat4 uLocalTransform;
 uniform mat4 uJointTransforms[MAX_NUM_JOINTS];
 uniform mat4 uViewProjection;
+
+uniform float uTime;

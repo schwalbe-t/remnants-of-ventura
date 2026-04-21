@@ -25,6 +25,8 @@ class RendererVert<S : VertShaderDef<S>> : VertShaderDef<S> {
     val localTransform = mat4("uLocalTransform")
     val jointTransforms = mat4Arr("uJointTransforms", MAX_NUM_JOINTS)
     val viewProjection = mat4("uViewProjection")
+
+    val time = float("uTime")
 }
 
 class RendererFrag<S : FragShaderDef<S>> : FragShaderDef<S> {
@@ -42,6 +44,8 @@ class RendererFrag<S : FragShaderDef<S>> : FragShaderDef<S> {
     val depthBias = float("uDepthBias")
     val normalOffset = float("uNormalOffset")
     val defaultLit = bool("uDefaultLit")
+
+    val time = float("uTime")
 }
 
 
@@ -96,6 +100,8 @@ object DiscardFrag : FragShaderDef<DiscardFrag> {
 val discardOutlineShader: Resource<Shader<OutlineVert, DiscardFrag>>
     = Shader.loadGlsl(OutlineVert, DiscardFrag)
 
+
+private val startTimeMs: Long = System.currentTimeMillis()
 
 class Renderer(
     val dest: ConstFramebuffer,
@@ -165,6 +171,9 @@ class Renderer(
         .attachDepth(this.shadowMapTex)
     val shadowMap: ConstFramebuffer = this.mutShadowMap
 
+    var time: Double = 0.0
+        private set
+
     fun update(sunTarget: Vector3fc) {
         this.mutCamViewProj.set(this.camera.computeViewProj(this.dest))
         val sunPos: Vector3fc = this.config.groundToSun.toVector3f()
@@ -175,6 +184,8 @@ class Renderer(
                 this.sunDiameter, this.sunDiameter, SUN_NEAR, SUN_FAR
             )
             .lookAt(sunPos, sunTarget, SUN_UP)
+        val now: Long = System.currentTimeMillis()
+        this.time = (now - startTimeMs).toDouble() / 1000.0
     }
 
     fun beginShadowPass(): RenderPass {
@@ -250,6 +261,8 @@ class TypedRenderPass<
         shader[fragShader.depthBias] = Renderer.DEPTH_BIAS
         shader[fragShader.normalOffset] = Renderer.NORMAL_OFFSET
         shader[fragShader.defaultLit] = cfg.defaultLit
+        shader[vertShader.time] = this.renderer.time.toFloat()
+        // shader[fragShader.time] = this.renderer.time.toFloat()
     }
 
     fun <A : Animations<A>> renderGeometry(

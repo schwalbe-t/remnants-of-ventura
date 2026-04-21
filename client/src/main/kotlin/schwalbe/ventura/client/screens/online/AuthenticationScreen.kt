@@ -78,9 +78,13 @@ fun serverAuthenticationScreen(
             client.username = username
             client.nav.replace(controllingPlayerScreen(client))
         }
+    val root = Stack()
     val background = WorldBackground(backgroundWorld(), client)
     val screen = GameScreen(
-        render = background::render,
+        render = {
+            background.render()
+            root.invalidate()
+        },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
             client.nav.replace(serverConnectionFailedScreen(reason, client))
             client.network.clearError()
@@ -171,7 +175,7 @@ fun serverAuthenticationScreen(
             }
         ).pad(top = 2.vmin, left = 30.pw, right = 30.pw)
     )
-    screen.add(layer = 0, element = Axis.column()
+    root.add(Axis.column()
         .add(100.ph - 8.vmin, Axis.row()
             .add(50.pw - 2.5.vmin, login)
             .add(5.vmin, Space())
@@ -190,5 +194,6 @@ fun serverAuthenticationScreen(
         ).pad(top = 1.vmin, right = 100.pw - 30.vmin))
         .pad(5.vmin)
     )
+    screen.add(layer = 0, element = root)
     screen
 }

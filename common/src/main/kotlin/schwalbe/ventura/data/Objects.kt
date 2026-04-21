@@ -81,6 +81,14 @@ enum class ObjectType(
         modelPath = "res/objects/tree.glb",
         applyCollidersOf = listOf("collider"),
         tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
+    ),
+    LUSH_GRASS(
+        modelPath = "res/objects/grass.glb",
+        tileColliderSize = null
+    ),
+    DRY_GRASS(
+        modelPath = "res/objects/grass.glb",
+        tileColliderSize = null
     )
 }
 

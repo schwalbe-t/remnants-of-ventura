@@ -1,28 +1,28 @@
 {
 	"instanceMode": "CONSTANT",
 	"info": {
-        "trackList": "SURFACE",
+		"trackList": "SURFACE",
 		"rendererConfig": {
-            "groundToSun": {
-                "x": 0.2,
-                "y": 0.25,
-                "z": 0.0
-            },
-            "baseColorFactor": {
-                "x": 1.2,
-                "y": 0.95,
-                "z": 0.75
-            },
-            "shadowColorFactor": {
-                "x": 0.7,
-                "y": 0.75,
-                "z": 0.9
-            },
-            "outlineColorFactor": {
-                "x": 0.55,
-                "y": 0.65,
-                "z": 0.75
-            },
+			"groundToSun": {
+				"x": 0.2,
+				"y": 0.25,
+				"z": 0.0
+			},
+			"baseColorFactor": {
+				"x": 1.2,
+				"y": 0.95,
+				"z": 0.75
+			},
+			"shadowColorFactor": {
+				"x": 0.7,
+				"y": 0.75,
+				"z": 0.9
+			},
+			"outlineColorFactor": {
+				"x": 0.55,
+				"y": 0.65,
+				"z": 0.75
+			},
 			"defaultLit": true
 		}
 	},
@@ -274,6 +274,166 @@
 							"v": 0.85
 						}
 					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 5.385256,
+								"y": 0.0,
+								"z": 4.786293
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 3.7774396,
+								"y": 0.0,
+								"z": 12.146477
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 4.7143135,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 3.6345115,
+								"y": 0.0,
+								"z": 13.233852
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.81567115,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 6.477541,
+								"y": 0.0,
+								"z": 14.546898
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 3.387228,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 8.462925,
+								"y": 0.0,
+								"z": 9.908428
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 4.793341,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 9.781909,
+								"y": 0.0,
+								"z": 7.880432
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 3.2158427,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 6.415155,
+								"y": 0.0,
+								"z": 1.5821953
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 4.954169,
+								"z": 0.0
+							}
+						}
+					]
 				}
 			]
 		},
@@ -390,6 +550,174 @@
 							"v": {
 								"x": 0.0,
 								"y": 2.6078267,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 6.854604,
+								"y": 0.0,
+								"z": -12.258278
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 4.280467,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.30083,
+								"y": 0.0,
+								"z": -10.833675
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.4763145,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 2.7049744,
+								"y": 0.0,
+								"z": -10.238365
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.2139233,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 2.56983,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 2.4498186,
+								"y": 0.0,
+								"z": -13.467247
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 2.0278885,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 0.09067869,
+								"y": 0.0,
+								"z": -15.996864
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 2.9996293,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 11.225412,
+								"y": 0.0,
+								"z": -14.767906
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 5.019291,
+								"y": 0.0,
+								"z": -0.066329956
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 3.08158,
 								"z": 0.0
 							}
 						}
@@ -578,6 +906,142 @@
 							}
 						}
 					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -8.728489,
+								"y": 3.8146973E-6,
+								"z": -3.987278
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -0.27313232,
+								"y": 0.0,
+								"z": -12.9899025
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 2.9130852,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.9817064,
+								"y": 0.0,
+								"z": -13.842403
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.0043949,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -3.6421494,
+								"y": 0.0,
+								"z": -1.8963814
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 3.1171808,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -6.3327293,
+								"y": 0.0,
+								"z": -6.56102
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.66666806,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -1.3805103,
+								"y": 0.0,
+								"z": -9.318641
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.4690617,
+								"z": 0.0
+							}
+						}
+					]
 				}
 			]
 		},
@@ -664,6 +1128,414 @@
 						{
 							"type": "SCALE",
 							"v": 1.2
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -1.5895668,
+								"y": 0.0,
+								"z": 7.0282135
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -1.9984343,
+								"y": 0.0,
+								"z": 0.8989372
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -8.36322,
+								"y": 0.0,
+								"z": 1.2682686
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -5.853546,
+								"y": 0.0,
+								"z": 6.4338455
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.9621987,
+								"y": 0.0,
+								"z": 6.617714
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -1.9577744,
+								"y": 0.0,
+								"z": 4.59346
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -10.795579,
+								"y": 0.0,
+								"z": 7.0735474
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 6.0864315,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -4.777294,
+								"y": 0.0,
+								"z": 12.264599
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.916527,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -3.6222413,
+								"y": 0.0,
+								"z": 10.86137
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 3.308291,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -0.5516739,
+								"y": 0.0,
+								"z": 13.462521
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.58429,
+								"z": 0.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 0,
+			"chunkZ": -2
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.23804,
+								"y": 0.0,
+								"z": -18.028427
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 2.6543837,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.7169695,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 3.1438575,
+								"y": 0.0,
+								"z": -16.567528
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.4964973,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 5.8947988,
+								"y": 0.0,
+								"z": -19.111645
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 5.6416335,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 8.601568,
+								"y": 0.0,
+								"z": -19.97305
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 3.794053,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 2.94152,
+								"y": 0.0,
+								"z": -19.356049
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": -3,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DRY_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -47.661644,
+								"y": 0.0,
+								"z": -13.912247
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.07221182,
+								"z": 0.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": -4,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DRY_GRASS"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 6.191065,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -48.318653,
+								"y": 0.0,
+								"z": -8.69009
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DRY_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -48.127705,
+								"y": 0.0,
+								"z": -2.6535301
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.2337879,
+								"z": 0.0
+							}
 						}
 					]
 				}

@@ -62,9 +62,13 @@ private fun createServerListItem(
 }
 
 fun serverSelectScreen(client: Client): () -> GameScreen = {
+    val root = Stack()
     val background = WorldBackground(backgroundWorld(), client)
     val screen = GameScreen(
-        render = background::render,
+        render = {
+            background.render()
+            root.invalidate()
+        },
         networkState = noNetworkConnections(client),
         navigator = client.nav,
         onClose = background::dispose
@@ -139,7 +143,7 @@ fun serverSelectScreen(client: Client): () -> GameScreen = {
     )))
     val serverListH: UiSize = serverList.children.size * SERVER_ACTION_SIZE
     val serverListP: UiSize = floor(maxOf((100.ph - serverListH) / 2, 5.vmin))
-    screen.add(layer = 0, element = Axis.column()
+    root.add(Axis.column()
         .add(NAV_BAR_HEIGHT, Stack()
             .add(BlurBackground()
                 .withRadius(5)
@@ -167,5 +171,6 @@ fun serverSelectScreen(client: Client): () -> GameScreen = {
             )
         )
     )
+    screen.add(layer = 0, element = root)
     screen
 }

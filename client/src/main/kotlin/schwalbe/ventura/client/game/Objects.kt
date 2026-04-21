@@ -15,7 +15,6 @@ import org.joml.Matrix4fc
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector3fc
-import org.joml.Vector4fc
 
 interface ObjectStateProvider {
     fun isTriggered(obj: ObjectInstance): Boolean
@@ -103,21 +102,35 @@ object Objects {
         = this.renderMethodOf(obj[ObjectProp.Type])
 
     val OVERRIDES: Map<ObjectType, ObjectOverrides> = mapOf(
-        ObjectType.TREE_GREEN to TreeOverrides(
+        ObjectType.TREE_GREEN to FoliageOverrides(
+            TREE_FOLIAGE,
             colorBottom = parseRgbHex("437f5d"),
             colorTop    = parseRgbHex("86a063")
         ),
-        ObjectType.TREE_ORANGE to TreeOverrides(
+        ObjectType.TREE_ORANGE to FoliageOverrides(
+            TREE_FOLIAGE,
             colorBottom = parseRgbHex("cc785b"),
             colorTop    = parseRgbHex("d3925b")
         ),
-        ObjectType.TREE_RED to TreeOverrides(
+        ObjectType.TREE_RED to FoliageOverrides(
+            TREE_FOLIAGE,
             colorBottom = parseRgbHex("94554d"),
             colorTop    = parseRgbHex("cc785b")
         ),
-        ObjectType.TREE_PINK to TreeOverrides(
+        ObjectType.TREE_PINK to FoliageOverrides(
+            TREE_FOLIAGE,
             colorBottom = parseRgbHex("aa749e"),
             colorTop    = parseRgbHex("d4a488")
+        ),
+        ObjectType.LUSH_GRASS to FoliageOverrides(
+            GRASS_FOLIAGE,
+            colorBottom = parseRgbHex("86a063"),
+            colorTop    = parseRgbHex("437f5d")
+        ),
+        ObjectType.DRY_GRASS to FoliageOverrides(
+            GRASS_FOLIAGE,
+            colorBottom = parseRgbHex("d4a488"),
+            colorTop    = parseRgbHex("705448")
         ),
         ObjectType.BUTTON to ButtonOverrides,
         ObjectType.LAMP to LampOverrides
@@ -125,21 +138,57 @@ object Objects {
 
 }
 
-private class TreeOverrides(
-    val colorBottom: Vector3fc, val colorTop: Vector3fc
+private val TREE_FOLIAGE = FoliageOverrides.FoliageType(
+    model = Model.loadFile(
+        path = "res/objects/tree.glb",
+        properties = Renderer.meshProperties,
+        textureFilter = Texture.Filter.NEAREST
+    ),
+    foliageMeshes = listOf("leaves"), staticMeshes = listOf("trunk"),
+    swayInterval = 5f, swayAmount = 0.1f,
+    bottom = +1.5f, top = +6f
+)
+
+private val GRASS_FOLIAGE = FoliageOverrides.FoliageType(
+    model = Model.loadFile(
+        path = "res/objects/grass.glb",
+        properties = Renderer.meshProperties,
+        textureFilter = Texture.Filter.NEAREST
+    ),
+    foliageMeshes = listOf("grass"), staticMeshes = listOf(),
+    diffuseThreshold = -1f,
+    swayInterval = 5f, swayAmount = 0.1f,
+    bottom = 0f, top = +1f
+)
+
+private class FoliageOverrides(
+    val type: FoliageType, val colorBottom: Vector3fc, val colorTop: Vector3fc
 ) : ObjectOverrides() {
 
+    class FoliageType(
+        val model: Resource<Model<StaticAnim>>,
+        val swayInterval: Float, val swayAmount: Float,
+        val bottom: Float, val top: Float,
+        val foliageMeshes: List<String>, val staticMeshes: List<String>,
+        val diffuseThreshold: Float = 0f
+    )
+
     companion object {
-        const val BOTTOM: Float = +1.5f
-        const val TOP: Float = +6f
+        private val perlinMap: Resource<Texture>
+            = Texture.loadImage("res/vfx/perlin.png", Texture.Filter.NEAREST)
 
-        val treeModel: Resource<Model<StaticAnim>> = Model.loadFile(
-            path = "res/objects/tree.glb",
-            properties = Renderer.meshProperties,
-            textureFilter = Texture.Filter.NEAREST
-        )
+        private object FoliageVert : VertShaderDef<FoliageVert> {
+            override val path: String = "shaders/foliage.vert.glsl"
 
-        object FoliageFrag : FragShaderDef<FoliageFrag> {
+            val renderer = RendererVert<FoliageVert>()
+            val bottomHeight = float("uBottomHeight")
+            val topHeight = float("uTopHeight")
+            val swayInterval = float("uSwayInterval")
+            val swayAmount = float("uSwayAmount")
+            val perlinMap = sampler2D("uPerlinMap")
+        }
+
+        private object FoliageFrag : FragShaderDef<FoliageFrag> {
             override val path: String = "shaders/foliage.frag.glsl"
 
             val renderer = RendererFrag<FoliageFrag>()
@@ -148,29 +197,37 @@ private class TreeOverrides(
             val topHeight = float("uTopHeight")
             val topColor = vec3("uTopColor")
         }
-
-        val foliageShader: Resource<Shader<GeometryVert, FoliageFrag>>
-                = Shader.loadGlsl(GeometryVert, FoliageFrag)
     }
 
-    override fun submitResources(loader: ResourceLoader)
-        = loader.submitAll(treeModel, foliageShader)
+    private val foliageShader: Resource<Shader<FoliageVert, FoliageFrag>>
+        = Shader.loadGlsl(FoliageVert, FoliageFrag, macros = mapOf(
+            "DIFFUSE_THRESHOLD" to "${this.type.diffuseThreshold}"
+        ))
+
+    override fun submitResources(loader: ResourceLoader) {
+        loader.submitAll(this.type.model, perlinMap, this.foliageShader)
+    }
 
     override val render = RenderMethod.Batched { pass, _, _, transforms ->
-        val model: Model<StaticAnim> = treeModel()
-        val shader: Shader<GeometryVert, FoliageFrag> = foliageShader()
-        shader[FoliageFrag.bottomHeight] = BOTTOM
+        val model: Model<StaticAnim> = this.type.model()
+        val shader: Shader<FoliageVert, FoliageFrag> = this.foliageShader()
+        shader[FoliageVert.bottomHeight] = this.type.bottom
+        shader[FoliageVert.topHeight] = this.type.top
+        shader[FoliageVert.swayInterval] = this.type.swayInterval
+        shader[FoliageVert.swayAmount] = this.type.swayAmount
+        shader[FoliageVert.perlinMap] = perlinMap()
+        // shader[FoliageFrag.bottomHeight] = this.bottom
         shader[FoliageFrag.bottomColor] = this.colorBottom
-        shader[FoliageFrag.topHeight] = TOP
+        // shader[FoliageFrag.topHeight] = this.top
         shader[FoliageFrag.topColor] = this.colorTop
         pass.render(
-            model, shader, GeometryVert.renderer, FoliageFrag.renderer,
+            model, shader, FoliageVert.renderer, FoliageFrag.renderer,
             animState = null, transforms,
-            renderedMeshes = listOf("leaves")
+            renderedMeshes = this.type.foliageMeshes
         )
         Objects.renderBatch(
             pass, renderOutline = true, model, transforms,
-            renderedMeshes = listOf("trunk")
+            renderedMeshes = this.type.staticMeshes
         )
     }
 

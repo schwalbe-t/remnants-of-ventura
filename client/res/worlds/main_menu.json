@@ -1,7 +1,7 @@
 {
 	"instanceMode": "CONSTANT",
 	"info": {
-        "trackList": "MAIN_MENU",
+		"trackList": "MAIN_MENU",
 		"rendererConfig": {
 			"groundToSun": {
 				"x": 0.2,
@@ -362,6 +362,110 @@
 							"v": "LAMP"
 						}
 					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.46905723,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 5.2677007,
+								"y": 0.0,
+								"z": 0.9749813
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.949235,
+								"y": 0.0,
+								"z": 5.2213917
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 2.3800087,
+								"y": 0.0,
+								"z": 5.0266495
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 7.596961,
+								"y": 0.0,
+								"z": 1.2809029
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 1.8147361,
+								"y": 9.536743E-7,
+								"z": 2.9945755
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 1.5882516,
+								"y": 0.0,
+								"z": 7.3832226
+							}
+						}
+					]
 				}
 			]
 		},
@@ -655,6 +759,110 @@
 								"x": 3.6206985,
 								"y": 0.0,
 								"z": -2.7887726
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.9563737,
+								"y": 0.0,
+								"z": -3.8685246
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 7.897375,
+								"y": 0.0,
+								"z": -0.2634945
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 6.3428717,
+								"y": 0.0,
+								"z": -1.3994637
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 1.7762889,
+								"y": 0.0,
+								"z": -2.3135872
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 2.9713306,
+								"y": 0.0,
+								"z": -5.0493393
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -0.32361314,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 1.988187,
+								"y": 0.0,
+								"z": -0.17819977
 							}
 						}
 					]
@@ -1111,6 +1319,30 @@
 								"x": -2.3110793,
 								"y": 0.0,
 								"z": 13.752003
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.26907158,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -0.55753493,
+								"y": 0.0,
+								"z": 0.05751705
 							}
 						}
 					]

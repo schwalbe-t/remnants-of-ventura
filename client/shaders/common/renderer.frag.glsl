@@ -14,3 +14,5 @@ uniform int uShadowMapSamples;
 uniform float uDepthBias;
 uniform float uNormalOffset;
 uniform bool uDefaultLit;
+
+uniform float uTime;

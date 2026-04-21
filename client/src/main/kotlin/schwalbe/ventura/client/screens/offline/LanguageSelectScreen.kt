@@ -30,9 +30,13 @@ private fun createLanguageOption(
 ).pad(bottom = 1.5.vmin)
 
 fun languageSelectScreen(client: Client): () -> GameScreen = {
+    val root = Stack()
     val background = WorldBackground(backgroundWorld(), client)
     val screen = GameScreen(
-        render = background::render,
+        render = {
+            background.render()
+            root.invalidate()
+        },
         networkState = noNetworkConnections(client),
         navigator = client.nav,
         onClose = background::dispose
@@ -42,7 +46,7 @@ fun languageSelectScreen(client: Client): () -> GameScreen = {
         languageList.add(9.5.vmin, createLanguageOption(language, client))
     }
     languageList.add(50.ph, Space())
-    screen.add(layer = 0, element = Axis.column()
+    root.add(Axis.column()
         .add(7.ph, Text()
             .withFont(googleSansSb())
             .withText(localized()[TITLE_SELECT_LANGUAGE])
@@ -59,5 +63,6 @@ fun languageSelectScreen(client: Client): () -> GameScreen = {
         ).pad(top = 1.vmin, right = 100.pw - 30.vmin))
         .pad(5.vmin)
     )
+    screen.add(layer = 0, element = root)
     screen
 }

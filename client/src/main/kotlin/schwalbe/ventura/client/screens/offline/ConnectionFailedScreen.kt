@@ -9,15 +9,19 @@ import schwalbe.ventura.client.screens.*
 fun serverConnectionFailedScreen(
     reason: String, client: Client
 ): () -> GameScreen = {
+    val root = Stack()
     val background = WorldBackground(backgroundWorld(), client)
     val screen = GameScreen(
-        render = background::render,
+        render = {
+            background.render()
+            root.invalidate()
+        },
         networkState = noNetworkConnections(client),
         navigator = client.nav,
         onClose = background::dispose
     )
     val contSize: UiSize = 22.vmin
-    screen.add(layer = 0, element = Axis.column()
+    root.add(Axis.column()
         .add(50.ph - (contSize / 2), Space())
         .add(contSize, Axis.column()
             .add(5.vmin + 5.vmin + 2.vmin, Stack()
@@ -54,5 +58,6 @@ fun serverConnectionFailedScreen(
         .add(50.ph - (contSize / 2), Space())
         .pad(5.vmin)
     )
+    screen.add(layer = 0, element = root)
     screen
 }

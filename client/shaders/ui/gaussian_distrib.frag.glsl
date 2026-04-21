@@ -1,5 +1,5 @@
 
-#include "../common/constants.glsl"
+#include "../common/constants.h.glsl"
 
 in vec2 fPosUv;
 

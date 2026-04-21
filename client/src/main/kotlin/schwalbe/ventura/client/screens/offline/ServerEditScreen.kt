@@ -13,9 +13,13 @@ fun serverEditScreen(
     client: Client,
     result: (Config.Server) -> Unit
 ): () -> GameScreen = {
+    val root = Stack()
     val background = WorldBackground(backgroundWorld(), client)
     val screen = GameScreen(
-        render = background::render,
+        render = {
+            background.render()
+            root.invalidate()
+        },
         networkState = noNetworkConnections(client),
         navigator = client.nav,
         onClose = background::dispose
@@ -62,7 +66,7 @@ fun serverEditScreen(
             }
         ).pad(top = 1.vmin, left = 30.pw, right = 30.pw)
     )
-    screen.add(layer = 0, element = Axis.column()
+    root.add(Axis.column()
         .add(7.ph, Text()
             .withFont(googleSansSb())
             .withText(l[TITLE_EDIT_SERVER])
@@ -71,5 +75,6 @@ fun serverEditScreen(
         .add((100 - 7).ph, settings)
         .pad(5.vmin)
     )
+    screen.add(layer = 0, element = root)
     screen
 }
