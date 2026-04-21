@@ -14,7 +14,9 @@ import schwalbe.ventura.utils.GroundColorReader
 import java.nio.file.Files
 import java.nio.file.Path
 import schwalbe.ventura.client.Camera
+import schwalbe.ventura.client.Soundtrack
 import schwalbe.ventura.data.ObjectProp
+import schwalbe.ventura.data.TrackList
 
 class WorldBackground(
     val displayed: World, val client: Client
@@ -39,6 +41,8 @@ class WorldBackground(
     }
 
     init {
+        val tracklist = Soundtrack[this.displayed.world.info.trackList]
+        this.client.soundtrack.changeTracklist(tracklist)
         this.renderer.config = this.displayed.world.info.rendererConfig
     }
 

@@ -6,13 +6,11 @@ import schwalbe.ventura.client.*
 import org.joml.*
 import schwalbe.ventura.data.ObjectInstance
 import schwalbe.ventura.data.ObjectProp
+import schwalbe.ventura.net.WorldInfoPacket
+import schwalbe.ventura.utils.toVector3f
 import kotlin.uuid.Uuid
 
-class World(
-    client: Client,
-    val id: Uuid,
-    val isMain: Boolean
-) {
+class World(client: Client, info: WorldInfoPacket) {
 
     companion object {
         fun submitResources(resLoader: ResourceLoader) {
@@ -31,6 +29,9 @@ class World(
     }
 
 
+    val id: Uuid = info.worldId
+    val isMain: Boolean = info.isMainWorld
+
     val player = Player()
     val chunks = ChunkLoader(
         ChunkLoader.requestChunksFromNetwork(client.network)
@@ -47,6 +48,12 @@ class World(
         fovDegrees = 30f
     )
     val camController = CameraController(this.playerAtCenterCamMode)
+
+    init {
+        this.player.position.set(info.position.toVector3f())
+        client.renderer.config = info.worldInfo.rendererConfig
+        client.soundtrack.changeTracklist(Soundtrack[info.worldInfo.trackList])
+    }
 
     fun dispose() {
         this.chunks.dispose()

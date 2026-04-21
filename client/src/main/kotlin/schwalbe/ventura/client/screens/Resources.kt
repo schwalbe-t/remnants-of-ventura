@@ -47,5 +47,5 @@ fun submitScreenResources(loader: ResourceLoader) {
         googleSansR, googleSansSb, googleSansI,
         backgroundWorld
     )
-    Icons.submit(loader)
+    Icons.submitResources(loader)
 }

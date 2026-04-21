@@ -27,7 +27,7 @@ object Icons {
     val SETTINGS = Icon("res/icons/settings.png")
     val TRANSLATE = Icon("res/icons/translate.png")
 
-    fun submit(resLoader: ResourceLoader): Unit = resLoader.submitAll(
+    fun submitResources(resLoader: ResourceLoader): Unit = resLoader.submitAll(
         ADD.image, DELETE.image, EDIT.image, PLAY.image, POWER.image,
         SETTINGS.image, TRANSLATE.image
     )

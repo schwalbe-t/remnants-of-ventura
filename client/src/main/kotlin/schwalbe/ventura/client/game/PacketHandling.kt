@@ -52,11 +52,8 @@ fun PacketHandler<Unit>.addWorldHandling(client: Client) = this
         client.world = null
     }
     .onPacket(PacketType.COMPLETE_WORLD_CHANGE) { info: WorldInfoPacket, _ ->
-        val world = World(client, info.worldId, info.isMainWorld)
-        world.player.position.set(info.position.toVector3f())
         client.world?.dispose()
-        client.world = world
-        client.renderer.config = info.worldInfo.rendererConfig
+        client.world = World(client, info)
     }
     .onPacket(PacketType.CHUNK_CONTENTS) { c: ChunkContentsPacket, _ ->
         val world: World = client.world ?: return@onPacket

@@ -12,6 +12,7 @@ private fun submitResources(resLoader: ResourceLoader) {
     loadUiResources(resLoader)
     submitScreenResources(resLoader)
     resLoader.submit(localized)
+    Soundtrack.submitResources(resLoader)
     Renderer.submitResources(resLoader)
     World.submitResources(resLoader)
     Items.submitResources(resLoader)
