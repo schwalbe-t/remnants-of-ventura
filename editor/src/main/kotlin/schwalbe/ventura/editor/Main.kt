@@ -19,6 +19,7 @@ fun main() {
     editor.loadResources()
     submitResources(editor.resLoader)
     editor.resLoader.submit(Resource.fromCallback {
+        editor.window.setVisible()
         editor.nav.clear(defaultMode(editor))
     })
     editor.gameloop()

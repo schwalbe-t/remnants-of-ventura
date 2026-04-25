@@ -35,7 +35,11 @@ private class WindowFramebuffer(val window: Window) : ConstFramebuffer() {
     }
 }
 
-class Window : Disposable {
+class Window(
+    name: String,
+    val sizeFactor: Float,
+    iconPath: String? = null
+) : Disposable {
 
     private var windowId: Long? = null
     var width: Int = 0
@@ -45,37 +49,22 @@ class Window : Disposable {
         
     val inputEvents: InputEventQueue
 
-    constructor(
-        name: String,
-        sizeFactor: Float? = null,
-        iconPath: String? = null
-    ) {
+    init {
         check(glfwInit()) { "Failed to initialize GLFW" }
         val monitor: Long = glfwGetPrimaryMonitor()
         val vidMode: GLFWVidMode = glfwGetVideoMode(monitor)
             ?: throw IllegalStateException("Failed to get primary monitor")
         glfwDefaultWindowHints()
-        if (sizeFactor == null) {
-            glfwWindowHint(GLFW_RED_BITS, vidMode.redBits())
-            glfwWindowHint(GLFW_GREEN_BITS, vidMode.greenBits())
-            glfwWindowHint(GLFW_BLUE_BITS, vidMode.blueBits())
-            glfwWindowHint(GLFW_REFRESH_RATE, vidMode.refreshRate())
-        }
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
+//        glfwWindowHint(GLFW_RED_BITS, vidMode.redBits())
+//        glfwWindowHint(GLFW_GREEN_BITS, vidMode.greenBits())
+//        glfwWindowHint(GLFW_BLUE_BITS, vidMode.blueBits())
+//        glfwWindowHint(GLFW_REFRESH_RATE, vidMode.refreshRate())
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE)
-        val width: Int = ((sizeFactor ?: 1f) * vidMode.width()).roundToInt()
-        val height: Int = ((sizeFactor ?: 1f) * vidMode.height()).roundToInt()
-        val windowId: Long = glfwCreateWindow(
-            width, height, name,
-            if (sizeFactor == null) { monitor } else { NULL }, NULL
-        )
+        val windowId: Long = glfwCreateWindow(500, 500, name, NULL, NULL)
         this.windowId = windowId
-        if (sizeFactor != null) {
-            val windowX: Int = (vidMode.width() - width) / 2
-            val windowY: Int = (vidMode.height() - height) / 2
-            glfwSetWindowPos(windowId, windowX, windowY)
-        }
         glfwMakeContextCurrent(windowId)
         this.initGraphics()
         this.initAudio()
@@ -83,6 +72,7 @@ class Window : Disposable {
         if (iconPath != null) {
             this.loadIcon(iconPath)
         }
+        this.setFullscreenEnabled(false)
     }
     
     private fun initGraphics() {
@@ -118,9 +108,35 @@ class Window : Disposable {
     
     fun getWindowId(): Long = this.windowId
         ?: throw UsageAfterDisposalException()
-    
+
+    fun setVisible(visible: Boolean = true): Unit = when (visible) {
+        true    -> glfwShowWindow(this.getWindowId())
+        false   -> glfwHideWindow(this.getWindowId())
+    }
+
     fun setVsyncEnabled(enabled: Boolean = true) {
         glfwSwapInterval(if (enabled) 1 else 0)
+    }
+
+    fun setFullscreenEnabled(enabled: Boolean = true) {
+        val monitor: Long = glfwGetPrimaryMonitor()
+        val vidMode: GLFWVidMode = glfwGetVideoMode(monitor)
+            ?: throw IllegalStateException("Failed to get primary monitor")
+        val windowId: Long = this.getWindowId()
+        if (enabled) {
+            glfwSetWindowMonitor(
+                windowId, monitor, 0, 0,
+                vidMode.width(), vidMode.height(), vidMode.refreshRate()
+            )
+        } else {
+            val width: Int = (this.sizeFactor * vidMode.width()).roundToInt()
+            val height: Int = (this.sizeFactor * vidMode.height()).roundToInt()
+            val windowX: Int = (vidMode.width() - width) / 2
+            val windowY: Int = (vidMode.height() - height) / 2
+            glfwSetWindowMonitor(
+                windowId, NULL, windowX, windowY, width, height, -1
+            )
+        }
     }
     
     val framebuffer: ConstFramebuffer = WindowFramebuffer(this)

@@ -66,13 +66,12 @@ fun Application<*>.reloadAllResources() {
 fun Application<*>.gameloop() {
     var lastFrameTime: Long = System.nanoTime()
     while (!this.window.shouldClose()) {
-        this.window.beginFrame()
-        this.resLoader.loadQueuedFully()
-
         if (this.isSuspended) {
-            this.window.endFrame()
+            this.resLoader.loadQueuedFully()
             continue
         }
+
+        this.window.beginFrame()
 
         this.beforeRender()
 
@@ -102,5 +101,7 @@ fun Application<*>.gameloop() {
         }
 
         this.window.endFrame()
+
+        this.resLoader.loadQueuedFully()
     }
 }

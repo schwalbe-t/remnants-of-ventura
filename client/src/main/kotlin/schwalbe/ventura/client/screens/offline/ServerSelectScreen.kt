@@ -149,7 +149,7 @@ fun serverSelectScreen(client: Client): () -> GameScreen = {
             .add(FlatBackground().withColor(Theme.BUTTON_COLOR))
             .add(Axis.row(10.vmin)
                 .add(createNavbarAction(Icons.SETTINGS) {
-
+                    client.nav.push(offlineSettingsScreen(client))
                 })
                 .add(createNavbarAction(Icons.TRANSLATE) {
                     client.nav.push(languageSelectScreen(client))

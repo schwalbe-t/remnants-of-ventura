@@ -3,7 +3,25 @@
         "BUTTON_GO_BACK": "Zurück",
         "BUTTON_DISCONNECT": "Verbindung trennen",
 
+        "TITLE_LOADING": "Spiel wird geladen...",
+
         "TITLE_SELECT_LANGUAGE": "Sprachauswahl",
+
+        "TITLE_SETTINGS": "Einstellungen",
+        "SECTION_AUDIO_SETTINGS": "Audio",
+        "DESCRIPTION_AUDIO_SETTINGS": "Einstellungen für den Spielsound, einschließlich Soundeffekte und Musik.",
+        "SETTING_GENERAL_VOLUME": "Gesamtlautstärke",
+        "DESCRIPTION_GENERAL_VOLUME": "Die Lautstärke aller Audioinhalte, einschließlich Soundeffekte und Musik.",
+        "SETTING_MUSIC_VOLUME": "Musiklautstärke",
+        "DESCRIPTION_MUSIC_VOLUME": "Regelt die Lautstärke der Hintergrundmusik.",
+        "SETTING_SFX_VOLUME": "Effektlautstärke",
+        "DESCRIPTION_SFX_VOLUME": "Regelt die Lautstärke von Soundeffekten.",
+        "SECTION_DISPLAY_SETTINGS": "Anzeige",
+        "DESCRIPTION_DISPLAY_SETTINGS": "Einstellungen dazu, wie das Spiel auf deinem Bildschirm erscheint.",
+        "SETTING_FULLSCREEN": "Vollbild",
+        "DESCRIPTION_FULLSCREEN": "Im Vollbildmodus nimmt das Spielmenü den gesamten Bildschirm ein.",
+        "SETTING_VSYNC": "VSync",
+        "DESCRIPTION_VSYNC": "Die Aktivierung von VSync (Vertikale Synchronisation) synchronisiert die Bildrate des Spiels mit der Bildwiederholfrequenz deines Monitors.",
 
         "BUTTON_ADD_SERVER": "Server hinzufügen",
 

@@ -19,17 +19,25 @@ class Icon(path: String, filter: Texture.Filter = Texture.Filter.LINEAR) {
 
 object Icons {
 
-    val ADD = Icon("res/icons/add.png")
-    val DELETE = Icon("res/icons/delete.png")
-    val EDIT = Icon("res/icons/edit.png")
-    val PLAY = Icon("res/icons/play.png")
-    val POWER = Icon("res/icons/power.png")
-    val SETTINGS = Icon("res/icons/settings.png")
-    val TRANSLATE = Icon("res/icons/translate.png")
+    private val icons: MutableList<Icon> = mutableListOf()
+    private fun create(name: String): Icon {
+        val icon = Icon("res/icons/$name")
+        this.icons.add(icon)
+        return icon
+    }
 
-    fun submitResources(resLoader: ResourceLoader): Unit = resLoader.submitAll(
-        ADD.image, DELETE.image, EDIT.image, PLAY.image, POWER.image,
-        SETTINGS.image, TRANSLATE.image
-    )
+    val ADD = create("add.png")
+    val CHECK_BOX_BLANK = create("check_box_blank.png")
+    val CHECK_BOX_CHECKED = create("check_box_checked.png")
+    val DELETE = create("delete.png")
+    val EDIT = create("edit.png")
+    val PLAY = create("play.png")
+    val POWER = create("power.png")
+    val SETTINGS = create("settings.png")
+    val TRANSLATE = create("translate.png")
+
+    fun submitResources(resLoader: ResourceLoader) {
+        this.icons.forEach { resLoader.submit(it.image) }
+    }
 
 }

@@ -175,7 +175,7 @@ private class FoliageOverrides(
 
     companion object {
         private val perlinMap: Resource<Texture>
-            = Texture.loadImage("res/vfx/perlin.png", Texture.Filter.NEAREST)
+            = Texture.loadImage("res/vfx/perlin.png", Texture.Filter.LINEAR)
 
         private object FoliageVert : VertShaderDef<FoliageVert> {
             override val path: String = "shaders/foliage.vert.glsl"

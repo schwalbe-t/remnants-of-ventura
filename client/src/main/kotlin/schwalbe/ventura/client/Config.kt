@@ -9,6 +9,7 @@ import kotlin.uuid.Uuid
 @Serializable
 data class Config(
     var language: GameLanguage = findSystemLanguage(GameLanguage.ENGLISH),
+    val settings: Settings = Settings(),
     val servers: MutableList<Server> = mutableListOf(),
     val sessions: MutableMap<String, Session> = mutableMapOf()
 ) {

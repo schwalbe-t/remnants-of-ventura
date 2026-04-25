@@ -83,6 +83,9 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
             client.nav.pop()
         })
     }
+    addOption(options, localized()[TITLE_SETTINGS], action = {
+        client.nav.push(onlineSettingsScreen(client))
+    })
     addOption(options, localized()[BUTTON_LOG_OUT], action = {
         val s: NetworkClient.State = client.network.state
         if (s !is NetworkClient.Connected) { return@addOption }

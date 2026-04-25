@@ -18,10 +18,6 @@ class Client : Application<GameScreen>(
 
     val config: Config = Config.read()
 
-    init {
-        this.window.setVsyncEnabled(true)
-    }
-
     val network = NetworkClient()
 
     val soundtrack = SoundtrackPlayer()

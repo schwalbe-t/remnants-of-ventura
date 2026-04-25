@@ -2,8 +2,6 @@
 package schwalbe.ventura.engine.ui
 
 import schwalbe.ventura.engine.gfx.Texture
-import schwalbe.ventura.engine.gfx.Shader
-import org.joml.*
 import kotlin.math.roundToInt
 
 class Padding : GpuUiElement() {
@@ -12,13 +10,25 @@ class Padding : GpuUiElement() {
         private set
         
     var paddingTop: UiSize = 0.px
-        private set
+        set(value) {
+            field = value
+            this.invalidate()
+        }
     var paddingBottom: UiSize = 0.px
-        private set
+        set(value) {
+            field = value
+            this.invalidate()
+        }
     var paddingLeft: UiSize = 0.px
-        private set
+        set(value) {
+            field = value
+            this.invalidate()
+        }
     var paddingRight: UiSize = 0.px
-        private set
+        set(value) {
+            field = value
+            this.invalidate()
+        }
     
     override val children: List<UiElement>
         get() = listOfNotNull(this.inside)
@@ -58,7 +68,6 @@ class Padding : GpuUiElement() {
         this.paddingBottom = amount
         this.paddingLeft = amount
         this.paddingRight = amount
-        this.invalidate()
         return this
     }
     
@@ -67,7 +76,6 @@ class Padding : GpuUiElement() {
         this.paddingBottom = vertical
         this.paddingLeft = horizontal
         this.paddingRight = horizontal
-        this.invalidate()
         return this
     }
     
@@ -78,7 +86,6 @@ class Padding : GpuUiElement() {
         this.paddingBottom = bottom
         this.paddingLeft = left
         this.paddingRight = right
-        this.invalidate()
         return this
     }
     

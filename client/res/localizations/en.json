@@ -3,7 +3,25 @@
         "BUTTON_GO_BACK": "Go Back",
         "BUTTON_DISCONNECT": "Disconnect",
 
+        "TITLE_LOADING": "Loading Game...",
+
         "TITLE_SELECT_LANGUAGE": "Select Language",
+
+        "TITLE_SETTINGS": "Settings",
+        "SECTION_AUDIO_SETTINGS": "Audio",
+        "DESCRIPTION_AUDIO_SETTINGS": "Settings related to game audio, including sound effects and music.",
+        "SETTING_GENERAL_VOLUME": "General Volume",
+        "DESCRIPTION_GENERAL_VOLUME": "The volume of all game audio, including sound effects and music.",
+        "SETTING_MUSIC_VOLUME": "Music Volume",
+        "DESCRIPTION_MUSIC_VOLUME": "Controls the volume of the background music.",
+        "SETTING_SFX_VOLUME": "Sound Effect Volume",
+        "DESCRIPTION_SFX_VOLUME": "Controls the volume of sound effects.",
+        "SECTION_DISPLAY_SETTINGS": "Display",
+        "DESCRIPTION_DISPLAY_SETTINGS": "Settings related to how the game appears on your screen.",
+        "SETTING_FULLSCREEN": "Fullscreen",
+        "DESCRIPTION_FULLSCREEN": "Enabling fullscreen mode makes the game window take up the entire screen.",
+        "SETTING_VSYNC": "VSync",
+        "DESCRIPTION_VSYNC": "Enabling VSync (Vertical Synchronization) causes the game's frame rate to be synchronized with the monitor's refresh rate.",
 
         "BUTTON_ADD_SERVER": "Add Server",
 

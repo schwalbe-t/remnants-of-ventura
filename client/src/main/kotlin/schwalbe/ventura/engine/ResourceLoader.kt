@@ -69,7 +69,7 @@ class ResourceLoader {
     private val hasQueued = this.lock.newCondition()
     
     private var loadedRaw: MutableList<Resource<*>> = mutableListOf()
-    
+
     fun <T> submit(resource: Resource<T>): Resource<T> {
         this.lock.withLock {
             this.queued.add(resource)

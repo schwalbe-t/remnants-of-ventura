@@ -3,7 +3,25 @@
         "BUTTON_GO_BACK": "Назад",
         "BUTTON_DISCONNECT": "Прекъсване",
 
+        "TITLE_LOADING": "Зареждане на играта...",
+
         "TITLE_SELECT_LANGUAGE": "Избор на език",
+
+        "TITLE_SETTINGS": "Настройки",
+        "SECTION_AUDIO_SETTINGS": "Аудио",
+        "DESCRIPTION_AUDIO_SETTINGS": "Настройки на звука, включително музика и звукови ефекти.",
+        "SETTING_GENERAL_VOLUME": "Обща сила на звука",
+        "DESCRIPTION_GENERAL_VOLUME": "Силата на всички звуци в играта, включително музика и ефекти.",
+        "SETTING_MUSIC_VOLUME": "Сила на музиката",
+        "DESCRIPTION_MUSIC_VOLUME": "Контролира силата на фоновата музика.",
+        "SETTING_SFX_VOLUME": "Сила на ефектите",
+        "DESCRIPTION_SFX_VOLUME": "Контролира силата на звуковите ефекти.",
+        "SECTION_DISPLAY_SETTINGS": "Екран",
+        "DESCRIPTION_DISPLAY_SETTINGS": "Настройки за показването на играта на вашия екран.",
+        "SETTING_FULLSCREEN": "Цял екран",
+        "DESCRIPTION_FULLSCREEN": "Режимът „Цял екран“ позволява на играта да заеме цялото пространство на монитора.",
+        "SETTING_VSYNC": "VSync",
+        "DESCRIPTION_VSYNC": "Включването на VSync (вертикална синхронизация) изравнява кадровата честота на играта с честотата на опресняване на монитора.",
 
         "BUTTON_ADD_SERVER": "Добави сървър",
 

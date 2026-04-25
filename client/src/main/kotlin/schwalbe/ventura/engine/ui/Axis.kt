@@ -112,6 +112,14 @@ open class Axis(
         this.invalidate()
         return this
     }
+
+    fun computeContentLength(): UiSize {
+        var sum: UiSize = 0.px
+        for ((elem, len) in this.inside) {
+            sum += len
+        }
+        return sum
+    }
     
 }
 
