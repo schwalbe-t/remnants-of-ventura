@@ -174,6 +174,7 @@ fun codeEditingScreen(client: Client): () -> GameScreen = {
                     contextMenu,
                     onFileSelect = { openFile(it) },
                     isMutable = true,
+                    fileExt = "bigton",
                     onFileDelete = { file ->
                         if (editor?.file?.canonicalPath == file.canonicalPath) {
                             closeFile()

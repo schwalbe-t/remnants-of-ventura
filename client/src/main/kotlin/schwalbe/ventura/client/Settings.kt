@@ -13,9 +13,11 @@ data class Settings(
 
     // display settings
     var fullscreenEnabled: Boolean = true,
-    var vsyncEnabled: Boolean = true
+    var vsyncEnabled: Boolean = true,
 
-    // graphics settings
+    // code editing settings
+    var advancedEditingEnabled: Boolean = false,
+    var autoRestartEnabled: Boolean = true
 )
 
 fun Settings.applyAudio(client: Client): Settings {

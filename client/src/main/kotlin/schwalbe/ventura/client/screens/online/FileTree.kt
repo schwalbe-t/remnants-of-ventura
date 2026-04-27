@@ -24,6 +24,27 @@ private val ILLEGAL_FILE_NAME_CHARS: Set<Char> = setOf(
     '|', '\"', ':'
 )
 
+private fun processFileName(rawName: String, ext: String?): String {
+    val trimmed: String = rawName.trim()
+    if (trimmed.isEmpty()) {
+        return processFileName("unnamed", ext)
+    }
+    if (ext == null) {
+        return trimmed
+    }
+    val lastSeg: String = trimmed.splitToSequence('.').last()
+    return when {
+        // name has no extension ('lastSeg' is the same as 'this')
+        '.' !in trimmed -> "$trimmed.$ext"
+        // extension is empty -> file name ends on colon
+        lastSeg.isEmpty() -> "$trimmed$ext"
+        // extension is not empty but does not match 'ext'
+        lastSeg != ext -> "$trimmed.$ext"
+        // extension matches 'ext'
+        else -> trimmed
+    }
+}
+
 private val FILE_MENU_BORDER_RADIUS: UiSize = 0.75.vmin
 private val FILE_MENU_BACKGROUND: Vector4fc
     = Vector4f(0.2f, 0.2f, 0.2f, 0.95f)
@@ -54,6 +75,7 @@ private fun createFileNameMenu(
     parentDir: File,
     actionKey: LocalKeys,
     initialValue: String,
+    fileExt: String?,
     onNameChosen: (String) -> Unit,
     close: () -> Unit
 ): UiElement {
@@ -63,21 +85,23 @@ private fun createFileNameMenu(
         .withSize(1.65.vmin)
     val cancelText = Text().withText(l[BUTTON_CANCEL_FILE_ACTION])
     val confirmText = Text().withText(l[actionKey])
-    var inputValid = true
+    var validName: String? = null
     val input = TextInput()
         .withContent(inputText)
         .withValue(initialValue)
-        .withValueChangedHandler { newValue ->
+        .withValueChangedHandler { rawNewValue ->
+            val newValue: String = processFileName(rawNewValue, fileExt)
             val exists = parentDir.resolve(newValue).exists()
-            inputValid = newValue.isNotEmpty()
+            val isValid: Boolean = newValue.isNotEmpty()
                 && newValue.all { it !in ILLEGAL_FILE_NAME_CHARS }
                 && (!exists || newValue == initialValue)
+            validName = if (isValid) newValue else null
             inputText.withColor(
-                if (inputValid) Theme.FONT_COLOR
+                if (isValid) Theme.FONT_COLOR
                 else FILE_NAME_INVALID_COLOR
             )
             confirmText.withColor(
-                if (inputValid) Theme.FONT_COLOR
+                if (isValid) Theme.FONT_COLOR
                 else FILE_MENU_BUTTON
             )
         }
@@ -116,8 +140,9 @@ private fun createFileNameMenu(
                 })
                 .add(1.vmin, Space())
                 .add(buttonW, createFileNameButton(confirmText) {
-                    if (!inputValid) { return@createFileNameButton }
-                    onNameChosen(input.valueString)
+                    val chosenName: String = validName
+                        ?: return@createFileNameButton
+                    onNameChosen(chosenName)
                     close()
                 })
                 .pad(1.vmin)
@@ -161,7 +186,7 @@ private fun createFileContextMenu(
     if (ctx.isMutable && file.isDirectory) {
         actionList.add(createContextMenuAction(l[BUTTON_CREATE_FILE]) {
             ctx.contextMenu.open(createFileNameMenu(
-                file, BUTTON_CREATE_FILE, initialValue = "",
+                file, BUTTON_CREATE_FILE, initialValue = "", ctx.fileExt,
                 onNameChosen = h@{ newName ->
                     val dest = file.resolve(newName)
                     Files.writeString(dest.toPath(), "")
@@ -172,7 +197,7 @@ private fun createFileContextMenu(
         })
         actionList.add(createContextMenuAction(l[BUTTON_CREATE_FOLDER]) {
             ctx.contextMenu.open(createFileNameMenu(
-                file, BUTTON_CREATE_FOLDER, initialValue = "",
+                file, BUTTON_CREATE_FOLDER, initialValue = "", ctx.fileExt,
                 onNameChosen = h@{ newName ->
                     val dest = file.resolve(newName)
                     Files.createDirectory(dest.toPath())
@@ -185,7 +210,8 @@ private fun createFileContextMenu(
     if (ctx.isMutable && !isRoot) {
         actionList.add(createContextMenuAction(l[BUTTON_RENAME_FILE]) {
             ctx.contextMenu.open(createFileNameMenu(
-                file.parentFile, BUTTON_RENAME_FILE, initialValue = file.name,
+                file.parentFile, BUTTON_RENAME_FILE,
+                initialValue = file.name, ctx.fileExt,
                 onNameChosen = h@{ newName ->
                     if (newName == file.name) { return@h }
                     val from: Path = file.toPath()
@@ -294,6 +320,7 @@ class FileTreeCtx(
     val contextMenu: ContextMenu,
     val onFileSelect: (File) -> Unit,
     val isMutable: Boolean = false,
+    val fileExt: String? = null, // e.g. 'bigton'
     val onFileRename: (File, File) -> Unit = { _, _ -> },
     val onFileDelete: (File) -> Unit = {}
 ) {

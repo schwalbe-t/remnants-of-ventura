@@ -265,6 +265,31 @@ fun settingsScreen(
             )
         )
     )
+    addSection(
+        sections,
+        title = SECTION_CODE_EDITING_SETTINGS,
+        description = DESCRIPTION_CODE_EDITING_SETTINGS,
+        settings = listOf(
+            Setting(
+                SETTING_ADVANCED_EDITING, DESCRIPTION_ADVANCED_EDITING,
+                SettingValue.Toggle(
+                    init = client.config.settings.advancedEditingEnabled,
+                    onChange = { changeSettings(client) {
+                        this.advancedEditingEnabled = it
+                    } }
+                )
+            ),
+            Setting(
+                SETTING_AUTO_RESTART, DESCRIPTION_AUTO_RESTART,
+                SettingValue.Toggle(
+                    init = client.config.settings.autoRestartEnabled,
+                    onChange = { changeSettings(client) {
+                        this.autoRestartEnabled = it
+                    } }
+                )
+            )
+        )
+    )
     sections.add(50.ph, Space())
     root.add(Axis.row()
         .add(50.pw, Axis.column()

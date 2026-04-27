@@ -22,6 +22,12 @@
         "DESCRIPTION_FULLSCREEN": "Enabling fullscreen mode makes the game window take up the entire screen.",
         "SETTING_VSYNC": "VSync",
         "DESCRIPTION_VSYNC": "Enabling VSync (Vertical Synchronization) causes the game's frame rate to be synchronized with the monitor's refresh rate.",
+        "SECTION_CODE_EDITING_SETTINGS": "Code Editing",
+        "DESCRIPTION_CODE_EDITING_SETTINGS": "Settings related to editing and managing code inside the game.",
+        "SETTING_ADVANCED_EDITING": "Advanced Editing",
+        "DESCRIPTION_ADVANCED_EDITING": "Allows editing of code files that are independent from robots. Files can then be shared across robots (recommended for experienced players).",
+        "SETTING_AUTO_RESTART": "Auto-Restart",
+        "DESCRIPTION_AUTO_RESTART": "Automatically restarts a robot when editing its code (does nothing in advanced editing mode).",
 
         "BUTTON_ADD_SERVER": "Add Server",
 

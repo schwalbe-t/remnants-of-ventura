@@ -22,6 +22,12 @@
         "DESCRIPTION_FULLSCREEN": "Im Vollbildmodus nimmt das Spielmenü den gesamten Bildschirm ein.",
         "SETTING_VSYNC": "VSync",
         "DESCRIPTION_VSYNC": "Die Aktivierung von VSync (Vertikale Synchronisation) synchronisiert die Bildrate des Spiels mit der Bildwiederholfrequenz deines Monitors.",
+        "SECTION_CODE_EDITING_SETTINGS": "Code-Bearbeitung",
+        "DESCRIPTION_CODE_EDITING_SETTINGS": "Einstellungen zum Bearbeiten und Verwalten von Code innerhalb des Spiels.",
+        "SETTING_ADVANCED_EDITING": "Erweiterte Bearbeitung",
+        "DESCRIPTION_ADVANCED_EDITING": "Ermöglicht das Bearbeiten von Code-Dateien, die unabhängig von Robotern sind. Dateien können dann zwischen Robotern geteilt werden (empfohlen für erfahrene Spieler).",
+        "SETTING_AUTO_RESTART": "Automatischer Neustart",
+        "DESCRIPTION_AUTO_RESTART": "Startet einen Roboter automatisch neu, wenn sein Code bearbeitet wird (hat im erweiterten Bearbeitungsmodus keine Auswirkungen).",
 
         "BUTTON_ADD_SERVER": "Server hinzufügen",
 
