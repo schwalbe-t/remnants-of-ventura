@@ -15,6 +15,9 @@ import org.joml.Matrix4fc
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector3fc
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.sin
 
 interface ObjectStateProvider {
     fun isTriggered(obj: ObjectInstance): Boolean
@@ -132,6 +135,17 @@ object Objects {
             colorBottom = parseRgbHex("d4a488"),
             colorTop    = parseRgbHex("705448")
         ),
+        ObjectType.LUSH_BUSH to FoliageOverrides(
+            BUSH_FOLIAGE,
+            colorBottom = parseRgbHex("437f5d"),
+            colorTop    = parseRgbHex("86a063")
+        ),
+        ObjectType.DRY_BUSH to FoliageOverrides(
+            BUSH_FOLIAGE,
+            colorBottom = parseRgbHex("705448"),
+            colorTop    = parseRgbHex("d4a488")
+        ),
+        ObjectType.TUMBLEWEED to TumbleweedOverrides,
         ObjectType.BUTTON to ButtonOverrides,
         ObjectType.LAMP to LampOverrides
     )
@@ -157,6 +171,17 @@ private val GRASS_FOLIAGE = FoliageOverrides.FoliageType(
     ),
     foliageMeshes = listOf("grass"), staticMeshes = listOf(),
     diffuseThreshold = -1f,
+    swayInterval = 5f, swayAmount = 0.1f,
+    bottom = 0f, top = +1f
+)
+
+private val BUSH_FOLIAGE = FoliageOverrides.FoliageType(
+    model = Model.loadFile(
+        path = "res/objects/bush.glb",
+        properties = Renderer.meshProperties,
+        textureFilter = Texture.Filter.NEAREST
+    ),
+    foliageMeshes = listOf("bush"), staticMeshes = listOf(),
     swayInterval = 5f, swayAmount = 0.1f,
     bottom = 0f, top = +1f
 )
@@ -204,9 +229,8 @@ private class FoliageOverrides(
             "DIFFUSE_THRESHOLD" to "${this.type.diffuseThreshold}"
         ))
 
-    override fun submitResources(loader: ResourceLoader) {
-        loader.submitAll(this.type.model, perlinMap, this.foliageShader)
-    }
+    override fun submitResources(loader: ResourceLoader)
+        = loader.submitAll(this.type.model, perlinMap, this.foliageShader)
 
     override val render = RenderMethod.Batched { pass, _, _, transforms ->
         val model: Model<StaticAnim> = this.type.model()
@@ -228,6 +252,43 @@ private class FoliageOverrides(
         Objects.renderBatch(
             pass, renderOutline = true, model, transforms,
             renderedMeshes = this.type.staticMeshes
+        )
+    }
+
+}
+
+private object TumbleweedOverrides : ObjectOverrides() {
+
+    private val model: Resource<Model<StaticAnim>> = Model.loadFile(
+        path = "res/objects/tumbleweed.glb",
+        properties = Renderer.meshProperties,
+        textureFilter = Texture.Filter.NEAREST
+    )
+
+    override fun submitResources(loader: ResourceLoader)
+        = loader.submitAll(this.model)
+
+    const val SELF_SPEED: Float = 1f // radians/s
+    const val BASE_HEIGHT: Float = 0.25f // u
+    const val BOUNCE_HEIGHT: Float = 0.25f // u
+    const val ORBIT_SPEED: Float = 0.05f // radians/s
+    const val RADIUS: Float = 10f // u
+
+    private fun transform(transform: Matrix4fc): Matrix4f {
+        val time: Double = System.currentTimeMillis() / 1000.0
+        val selfAngle: Float = (time * SELF_SPEED).mod(2 * PI).toFloat()
+        val orbAngle: Float = (time * ORBIT_SPEED).mod(2 * PI).toFloat()
+        val height: Float = BASE_HEIGHT + abs(sin(selfAngle)) * BOUNCE_HEIGHT
+        return Matrix4f(transform)
+            .rotateY(orbAngle)
+            .translate(RADIUS, height, 0f)
+            .rotateX(-selfAngle)
+    }
+
+    override val render = RenderMethod.Batched { pass, _, _, transforms ->
+        Objects.renderBatch(
+            pass, renderOutline = false, this.model(),
+            transforms.map(this::transform)
         )
     }
 

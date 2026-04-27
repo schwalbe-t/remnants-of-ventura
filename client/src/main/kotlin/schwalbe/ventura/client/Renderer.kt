@@ -135,8 +135,8 @@ class Renderer(
         const val SUN_FAR: Float = 200f
         const val SUN_DISTANCE: Float = 100f
         val SUN_UP: Vector3fc = Vector3f(0f, +1f, 0f)
-        const val DEPTH_BIAS: Float = 0.00075f
-        const val NORMAL_OFFSET: Float = 0.01f
+        const val DEPTH_BIAS: Float = 0.001f
+        const val NORMAL_OFFSET: Float = 0.035f
 
         const val DEFAULT_SHADOW_MAP_RES: Int = 2048
         const val DEFAULT_SHADOW_MAP_SAMPLES: Int = 4

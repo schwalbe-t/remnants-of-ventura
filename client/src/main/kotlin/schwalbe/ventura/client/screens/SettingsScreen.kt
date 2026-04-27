@@ -69,6 +69,7 @@ private fun createSettingValueElem(setting: SettingValue) = when (setting) {
         val knob = FlatBackground()
             .withColor(Theme.SECONDARY_FONT_COLOR)
             .wrapBorderRadius(50.ph)
+            .pad(0.5.vmin)
             .pad()
         val display = Text()
             .withFont(jetbrainsMonoSb())
@@ -202,7 +203,7 @@ fun settingsScreen(
             Setting(
                 SETTING_GENERAL_VOLUME, DESCRIPTION_GENERAL_VOLUME,
                 SettingValue.Number(
-                    min = 0f, max = 2f, step = 0.05f,
+                    min = 0f, max = 2f, step = 0.01f,
                     init = client.config.settings.generalVolume,
                     onChange = { changeSettings(client) {
                         this.generalVolume = it
@@ -214,7 +215,7 @@ fun settingsScreen(
             Setting(
                 SETTING_MUSIC_VOLUME, DESCRIPTION_MUSIC_VOLUME,
                 SettingValue.Number(
-                    min = 0f, max = 1f, step = 0.05f,
+                    min = 0f, max = 1f, step = 0.01f,
                     init = client.config.settings.musicVolume,
                     onChange = { changeSettings(client) {
                         this.musicVolume = it
@@ -226,7 +227,7 @@ fun settingsScreen(
             Setting(
                 SETTING_SFX_VOLUME, DESCRIPTION_SFX_VOLUME,
                 SettingValue.Number(
-                    min = 0f, max = 1f, step = 0.05f,
+                    min = 0f, max = 1f, step = 0.01f,
                     init = client.config.settings.sfxVolume,
                     onChange = { changeSettings(client) {
                         this.sfxVolume = it

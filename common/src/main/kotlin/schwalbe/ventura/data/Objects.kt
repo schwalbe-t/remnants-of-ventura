@@ -20,7 +20,8 @@ data class ObjectTileCollider(
 
 @Serializable
 enum class ObjectType(
-    val modelPath: String,
+    val modelPath: String = "res/nothing.glb",
+    val textureFilter: TextureFilter = TextureFilter.LINEAR,
     val renderOutline: Boolean = true,
     val applyColliders: Boolean = true,
     val applyCollidersOf: Iterable<String>? = null,
@@ -63,35 +64,51 @@ enum class ObjectType(
         tileColliderSize = ObjectTileCollider(-1.5f, +1.5f, -1.5f, +1.5f)
     ),
     TREE_GREEN(
-        modelPath = "res/objects/tree.glb",
         applyCollidersOf = listOf("collider"),
         tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
     ),
     TREE_ORANGE(
-        modelPath = "res/objects/tree.glb",
         applyCollidersOf = listOf("collider"),
         tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
     ),
     TREE_RED(
-        modelPath = "res/objects/tree.glb",
         applyCollidersOf = listOf("collider"),
         tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
     ),
     TREE_PINK(
-        modelPath = "res/objects/tree.glb",
         applyCollidersOf = listOf("collider"),
         tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
     ),
     LUSH_GRASS(
-        modelPath = "res/objects/grass.glb",
         applyColliders = false,
         tileColliderSize = null
     ),
     DRY_GRASS(
-        modelPath = "res/objects/grass.glb",
         applyColliders = false,
         tileColliderSize = null
-    )
+    ),
+    LUSH_BUSH(
+        applyColliders = false,
+        tileColliderSize = null
+    ),
+    DRY_BUSH(
+        applyColliders = false,
+        tileColliderSize = null
+    ),
+    TUMBLEWEED(
+        applyColliders = false,
+        tileColliderSize = null
+    ),
+    CACTUS(
+        modelPath = "res/objects/cactus.glb",
+        textureFilter = TextureFilter.NEAREST,
+        applyCollidersOf = listOf("collider"),
+        tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
+    );
+
+    enum class TextureFilter {
+        NEAREST, LINEAR
+    }
 }
 
 @Serializable

@@ -140,7 +140,10 @@ class ChunkLoader(
             .map { Model.loadFile(
                 it.modelPath,
                 Renderer.meshProperties,
-                textureFilter = Texture.Filter.LINEAR
+                textureFilter = when (it.textureFilter) {
+                    ObjectType.TextureFilter.NEAREST -> Texture.Filter.NEAREST
+                    ObjectType.TextureFilter.LINEAR -> Texture.Filter.LINEAR
+                }
             ) }
 
         const val DEFAULT_LOAD_RADIUS: Int = 5
