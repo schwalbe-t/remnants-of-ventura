@@ -43,6 +43,10 @@ private val BIGTON_KEYWORDS: Set<String> = setOf(
     "and", "or", "not", "if", "else"
 )
 
+private val BIGTON_CONSTANTS: Set<String> = setOf(
+    "null", "left", "right", "up", "down"
+)
+
 fun syntaxHighlightBigton(source: String): List<Span> {
     val spans = mutableListOf<Span>()
     var currentIdx: Int = 0
@@ -78,10 +82,11 @@ fun syntaxHighlightBigton(source: String): List<Span> {
             collectWhile { it.isAsciiWhitespace }
             val whitespace = completeRun()
             val isKeyword: Boolean = word in BIGTON_KEYWORDS
+            val isConstant: Boolean = word in BIGTON_CONSTANTS
             val isCall: Boolean = hasCurrent() && getCurrent() == '('
             val color: Vector4fc? = when {
                 isKeyword -> KEYWORD_COLOR
-                word == "null" -> NULL_LITERAL_COLOR
+                isConstant -> NULL_LITERAL_COLOR
                 isCall -> FUNCTION_CALL_COLOR
                 else -> null
             }

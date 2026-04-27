@@ -6,7 +6,7 @@ A game about exploring ruins and building and programming robots.
 The newest releases of the game may be downloaded in the releases section of the Github repository.
 An installer exists for Windows only, while tested portable builds exist for Linux and Windows.
 
-Documentation for the BIGTON programming language used inside the game is available [as a Google Document](https://docs.google.com/document/d/1K8vg8dWE5fkgeh9NZSTDTZIAEgghyFVPbVWuid3RO1o/edit?usp=sharing).
+Documentation for the BIGTON programming language used inside the game is available [as a Google Document](https://docs.google.com/document/d/19s-HMMAMRj3FpTY3P62MKZsSQfGaj2HuehitQMIeD5Y/edit?usp=sharing).
 A server running the latest release of the game is available under the address `remnantsofventura.org` (default port).
 
 ## Development

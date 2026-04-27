@@ -8,6 +8,7 @@ enum class BigtonTokenType {
     FLOAT_LITERAL,
     STRING_LITERAL,
     NULL_LITERAL,
+    DIR_LITERAL,
 
     PAREN_OPEN,
     PAREN_CLOSE,

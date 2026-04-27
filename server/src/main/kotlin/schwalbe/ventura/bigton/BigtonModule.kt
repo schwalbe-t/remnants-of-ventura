@@ -23,6 +23,8 @@ class BigtonBuiltinFunctions<C> {
         this.mutFunctionsById.add(info)
         this.mutIdByFunctionName[info.name] = id
     }
+
+    val sourceFiles: MutableList<BigtonSourceFile> = mutableListOf()
     
 }
 
@@ -31,6 +33,7 @@ class BigtonModule<C>(val funcOut: BigtonBuiltinFunctions<C>) {
     private val mutFunctions: MutableMap<String, BuiltinFunctionInfo<C>>
         = mutableMapOf()
     val functions: Map<String, BuiltinFunctionInfo<C>> = this.mutFunctions
+    val sourceFiles: MutableList<BigtonSourceFile> = mutableListOf()
     
     fun withFunction(
         name: String, cost: Int, argc: Int, f: (BigtonRuntime) -> Unit
@@ -43,6 +46,13 @@ class BigtonModule<C>(val funcOut: BigtonBuiltinFunctions<C>) {
         val info = BuiltinFunctionInfo(name, cost, argc, f)
         this.mutFunctions[name] = info
         this.funcOut.register(info)
+        return this
+    }
+
+    fun withSrcFile(name: String, content: String): BigtonModule<C> {
+        val file = BigtonSourceFile(name, content)
+        this.sourceFiles.add(file)
+        this.funcOut.sourceFiles.add(file)
         return this
     }
 

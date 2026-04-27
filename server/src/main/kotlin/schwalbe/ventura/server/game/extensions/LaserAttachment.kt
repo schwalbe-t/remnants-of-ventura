@@ -68,18 +68,6 @@ private fun implementLaserShoot(
 }
 
 val LASER_ATTACHMENT_MODULE = BigtonModule(BIGTON_MODULES.functions)
-    .withCtxFunction("laserShootLeft", cost = 1, argc = 0) { r, ctx ->
-        implementLaserShoot(r, ctx, -1, 0)
-    }
-    .withCtxFunction("laserShootRight", cost = 1, argc = 0) { r, ctx ->
-        implementLaserShoot(r, ctx, +1, 0)
-    }
-    .withCtxFunction("laserShootUp", cost = 1, argc = 0) { r, ctx ->
-        implementLaserShoot(r, ctx, 0, -1)
-    }
-    .withCtxFunction("laserShootDown", cost = 1, argc = 0) { r, ctx ->
-        implementLaserShoot(r, ctx, 0, +1)
-    }
     .withCtxFunction("laserShoot", cost = 1, argc = 1) { r, ctx ->
         val (dx, dz) = r.popTuple2Int()
             ?: return@withCtxFunction r.reportDynError(

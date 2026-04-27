@@ -74,15 +74,31 @@ fun BigtonParser.parseValue(): BigtonAst {
         BigtonTokenType.STRING_LITERAL,
         BigtonTokenType.NULL_LITERAL -> {
             this.advance()
-            val astType: BigtonAstType = when(start.type) {
+            val astType: BigtonAstType = when (start.type) {
                 BigtonTokenType.IDENTIFIER      -> BigtonAstType.IDENTIFIER
                 BigtonTokenType.INT_LITERAL     -> BigtonAstType.INT_LITERAL
                 BigtonTokenType.FLOAT_LITERAL   -> BigtonAstType.FLOAT_LITERAL
                 BigtonTokenType.STRING_LITERAL  -> BigtonAstType.STRING_LITERAL
                 BigtonTokenType.NULL_LITERAL    -> BigtonAstType.NULL_LITERAL
-                else -> throw Exception("unreachable")
             }
             return BigtonAst(astType, start.source, start.content)
+        }
+        BigtonTokenType.DIR_LITERAL -> {
+            this.advance()
+            fun uint(v: String)
+                = BigtonAst(BigtonAstType.INT_LITERAL, start.source, v)
+            fun minus(n: BigtonAst)
+                = BigtonAst(BigtonAstType.NEGATE, start.source, null, listOf(n))
+            val tupleContent: List<BigtonAst> = when (start.content) {
+                "left"  -> listOf(minus(uint("1")), uint("0")       )
+                "right" -> listOf(uint("1"),        uint("0")       )
+                "up"    -> listOf(uint("0"),        minus(uint("1")))
+                "down"  -> listOf(uint("0"),        uint("1")       )
+                else -> error("'${start.content}' is not a valid direction")
+            }
+            return BigtonAst(
+                BigtonAstType.TUPLE_LITERAL, start.source, null, tupleContent
+            )
         }
         BigtonTokenType.PAREN_OPEN -> {
             this.advance()

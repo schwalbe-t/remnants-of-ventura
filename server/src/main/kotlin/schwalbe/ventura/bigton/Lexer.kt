@@ -57,23 +57,28 @@ fun tokenize(file: String, source: String): List<BigtonToken> {
                 currentIdx += 1
             }
             val content: String = source.substring(startIdx, currentIdx)
-            when (content) {
-                "var"      -> addToken(BigtonTokenType.KEYWORD_VAR,    content)
-                "fun"      -> addToken(BigtonTokenType.KEYWORD_FUN,    content)
-                "loop"     -> addToken(BigtonTokenType.KEYWORD_LOOP,   content)
-                "while"    -> addToken(BigtonTokenType.KEYWORD_WHILE,  content)
-                "tick"     -> addToken(BigtonTokenType.KEYWORD_TICK,   content)
-                "continue" -> addToken(BigtonTokenType.KEYWORD_CONT,   content)
-                "break"    -> addToken(BigtonTokenType.KEYWORD_BREAK,  content)
-                "return"   -> addToken(BigtonTokenType.KEYWORD_RETURN, content)
-                "and"      -> addToken(BigtonTokenType.KEYWORD_AND,    content)
-                "or"       -> addToken(BigtonTokenType.KEYWORD_OR,     content)
-                "not"      -> addToken(BigtonTokenType.KEYWORD_NOT,    content)
-                "if"       -> addToken(BigtonTokenType.KEYWORD_IF,     content)
-                "else"     -> addToken(BigtonTokenType.KEYWORD_ELSE,   content)
-                "null"     -> addToken(BigtonTokenType.NULL_LITERAL,   content)
-                else       -> addToken(BigtonTokenType.IDENTIFIER,     content)
+            val type: BigtonTokenType = when (content) {
+                "var"       -> BigtonTokenType.KEYWORD_VAR
+                "fun"       -> BigtonTokenType.KEYWORD_FUN
+                "loop"      -> BigtonTokenType.KEYWORD_LOOP
+                "while"     -> BigtonTokenType.KEYWORD_WHILE
+                "tick"      -> BigtonTokenType.KEYWORD_TICK
+                "continue"  -> BigtonTokenType.KEYWORD_CONT
+                "break"     -> BigtonTokenType.KEYWORD_BREAK
+                "return"    -> BigtonTokenType.KEYWORD_RETURN
+                "and"       -> BigtonTokenType.KEYWORD_AND
+                "or"        -> BigtonTokenType.KEYWORD_OR
+                "not"       -> BigtonTokenType.KEYWORD_NOT
+                "if"        -> BigtonTokenType.KEYWORD_IF
+                "else"      -> BigtonTokenType.KEYWORD_ELSE
+                "null"      -> BigtonTokenType.NULL_LITERAL
+                "left"      -> BigtonTokenType.DIR_LITERAL
+                "right"     -> BigtonTokenType.DIR_LITERAL
+                "up"        -> BigtonTokenType.DIR_LITERAL
+                "down"      -> BigtonTokenType.DIR_LITERAL
+                else        -> BigtonTokenType.IDENTIFIER
             }
+            addToken(type, content)
             continue
         }
         if (isAsciiNumeric(current)) {

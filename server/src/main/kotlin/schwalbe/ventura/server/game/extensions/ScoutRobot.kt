@@ -28,19 +28,7 @@ private fun implementMovement(
 }
 
 val SCOUT_ROBOT_MODULE = BigtonModule(BIGTON_MODULES.functions)
-    .withCtxFunction("moveLeft", cost = 1, argc = 0) { r, ctx ->
-        implementMovement(r, ctx, -1, 0)
-    }
-    .withCtxFunction("moveRight", cost = 1, argc = 0) { r, ctx ->
-        implementMovement(r, ctx, +1, 0)
-    }
-    .withCtxFunction("moveUp", cost = 1, argc = 0) { r, ctx ->
-        implementMovement(r, ctx, 0, -1)
-    }
-    .withCtxFunction("moveDown", cost = 1, argc = 0) { r, ctx ->
-        implementMovement(r, ctx, 0, +1)
-    }
-    .withCtxFunction("move", cost = 1, argc = 1) { r, ctx ->
+    .withCtxFunction("moveAsync", cost = 1, argc = 1) { r, ctx ->
         val (dx, dz) = r.popTuple2Int()
             ?: return@withCtxFunction r.reportDynError(
                 "'move' expects a tuple of 2 integers, but function received " +
@@ -51,3 +39,13 @@ val SCOUT_ROBOT_MODULE = BigtonModule(BIGTON_MODULES.functions)
     .withCtxFunction("canMove", cost = 1, argc = 0) { r, ctx ->
         BigtonInt.fromValue(if (ctx.robot.isMoving) 0 else 1).use(r::pushStack)
     }
+    .withSrcFile("BUILTIN/scout.bigton", """
+        fun move(dir) {
+            var startedMoving = moveAsync(dir)
+            if not startedMoving { return 0 }
+            tick {
+                if canMove() { break }
+            }
+            return 1
+        }
+    """.trimIndent())
