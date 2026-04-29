@@ -2,6 +2,8 @@
 package schwalbe.ventura.server.game.extensions
 
 import schwalbe.ventura.bigton.runtime.*
+import schwalbe.ventura.utils.sign
+import kotlin.math.abs
 
 fun BigtonRuntime.reportDynError(reason: String) {
     this.logLine("ERROR: $reason")
@@ -17,3 +19,10 @@ fun BigtonRuntime.popTuple2Int(): Pair<Long, Long>? = this.popStack()?.use {
         a.value to b.value
     }
 }
+
+fun tileDirToCardinal(rdx: Long, rdz: Long): Pair<Long, Long>
+    = if (abs(rdx) >= abs(rdz)) sign(rdx) to 0L else 0L to sign(rdz)
+
+fun tileDirToLesserCardinal(rdx: Long, rdz: Long): Pair<Long, Long>
+    = if (abs(rdx) < abs(rdz)) sign(rdx) to 0L else 0L to sign(rdz)
+

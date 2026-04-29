@@ -405,7 +405,7 @@ private fun createFolderSubTree(
 private val FILE_TREE_BOTTOM_PADDING: UiSize = 50.ph
 
 fun createFileTree(ctx: FileTreeCtx): UiElement {
-    val rootDir = File(USERCODE_DIR)
+    val rootDir = USERCODE_DIR.toFile()
     val container = Stack()
     val p: UiSize = 1.5.vmin
     val paddedContainer = container.pad(p)

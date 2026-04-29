@@ -4,10 +4,16 @@ import schwalbe.ventura.client.Client
 import schwalbe.ventura.net.*
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.exists
-import kotlin.io.path.getLastModifiedTime
+import kotlin.io.path.*
+import kotlin.uuid.Uuid
 
-const val USERCODE_DIR: String = "usercode"
+val USERCODE_DIR: Path = Path.of("usercode")
+    .createDirectories()
+    .toAbsolutePath()
+val ROBOT_FILES_DIR: Path = USERCODE_DIR
+    .resolve(".robots")
+    .createDirectories()
+    .toAbsolutePath()
 const val STORED_SOURCES_REQUEST_INTERVAL: Long = 500
 
 object SourceFiles {
@@ -28,36 +34,48 @@ object SourceFiles {
     fun uploadModifiedSources(
         client: Client, sources: StoredSourcesInfoPacket
     ) {
-        val rootDir = Path.of(USERCODE_DIR)
-        if (!rootDir.exists()) {
-            Files.createDirectory(rootDir)
-        }
         for ((relPath, info) in sources.sources) {
-            val path: Path
-            try {
-                path = Path.of(USERCODE_DIR, relPath).toAbsolutePath()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                continue
-            }
-            if (!path.exists()) { continue }
+            val path: Path = this.getSourceFile(relPath) ?: continue
             val lastModified: Long = path.getLastModifiedTime().toMillis()
             if (lastModified <= info.lastChangeTimeMs) { continue }
-            val contents: String
-            try {
-                contents = path.toFile().readText()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                continue
-            }
+            this.uploadFileContents(client, path)
+        }
+    }
+
+    fun uploadFileContents(client: Client, path: Path) {
+        try {
+            val relPath: String = path.relativeTo(USERCODE_DIR).toString()
+            val contents: String = Files.readString(path)
+            val lastModified: Long = path.getLastModifiedTime().toMillis()
             client.network.outPackets?.send(Packet.serialize(
                 PacketType.UPLOAD_SOURCE_CONTENT,
-                UploadSourceContentsPacket(
-                    path = relPath, contents, lastModified
-                )
+                UploadSourceContentsPacket(relPath, contents, lastModified)
             ))
             println("Uploaded source file '$relPath'")
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+    }
+
+    // does not guarantee that the file exists
+    fun getSourceFile(relPath: String): Path? {
+        try {
+            val path: Path = USERCODE_DIR.resolve(relPath).toAbsolutePath()
+            if (!path.exists()) { return null }
+            return path
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
+    }
+
+    // guarantees that the file exists
+    fun getRobotSourceFile(robotId: Uuid): Path {
+        val path: Path = ROBOT_FILES_DIR.resolve("$robotId.bigton")
+        if (!path.exists()) {
+            Files.writeString(path, "")
+        }
+        return path
     }
 
 }

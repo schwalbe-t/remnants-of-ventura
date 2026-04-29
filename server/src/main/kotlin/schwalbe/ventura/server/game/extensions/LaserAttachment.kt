@@ -7,7 +7,6 @@ import schwalbe.ventura.bigton.BigtonModule
 import schwalbe.ventura.bigton.runtime.*
 import schwalbe.ventura.data.VisualEffect
 import schwalbe.ventura.utils.SerVector3
-import schwalbe.ventura.utils.sign
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -33,15 +32,14 @@ data class LaserAttachmentState(
 }
 
 private fun implementLaserShoot(
-    r: BigtonRuntime, ctx: GameAttachmentContext, rdx: Int, rdz: Int
+    r: BigtonRuntime, ctx: GameAttachmentContext, rdx: Long, rdz: Long
 ) {
     val state = ctx.robot.attachmentStates[LaserAttachmentState.TYPE]
-    if (!state.canShoot || (rdx == 0 && rdz == 0)) {
+    if (!state.canShoot || (rdx == 0L && rdz == 0L)) {
         return BigtonInt.fromValue(0).use(r::pushStack)
     }
     state.shootCooldown = LaserAttachmentState.SHOOT_COOLDOWN_TICKS
-    val (dx, dz) = if (abs(rdx) > abs(rdz)) { sign(rdx) to 0 }
-        else { 0 to sign(rdz) }
+    val (dx, dz) = tileDirToCardinal(rdx, rdz)
     ctx.robot.rotateWeaponAlong(Vector3f(dx.toFloat(), 0f, dz.toFloat()))
     val ox: Int = ctx.robot.tileX
     val oz: Int = ctx.robot.tileZ
@@ -74,7 +72,7 @@ val LASER_ATTACHMENT_MODULE = BigtonModule(BIGTON_MODULES.functions)
                 "'laserShoot' expects a tuple of 2 integers, but function " +
                 "received something else"
             )
-        implementLaserShoot(r, ctx, dx.toInt(), dz.toInt())
+        implementLaserShoot(r, ctx, dx, dz)
     }
     .withCtxFunction("laserCanShoot", cost = 1, argc = 0) { r, ctx ->
         val state = ctx.robot.attachmentStates[LaserAttachmentState.TYPE]

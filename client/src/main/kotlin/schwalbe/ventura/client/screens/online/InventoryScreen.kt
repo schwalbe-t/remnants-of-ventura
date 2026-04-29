@@ -5,7 +5,6 @@ import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.game.*
 import schwalbe.ventura.client.screens.*
-import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.data.*
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.engine.ui.*
@@ -190,43 +189,15 @@ private fun createSelectedItemSection(
 }
 
 fun inventoryMenuScreen(client: Client): () -> GameScreen = {
-    val background = BlurBackground()
-        .withRadius(3)
-        .withSpread(5)
     var selectedItemDisplay: MsaaRenderDisplay? = null
-    val packets = PacketHandler.receiveDownPackets<Unit>()
-        .addErrorLogging()
-        .addWorldHandling(client)
-        .updateStoredSources(client)
-    val screen = GameScreen(
-        onOpen = {
-            client.world?.let {
-                it.camController.mode =
-                    CameraModes.playerInRightThird(it.player)
-            }
-        },
+    val screen = PausedScreen(
+        client,
+        camMode = { w -> CameraModes.playerInRightThird(w.player) },
+        closeIf = { Key.ESCAPE.wasPressed || Key.TAB.wasPressed },
+        playerAnim = PlayerAnim.thinking,
         render = {
-            if (Key.ESCAPE.wasPressed || Key.TAB.wasPressed) {
-                client.nav.pop()
-            }
-            SourceFiles.update(client)
-            client.world?.update(client, captureInput = false)
-            client.world?.player?.facePoint(
-                client.renderer.camera
-                    .castRay(client.renderer.dest, Mouse.position)
-                    .afterDistance(7.5f)
-            )
-            client.world?.player?.assertAnimation(PlayerAnim.thinking)
-            client.world?.render(client)
-            background.invalidate()
             selectedItemDisplay?.invalidate()
-        },
-        networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
-            client.nav.replace(serverConnectionFailedScreen(reason, client))
-            client.network.clearError()
-        }),
-        packets = packets,
-        navigator = client.nav
+        }
     )
     val selectedItemSection = Stack()
     fun renderSelectedItemSection(
@@ -251,7 +222,7 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
     var selectedItem: Item? = null
     fun afterItemAction(): Unit = requestInventoryContents(client)
     val itemListSection = createItemListSection(
-        packets,
+        screen.packets,
         onInventoryReceived = { countOf ->
             renderSelectedItemSection(
                 selectedItem, countOf(selectedItem), ::afterItemAction
@@ -265,9 +236,9 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
         },
     )
     requestInventoryContents(client)
-    screen.add(layer = 0, element = Axis.row()
+    screen.screen.add(layer = 0, element = Axis.row()
         .add(fpw * (2f/3f), Stack()
-            .add(background)
+            .add(screen.background)
             .add(FlatBackground().withColor(Theme.PANEL_BACKGROUND))
             .add(Axis.row()
                 .add(50.pw, itemListSection)
@@ -276,5 +247,5 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
         )
         .add(fpw * (1f/3f), Space())
     )
-    screen
+    screen.screen
 }

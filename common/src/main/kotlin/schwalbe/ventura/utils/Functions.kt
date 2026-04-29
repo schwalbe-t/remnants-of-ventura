@@ -11,6 +11,12 @@ fun sign(i: Int): Int = when {
     else -> 0
 }
 
+fun sign(i: Long): Long = when {
+    i < 0 -> -1
+    i > 0 -> +1
+    else -> 0
+}
+
 fun insideSquareRadiusXZ(p: SerVector3, center: SerVector3, r: Float)
     = maxOf(abs(p.x - center.x), abs(p.y - center.y)) <= r
 

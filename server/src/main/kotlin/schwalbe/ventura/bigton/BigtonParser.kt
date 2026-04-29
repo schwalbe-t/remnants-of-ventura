@@ -94,6 +94,7 @@ fun BigtonParser.parseValue(): BigtonAst {
                 "right" -> listOf(uint("1"),        uint("0")       )
                 "up"    -> listOf(uint("0"),        minus(uint("1")))
                 "down"  -> listOf(uint("0"),        uint("1")       )
+                "here"  -> listOf(uint("0"),        uint("0")       )
                 else -> error("'${start.content}' is not a valid direction")
             }
             return BigtonAst(

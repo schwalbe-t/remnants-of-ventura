@@ -26,7 +26,7 @@ private fun implementSonarLocate(
         }
         numSteps += 1
     }
-    return BigtonNull.create().use(r::pushStack)
+    return BigtonInt.fromValue(maxDistTiles.toLong()).use(r::pushStack)
 }
 
 fun makeSonarAttachmentModule(

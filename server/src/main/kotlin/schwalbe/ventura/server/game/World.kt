@@ -484,6 +484,11 @@ class World(
             val robot = getRobotOrError(robotId, pl) ?: return@onPacket
             robot.stop()
         }
+        ph.onPacket(PacketType.RESTART_ROBOT) { robotId, pl ->
+            val robot = getRobotOrError(robotId, pl) ?: return@onPacket
+            robot.stop()
+            robot.start()
+        }
         ph.onPacket(PacketType.SET_ROBOT_ATTACHMENT) { at, pl ->
             val robot = getRobotOrError(at.robotId, pl) ?: return@onPacket
             if (at.attachmentId !in robot.attachments.indices) {

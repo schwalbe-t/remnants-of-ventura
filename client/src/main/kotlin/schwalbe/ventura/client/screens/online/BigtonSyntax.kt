@@ -44,7 +44,7 @@ private val BIGTON_KEYWORDS: Set<String> = setOf(
 )
 
 private val BIGTON_CONSTANTS: Set<String> = setOf(
-    "null", "left", "right", "up", "down"
+    "null", "left", "right", "up", "down", "here"
 )
 
 fun syntaxHighlightBigton(source: String): List<Span> {

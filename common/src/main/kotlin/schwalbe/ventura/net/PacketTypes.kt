@@ -67,6 +67,7 @@ data class PacketType<P>(
     val PAUSE_ROBOT                 = up<Uuid>()
     val UNPAUSE_ROBOT               = up<Uuid>()
     val STOP_ROBOT                  = up<Uuid>()
+    val RESTART_ROBOT               = up<Uuid>()
     val SET_ROBOT_ATTACHMENT        = up<RobotAttachmentChangePacket>()
     val SET_ROBOT_SOURCES           = up<RobotSourceFilesChangePacket>()
     val SET_ROBOT_NAME              = up<RobotNameChangePacket>()

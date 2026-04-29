@@ -142,7 +142,7 @@ class Player {
     }
 
     private fun updateAnimations(moving: Boolean?, deltaTime: Float) {
-        if (moving != true) {
+        if (moving == false) {
             this.stopRotation()
         }
         if (moving != null) {

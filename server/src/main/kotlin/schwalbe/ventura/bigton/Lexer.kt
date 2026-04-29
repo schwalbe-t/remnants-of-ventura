@@ -76,6 +76,7 @@ fun tokenize(file: String, source: String): List<BigtonToken> {
                 "right"     -> BigtonTokenType.DIR_LITERAL
                 "up"        -> BigtonTokenType.DIR_LITERAL
                 "down"      -> BigtonTokenType.DIR_LITERAL
+                "here"      -> BigtonTokenType.DIR_LITERAL
                 else        -> BigtonTokenType.IDENTIFIER
             }
             addToken(type, content)

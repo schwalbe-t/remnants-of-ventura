@@ -15,15 +15,10 @@ fun onlineSettingsScreen(client: Client): () -> GameScreen = {
             if (Key.ESCAPE.wasPressed) {
                 client.nav.pop()
             }
-            SourceFiles.update(client)
-            client.world?.update(client, captureInput = false)
-            client.world?.player?.facePoint(
-                client.renderer.camera
-                    .castRay(client.renderer.dest, Mouse.position)
-                    .afterDistance(7.5f)
+            PausedScreen.updateBackground(
+                client,
+                playerFollowCursor = true, playerAnim = PlayerAnim.thinking
             )
-            client.world?.player?.assertAnimation(PlayerAnim.thinking)
-            client.world?.render(client)
             root.invalidate()
         },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->

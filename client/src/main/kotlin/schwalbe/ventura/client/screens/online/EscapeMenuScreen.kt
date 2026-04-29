@@ -6,11 +6,8 @@ import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.game.*
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectingScreen
-import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
-import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.net.Packet
-import schwalbe.ventura.net.PacketHandler
 import schwalbe.ventura.net.PacketType
 
 private val OPTION_HEIGHT: UiSize = 6.5.vmin
@@ -37,39 +34,10 @@ private fun addOption(
 
 fun escapeMenuScreen(client: Client): () -> GameScreen = {
     val world: World? = client.world
-    val background = BlurBackground()
-        .withRadius(3)
-        .withSpread(5)
-    val screen = GameScreen(
-        onOpen = {
-            client.world?.let {
-                it.camController.mode = CameraModes.playerInRightHalf(it.player)
-            }
-        },
-        render = {
-            if (Key.ESCAPE.wasPressed) {
-                client.nav.pop()
-            }
-            SourceFiles.update(client)
-            client.world?.update(client, captureInput = false)
-            client.world?.player?.facePoint(
-                client.renderer.camera
-                    .castRay(client.renderer.dest, Mouse.position)
-                    .afterDistance(7.5f)
-            )
-            client.world?.player?.assertAnimation(PlayerAnim.thinking)
-            client.world?.render(client)
-            background.invalidate()
-        },
-        networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
-            client.nav.replace(serverConnectionFailedScreen(reason, client))
-            client.network.clearError()
-        }),
-        packets = PacketHandler.receiveDownPackets<Unit>()
-            .addErrorLogging()
-            .addWorldHandling(client)
-            .updateStoredSources(client),
-        navigator = client.nav
+    val screen = PausedScreen(
+        client,
+        camMode = { w -> CameraModes.playerInRightHalf(w.player) },
+        playerAnim = PlayerAnim.thinking
     )
     val options = Axis.column()
     addOption(options, localized()[BUTTON_BACK_TO_GAME], action = {
@@ -100,9 +68,9 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
     })
     val areaHeight: UiSize = options.children.size * OPTION_HEIGHT +
         (options.children.size - 1) * OPTION_PADDING
-    screen.add(Axis.row()
+    screen.screen.add(Axis.row()
         .add(50.vw, Stack()
-            .add(background)
+            .add(screen.background)
             .add(FlatBackground().withColor(Theme.PANEL_BACKGROUND))
             .add(Axis.column()
                 .add(50.ph - (areaHeight / 2), Space())
@@ -113,5 +81,5 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
             )
         )
     )
-    screen
+    screen.screen
 }

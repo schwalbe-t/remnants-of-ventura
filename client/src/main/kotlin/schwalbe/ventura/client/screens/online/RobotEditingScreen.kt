@@ -5,14 +5,13 @@ import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.game.*
 import schwalbe.ventura.client.screens.*
-import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
 import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.net.*
 import schwalbe.ventura.data.Item
 import schwalbe.ventura.ROBOT_NAME_MAX_LEN
-import java.io.File
 import schwalbe.ventura.utils.toVector3f
+import kotlin.io.path.relativeTo
 import kotlin.uuid.Uuid
 
 private fun createBottomPanelButton(text: Text, action: () -> Unit) = Stack()
@@ -138,6 +137,131 @@ private fun createSelectFileSection(fileTreeCtx: FileTreeCtx) = Axis.column()
     .add(100.ph - 8.vmin, createFileTree(fileTreeCtx))
     .pad(1.vmin)
 
+private fun makeButton(
+    text: String, alignment: Text.Alignment = Text.Alignment.CENTER,
+    onClick: (() -> Unit)? = null
+): UiElement {
+    val root = Stack()
+    val bg = FlatBackground().withColor(Theme.BUTTON_COLOR)
+    root.add(bg)
+    root.add(Text()
+        .withText(text)
+        .withSize(75.ph)
+        .withAlignment(alignment)
+        .pad(1.vmin)
+    )
+    if (onClick != null) {
+        bg.withHoverColor(Theme.BUTTON_HOVER_COLOR)
+        root.add(ClickArea().withLeftHandler(onClick))
+    }
+    return root
+        .wrapBorderRadius(0.75.vmin)
+}
+
+private fun createSimpleRobotCodeSection(
+    client: Client, packetHandler: PacketHandler<Unit>, robotId: Uuid
+): UiElement {
+    val disposalMarker = Space()
+    val robotFiles: List<String> = listOf(
+        SourceFiles.getRobotSourceFile(robotId)
+            .relativeTo(USERCODE_DIR)
+            .toString()
+    )
+    val l = localized()
+    packetHandler.onPacketUntil(
+        PacketType.WORLD_STATE, until = disposalMarker::wasDisposed
+    ) { ws, _ ->
+        val pi = ws.ownedRobots[robotId] ?: return@onPacketUntil
+        if (pi.sourceFiles == robotFiles) { return@onPacketUntil }
+        client.network.outPackets?.send(Packet.serialize(
+            PacketType.SET_ROBOT_SOURCES,
+            RobotSourceFilesChangePacket(robotId, robotFiles)
+        ))
+    }
+    return Axis.column()
+        .add(4.vmin, makeButton(l[BUTTON_EDIT_ROBOT_CODE_FILE]) {
+            client.nav.push(robotFileEditorScreen(client, robotId))
+        })
+        .add(4.vmin, Space())
+        .add(4.vmin, makeButton(l[BUTTON_ENABLE_ADVANCED_EDITING]) {
+            // TODO! make screen for enabling
+        })
+        .add(100.ph - 4.vmin - 4.vmin - 4.vmin, Text()
+            .withText(l[DESCRIPTION_ADVANCED_EDITING])
+            .withSize(1.3.vmin)
+            .wrapThemedScrolling()
+            .pad(1.vmin)
+        )
+        .add(0.px, disposalMarker)
+}
+
+private fun createAdvancedRobotCodeSubsection(
+    client: Client, packetHandler: PacketHandler<Unit>,
+    robotId: Uuid, onAddCodeFile: ((String) -> Unit) -> Unit
+): UiElement {
+    val l = localized()
+    val codeFileList = Axis.column()
+    var displayedSourceFiles: List<String>? = null
+    packetHandler.onPacketUntil(
+        PacketType.WORLD_STATE, until = codeFileList::wasDisposed
+    ) { ws, _ ->
+        val pi = ws.ownedRobots[robotId] ?: return@onPacketUntil
+        if (pi.sourceFiles == displayedSourceFiles) { return@onPacketUntil }
+        val sourceFiles: MutableList<String> = pi.sourceFiles.toMutableList()
+        fun sendChangedSourceFiles() {
+            client.network.outPackets?.send(Packet.serialize(
+                PacketType.SET_ROBOT_SOURCES,
+                RobotSourceFilesChangePacket(robotId, sourceFiles)
+            ))
+        }
+        fun wrapFileIdx(i: Int): Int {
+            if (i < 0) { return i + sourceFiles.size }
+            return i % sourceFiles.size
+        }
+        fun swapFiles(aIdx: Int, bIdx: Int) {
+            val a = sourceFiles[aIdx]
+            sourceFiles[aIdx] = sourceFiles[bIdx]
+            sourceFiles[bIdx] = a
+        }
+        codeFileList.disposeAll()
+        for (i in pi.sourceFiles.indices) {
+            val codeFilePath = pi.sourceFiles[i]
+            codeFileList.add(4.vmin, Axis.row()
+                .add(100.pw - 3 * (100.ph + 1.vmin),
+                    makeButton(codeFilePath, Text.Alignment.LEFT)
+                )
+                .add(1.vmin, Space())
+                .add(100.ph, makeButton("↑") {
+                    swapFiles(i, wrapFileIdx(i - 1))
+                    sendChangedSourceFiles()
+                })
+                .add(1.vmin, Space())
+                .add(100.ph, makeButton("↓") {
+                    swapFiles(i, wrapFileIdx(i + 1))
+                    sendChangedSourceFiles()
+                })
+                .add(1.vmin, Space())
+                .add(100.ph, makeButton("X") {
+                    sourceFiles.removeAt(i)
+                    sendChangedSourceFiles()
+                })
+                .pad(left = 1.vmin, right = 1.vmin)
+            )
+            codeFileList.add(1.vmin, Space())
+        }
+        codeFileList.add(4.vmin, makeButton(l[BUTTON_ADD_CODE_FILE]) {
+            onAddCodeFile {
+                sourceFiles.add(it)
+                sendChangedSourceFiles()
+            }
+        }.pad(left = 1.vmin, right = 1.vmin))
+        codeFileList.add(50.ph, Space())
+        displayedSourceFiles = pi.sourceFiles
+    }
+    return codeFileList
+        .wrapThemedScrolling()
+}
+
 private fun createRobotSettingsSection(
     client: Client, packetHandler: PacketHandler<Unit>,
     robotId: Uuid, initialState: SharedRobotInfo?,
@@ -176,84 +300,6 @@ private fun createRobotSettingsSection(
         attachmentList.add(50.ph, Space())
         displayedAttachments = pi.attachments
     }
-    val codeFileList = Axis.column()
-    var displayedSourceFiles: List<String>? = null
-    packetHandler.onPacketUntil(
-        PacketType.WORLD_STATE, until = codeFileList::wasDisposed
-    ) { ws, _ ->
-        val pi = ws.ownedRobots[robotId] ?: return@onPacketUntil
-        if (pi.sourceFiles == displayedSourceFiles) { return@onPacketUntil }
-        fun makeFileButton(
-            text: String, alignment: Text.Alignment = Text.Alignment.CENTER,
-            onClick: (() -> Unit)? = null
-        ): UiElement {
-            val root = Stack()
-            val bg = FlatBackground().withColor(Theme.BUTTON_COLOR)
-            root.add(bg)
-            root.add(Text()
-                .withText(text)
-                .withSize(75.ph)
-                .withAlignment(alignment)
-                .pad(1.vmin)
-            )
-            if (onClick != null) {
-                bg.withHoverColor(Theme.BUTTON_HOVER_COLOR)
-                root.add(ClickArea().withLeftHandler(onClick))
-            }
-            return root
-                .wrapBorderRadius(0.75.vmin)
-        }
-        val sourceFiles: MutableList<String> = pi.sourceFiles.toMutableList()
-        fun sendChangedSourceFiles() {
-            client.network.outPackets?.send(Packet.serialize(
-                PacketType.SET_ROBOT_SOURCES,
-                RobotSourceFilesChangePacket(robotId, sourceFiles)
-            ))
-        }
-        fun wrapFileIdx(i: Int): Int {
-            if (i < 0) { return i + sourceFiles.size }
-            return i % sourceFiles.size
-        }
-        fun swapFiles(aIdx: Int, bIdx: Int) {
-            val a = sourceFiles[aIdx]
-            sourceFiles[aIdx] = sourceFiles[bIdx]
-            sourceFiles[bIdx] = a
-        }
-        codeFileList.disposeAll()
-        for (i in pi.sourceFiles.indices) {
-            val codeFilePath = pi.sourceFiles[i]
-            codeFileList.add(4.vmin, Axis.row()
-                .add(100.pw - 3 * (100.ph + 1.vmin),
-                    makeFileButton(codeFilePath, Text.Alignment.LEFT)
-                )
-                .add(1.vmin, Space())
-                .add(100.ph, makeFileButton("↑") {
-                    swapFiles(i, wrapFileIdx(i - 1))
-                    sendChangedSourceFiles()
-                })
-                .add(1.vmin, Space())
-                .add(100.ph, makeFileButton("↓") {
-                    swapFiles(i, wrapFileIdx(i + 1))
-                    sendChangedSourceFiles()
-                })
-                .add(1.vmin, Space())
-                .add(100.ph, makeFileButton("X") {
-                    sourceFiles.removeAt(i)
-                    sendChangedSourceFiles()
-                })
-                .pad(left = 1.vmin, right = 1.vmin)
-            )
-            codeFileList.add(1.vmin, Space())
-        }
-        codeFileList.add(4.vmin, makeFileButton(l[BUTTON_ADD_CODE_FILE]) {
-            onAddCodeFile {
-                sourceFiles.add(it)
-                sendChangedSourceFiles()
-            }
-        }.pad(left = 1.vmin, right = 1.vmin))
-        codeFileList.add(50.ph, Space())
-        displayedSourceFiles = pi.sourceFiles
-    }
     var subtitle = ""
     if (initialState != null) {
         subtitle += l[initialState.baseItem.type.localNameKey]
@@ -262,6 +308,7 @@ private fun createRobotSettingsSection(
             subtitle += " (${l[variant.localNameKey]})"
         }
     }
+    val advancedEditing: Boolean = client.config.settings.advancedEditingEnabled
     return Axis.column()
         .add(topSection, Axis.column()
             .add(60.ph, TextInput()
@@ -303,10 +350,15 @@ private fun createRobotSettingsSection(
                 .add(subsectionTitleSize,
                     subsectionTitle(l[TITLE_ROBOT_CODE_FILES])
                 )
-                .add(100.ph - subsectionTitleSize, codeFileList
-                    .wrapThemedScrolling()
-                    .pad(bottom = 2.vmin)
-                )
+                .add(100.ph - subsectionTitleSize, if (advancedEditing) {
+                    createAdvancedRobotCodeSubsection(
+                        client, packetHandler, robotId, onAddCodeFile
+                    )
+                } else {
+                    createSimpleRobotCodeSection(
+                        client, packetHandler, robotId
+                    )
+                }.pad(bottom = 2.vmin))
             )
         )
         .pad(1.vmin)
@@ -326,23 +378,14 @@ private fun createRobotSettingsSection(
 private const val LOG_REQUEST_INTERVAL: Long = 1000L
 
 fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
-    val background = BlurBackground()
-        .withRadius(3)
-        .withSpread(5)
     val contextMenu = ContextMenu()
-    val packets = PacketHandler.receiveDownPackets<Unit>()
-        .addErrorLogging()
-        .addWorldHandling(client)
-        .updateStoredSources(client)
     val sharedRobotInfo: SharedRobotInfo?
         = client.world?.state?.lastReceived?.allRobots[robotId]
     var lastLogRequestTime: Long = 0
-    val screen = GameScreen(
+    val screen = PausedScreen(
+        client,
+        camMode = { w -> CameraModes.playerInRightThird(w.player) },
         onOpen = {
-            client.world?.let {
-                it.camController.mode =
-                    CameraModes.playerInRightThird(it.player)
-            }
             client.network.outPackets?.send(Packet.serialize(
                 PacketType.PAUSE_ROBOT, robotId
             ))
@@ -352,47 +395,36 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
                 PacketType.UNPAUSE_ROBOT, robotId
             ))
         },
-        render = render@{
+        closeIf = { Key.ESCAPE.wasPressed || Key.E.wasPressed },
+        playerFollowCursor = false,
+        playerAnim = PlayerAnim.squat,
+        render = {
             val now: Long = System.currentTimeMillis()
             if (lastLogRequestTime + LOG_REQUEST_INTERVAL <= now) {
                 requestRobotLogs(client, robotId)
                 lastLogRequestTime = now
             }
-            if (Key.ESCAPE.wasPressed || Key.E.wasPressed) {
-                client.nav.pop()
-            }
-            SourceFiles.update(client)
-            val world = client.world ?: return@render
-            world.update(client, captureInput = false)
-            if (sharedRobotInfo != null) {
+            val world: World? = client.world
+            if (sharedRobotInfo != null && world != null) {
                 val toRobot = sharedRobotInfo.position.toVector3f()
                     .sub(world.player.position)
                 if (toRobot.lengthSquared() != 0f) {
                     world.player.rotateAlong(toRobot)
                 }
             }
-            world.player.assertAnimation(PlayerAnim.squat, 0.5f)
-            world.render(client)
-            background.invalidate()
-        },
-        networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
-            client.nav.replace(serverConnectionFailedScreen(reason, client))
-            client.network.clearError()
-        }),
-        packets = packets,
-        navigator = client.nav
+        }
     )
     val l = localized()
     val rhs = Stack()
     fun resetRhs() {
         rhs.disposeAll()
-        rhs.add(createRobotInfoSection(client, packets, robotId))
+        rhs.add(createRobotInfoSection(client, screen.packets, robotId))
     }
     resetRhs()
     fun onSetAttachment(onItemSelected: (Item?) -> Unit) {
         rhs.disposeAll()
         val itemList = createItemListSection(
-            packets,
+            screen.packets,
             displayedEntries = { i, _ -> i.type.category.isRobotAttachment },
             onItemSelect = { i, _ ->
                 onItemSelected(i)
@@ -412,7 +444,7 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
         val fileTreeCtx = FileTreeCtx(
             contextMenu,
             onFileSelect = { file ->
-                onFileSelected(file.relativeTo(File(USERCODE_DIR)).path)
+                onFileSelected(file.relativeTo(USERCODE_DIR.toFile()).path)
                 resetRhs()
             }
         )
@@ -421,13 +453,13 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
             .withBottomButton(l[BUTTON_CANCEL_EDIT]) { resetRhs() }
         )
     }
-    screen.add(layer = 0, element = Axis.row()
+    screen.screen.add(layer = 0, element = Axis.row()
         .add(66.6.vw, Stack()
-            .add(background)
+            .add(screen.background)
             .add(FlatBackground().withColor(Theme.PANEL_BACKGROUND))
             .add(Axis.row()
                 .add(50.pw, createRobotSettingsSection(
-                    client, packets, robotId, sharedRobotInfo,
+                    client, screen.packets, robotId, sharedRobotInfo,
                     ::onSetAttachment,
                     ::onAddCodeFile
                 ))
@@ -435,13 +467,13 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
             )
         )
     )
-    screen.add(layer = 1, element = contextMenu)
-    packets.onPacketUntil(
-        PacketType.WORLD_STATE, until = background::wasDisposed
+    screen.screen.add(layer = 1, element = contextMenu)
+    screen.packets.onPacketUntil(
+        PacketType.WORLD_STATE, until = screen.background::wasDisposed
     ) { ws, _ ->
         if (robotId !in ws.ownedRobots.keys) {
             client.nav.pop()
         }
     }
-    screen
+    screen.screen
 }

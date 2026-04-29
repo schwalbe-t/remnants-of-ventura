@@ -14,21 +14,38 @@ val BIGTON_MODULES = BigtonModules<GameAttachmentContext>()
 
 val CORE_ROBOT_FUNCTIONS = BigtonModule(BIGTON_MODULES.functions)
     .withFunction("tileDist", cost = 1, argc = 1) { r ->
-        var dist: Long = r.popStack()
-            ?.use {
-                if (it !is BigtonTuple || it.length != 2) { return@use null }
-                val dx: BigtonValue = it[0]
-                val dz: BigtonValue = it[1]
-                if (dx !is BigtonInt || dz !is BigtonInt) { return@use null }
-                arrayOf<BigtonValue?>(dx, dz).useAll {
-                    abs(dx.value) + abs(dz.value)
-                }
-            }
+        var (dx, dz) = r.popTuple2Int()
             ?: return@withFunction r.reportDynError(
-                "'manhattanDist' expects a tuple of two integers, but got " +
+                "'tileDist' expects a tuple of two integers, but got " +
                 "something else instead"
             )
-        BigtonInt.fromValue(dist).use(r::pushStack)
+        BigtonInt.fromValue(abs(dx) + abs(dz)).use(r::pushStack)
+    }
+    .withFunction("toCardinal", cost = 1, argc = 1) { r ->
+        var (rdx, rdz) = r.popTuple2Int()
+            ?: return@withFunction r.reportDynError(
+                "'toCardinal' expects a tuple of two integers, but got " +
+                "something else instead"
+            )
+        val (dx, dz) = tileDirToCardinal(rdx, rdz)
+        val vdx = BigtonInt.fromValue(dx)
+        val vdz = BigtonInt.fromValue(dz)
+        arrayOf<BigtonValue?>(vdx, vdz).useAll {
+            BigtonTuple.fromElements(listOf(vdx, vdz), r).use(r::pushStack)
+        }
+    }
+    .withFunction("toLesserCardinal", cost = 1, argc = 1) { r ->
+        var (rdx, rdz) = r.popTuple2Int()
+            ?: return@withFunction r.reportDynError(
+                "'toLesserCardinal' expects a tuple of two integers, but got " +
+                "something else instead"
+            )
+        val (dx, dz) = tileDirToLesserCardinal(rdx, rdz)
+        val vdx = BigtonInt.fromValue(dx)
+        val vdz = BigtonInt.fromValue(dz)
+        arrayOf<BigtonValue?>(vdx, vdz).useAll {
+            BigtonTuple.fromElements(listOf(vdx, vdz), r).use(r::pushStack)
+        }
     }
     .withCtxFunction("playerDir", cost = 1, argc = 0) { r, ctx ->
         val playerPos = ctx.player.data.worlds.last().state.position

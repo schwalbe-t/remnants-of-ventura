@@ -32,6 +32,8 @@ const val MAX_ROBOT_EDIT_DIST: Float = 2f
 fun controllingPlayerScreen(client: Client): () -> GameScreen = {
     val playerNames = NameDisplayManager()
     val robotStatus = RobotStatusDisplayManager()
+    fun advancedEditing(): Boolean
+        = client.config.settings.advancedEditingEnabled
     val screen = GameScreen(
         onOpen = {
             client.nav.retainCurrent()
@@ -47,19 +49,21 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             if (Key.TAB.wasPressed) {
                 client.nav.push(inventoryMenuScreen(client))
             }
-            if (Key.C.wasPressed) {
-                client.nav.push(codeEditingScreen(client))
+            if (Key.C.wasPressed && advancedEditing()) {
+                client.nav.push(multiFileEditorScreen(client))
             }
             SourceFiles.update(client)
             val worldState: WorldStatePacket? = world.state.lastReceived
             if (worldState != null) {
                 val (closestId, closestDist)
                     = findClosestOwnedRobot(worldState, world.player.position)
-                val editClosest: Boolean = closestId != null
+                val hasInRange: Boolean = closestId != null
                     && closestDist <= MAX_ROBOT_EDIT_DIST
-                    && Key.E.wasPressed
-                if (editClosest) {
+                if (hasInRange && Key.E.wasPressed) {
                     client.nav.push(robotEditingScreen(client, closestId))
+                }
+                if (hasInRange && Key.C.wasPressed && !advancedEditing()) {
+                    client.nav.push(robotFileEditorScreen(client, closestId))
                 }
                 robotStatus.update(client, worldState)
             }
