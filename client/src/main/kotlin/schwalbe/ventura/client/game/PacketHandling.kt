@@ -5,7 +5,6 @@ import schwalbe.ventura.Version
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.net.*
-import schwalbe.ventura.utils.toVector3f
 
 private enum class VersionDiff { CLIENT_OUTDATED, SERVER_OUTDATED, MATCH }
 

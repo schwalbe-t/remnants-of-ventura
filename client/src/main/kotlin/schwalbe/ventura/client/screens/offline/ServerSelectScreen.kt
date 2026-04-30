@@ -2,6 +2,7 @@
 package schwalbe.ventura.client.screens.offline
 
 import org.joml.Vector4f
+import schwalbe.ventura.Version
 import schwalbe.ventura.engine.ui.*
 import schwalbe.ventura.client.*
 import schwalbe.ventura.client.LocalKeys.*
@@ -70,6 +71,25 @@ fun serverSelectScreen(client: Client): () -> GameScreen = {
         networkState = noNetworkConnections(client),
         navigator = client.nav,
         onClose = background::dispose
+    )
+    val navbar = Axis.row(10.vmin)
+        .add(createNavbarAction(Icons.SETTINGS) {
+            client.nav.push(offlineSettingsScreen(client))
+        })
+        .add(createNavbarAction(Icons.TRANSLATE) {
+            client.nav.push(languageSelectScreen(client))
+        })
+        .add(createNavbarAction(Icons.POWER) {
+            client.window.close()
+        })
+    navbar.add(100.pw - navbar.computeContentLength(), Text()
+        .withText(localized()[TEXT_CLIENT_BUILD_VERSION].replace(
+            "{VERSION}", "${Version.MAJOR}.${Version.MINOR}.${Version.PATCH}"
+        ))
+        .withSize(80.ph)
+        .withColor(Theme.SECONDARY_FONT_COLOR)
+        .alignRight()
+        .pad(1.65.vmin)
     )
     val serverList = Axis.column(SERVER_ACTION_SIZE)
     for ((i, server) in client.config.servers.withIndex()) {
@@ -147,17 +167,7 @@ fun serverSelectScreen(client: Client): () -> GameScreen = {
                 .withRadius(5)
             )
             .add(FlatBackground().withColor(Theme.BUTTON_COLOR))
-            .add(Axis.row(10.vmin)
-                .add(createNavbarAction(Icons.SETTINGS) {
-                    client.nav.push(offlineSettingsScreen(client))
-                })
-                .add(createNavbarAction(Icons.TRANSLATE) {
-                    client.nav.push(languageSelectScreen(client))
-                })
-                .add(createNavbarAction(Icons.POWER) {
-                    client.window.close()
-                })
-            )
+            .add(navbar)
         )
         .add(100.ph - Theme.TITLE_BAR_HEIGHT, Axis.row()
             .add(50.pw + 1.vmin, Axis.column()

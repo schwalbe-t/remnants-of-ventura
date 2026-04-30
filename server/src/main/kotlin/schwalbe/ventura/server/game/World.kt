@@ -478,16 +478,18 @@ class World(
         }
         ph.onPacket(PacketType.UNPAUSE_ROBOT) { robotId, pl ->
             val robot = getRobotOrError(robotId, pl) ?: return@onPacket
-            robot.unpause()
+            robot.resume()
+        }
+        ph.onPacket(PacketType.UNPAUSE_RESTART_ROBOT) { robotId, pl ->
+            val robot = getRobotOrError(robotId, pl) ?: return@onPacket
+            if (robot.status == RobotStatus.PAUSED) {
+                robot.stop()
+                robot.start()
+            }
         }
         ph.onPacket(PacketType.STOP_ROBOT) { robotId, pl ->
             val robot = getRobotOrError(robotId, pl) ?: return@onPacket
             robot.stop()
-        }
-        ph.onPacket(PacketType.RESTART_ROBOT) { robotId, pl ->
-            val robot = getRobotOrError(robotId, pl) ?: return@onPacket
-            robot.stop()
-            robot.start()
         }
         ph.onPacket(PacketType.SET_ROBOT_ATTACHMENT) { at, pl ->
             val robot = getRobotOrError(at.robotId, pl) ?: return@onPacket

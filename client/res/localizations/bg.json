@@ -30,6 +30,7 @@
         "DESCRIPTION_AUTO_RESTART": "Автоматично рестартира робота при редактиране на неговия код (не оказва влияние в режим на разширено редактиране).",
 
         "BUTTON_ADD_SERVER": "Добави сървър",
+        "TEXT_CLIENT_BUILD_VERSION": "Версия на клиента: {VERSION}",
 
         "TITLE_EDIT_SERVER": "Редактиране на сървър",
         "LABEL_SERVER_NAME": "Име",
@@ -70,6 +71,7 @@
         "TITLE_ROBOT_CODE_FILES": "Код",
         "BUTTON_ADD_CODE_FILE": "Добави код файл",
         "BUTTON_EDIT_ROBOT_CODE_FILE": "Редактирай кода",
+        "BUTTON_EDIT_ROBOT_CODE_FILE_SHORT": "Код",
         "BUTTON_ENABLE_ADVANCED_EDITING": "Активирай разширено редактиране",
         "BUTTON_REPAIR_ROBOT": "Поправи робот",
         "BUTTON_DESTROY_ROBOT": "Унищожи робот",

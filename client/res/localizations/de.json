@@ -30,6 +30,7 @@
         "DESCRIPTION_AUTO_RESTART": "Startet einen Roboter automatisch neu, wenn sein Code bearbeitet wird (hat im erweiterten Bearbeitungsmodus keine Auswirkungen).",
 
         "BUTTON_ADD_SERVER": "Server hinzufügen",
+        "TEXT_CLIENT_BUILD_VERSION": "Client-Version: {VERSION}",
 
         "TITLE_EDIT_SERVER": "Server bearbeiten",
         "LABEL_SERVER_NAME": "Name",
@@ -70,6 +71,7 @@
         "TITLE_ROBOT_CODE_FILES": "Code",
         "BUTTON_ADD_CODE_FILE": "Code-Datei hinzufügen",
         "BUTTON_EDIT_ROBOT_CODE_FILE": "Code bearbeiten",
+        "BUTTON_EDIT_ROBOT_CODE_FILE_SHORT": "Code",
         "BUTTON_ENABLE_ADVANCED_EDITING": "Erweiterte Bearbeitung aktivieren",
         "BUTTON_REPAIR_ROBOT": "Roboter reparieren",
         "BUTTON_DESTROY_ROBOT": "Roboter zerstören",

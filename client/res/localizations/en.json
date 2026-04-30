@@ -29,7 +29,14 @@
         "SETTING_AUTO_RESTART": "Auto-Restart",
         "DESCRIPTION_AUTO_RESTART": "Automatically restarts a robot when editing its code (does nothing in advanced editing mode).",
 
+        "NAME_SIMPLE_EDITING_MODE": "Simple Editing",
+        "DESCRIPTION_SIMPLE_EDITING_MODE": "In simple editing mode, each robot has a single code file that may be edited to program the robot. This makes getting started with writing programs very easy, but makes sharing code between robots difficult. This mode is recommended for newer players and players that are not yet familiar with programming.",
+        "NAME_ADVANCED_EDITING_MODE": "Advanced Editing",
+        "DESCRIPTION_ADVANCED_EDITING_MODE": "In advanced editing mode, the player can create an arbitrary number of named code files and write code inside them. For each robot can then execute any number of these code files in any order, which allows easy sharing of code between robots. However, due to its relative complexity this mode is only recommended for experienced players or players that are already familiar with programming.",
+        "BUTTON_SELECT_MODE": "Select \"{MODE}\"",
+
         "BUTTON_ADD_SERVER": "Add Server",
+        "TEXT_CLIENT_BUILD_VERSION": "Client Version: {VERSION}",
 
         "TITLE_EDIT_SERVER": "Edit Server",
         "LABEL_SERVER_NAME": "Name",
@@ -70,6 +77,7 @@
         "TITLE_ROBOT_CODE_FILES": "Code",
         "BUTTON_ADD_CODE_FILE": "Add Code File",
         "BUTTON_EDIT_ROBOT_CODE_FILE": "Edit Code",
+        "BUTTON_EDIT_ROBOT_CODE_FILE_SHORT": "Code",
         "BUTTON_ENABLE_ADVANCED_EDITING": "Enable Advanced Editing",
         "BUTTON_REPAIR_ROBOT": "Repair Robot",
         "BUTTON_DESTROY_ROBOT": "Destroy Robot",

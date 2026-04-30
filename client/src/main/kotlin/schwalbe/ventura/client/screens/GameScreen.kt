@@ -7,7 +7,7 @@ import schwalbe.ventura.engine.ui.UiScreen
 import schwalbe.ventura.net.PacketHandler
 
 class GameScreen(
-    override val render: () -> Unit = {},
+    override var render: () -> Unit = {},
     val networkState: () -> Unit = {},
     val packets: PacketHandler<Unit>? = null,
     navigator: UiNavigator<GameScreen>,

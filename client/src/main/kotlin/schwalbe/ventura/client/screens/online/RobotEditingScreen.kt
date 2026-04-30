@@ -184,7 +184,7 @@ private fun createSimpleRobotCodeSection(
         })
         .add(4.vmin, Space())
         .add(4.vmin, makeButton(l[BUTTON_ENABLE_ADVANCED_EDITING]) {
-            // TODO! make screen for enabling
+            showAdvancedEditingConfirmation(client)
         })
         .add(100.ph - 4.vmin - 4.vmin - 4.vmin, Text()
             .withText(l[DESCRIPTION_ADVANCED_EDITING])

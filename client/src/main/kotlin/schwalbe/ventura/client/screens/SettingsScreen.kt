@@ -14,6 +14,8 @@ private fun UiElement.padSection(): UiElement
 private sealed interface SettingValue {
     class Toggle(
         val init: Boolean,
+        val confirm: (value: Boolean, confirm: (Boolean) -> Unit) -> Unit
+            = { value, confirm -> confirm(value) },
         val onChange: (Boolean) -> Unit
     ) : SettingValue
     class Number(
@@ -55,9 +57,11 @@ private fun createSettingValueElem(setting: SettingValue) = when (setting) {
             .add(100.ph, Stack()
                 .add(display)
                 .add(ClickArea().withLeftHandler {
-                    value = !value
-                    updateDisplay()
-                    setting.onChange(value)
+                    setting.confirm(!value) { confirmed ->
+                        value = confirmed
+                        updateDisplay()
+                        setting.onChange(confirmed)
+                    }
                 })
             )
     }
@@ -274,6 +278,15 @@ fun settingsScreen(
                 SETTING_ADVANCED_EDITING, DESCRIPTION_ADVANCED_EDITING,
                 SettingValue.Toggle(
                     init = client.config.settings.advancedEditingEnabled,
+                    confirm = { isEnabled, confirm ->
+                        if (!isEnabled) {
+                            confirm(false)
+                        } else {
+                            showAdvancedEditingConfirmation(
+                                client, onSelect = confirm
+                            )
+                        }
+                    },
                     onChange = { changeSettings(client) {
                         this.advancedEditingEnabled = it
                     } }

@@ -36,12 +36,21 @@ fun robotFileEditorScreen(
     val screen = PausedScreen(
         client,
         camMode = { w -> CameraModes.playerInRightThird(w.player) },
+        onOpen = {
+            client.network.outPackets?.send(Packet.serialize(
+                PacketType.PAUSE_ROBOT, robotId
+            ))
+        },
         onClose = {
             editor?.save()
             SourceFiles.uploadFileContents(client, file)
             if (autoRestart) {
                 client.network.outPackets?.send(Packet.serialize(
-                    PacketType.RESTART_ROBOT, robotId
+                    PacketType.UNPAUSE_RESTART_ROBOT, robotId
+                ))
+            } else {
+                client.network.outPackets?.send(Packet.serialize(
+                    PacketType.UNPAUSE_ROBOT, robotId
                 ))
             }
         },

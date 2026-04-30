@@ -163,7 +163,7 @@ class PlayerRobot(
         }
     }
 
-    fun unpause() {
+    fun resume() {
         when (this.status) {
             RobotStatus.PAUSED -> {
                 this.status = RobotStatus.RUNNING

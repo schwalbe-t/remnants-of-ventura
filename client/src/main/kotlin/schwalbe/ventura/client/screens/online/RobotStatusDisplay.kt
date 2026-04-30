@@ -11,6 +11,19 @@ import kotlin.math.PI
 import kotlin.math.roundToInt
 import kotlin.uuid.Uuid
 
+private fun createStatusButton(text: Text, click: ClickArea) = Stack()
+    .add(FlatBackground()
+        .withColor(Theme.BUTTON_COLOR)
+        .withHoverColor(Theme.BUTTON_HOVER_COLOR)
+    )
+    .add(text
+        .withSize(75.ph)
+        .alignCenter()
+        .pad(0.1.vmin)
+    )
+    .add(click)
+    .wrapBorderRadius(0.5.vmin)
+
 class RobotStatusDisplay {
 
     companion object {
@@ -62,7 +75,20 @@ class RobotStatusDisplay {
     val cpuValueText: Text = Text()
     val toggleButtonText: Text = Text()
     val toggleButtonClick: ClickArea = ClickArea()
+    val editButtonClick: ClickArea = ClickArea()
     val robotDisplay: Stack = Stack()
+
+    val toggleButton = createStatusButton(
+        this.toggleButtonText,
+        this.toggleButtonClick
+    )
+    val editButton = createStatusButton(
+        Text().withText(localized()[BUTTON_EDIT_ROBOT_CODE_FILE_SHORT]),
+        this.editButtonClick
+    )
+    val buttons = Axis.row()
+        .add(0.px, this.toggleButton)
+        .add(0.px, this.editButton)
 
     val content = Axis.column()
         .add(3.vmin, this.nameText
@@ -76,28 +102,16 @@ class RobotStatusDisplay {
         )
         .add(100.ph - 2.5.vmin - 3.vmin, Axis.row()
             .add(100.pw - 1.5.vmin - 100.ph, Axis.column(100.ph / 4)
-                .add(Stack()
-                    .add(FlatBackground()
-                        .withColor(Theme.BUTTON_COLOR)
-                        .withHoverColor(Theme.BUTTON_HOVER_COLOR)
-                    )
-                    .add(this.toggleButtonText
-                        .withSize(75.ph)
-                        .alignCenter()
-                        .pad(0.1.vmin)
-                    )
-                    .add(this.toggleButtonClick)
-                    .wrapBorderRadius(0.5.vmin)
-                )
-                .add(RobotStatusDisplay.createStatusProp(
+                .add(this.buttons)
+                .add(createStatusProp(
                     Text().withText(localized()[LABEL_ROBOT_STAT_HEALTH]),
                     this.hpValueText
                 ))
-                .add(RobotStatusDisplay.createStatusProp(
+                .add(createStatusProp(
                     Text().withText(localized()[LABEL_ROBOT_STAT_MEMORY]),
                     this.ramValueText
                 ))
-                .add(RobotStatusDisplay.createStatusProp(
+                .add(createStatusProp(
                     Text().withText(localized()[LABEL_ROBOT_STAT_PROCESSOR]),
                     this.cpuValueText
                 ))
@@ -123,7 +137,7 @@ class RobotStatusDisplay {
         this.nameText.withText(si.name)
         this.statusText.withText(l[si.status.localNameKey])
         this.statusText.withColor(si.status.displayColor)
-        RobotStatusDisplay.updateDisplayTexts(
+        updateDisplayTexts(
             this.hpValueText, this.ramValueText, this.cpuValueText, pi
         )
         val toggleButtonLabel: LocalKeys =
@@ -135,6 +149,18 @@ class RobotStatusDisplay {
                 if (!si.status.isRunning) { PacketType.START_ROBOT }
                 else { PacketType.STOP_ROBOT }
             client.network.outPackets?.send(Packet.serialize(action, id))
+        }
+        this.editButtonClick.withLeftHandler {
+            client.nav.push(robotFileEditorScreen(client, id))
+        }
+        this.buttons.detachAll()
+        if (client.config.settings.advancedEditingEnabled) {
+            this.buttons.add(100.pw, this.toggleButton)
+            this.buttons.add(0.px, this.editButton)
+        } else {
+            this.buttons.add(50.pw - 0.25.vmin, this.toggleButton)
+            this.buttons.add(0.5.vmin, Space())
+            this.buttons.add(50.pw - 0.25.vmin, this.editButton)
         }
         if (this.robotDisplay.children.isEmpty()) {
             this.robotDisplay.add(ItemDisplay.createDisplay(
