@@ -21,7 +21,7 @@ private fun makeEditingModeSection(
     .add(1.vmin, Space())
     .add(100.ph - 4.vmin - 1.vmin - 1.vmin - 4.vmin, Text()
         .withText(localized()[description])
-        .withSize(1.5.vmin)
+        .withSize(1.75.vmin)
         .wrapThemedScrolling(horiz = false, vert = true)
     )
     .add(1.vmin, Space())
@@ -42,7 +42,7 @@ private fun makeEditingModeSection(
         .wrapBorderRadius(0.75.vmin)
         .pad(horizontal = 10.pw, vertical = 0.px)
     )
-    .pad(horizontal = 5.vmin, vertical = 10.vmin)
+    .pad(horizontal = 5.vmin, vertical = 20.ph)
 
 fun showAdvancedEditingConfirmation(
     client: Client,

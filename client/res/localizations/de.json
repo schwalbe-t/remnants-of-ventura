@@ -29,6 +29,12 @@
         "SETTING_AUTO_RESTART": "Automatischer Neustart",
         "DESCRIPTION_AUTO_RESTART": "Startet einen Roboter automatisch neu, wenn sein Code bearbeitet wird (hat im erweiterten Bearbeitungsmodus keine Auswirkungen).",
 
+        "NAME_SIMPLE_EDITING_MODE": "Einfache Bearbeitung",
+        "DESCRIPTION_SIMPLE_EDITING_MODE": "Im einfachen Bearbeitungsmodus besitzt jeder Roboter eine einzelne Code-Datei, die zum Programmieren des Roboters bearbeitet werden kann. Dies macht den Einstieg in das Schreiben von Programmen sehr einfach, erschwert jedoch das Teilen von Code zwischen Robotern. Dieser Modus wird für neue Spieler und Spieler, die noch nicht mit dem Programmieren vertraut sind, empfohlen.\n\n• Jeder Roboter ist mit einer einzelnen Code-Datei verknüpft, die er auszuführen versucht.\n\n• Die Code-Datei eines Roboters kann durch Drücken von [C] in der Nähe des Roboters oder über Schaltflächen im Roboter-Konfigurationsmenü und in den Statusanzeigen bearbeitet werden.\n\n• Wenn der Editor geschlossen wird, startet der Roboter automatisch neu, um den neuen Code auszuführen. Dieses Verhalten kann in den Einstellungen aktiviert oder deaktiviert werden.",
+        "NAME_ADVANCED_EDITING_MODE": "Erweiterte Bearbeitung",
+        "DESCRIPTION_ADVANCED_EDITING_MODE": "Im erweiterten Bearbeitungsmodus kann der Spieler eine beliebige Anzahl benannter Code-Dateien erstellen und Code darin schreiben. Jeder Roboter kann dann eine beliebige Anzahl dieser Dateien in beliebiger Reihenfolge ausführen, was das Teilen von Code zwischen Robotern erleichtert. Aufgrund der relativen Komplexität wird dieser Modus jedoch nur für erfahrene Spieler oder Spieler, die bereits mit dem Programmieren vertraut sind, empfohlen.\n\n• Das Drücken von [C] öffnet den Texteditor.\n\n• Im Texteditor können Dateien und Ordner per Rechtsklick erstellt, umbenannt und gelöscht werden.\n\n• Im Texteditor können Dateien per Linksklick geöffnet und bearbeitet werden.\n\n• Ein externer Code-Editor kann ebenfalls verwendet werden. Die Dateien befinden sich im „usercode“-Verzeichnis der Spieldateien.\n\n• Im Roboter-Konfigurationsmenü müssen die auszuführenden Dateien und deren Reihenfolge für jeden Roboter festgelegt werden.\n\n• Roboter müssen manuell neu gestartet werden, damit Codeänderungen wirksam werden.",
+        "BUTTON_SELECT_MODE": "„{MODE}“ auswählen",
+
         "BUTTON_ADD_SERVER": "Server hinzufügen",
         "TEXT_CLIENT_BUILD_VERSION": "Client-Version: {VERSION}",
 
