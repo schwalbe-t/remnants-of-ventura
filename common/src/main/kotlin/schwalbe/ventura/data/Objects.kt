@@ -104,6 +104,65 @@ enum class ObjectType(
         textureFilter = TextureFilter.NEAREST,
         applyCollidersOf = listOf("collider"),
         tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
+    ),
+
+    APARTMENT_CEILING(
+        modelPath = "res/objects/apartment_ceiling.glb",
+        applyColliders = true,
+        tileColliderSize = ObjectTileCollider(-2.5f, +2.5f, -2.5f, +2.5f)
+    ),
+    APARTMENT_WALL(
+        modelPath = "res/objects/apartment_wall.glb",
+        applyColliders = true,
+        tileColliderSize = null
+    ),
+    APARTMENT_WINDOWS(
+        modelPath = "res/objects/apartment_windows.glb",
+        applyColliders = true,
+        tileColliderSize = null
+    ),
+    APARTMENT_BALCONIES(
+        modelPath = "res/objects/apartment_balconies.glb",
+        applyColliders = true,
+        tileColliderSize = ObjectTileCollider(+3.25f, +3.75f, -2.5f, +2.5f)
+    ),
+    FENCE(
+        modelPath = "res/objects/fence.glb",
+        applyColliders = true,
+        tileColliderSize = ObjectTileCollider(-0.05f, +0.05f, -2.75f, +2.75f)
+    ),
+    RUINED_WALL(
+        modelPath = "res/objects/ruined_wall.glb",
+        applyColliders = true,
+        tileColliderSize = ObjectTileCollider(-2.75f, +2.75f, -0.05f, +0.05f)
+    ),
+    RUINS_FLOORS(
+        modelPath = "res/objects/ruins_floors.glb",
+        applyColliders = true,
+        tileColliderSize = ObjectTileCollider(-2.5f, +2.5f, -2.5f, +2.5f)
+    ),
+    RUINS_WALL(
+        modelPath = "res/objects/ruins_wall.glb",
+        applyColliders = false,
+        tileColliderSize = null
+    ),
+    ROAD_BLANK(
+        modelPath = "res/objects/road_blank.glb",
+        applyColliders = false,
+        tileColliderSize = null,
+        renderOutline = false
+    ),
+    ROAD_STRAIGHT(
+        modelPath = "res/objects/road_straight.glb",
+        applyColliders = false,
+        tileColliderSize = null,
+        renderOutline = false
+    ),
+    ROAD_CURVE(
+        modelPath = "res/objects/road_curve.glb",
+        applyColliders = false,
+        tileColliderSize = null,
+        renderOutline = false
     );
 
     enum class TextureFilter {
