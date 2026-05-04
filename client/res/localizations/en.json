@@ -64,6 +64,8 @@
         "BUTTON_LOG_IN": "Login",
         "BUTTON_SIGN_UP": "Create Account",
 
+        "PLACEHOLDER_WRITE_MESSAGE": "Write Message",
+
         "TITLE_INVENTORY": "Inventory",
         "PLACEHOLDER_INVENTORY_EMPTY": "Your inventory is empty.",
 

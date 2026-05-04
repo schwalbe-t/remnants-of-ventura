@@ -560,6 +560,23 @@ class World(
                 RobotLogsPacket(robotId, robot.buildLogString())
             ))
         }
+
+        ph.onPacket(PacketType.UP_CHAT_MESSAGE) { msg, pl ->
+            if (msg.length > MAX_CHAT_MESSAGE_LENGTH) {
+                pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.TAGGED_ERROR,
+                    TaggedErrorPacket.CHAT_MESSAGE_TOO_LONG
+                ))
+                return@onPacket
+            }
+            val packet = Packet.serialize(
+                PacketType.DOWN_CHAT_MESSAGE,
+                DownChatMessagePacket(senderName = pl.username, message = msg)
+            )
+            for (player in this.players.values) {
+                player.connection.outgoing.send(packet)
+            }
+        }
     }
 
 }

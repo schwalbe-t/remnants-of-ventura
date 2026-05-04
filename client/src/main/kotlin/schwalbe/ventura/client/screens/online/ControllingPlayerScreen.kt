@@ -9,6 +9,7 @@ import schwalbe.ventura.engine.input.*
 import schwalbe.ventura.net.PacketHandler
 import schwalbe.ventura.net.WorldStatePacket
 import schwalbe.ventura.utils.toVector3f
+import schwalbe.ventura.engine.ui.*
 import org.joml.Vector3fc
 import kotlin.uuid.Uuid
 
@@ -32,6 +33,7 @@ const val MAX_ROBOT_EDIT_DIST: Float = 2f
 fun controllingPlayerScreen(client: Client): () -> GameScreen = {
     val playerNames = NameDisplayManager()
     val robotStatus = RobotStatusDisplayManager()
+    val chat = ChatBox(client)
     fun advancedEditing(): Boolean
         = client.config.settings.advancedEditingEnabled
     val screen = GameScreen(
@@ -70,6 +72,7 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             client.world?.state?.activeNameDisplays = playerNames
             client.world?.update(client, captureInput = true)
             client.world?.render(client)
+            chat.update()
         },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
             client.nav.replace(serverConnectionFailedScreen(reason, client))
@@ -81,8 +84,13 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             .updateStoredSources(client),
         navigator = client.nav
     )
+    chat.handleChatMessages(screen.packets!!)
     screen.add(layer = 0, element = playerNames.container)
     screen.add(layer = 1, element = robotStatus.container)
+    screen.add(layer = 2, element = chat.root
+        .withSize(30.vw, 30.vh)
+        .pad(2.5.vmin)
+    )
     screen
 }
 

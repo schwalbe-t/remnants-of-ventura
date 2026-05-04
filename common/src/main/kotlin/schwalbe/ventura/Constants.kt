@@ -16,6 +16,4 @@ const val MAX_NUM_PLAYER_SOURCE_FILES: Int = 128
 const val MAX_SOURCE_FILE_SIZE: Int = 1024 * 32 // in bytes
 const val ROBOT_NAME_MAX_LEN: Int = 32
 
-fun test() {
-    schwalbe.ventura.utils.IntPair(0, 1)
-}
+const val MAX_CHAT_MESSAGE_LENGTH: Int = 256 // in UTF-16 codepoints

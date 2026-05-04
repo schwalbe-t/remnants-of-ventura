@@ -74,6 +74,9 @@ data class PacketType<P>(
     val REQUEST_ROBOT_LOGS          = up<Uuid>()
     val ROBOT_LOGS                  = down<RobotLogsPacket>()
 
+    val UP_CHAT_MESSAGE             = up<String>()
+    val DOWN_CHAT_MESSAGE           = down<DownChatMessagePacket>()
+
     val NUM_PACKET_TYPES: Int = this.pollNextPacketId()
 
 } }
@@ -125,7 +128,10 @@ enum class TaggedErrorPacket {
     // attempt to configure robot source files failed because too many given
     TOO_MANY_ROBOT_SOURCE_FILES,
     // provided robot name is too long
-    ROBOT_NAME_TOO_LONG
+    ROBOT_NAME_TOO_LONG,
+
+    // chat message contents too long
+    CHAT_MESSAGE_TOO_LONG
 }
 
 
@@ -272,4 +278,11 @@ data class RobotSourceFilesChangePacket(
 data class RobotNameChangePacket(
     val robotId: Uuid,
     val newName: String
+)
+
+
+@Serializable
+data class DownChatMessagePacket(
+    val senderName: String?,
+    val message: String
 )

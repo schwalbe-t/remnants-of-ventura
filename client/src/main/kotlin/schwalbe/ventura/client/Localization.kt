@@ -91,6 +91,9 @@ enum class LocalKeys {
     BUTTON_LOG_IN,
     BUTTON_SIGN_UP,
 
+    // Controlling Player
+    PLACEHOLDER_WRITE_MESSAGE,
+
     // Inventory Screen
     TITLE_INVENTORY,
     PLACEHOLDER_INVENTORY_EMPTY,
