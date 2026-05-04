@@ -5,6 +5,9 @@ import schwalbe.ventura.engine.input.*
 
 class ClickArea : UiElement() {
 
+    var isHovering: Boolean = false
+        private set
+
     var leftDown: Boolean = false
     var onLeftDrag: ((UiElementContext) -> Unit)? = null
     var onLeftClick: ((UiElementContext) -> Unit)? = null
@@ -20,14 +23,15 @@ class ClickArea : UiElement() {
             this.leftDown   -> this.onLeftDrag?.invoke(context)
             this.rightDown  -> this.onRightDrag?.invoke(context)
         }
-        val mouseOver: Boolean = Mouse.isInsideArea(
+        this.isHovering = Mouse.isInsideArea(
             context.visibleAbsLeft, context.visibleAbsTop,
             context.visibleAbsRight, context.visibleAbsBottom
         )
         for (e in context.global.nav.input.remainingOfType<MButtonEvent>()) {
+            fun eatEvent() = context.global.nav.input.remove(e)
             when (e) {
                 is MButtonDown -> {
-                    if (!mouseOver) { continue }
+                    if (!this.isHovering) { continue }
                     when (e.button) {
                         MButton.LEFT    -> this.leftDown = true
                         MButton.RIGHT   -> this.rightDown = true
@@ -40,15 +44,20 @@ class ClickArea : UiElement() {
                         MButton.RIGHT   -> this.rightDown = false
                         else -> {}
                     }
-                    if (!mouseOver) { continue }
+                    if (!this.isHovering) { continue }
                     when (e.button) {
-                        MButton.LEFT    -> this.onLeftClick?.invoke(context)
-                        MButton.RIGHT   -> this.onRightClick?.invoke(context)
+                        MButton.LEFT -> this.onLeftClick?.let {
+                            it(context)
+                            eatEvent()
+                        }
+                        MButton.RIGHT -> this.onRightClick?.let {
+                            it(context)
+                            eatEvent()
+                        }
                         else -> {}
                     }
                 }
             }
-            context.global.nav.input.remove(e)
         }
     }
 

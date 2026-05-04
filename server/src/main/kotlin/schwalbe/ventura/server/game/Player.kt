@@ -10,7 +10,9 @@ class Player(
     val username: String,
     val data: PlayerData,
     val connection: Server.Connection
-)
+) {
+    var lastChatMessage: Long = 0L
+}
 
 fun Player.getCurrentWorld(worlds: WorldRegistry): World {
     var world: World? = null

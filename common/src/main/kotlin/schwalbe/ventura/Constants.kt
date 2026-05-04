@@ -17,3 +17,4 @@ const val MAX_SOURCE_FILE_SIZE: Int = 1024 * 32 // in bytes
 const val ROBOT_NAME_MAX_LEN: Int = 32
 
 const val MAX_CHAT_MESSAGE_LENGTH: Int = 256 // in UTF-16 codepoints
+const val CHAT_MESSAGE_COOLDOWN_MS: Long = 3000 // in milliseconds

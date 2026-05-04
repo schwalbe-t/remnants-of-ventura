@@ -64,7 +64,7 @@
         "BUTTON_LOG_IN": "Anmelden",
         "BUTTON_SIGN_UP": "Registrieren",
 
-        "PLACEHOLDER_WRITE_MESSAGE": "Nachricht eingeben",
+        "PLACEHOLDER_WRITE_MESSAGE": "Nachricht eingeben (ENTER zum Senden)",
 
         "TITLE_INVENTORY": "Inventar",
         "PLACEHOLDER_INVENTORY_EMPTY": "Dein Inventar ist leer.",

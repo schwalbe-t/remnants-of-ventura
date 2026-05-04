@@ -18,6 +18,7 @@ import schwalbe.ventura.net.*
 fun serverAuthenticationScreen(
     name: String, client: Client
 ): () -> GameScreen = {
+    client.messages.clear()
     val l = localized()
     val statusText = Text()
     var username: String = ""

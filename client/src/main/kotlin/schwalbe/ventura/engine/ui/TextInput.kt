@@ -409,11 +409,8 @@ class TextInput : GpuUiElement(), Focusable {
             .remainingOfType<MButtonDown>()
             .any { it.button == MButton.LEFT }
         if (this.caret == null && mouseInside && mouseLeftPressed) {
-            context.global.currentlyInFocus = this
-            this.caret = Caret()
+            this.gainFocus(context.global)
             this.caret?.moveToOffset(this.actualValue, this.value.size)
-            this.selection = null
-            this.invalidate()
         }
         if (mouseInside) {
             Mouse.cursor = Cursor.IBEAM
@@ -600,6 +597,13 @@ class TextInput : GpuUiElement(), Focusable {
                 caret.changedBlinkState = false
             }
         }
+    }
+
+    fun gainFocus(screen: UiScreen<*>) {
+        screen.currentlyInFocus = this
+        this.caret = Caret()
+        this.selection = null
+        this.invalidate()
     }
     
     private fun requestCaretVisible(context: UiElementContext) {

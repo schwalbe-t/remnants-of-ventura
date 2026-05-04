@@ -51,6 +51,7 @@ class PausedScreen(
         .addErrorLogging()
         .addWorldHandling(client)
         .updateStoredSources(client)
+        .addChatMessageHandling(client)
     val background = BlurBackground()
         .withRadius(3)
         .withSpread(5)

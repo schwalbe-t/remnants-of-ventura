@@ -2,6 +2,7 @@
 package schwalbe.ventura.client
 
 import schwalbe.ventura.client.screens.GameScreen
+import schwalbe.ventura.client.game.ChatMessageBuffer
 import schwalbe.ventura.client.game.World
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.engine.audio.SoundtrackPlayer
@@ -19,6 +20,7 @@ class Client : Application<GameScreen>(
     val config: Config = Config.read()
 
     val network = NetworkClient()
+    val messages = ChatMessageBuffer()
 
     val soundtrack = SoundtrackPlayer()
     val renderer = Renderer(this.out3d)

@@ -42,6 +42,7 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             client.world?.let {
                 it.camController.mode = it.playerAtCenterCamMode
             }
+            chat.renderMessageLog()
         },
         render = render@{
             val world: World = client.world ?: return@render
@@ -70,7 +71,10 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
                 robotStatus.update(client, worldState)
             }
             client.world?.state?.activeNameDisplays = playerNames
-            client.world?.update(client, captureInput = true)
+            client.world?.update(client, captureInput = !chat.isTyping)
+            if (chat.isTyping) {
+                client.world?.player?.assertAnimation(PlayerAnim.thinking)
+            }
             client.world?.render(client)
             chat.update()
         },
@@ -81,7 +85,8 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
         packets = PacketHandler.receiveDownPackets<Unit>()
             .addErrorLogging()
             .addWorldHandling(client)
-            .updateStoredSources(client),
+            .updateStoredSources(client)
+            .addChatMessageHandling(client),
         navigator = client.nav
     )
     chat.handleChatMessages(screen.packets!!)

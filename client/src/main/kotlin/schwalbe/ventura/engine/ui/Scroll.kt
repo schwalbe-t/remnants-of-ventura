@@ -137,6 +137,7 @@ class Scroll : GpuUiElement() {
             this.invalidate()
         }
 
+    var isAtBottom: Boolean = false
     var stickToBottom: Boolean = false
 
     var scrollBarWidth: UiSize = ScrollBar.defaultWidth
@@ -234,21 +235,27 @@ class Scroll : GpuUiElement() {
     
     override fun updateLayout(context: UiElementContext)
         = this.updateDimensions(context)
-        
+
+    private fun horizScrollLimit(): Int = this.inside?.let { inside ->
+        maxOf(inside.pxWidth - this.pxWidth + this.vBarWidth, 0)
+    } ?: 0
+
+    private fun vertScrollLimit(): Int = this.inside?.let { inside ->
+        maxOf(inside.pxHeight - this.pxHeight + this.hBarHeight, 0)
+    } ?: 0
+
     private fun limitScrollOffsets() {
-        val inside: UiElement = this.inside ?: return
-        val horizScrollLimit: Int
-            = maxOf(inside.pxWidth - this.pxWidth + this.vBarWidth, 0)
-        val vertScrollLimit: Int
-            = maxOf(inside.pxHeight - this.pxHeight + this.hBarHeight, 0)
+        val vertLimit: Int = this.vertScrollLimit()
         this.actualScrollOffset.target.x = this.actualScrollOffset.target.x()
-            .coerceIn(0f, horizScrollLimit.toFloat())
+            .coerceIn(0f, this.horizScrollLimit().toFloat())
+        this.isAtBottom = this.isAtBottom
+            || this.actualScrollOffset.target.y() >= vertLimit
         this.actualScrollOffset.target.y = this.actualScrollOffset.target.y()
-            .coerceIn(0f, vertScrollLimit.toFloat())
+            .coerceIn(0f, vertLimit.toFloat())
     }
 
     override fun captureInput(context: UiElementContext) {
-        if (this.stickToBottom) {
+        if (this.stickToBottom && this.isAtBottom) {
             this.actualScrollOffset.target.y = Float.POSITIVE_INFINITY
             this.limitScrollOffsets()
             this.actualScrollOffset.snapToTarget()
@@ -262,13 +269,14 @@ class Scroll : GpuUiElement() {
         ) ?: 0f
         this.actualScrollOffset.target.x += thumbDx
         this.actualScrollOffset.target.y += thumbDy
+        if (thumbDy < 0f) {
+            this.isAtBottom = false
+        }
         if (thumbDx != 0f || thumbDy != 0f) {
             this.limitScrollOffsets()
             this.actualScrollOffset.snapToTarget()
             this.invalidate()
         }
-        this.stickToBottom = this.stickToBottom
-            && thumbDx == 0f && thumbDy == 0f
         this.updateChildren(context, UiElement::captureInput)
         val rawAbsRight: Int = context.absPxX + this.pxWidth - this.vBarWidth
         val rawAbsBottom: Int = context.absPxY + this.pxHeight - this.hBarHeight
@@ -279,10 +287,12 @@ class Scroll : GpuUiElement() {
         )
         if (isInside) {
             for (e in context.global.nav.input.remainingOfType<MouseScroll>()) {
-                this.stickToBottom = false
                 val (dx, dy) = this.scrollInputFunction(
                     e.offset.x(), e.offset.y()
                 )
+                if (dy > 0) {
+                    this.isAtBottom = false
+                }
                 if (this.shouldShowHorizBar) {
                     val step: Float = this.pxWidth * SCROLL_SPEED
                     this.actualScrollOffset.target.x -= dx * step

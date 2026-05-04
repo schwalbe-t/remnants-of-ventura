@@ -28,7 +28,8 @@ fun onlineSettingsScreen(client: Client): () -> GameScreen = {
         packets = PacketHandler.receiveDownPackets<Unit>()
             .addErrorLogging()
             .addWorldHandling(client)
-            .updateStoredSources(client),
+            .updateStoredSources(client)
+            .addChatMessageHandling(client),
     )()
 }
 

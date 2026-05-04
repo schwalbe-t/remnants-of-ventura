@@ -131,7 +131,9 @@ enum class TaggedErrorPacket {
     ROBOT_NAME_TOO_LONG,
 
     // chat message contents too long
-    CHAT_MESSAGE_TOO_LONG
+    CHAT_MESSAGE_TOO_LONG,
+    // time since last chat message is less than cooldown period
+    CHAT_MESSAGES_ON_COOLDOWN
 }
 
 

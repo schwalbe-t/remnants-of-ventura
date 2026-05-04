@@ -569,6 +569,16 @@ class World(
                 ))
                 return@onPacket
             }
+            val now: Long = System.currentTimeMillis()
+            val sinceLastMsg: Long = now - pl.lastChatMessage
+            if (sinceLastMsg < CHAT_MESSAGE_COOLDOWN_MS) {
+                pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.TAGGED_ERROR,
+                    TaggedErrorPacket.CHAT_MESSAGES_ON_COOLDOWN
+                ))
+                return@onPacket
+            }
+            pl.lastChatMessage = now
             val packet = Packet.serialize(
                 PacketType.DOWN_CHAT_MESSAGE,
                 DownChatMessagePacket(senderName = pl.username, message = msg)

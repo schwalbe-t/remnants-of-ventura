@@ -64,7 +64,7 @@
         "BUTTON_LOG_IN": "Влез",
         "BUTTON_SIGN_UP": "Създай акаунт",
 
-        "PLACEHOLDER_WRITE_MESSAGE": "Въведи съобщение",
+        "PLACEHOLDER_WRITE_MESSAGE": "Въведи съобщение (натисни ENTER за изпращане)",
 
         "TITLE_INVENTORY": "Инвентар",
         "PLACEHOLDER_INVENTORY_EMPTY": "Инвентарът е празен.",
