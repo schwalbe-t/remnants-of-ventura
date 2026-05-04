@@ -30,7 +30,7 @@ object GroundFrag : FragShaderDef<GroundFrag> {
     val renderer = RendererFrag<GroundFrag>()
 }
 
-val groundShader: Resource<Shader<GroundVert, GroundFrag>>
+val defaultGroundShader: Resource<Shader<GroundVert, GroundFrag>>
     = Shader.loadGlsl(GroundVert, GroundFrag)
 
 private fun computeChunkInstances(
@@ -106,6 +106,8 @@ fun buildChunkGroundGeometry(ref: ChunkRef, data: SharedChunkData): Geometry {
     return Geometry(ChunkLoader.GROUND_GEOMETRY_ATTRIBS, vbo, ebo)
 }
 
+typealias GroundRenderer = (RenderPass, Geometry, Iterable<Matrix4fc>) -> Unit
+
 class ChunkLoader(
     val requestChunks: (List<ChunkRef>) -> List<ChunkRef>,
     val loadRadius: Int = DEFAULT_LOAD_RADIUS,
@@ -155,9 +157,16 @@ class ChunkLoader(
         )
         val GROUND_INSTANCES: List<Matrix4fc> = listOf(Matrix4f())
 
+        val defaultGroundRenderer: GroundRenderer = { p, g, i ->
+            p.render(
+                g, defaultGroundShader(),
+                GroundVert.renderer, GroundFrag.renderer, i
+            )
+        }
+
         fun submitResources(loader: ResourceLoader) {
             this.objectModels.forEach(loader::submit)
-            loader.submit(groundShader)
+            loader.submit(defaultGroundShader)
             Objects.submitResources(loader)
         }
     }
@@ -252,7 +261,8 @@ class ChunkLoader(
     }
 
     private fun renderChunk(
-        state: ObjectStateProvider, data: LoadedChunkData, pass: RenderPass
+        state: ObjectStateProvider, data: LoadedChunkData, pass: RenderPass,
+        renderGround: GroundRenderer
     ) {
         val batches: MutableMap<ObjectType, MutableList<Matrix4fc>>
             = mutableMapOf()
@@ -270,17 +280,16 @@ class ChunkLoader(
             (Objects.renderMethodOf(type) as? RenderMethod.Batched)
                 ?.f(pass, state, type, instances)
         }
-        pass.render(
-            data.ground, groundShader(),
-            GroundVert.renderer, GroundFrag.renderer,
-            GROUND_INSTANCES
-        )
+        renderGround(pass, data.ground, GROUND_INSTANCES)
     }
 
-    fun render(pass: RenderPass, state: ObjectStateProvider) {
+    fun render(
+        pass: RenderPass, state: ObjectStateProvider,
+        renderGround: GroundRenderer = defaultGroundRenderer
+    ) {
         for (chunk in this.chunksInRange(this.renderRadius)) {
             val data: LoadedChunkData = this.loaded[chunk] ?: continue
-            this.renderChunk(state, data, pass)
+            this.renderChunk(state, data, pass, renderGround)
         }
     }
 

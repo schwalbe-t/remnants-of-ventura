@@ -21,6 +21,14 @@ private val whiteOutlineShader: Resource<Shader<OutlineVert, OutlineFrag>>
         "OUTLINE_COLOR_OVERRIDE" to "vec4(0.5, 0.5, 0.9, 1.0)"
     ))
 
+object TilesFrag : FragShaderDef<TilesFrag> {
+    override val path: String = "shaders/tiles.frag.glsl"
+    val renderer = RendererFrag<TilesFrag>()
+}
+
+val tiledGroundShader: Resource<Shader<GroundVert, TilesFrag>>
+    = Shader.loadGlsl(GroundVert, TilesFrag)
+
 class Editor : Application<EditorMode>(
     window = Window(
         name = "Ventura World Editor",
@@ -36,7 +44,8 @@ class Editor : Application<EditorMode>(
         const val WORLD_SAVE_DELAY: Long = 500
 
         fun submitResources(loader: ResourceLoader) = loader.submitAll(
-            whiteOutlineShader
+            whiteOutlineShader,
+            tiledGroundShader
         )
     }
 
@@ -53,6 +62,7 @@ class Editor : Application<EditorMode>(
         this.out3d,
         camera = Camera(far = 500f)
     )
+    var tiledGround: Boolean = true
 
 
     var position = Vector3f()
@@ -147,6 +157,9 @@ private fun Editor.selectMode() {
 }
 
 fun Editor.update() {
+    if (Key.T.wasPressed) {
+        this.tiledGround = !this.tiledGround
+    }
     this.selectMode()
     this.autoSaveWorld()
     this.openChosenFile()
@@ -176,13 +189,23 @@ private fun Editor.renderSelectedObject(pass: RenderPass) {
     )
 }
 
+private val renderTiledGround: GroundRenderer = { p, g, i -> p.render(
+    g, tiledGroundShader(), GroundVert.renderer, TilesFrag.renderer,
+    i
+) }
+
 fun Editor.render() {
     this.world?.let { world ->
         this.renderer.config = world.world.info.rendererConfig
     }
     this.renderer.update(this.position)
     this.renderer.forEachPass { pass ->
-        this.world?.chunkLoader?.render(pass, Editor.WorldObjectStateProvider)
+        this.world?.chunkLoader?.render(
+            pass, Editor.WorldObjectStateProvider,
+            renderGround =
+                if (this.tiledGround) renderTiledGround
+                else ChunkLoader.defaultGroundRenderer
+        )
         this.renderSelectedObject(pass)
     }
 }
