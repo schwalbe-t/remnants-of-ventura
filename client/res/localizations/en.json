@@ -22,6 +22,10 @@
         "DESCRIPTION_FULLSCREEN": "Enabling fullscreen mode makes the game window take up the entire screen.",
         "SETTING_VSYNC": "VSync",
         "DESCRIPTION_VSYNC": "Enabling VSync (Vertical Synchronization) causes the game's frame rate to be synchronized with the monitor's refresh rate.",
+        "SETTING_SHOW_CONTROLS": "Show Controls",
+        "DESCRIPTION_SHOW_CONTROLS": "Shows the game controls (what keys to press) in the top right corner of the screen.",
+        "SETTING_SHOW_CHAT": "Show Chat",
+        "DESCRIPTION_SHOW_CHAT": "Shows the chat window in the top left corner of the screen.",
         "SECTION_CODE_EDITING_SETTINGS": "Code Editing",
         "DESCRIPTION_CODE_EDITING_SETTINGS": "Settings related to editing and managing code inside the game.",
         "SETTING_ADVANCED_EDITING": "Advanced Editing",
@@ -65,6 +69,12 @@
         "BUTTON_SIGN_UP": "Create Account",
 
         "PLACEHOLDER_WRITE_MESSAGE": "Enter Message (Press ENTER to Send)",
+        "KEYBIND_MENU": "Open Menu",
+        "KEYBIND_INVENTORY": "Open Inventory",
+        "KEYBIND_EDIT_ADVANCED_CODE": "Open Code Editor",
+        "KEYBIND_EDIT_ROBOT_CODE": "Edit Robot Code",
+        "KEYBIND_CONFIGURE_ROBOT": "Configure Robot",
+        "KEYBIND_MOVE": "Move",
 
         "TITLE_INVENTORY": "Inventory",
         "PLACEHOLDER_INVENTORY_EMPTY": "Your inventory is empty.",

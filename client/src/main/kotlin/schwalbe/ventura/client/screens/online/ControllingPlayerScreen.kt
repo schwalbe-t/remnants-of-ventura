@@ -2,6 +2,7 @@
 package schwalbe.ventura.client.screens.online
 
 import schwalbe.ventura.client.*
+import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.game.*
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.client.screens.offline.serverConnectionFailedScreen
@@ -29,11 +30,47 @@ private fun findClosestOwnedRobot(
 }
 
 const val MAX_ROBOT_EDIT_DIST: Float = 2f
+val KEYBINDS_WIDTH: UiSize = 20.vw
+
+private fun hasRobotInRange(client: Client): Boolean {
+    val world = client.world ?: return false
+    val worldState = world.state.lastReceived ?: return false
+    val (closestId, closestDist)
+        = findClosestOwnedRobot(worldState, world.player.position)
+    return closestId != null && closestDist <= MAX_ROBOT_EDIT_DIST
+}
+
+private fun defineKeybinds(client: Client): List<Keybind> = listOf(
+    Keybind(
+        KEYBIND_MOVE, listOf(
+            Keybind.Key("W"), Keybind.Key("A"),
+            Keybind.Key("S"), Keybind.Key("D")
+        )
+    ),
+    Keybind(KEYBIND_MENU, listOf(Keybind.Key("Esc", 2f))),
+    Keybind(KEYBIND_INVENTORY, listOf(Keybind.Key("Tab", 2f))),
+    Keybind(
+        KEYBIND_EDIT_ADVANCED_CODE, listOf(Keybind.Key("C")),
+        displayIf = { client.config.settings.advancedEditingEnabled }
+    ),
+    Keybind(
+        KEYBIND_EDIT_ROBOT_CODE, listOf(Keybind.Key("C")),
+        displayIf = {
+            !client.config.settings.advancedEditingEnabled
+                && hasRobotInRange(client)
+        }
+    ),
+    Keybind(
+        KEYBIND_CONFIGURE_ROBOT, listOf(Keybind.Key("E")),
+        displayIf = { hasRobotInRange(client) }
+    )
+)
 
 fun controllingPlayerScreen(client: Client): () -> GameScreen = {
     val playerNames = NameDisplayManager()
     val robotStatus = RobotStatusDisplayManager()
     val chat = ChatBox(client)
+    val keybinds = KeybindDisplay(defineKeybinds(client))
     fun advancedEditing(): Boolean
         = client.config.settings.advancedEditingEnabled
     val screen = GameScreen(
@@ -76,7 +113,18 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
                 client.world?.player?.assertAnimation(PlayerAnim.thinking)
             }
             client.world?.render(client)
+            if (client.config.settings.showChat) {
+                chat.root.withSize(30.vw, 30.vh)
+            } else {
+                chat.root.withSize(0.px, 0.px)
+            }
             chat.update()
+            if (client.config.settings.showControls) {
+                keybinds.root.withSize(KEYBINDS_WIDTH, 0.px)
+            } else {
+                keybinds.root.withSize(0.px, 0.px)
+            }
+            keybinds.update()
         },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
             client.nav.replace(serverConnectionFailedScreen(reason, client))
@@ -93,8 +141,10 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
     screen.add(layer = 0, element = playerNames.container)
     screen.add(layer = 1, element = robotStatus.container)
     screen.add(layer = 2, element = chat.root
-        .withSize(30.vw, 30.vh)
         .pad(2.5.vmin)
+    )
+    screen.add(layer = 3, element = keybinds.root
+        .pad(left = 100.pw - KEYBINDS_WIDTH - 2.5.vmin, top = 2.5.vmin)
     )
     screen
 }

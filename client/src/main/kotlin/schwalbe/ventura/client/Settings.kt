@@ -14,6 +14,8 @@ data class Settings(
     // display settings
     var fullscreenEnabled: Boolean = true,
     var vsyncEnabled: Boolean = true,
+    var showControls: Boolean = true,
+    var showChat: Boolean = true,
 
     // code editing settings
     var advancedEditingEnabled: Boolean = false,

@@ -22,6 +22,10 @@
         "DESCRIPTION_FULLSCREEN": "Im Vollbildmodus nimmt das Spielmenü den gesamten Bildschirm ein.",
         "SETTING_VSYNC": "VSync",
         "DESCRIPTION_VSYNC": "Die Aktivierung von VSync (Vertikale Synchronisation) synchronisiert die Bildrate des Spiels mit der Bildwiederholfrequenz deines Monitors.",
+        "SETTING_SHOW_CONTROLS": "Steuerung anzeigen",
+        "DESCRIPTION_SHOW_CONTROLS": "Zeigt die Spielsteuerung (welche Tasten zu drücken sind) in der oberen rechten Ecke des Bildschirms an.",
+        "SETTING_SHOW_CHAT": "Chat anzeigen",
+        "DESCRIPTION_SHOW_CHAT": "Zeigt das Chat-Fenster in der oberen linken Ecke des Bildschirms an.",
         "SECTION_CODE_EDITING_SETTINGS": "Code-Bearbeitung",
         "DESCRIPTION_CODE_EDITING_SETTINGS": "Einstellungen zum Bearbeiten und Verwalten von Code innerhalb des Spiels.",
         "SETTING_ADVANCED_EDITING": "Erweiterte Bearbeitung",
@@ -65,6 +69,12 @@
         "BUTTON_SIGN_UP": "Registrieren",
 
         "PLACEHOLDER_WRITE_MESSAGE": "Nachricht eingeben (ENTER zum Senden)",
+        "KEYBIND_MENU": "Menü öffnen",
+        "KEYBIND_INVENTORY": "Inventar öffnen",
+        "KEYBIND_EDIT_ADVANCED_CODE": "Code-Editor öffnen",
+        "KEYBIND_EDIT_ROBOT_CODE": "Roboter-Code bearbeiten",
+        "KEYBIND_CONFIGURE_ROBOT": "Roboter konfigurieren",
+        "KEYBIND_MOVE": "Bewegen",
 
         "TITLE_INVENTORY": "Inventar",
         "PLACEHOLDER_INVENTORY_EMPTY": "Dein Inventar ist leer.",

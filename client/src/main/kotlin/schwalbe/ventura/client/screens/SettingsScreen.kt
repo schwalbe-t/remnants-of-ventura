@@ -266,6 +266,24 @@ fun settingsScreen(
                         this.applyDisplay(client)
                     } }
                 )
+            ),
+            Setting(
+                SETTING_SHOW_CONTROLS, DESCRIPTION_SHOW_CONTROLS,
+                SettingValue.Toggle(
+                    init = client.config.settings.showControls,
+                    onChange = { changeSettings(client) {
+                        this.showControls = it
+                    } }
+                )
+            ),
+            Setting(
+                SETTING_SHOW_CHAT, DESCRIPTION_SHOW_CHAT,
+                SettingValue.Toggle(
+                    init = client.config.settings.showChat,
+                    onChange = { changeSettings(client) {
+                        this.showChat = it
+                    } }
+                )
             )
         )
     )
