@@ -50,7 +50,7 @@ class BigtonModule<C>(val funcOut: BigtonBuiltinFunctions<C>) {
     }
 
     fun withSrcFile(name: String, content: String): BigtonModule<C> {
-        val file = BigtonSourceFile(name, content)
+        val file = BigtonSourceFile(name, content, isUnrestricted = true)
         this.sourceFiles.add(file)
         this.funcOut.sourceFiles.add(file)
         return this

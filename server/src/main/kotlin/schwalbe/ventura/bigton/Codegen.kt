@@ -161,10 +161,12 @@ private data class ProgramContext(
     val currentSource: SourceTracker,
     val symbols: ProgramSymbols,
     val features: Set<BigtonFeature>,
+    val unrestricted: Set<String>,
     val modules: List<BigtonModule<*>>
 )
 
 private fun ProgramContext.assertFeatureSupported(feature: BigtonFeature) {
+    if (this.currentSource.file in this.unrestricted) { return }
     if (feature in this.features) { return }
     throw BigtonException(
         BigtonErrorType.FEATURE_UNSUPPORTED, this.currentSource.toSource()
@@ -633,6 +635,7 @@ private data class IrBuiltinFunctionInfo(
 fun generateProgram(
     ast: List<BigtonAst>,
     features: Set<BigtonFeature>,
+    unrestricted: Set<String>,
     modules: List<BigtonModule<*>>,
     builtinFunctions: BigtonBuiltinFunctions<*>
 ): ByteArray {
@@ -648,7 +651,8 @@ fun generateProgram(
         globalVars, globalIds
     )
     val ctx = ProgramContext(
-        currentSource = SourceTracker(), symbols, features, modules
+        currentSource = SourceTracker(),
+        symbols, features, unrestricted, modules
     )
     val program = ProgramBuilder()
     val irFunctions: List<IrFunctionInfo> = functionIds.map { (name, id) ->
