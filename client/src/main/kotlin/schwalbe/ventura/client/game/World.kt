@@ -32,7 +32,7 @@ class World(client: Client, info: WorldInfoPacket) {
     val id: Uuid = info.worldId
     val isMain: Boolean = info.isMainWorld
 
-    val player = Player(info.position, info.playerColors)
+    val player = Player(info.position, info.playerStyle)
     val chunks = ChunkLoader(
         ChunkLoader.requestChunksFromNetwork(client.network)
     )

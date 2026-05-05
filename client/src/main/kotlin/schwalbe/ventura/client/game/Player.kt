@@ -10,6 +10,7 @@ import schwalbe.ventura.net.*
 import schwalbe.ventura.data.ObjectInstance
 import schwalbe.ventura.data.ObjectProp
 import org.joml.*
+import schwalbe.ventura.data.PersonStyle
 
 private fun rotateTowardsPoint(
     baseDir: Vector3fc, targetPoint: Vector3fc, axisFactors: Vector3fc,
@@ -35,7 +36,7 @@ private fun rotateTowardsPoint(
     jointToParent.rotateXYZ(deltaRotEuler)
 }
 
-class Player(startPos: SerVector3, startColors: List<SerVector3>) {
+class Player(startPos: SerVector3, startStyle: PersonStyle) {
 
     companion object {
         const val WALK_SPEED: Float = 3f
@@ -45,7 +46,7 @@ class Player(startPos: SerVector3, startColors: List<SerVector3>) {
     }
 
     val anim = AnimState(PersonAnim.idle)
-    var colors: List<SerVector3> = startColors
+    var style: PersonStyle = startStyle
 
     val position: Vector3f = startPos.toVector3f()
     var rotation: SmoothedFloat = 0f
@@ -127,7 +128,7 @@ class Player(startPos: SerVector3, startColors: List<SerVector3>) {
                 this.position.toSerVector3(),
                 this.rotation.value,
                 this.anim.latestAnim.toSharedAnim(),
-                this.colors
+                this.style
             )
         ))
     }
@@ -201,7 +202,7 @@ class Player(startPos: SerVector3, startColors: List<SerVector3>) {
         this.animInjectWeight.update()
         this.rotation.update()
         Person.render(
-            pass, this.position, this.rotation.value, this.anim, this.colors
+            pass, this.position, this.rotation.value, this.anim, this.style
         )
     }
 

@@ -51,14 +51,14 @@ class World(
         this.incoming.add(player)
     }
 
-    fun createPlayerEntry(colors: List<SerVector3>): PlayerData.WorldEntry
+    fun createPlayerEntry(style: PersonStyle): PlayerData.WorldEntry
         = PlayerData.WorldEntry(
             worldId = this.id,
             state = SharedPlayerInfo(
                 position = this.static.world.startPosition,
                 rotation = 0f,
                 animation = SharedPersonAnimation.IDLE,
-                colors = colors
+                style = style
             )
         )
 
@@ -88,7 +88,7 @@ class World(
                     isMainWorld = this.name == registry.baseWorldName,
                     worldInfo = this.static.world.info,
                     position = player.data.worlds.last().state.position,
-                    playerColors = player.data.colors
+                    playerStyle = player.data.style
                 )
             ))
         }
@@ -589,15 +589,15 @@ class World(
                 player.connection.outgoing.send(packet)
             }
         }
-        ph.onPacket(PacketType.CHANGE_PLAYER_COLORS) { colors, pl ->
-            if (colors.size != PERSON_COLOR_COUNT) {
+        ph.onPacket(PacketType.CHANGE_PLAYER_STYLE) { style, pl ->
+            if (style.colors.size != PERSON_COLOR_COUNT) {
                 pl.connection.outgoing.send(Packet.serialize(
                     PacketType.TAGGED_ERROR,
                     TaggedErrorPacket.INVALID_COLOR_COUNT
                 ))
                 return@onPacket
             }
-            pl.data.colors = colors
+            pl.data.style = style
         }
     }
 

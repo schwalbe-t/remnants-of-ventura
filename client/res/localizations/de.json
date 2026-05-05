@@ -111,6 +111,9 @@
         "BUTTON_LOG_OUT": "Abmelden",
 
         "TITLE_CHARACTER_CUSTOMIZATION": "Charakteranpassung",
+        "SECTION_HAIR_OPTIONS": "Frisur",
+        "PersonHairStyle:name/LONG": "Lang",
+        "PersonHairStyle:name/SHORT": "Kurz",
         "COLOR_OPTION_SKIN": "Haut",
         "COLOR_OPTION_HAIR": "Haare",
         "COLOR_OPTION_EYEBROWS": "Augenbrauen",

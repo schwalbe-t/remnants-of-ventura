@@ -6,6 +6,8 @@ import org.joml.Vector3f
 import org.joml.Vector3fc
 import schwalbe.ventura.PERSON_COLOR_COUNT
 import schwalbe.ventura.client.*
+import schwalbe.ventura.data.PersonHairStyle
+import schwalbe.ventura.data.PersonStyle
 import schwalbe.ventura.data.SharedPersonAnimation
 import schwalbe.ventura.engine.AxisAlignedBox
 import schwalbe.ventura.engine.Resource
@@ -91,11 +93,15 @@ object Person {
 
     fun render(
         pass: RenderPass, pos: Vector3fc, rotY: Float,
-        anim: AnimState<PersonAnim>, colors: Iterable<SerVector3>
+        anim: AnimState<PersonAnim>, style: PersonStyle
     ) {
         val transf = modelTransform(pos, rotY)
         val instances = listOf(transf)
-        val colors = colors.map(SerVector3::toVector3f)
+        val colors = style.colors.map(SerVector3::toVector3f)
+        val hairMesh: String = when (style.hair) {
+            PersonHairStyle.LONG -> "hair_long"
+            PersonHairStyle.SHORT -> "hair_short"
+        }
         val outlineShader = personOutlineShader()
         outlineShader[OutlineVert.outlineThickness] = OUTLINE_THICKNESS
         outlineShader[OutlineFrag.placeholderColors] = colors
@@ -103,14 +109,15 @@ object Person {
             personModel(), outlineShader,
             OutlineVert.renderer, OutlineFrag.renderer,
             anim, instances, FaceCulling.FRONT,
-            renderedMeshes = listOf("body", "hair")
+            renderedMeshes = listOf("body", hairMesh)
         )
         val geometryShader = personGeometryShader()
         geometryShader[GeometryFrag.placeholderColors] = colors
         pass.render(
             personModel(), geometryShader,
             GeometryVert.renderer, GeometryFrag.renderer,
-            anim, instances
+            anim, instances,
+            renderedMeshes = listOf("body", "eyebrows", "skull", hairMesh)
         )
     }
 

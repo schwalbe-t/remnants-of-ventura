@@ -11,6 +11,7 @@ import schwalbe.ventura.utils.SerVector3
 import schwalbe.ventura.utils.toVector3f
 import kotlin.uuid.Uuid
 import org.joml.*
+import schwalbe.ventura.data.PersonStyle
 
 // The server automatically only sends the world state in a specific radius,
 // so there is no reason for any logic to limit rendering / updating here
@@ -51,13 +52,13 @@ class WorldState {
     }
 
     class PlayerState : AgentState<PersonAnim>(PersonAnim.idle) {
-        var colors: List<SerVector3>? = null
+        var style: PersonStyle? = null
 
         fun interpolate(a: SharedPlayerInfo, b: SharedPlayerInfo, n: Float) {
             interpPos(a.position, b.position, n, this.position)
             this.rotation = interpRot(a.rotation, b.rotation, n)
             interpAnim(PersonAnim.fromSharedAnim(b.animation), this.animation)
-            this.colors = b.colors
+            this.style = b.style
         }
     }
 
@@ -180,7 +181,7 @@ class WorldState {
             if (username == client.username) { continue }
             Person.render(
                 pass, player.position, player.rotation, player.animation,
-                player.colors ?: continue
+                player.style ?: continue
             )
         }
         for (robot in this.interpolated.robots.values) {

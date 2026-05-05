@@ -144,6 +144,7 @@ enum class LocalKeys {
 
     // Character Customization
     TITLE_CHARACTER_CUSTOMIZATION,
+    SECTION_HAIR_OPTIONS,
     COLOR_OPTION_SKIN,
     COLOR_OPTION_HAIR,
     COLOR_OPTION_EYEBROWS,

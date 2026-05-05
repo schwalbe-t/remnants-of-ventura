@@ -111,6 +111,9 @@
         "BUTTON_LOG_OUT": "Log Out",
 
         "TITLE_CHARACTER_CUSTOMIZATION": "Character Customization",
+        "SECTION_HAIR_OPTIONS": "Hairstyle",
+        "PersonHairStyle:name/LONG": "Long",
+        "PersonHairStyle:name/SHORT": "Short",
         "COLOR_OPTION_SKIN": "Skin",
         "COLOR_OPTION_HAIR": "Hair",
         "COLOR_OPTION_EYEBROWS": "Eyebrows",

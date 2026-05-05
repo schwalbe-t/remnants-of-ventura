@@ -111,6 +111,9 @@
         "BUTTON_LOG_OUT": "Изход от акаунта",
 
         "TITLE_CHARACTER_CUSTOMIZATION": "Персонализация на героя",
+        "SECTION_HAIR_OPTIONS": "Прическа",
+        "PersonHairStyle:name/LONG": "Дълга",
+        "PersonHairStyle:name/SHORT": "Къса",
         "COLOR_OPTION_SKIN": "Кожа",
         "COLOR_OPTION_HAIR": "Коса",
         "COLOR_OPTION_EYEBROWS": "Вежди",

@@ -76,7 +76,7 @@ data class PacketType<P>(
 
     val UP_CHAT_MESSAGE             = up<String>()
     val DOWN_CHAT_MESSAGE           = down<DownChatMessagePacket>()
-    val CHANGE_PLAYER_COLORS        = up<List<SerVector3>>()
+    val CHANGE_PLAYER_STYLE         = up<PersonStyle>()
 
     val NUM_PACKET_TYPES: Int = this.pollNextPacketId()
 
@@ -160,7 +160,7 @@ data class WorldInfoPacket(
     val isMainWorld: Boolean,
     val worldInfo: ConstWorldInfo,
     val position: SerVector3,
-    val playerColors: List<SerVector3>
+    val playerStyle: PersonStyle
 )
 
 @Serializable
@@ -187,7 +187,7 @@ data class SharedPlayerInfo(
     val position: SerVector3,
     val rotation: Float,
     val animation: SharedPersonAnimation,
-    val colors: List<SerVector3>
+    val style: PersonStyle
 )
 
 @Serializable

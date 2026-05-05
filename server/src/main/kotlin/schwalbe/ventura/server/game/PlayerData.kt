@@ -5,6 +5,8 @@ import kotlinx.serialization.Serializable
 import schwalbe.ventura.data.Item
 import schwalbe.ventura.data.ItemType
 import schwalbe.ventura.data.ItemVariant
+import schwalbe.ventura.data.PersonHairStyle
+import schwalbe.ventura.data.PersonStyle
 import schwalbe.ventura.net.SharedPlayerInfo
 import schwalbe.ventura.utils.SerVector3
 import schwalbe.ventura.utils.parseRgbHex
@@ -25,18 +27,23 @@ private val PLAYER_IRIS_COLORS: List<SerVector3> = listOf(
     parseRgbHex("437f5d").toSerVector3()
 )
 
-private fun generatePlayerColors(): List<SerVector3> = listOf(
-    parseRgbHex("d4a488").toSerVector3(),
-    parseRgbHex("443331").toSerVector3(),
-    parseRgbHex("50473f").toSerVector3(),
-    PLAYER_HOODIE_COLORS.random(),
-    parseRgbHex("50473f").toSerVector3(),
-    parseRgbHex("443331").toSerVector3(),
-    parseRgbHex("d1c19e").toSerVector3(),
-    parseRgbHex("d4a488").toSerVector3(),
-    PLAYER_IRIS_COLORS.random(),
-    parseRgbHex("eae2ce").toSerVector3()
-)
+private fun generatePlayerStyle(): PersonStyle {
+    return PersonStyle(
+        colors = listOf(
+            parseRgbHex("d4a488").toSerVector3(),
+            parseRgbHex("443331").toSerVector3(),
+            parseRgbHex("50473f").toSerVector3(),
+            PLAYER_HOODIE_COLORS.random(),
+            parseRgbHex("50473f").toSerVector3(),
+            parseRgbHex("443331").toSerVector3(),
+            parseRgbHex("d1c19e").toSerVector3(),
+            parseRgbHex("d4a488").toSerVector3(),
+            PLAYER_IRIS_COLORS.random(),
+            parseRgbHex("eae2ce").toSerVector3()
+        ),
+        hair = PersonHairStyle.entries.random()
+    )
+}
 
 @Serializable
 data class PlayerData(
@@ -44,7 +51,7 @@ data class PlayerData(
     val inventory: Inventory = Inventory(),
     val deployedRobots: MutableMap<Uuid, PlayerRobot> = mutableMapOf(),
     val sourceFiles: SourceFiles = SourceFiles(),
-    var colors: List<SerVector3> = generatePlayerColors()
+    var style: PersonStyle = generatePlayerStyle()
 ) {
 
     companion object {
@@ -62,9 +69,9 @@ data class PlayerData(
 fun PlayerData.Companion.createStartingData(
     worlds: WorldRegistry
 ): PlayerData {
-    val colors = generatePlayerColors()
+    val style = generatePlayerStyle()
     return PlayerData(
-        worlds = mutableListOf(worlds.baseWorld.createPlayerEntry(colors)),
+        worlds = mutableListOf(worlds.baseWorld.createPlayerEntry(style)),
         inventory = Inventory(itemCounts = mutableMapOf(
             Item(ItemType.KENDAL_DYNAMICS_SCOUT, ItemVariant.SCOUT_CAMOUFLAGE) to 10,
             Item(ItemType.KENDAL_DYNAMICS_SCOUT, ItemVariant.SCOUT_FIREWORKS) to 10,
@@ -92,6 +99,6 @@ fun PlayerData.Companion.createStartingData(
             Item(ItemType.LONG_RANGE_RADAR, null) to 99999,
             Item(ItemType.LASER, null) to 99999
         )),
-        colors = colors
+        style = style
     )
 }

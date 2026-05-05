@@ -13,7 +13,54 @@ import schwalbe.ventura.client.game.World
 import schwalbe.ventura.net.Packet
 import schwalbe.ventura.net.PacketType
 import schwalbe.ventura.utils.toSerVector3
+import schwalbe.ventura.data.PersonStyle
+import schwalbe.ventura.data.PersonHairStyle
 import org.joml.Vector3fc
+
+fun addHairSettings(
+    settings: Axis, client: Client, onChange: () -> Unit
+) {
+    val world: World = client.world ?: return
+    val hairOptions = Axis.row()
+    for (hairstyle in PersonHairStyle.entries) {
+        val isSelected: Boolean = world.player.style.hair == hairstyle
+        hairOptions.add(10.vmin, Stack()
+            .add(if (!isSelected) {
+                FlatBackground()
+                    .withColor(Theme.BUTTON_COLOR)
+                    .withHoverColor(Theme.BUTTON_HOVER_COLOR)
+            } else {
+                FlatBackground()
+                    .withColor(Theme.BUTTON_HOVER_COLOR)
+            })
+            .add(Text()
+                .withText(localized()[hairstyle.localNameKey])
+                .withFont(googleSansSb())
+                .withSize(80.ph)
+                .alignCenter()
+                .pad(0.75.vmin)
+            )
+            .add(ClickArea().withLeftHandler {
+                if (isSelected) { return@withLeftHandler }
+                world.player.style = PersonStyle(
+                    colors = world.player.style.colors,
+                    hair = hairstyle
+                )
+                onChange()
+            })
+            .wrapBorderRadius(0.75.vmin)
+            .pad(right = 1.vmin)
+        )
+    }
+    settings.add(2.vmin + 3.vmin + 3.5.vmin, Axis.column()
+        .add(3.vmin, Text()
+            .withText(localized()[SECTION_HAIR_OPTIONS])
+            .withSize(70.ph)
+        )
+        .add(3.5.vmin, hairOptions)
+        .pad(horizontal = 0.px, vertical = 1.vmin)
+    )
+}
 
 private val COLOR_PALETTE: List<Vector3fc> = listOf(
     parseRgbHex("443331"),
@@ -42,16 +89,29 @@ private val COLOR_PALETTE: List<Vector3fc> = listOf(
     parseRgbHex("85b69a")
 )
 
+private val COLOR_SETTINGS: List<LocalKeys> = listOf(
+    COLOR_OPTION_SKIN,
+    COLOR_OPTION_HAIR,
+    COLOR_OPTION_EYEBROWS,
+    COLOR_OPTION_HOODIE,
+    COLOR_OPTION_PANTS,
+    COLOR_OPTION_LEGS,
+    COLOR_OPTION_SHOES,
+    COLOR_OPTION_HANDS,
+    COLOR_OPTION_IRIS,
+    COLOR_OPTION_EYES
+)
+
 fun addColorSetting(
-    colorSettings: Axis, name: LocalKeys,
+    settings: Axis, i: Int, name: LocalKeys,
     client: Client, onChange: () -> Unit
 ) {
-    val i: Int = colorSettings.children.size
     val world: World = client.world ?: return
     val colors = Axis.row()
     val colorSize: UiSize = floor(100.pw / COLOR_PALETTE.size)
     for (color in COLOR_PALETTE) {
-        val isSelected: Boolean = world.player.colors[i] == color.toSerVector3()
+        val isSelected: Boolean
+            = world.player.style.colors[i] == color.toSerVector3()
         colors.add(colorSize, Stack()
             .add(FlatBackground().withColor(color))
             .add(if (isSelected) {
@@ -61,17 +121,18 @@ fun addColorSetting(
                 Space()
             })
             .add(ClickArea().withLeftHandler {
-                val colors = world.player.colors.toMutableList()
+                if (isSelected) { return@withLeftHandler }
+                val colors = world.player.style.colors.toMutableList()
                 colors[i] = color.toSerVector3()
-                world.player.colors = colors
-                client.network.outPackets?.send(Packet.serialize(
-                    PacketType.CHANGE_PLAYER_COLORS, colors
-                ))
+                world.player.style = PersonStyle(
+                    colors = colors,
+                    hair = world.player.style.hair
+                )
                 onChange()
             })
         )
     }
-    colorSettings.add(2.vmin + 3.vmin + colorSize, Axis.column()
+    settings.add(2.vmin + 3.vmin + colorSize, Axis.column()
         .add(3.vmin, Text()
             .withText(localized()[name])
             .withSize(70.ph)
@@ -82,21 +143,23 @@ fun addColorSetting(
 }
 
 fun playerCustomizationScreen(client: Client): () -> GameScreen = {
-    val colorSettings = Axis.column()
+    val settings = Axis.column()
     var settingsDirty = false
-    fun change() { settingsDirty = true }
+    fun onChange() {
+        val world: World = client.world ?: return
+        client.network.outPackets?.send(Packet.serialize(
+            PacketType.CHANGE_PLAYER_STYLE,
+            world.player.style
+        ))
+        settingsDirty = true
+    }
     fun update() {
-        colorSettings.disposeAll()
-        addColorSetting(colorSettings, COLOR_OPTION_SKIN, client, ::change)
-        addColorSetting(colorSettings, COLOR_OPTION_HAIR, client, ::change)
-        addColorSetting(colorSettings, COLOR_OPTION_EYEBROWS, client, ::change)
-        addColorSetting(colorSettings, COLOR_OPTION_HOODIE, client, ::change)
-        addColorSetting(colorSettings, COLOR_OPTION_PANTS, client, ::change)
-        addColorSetting(colorSettings, COLOR_OPTION_LEGS, client, ::change)
-        addColorSetting(colorSettings, COLOR_OPTION_SHOES, client, ::change)
-        addColorSetting(colorSettings, COLOR_OPTION_HANDS, client, ::change)
-        addColorSetting(colorSettings, COLOR_OPTION_IRIS, client, ::change)
-        addColorSetting(colorSettings, COLOR_OPTION_EYES, client, ::change)
+        settings.disposeAll()
+        addHairSettings(settings, client, ::onChange)
+        for ((i, name) in COLOR_SETTINGS.withIndex()) {
+            addColorSetting(settings, i, name, client, ::onChange)
+        }
+        settings.add(50.ph, Space())
     }
     update()
     val screen = PausedScreen(
@@ -121,7 +184,8 @@ fun playerCustomizationScreen(client: Client): () -> GameScreen = {
                     .withSize(75.ph)
                     .pad(2.5.vmin)
                 )
-                .add(100.ph - 8.vmin, colorSettings
+                .add(100.ph - 8.vmin, settings
+                    .wrapThemedScrolling(vert = true, horiz = false)
                     .pad(2.5.vmin)
                 )
             )
