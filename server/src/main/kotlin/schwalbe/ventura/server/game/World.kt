@@ -590,7 +590,7 @@ class World(
             }
         }
         ph.onPacket(PacketType.CHANGE_PLAYER_STYLE) { style, pl ->
-            if (style.colors.size != PERSON_COLOR_COUNT) {
+            if (style.colors.size != PersonColorType.entries.size) {
                 pl.connection.outgoing.send(Packet.serialize(
                     PacketType.TAGGED_ERROR,
                     TaggedErrorPacket.INVALID_COLOR_COUNT

@@ -2,46 +2,45 @@
 package schwalbe.ventura.server.game
 
 import kotlinx.serialization.Serializable
-import schwalbe.ventura.data.Item
-import schwalbe.ventura.data.ItemType
-import schwalbe.ventura.data.ItemVariant
-import schwalbe.ventura.data.PersonHairStyle
-import schwalbe.ventura.data.PersonStyle
+import schwalbe.ventura.PaletteColor
+import schwalbe.ventura.PaletteColor.*
 import schwalbe.ventura.net.SharedPlayerInfo
-import schwalbe.ventura.utils.SerVector3
-import schwalbe.ventura.utils.parseRgbHex
-import schwalbe.ventura.utils.toSerVector3
+import schwalbe.ventura.data.*
 import kotlin.uuid.Uuid
 
-private val PLAYER_HOODIE_COLORS: List<SerVector3> = listOf(
-    parseRgbHex("5a8b97").toSerVector3(),
-    parseRgbHex("cc785b").toSerVector3(),
-    parseRgbHex("ba5e69").toSerVector3(),
-    parseRgbHex("aa749e").toSerVector3(),
-    parseRgbHex("437f5d").toSerVector3()
-)
-
-private val PLAYER_IRIS_COLORS: List<SerVector3> = listOf(
-    parseRgbHex("443331").toSerVector3(),
-    parseRgbHex("525979").toSerVector3(),
-    parseRgbHex("437f5d").toSerVector3()
-)
-
 private fun generatePlayerStyle(): PersonStyle {
+    val isMasculine: Boolean = arrayOf(true, false).random()
+    val hairColor: PaletteColor = arrayOf(BLACK, DARK_BROWN, BROWN).random()
+    val hoodieColor: PaletteColor = arrayOf(
+        DARK_GRAY, GRAY, BRIGHT_GRAY, BLUE, PURPLE, MAGENTA, PINK,
+        YELLOW, BRIGHT_ORANGE, ORANGE, RED, DARK_RED, DARK_BLUE,
+        DARK_GREEN, CYAN, GREEN, AQUA
+    ).random()
+    val pantsColor: PaletteColor = arrayOf(DARK_BROWN, WHITE).random()
+    val legsColor: PaletteColor = when {
+        isMasculine -> CREAM
+        else -> BLACK
+    }
+    val irisColor: PaletteColor = arrayOf(
+        DARK_BROWN, BROWN, DARK_GRAY, PURPLE, WINE, BLUE, GREEN
+    ).random()
     return PersonStyle(
-        colors = listOf(
-            parseRgbHex("d4a488").toSerVector3(),
-            parseRgbHex("443331").toSerVector3(),
-            parseRgbHex("50473f").toSerVector3(),
-            PLAYER_HOODIE_COLORS.random(),
-            parseRgbHex("50473f").toSerVector3(),
-            parseRgbHex("443331").toSerVector3(),
-            parseRgbHex("d1c19e").toSerVector3(),
-            parseRgbHex("d4a488").toSerVector3(),
-            PLAYER_IRIS_COLORS.random(),
-            parseRgbHex("eae2ce").toSerVector3()
+        colors = PersonColorType.makeColors(
+            PersonColorType.SKIN to CREAM,
+            PersonColorType.HAIR to hairColor,
+            PersonColorType.EYEBROWS to hairColor,
+            PersonColorType.HOODIE to hoodieColor,
+            PersonColorType.PANTS to pantsColor,
+            PersonColorType.LEGS to legsColor,
+            PersonColorType.SHOES to WHITE,
+            PersonColorType.HANDS to CREAM,
+            PersonColorType.IRIS to irisColor,
+            PersonColorType.EYES to WHITE
         ),
-        hair = PersonHairStyle.entries.random()
+        hair = when {
+            isMasculine -> PersonHairStyle.SHORT
+            else -> PersonHairStyle.LONG
+        }
     )
 }
 

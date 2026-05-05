@@ -2,20 +2,18 @@
 package schwalbe.ventura.client.screens.online
 
 import schwalbe.ventura.client.Client
-import schwalbe.ventura.client.LocalKeys
 import schwalbe.ventura.client.LocalKeys.*
 import schwalbe.ventura.client.game.PersonAnim
 import schwalbe.ventura.client.localized
 import schwalbe.ventura.client.screens.*
 import schwalbe.ventura.engine.ui.*
-import schwalbe.ventura.utils.parseRgbHex
 import schwalbe.ventura.client.game.World
 import schwalbe.ventura.net.Packet
 import schwalbe.ventura.net.PacketType
-import schwalbe.ventura.utils.toSerVector3
 import schwalbe.ventura.data.PersonStyle
 import schwalbe.ventura.data.PersonHairStyle
-import org.joml.Vector3fc
+import schwalbe.ventura.PaletteColor
+import schwalbe.ventura.data.PersonColorType
 
 fun addHairSettings(
     settings: Axis, client: Client, onChange: () -> Unit
@@ -62,58 +60,18 @@ fun addHairSettings(
     )
 }
 
-private val COLOR_PALETTE: List<Vector3fc> = listOf(
-    parseRgbHex("443331"),
-    parseRgbHex("50473f"),
-    parseRgbHex("705448"),
-    parseRgbHex("6e7261"),
-    parseRgbHex("97866f"),
-    parseRgbHex("a8ac89"),
-    parseRgbHex("d1c19e"),
-    parseRgbHex("9ba9a0"),
-    parseRgbHex("8a97a1"),
-    parseRgbHex("816891"),
-    parseRgbHex("aa749e"),
-    parseRgbHex("cb8993"),
-    parseRgbHex("d4a488"),
-    parseRgbHex("d2ad72"),
-    parseRgbHex("d3925b"),
-    parseRgbHex("cc785b"),
-    parseRgbHex("ba5e69"),
-    parseRgbHex("94554d"),
-    parseRgbHex("784a5d"),
-    parseRgbHex("525979"),
-    parseRgbHex("437f5d"),
-    parseRgbHex("5a8b97"),
-    parseRgbHex("86a063"),
-    parseRgbHex("85b69a")
-)
-
-private val COLOR_SETTINGS: List<LocalKeys> = listOf(
-    COLOR_OPTION_SKIN,
-    COLOR_OPTION_HAIR,
-    COLOR_OPTION_EYEBROWS,
-    COLOR_OPTION_HOODIE,
-    COLOR_OPTION_PANTS,
-    COLOR_OPTION_LEGS,
-    COLOR_OPTION_SHOES,
-    COLOR_OPTION_HANDS,
-    COLOR_OPTION_IRIS,
-    COLOR_OPTION_EYES
-)
-
 fun addColorSetting(
-    settings: Axis, i: Int, name: LocalKeys,
+    settings: Axis, i: Int, name: String,
     client: Client, onChange: () -> Unit
 ) {
     val world: World = client.world ?: return
     val colors = Axis.row()
-    val colorSize: UiSize = floor(100.pw / COLOR_PALETTE.size)
-    for (color in COLOR_PALETTE) {
+    val colorSize: UiSize = floor(100.pw / PaletteColor.entries.size)
+    for (color in PaletteColor.entries) {
         val isSelected: Boolean
-            = world.player.style.colors[i] == color.toSerVector3()
+            = world.player.style.colors[i] == color.ser
         colors.add(colorSize, Stack()
-            .add(FlatBackground().withColor(color))
+            .add(FlatBackground().withColor(color.norm))
             .add(if (isSelected) {
                 FlatBackground().withColor(Theme.FONT_COLOR)
                     .pad(25.ph)
@@ -123,7 +81,7 @@ fun addColorSetting(
             .add(ClickArea().withLeftHandler {
                 if (isSelected) { return@withLeftHandler }
                 val colors = world.player.style.colors.toMutableList()
-                colors[i] = color.toSerVector3()
+                colors[i] = color.ser
                 world.player.style = PersonStyle(
                     colors = colors,
                     hair = world.player.style.hair
@@ -134,7 +92,7 @@ fun addColorSetting(
     }
     settings.add(2.vmin + 3.vmin + colorSize, Axis.column()
         .add(3.vmin, Text()
-            .withText(localized()[name])
+            .withText(name)
             .withSize(70.ph)
         )
         .add(colorSize, colors)
@@ -156,8 +114,11 @@ fun playerCustomizationScreen(client: Client): () -> GameScreen = {
     fun update() {
         settings.disposeAll()
         addHairSettings(settings, client, ::onChange)
-        for ((i, name) in COLOR_SETTINGS.withIndex()) {
-            addColorSetting(settings, i, name, client, ::onChange)
+        for (colorType in PersonColorType.entries) {
+            addColorSetting(
+                settings, colorType.ordinal,
+                localized()[colorType.localNameKey], client, ::onChange
+            )
         }
         settings.add(50.ph, Space())
     }

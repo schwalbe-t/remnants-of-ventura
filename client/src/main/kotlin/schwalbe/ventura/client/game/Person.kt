@@ -1,11 +1,8 @@
 
 package schwalbe.ventura.client.game
 
-import org.joml.Matrix4f
-import org.joml.Vector3f
-import org.joml.Vector3fc
-import schwalbe.ventura.PERSON_COLOR_COUNT
 import schwalbe.ventura.client.*
+import schwalbe.ventura.data.PersonColorType
 import schwalbe.ventura.data.PersonHairStyle
 import schwalbe.ventura.data.PersonStyle
 import schwalbe.ventura.data.SharedPersonAnimation
@@ -16,6 +13,9 @@ import schwalbe.ventura.engine.axisBoxOf
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.utils.SerVector3
 import schwalbe.ventura.utils.toVector3f
+import org.joml.Matrix4f
+import org.joml.Vector3f
+import org.joml.Vector3fc
 
 object PersonAnim : Animations<PersonAnim> {
     val idle = anim("idle")
@@ -47,19 +47,11 @@ val personModel: Resource<Model<PersonAnim>> = Model.loadFile(
 
 val PERSON_SHADER_MACROS: Map<String, String?> = mapOf(
     "USE_PLACEHOLDERS" to null,
-    "PLACEHOLDER_COUNT" to PERSON_COLOR_COUNT.toString(),
-    "PLACEHOLDER_COLORS" to """vec3[](
-        vec3(1.0, 0.5, 0.0), /* skin */
-        vec3(0.0, 0.5, 0.0), /* hair */
-        vec3(0.5, 0.5, 0.0), /* eyebrows */
-        vec3(1.0, 0.0, 1.0), /* hoodie */
-        vec3(0.5, 0.0, 1.0), /* pants */
-        vec3(0.0, 0.0, 1.0), /* legs */
-        vec3(1.0, 0.0, 0.5), /* shoes */
-        vec3(1.0, 0.5, 0.5), /* hands */
-        vec3(0.5, 0.0, 0.0), /* iris */
-        vec3(1.0, 1.0, 1.0)  /* eyes */
-    )""".replace("\n", "")
+    "PLACEHOLDER_COUNT" to PersonColorType.entries.size.toString(),
+    "PLACEHOLDER_COLORS" to "vec3[](" + PersonColorType.entries.joinToString(
+        separator = ", ",
+        transform = { "vec3(${it.phR}, ${it.phG}, ${it.phB})" }
+    ) + ")"
 )
 
 val personGeometryShader: Resource<Shader<GeometryVert, GeometryFrag>>
