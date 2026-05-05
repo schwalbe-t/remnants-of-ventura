@@ -76,6 +76,7 @@ data class PacketType<P>(
 
     val UP_CHAT_MESSAGE             = up<String>()
     val DOWN_CHAT_MESSAGE           = down<DownChatMessagePacket>()
+    val CHANGE_PLAYER_COLORS        = up<List<SerVector3>>()
 
     val NUM_PACKET_TYPES: Int = this.pollNextPacketId()
 
@@ -133,7 +134,9 @@ enum class TaggedErrorPacket {
     // chat message contents too long
     CHAT_MESSAGE_TOO_LONG,
     // time since last chat message is less than cooldown period
-    CHAT_MESSAGES_ON_COOLDOWN
+    CHAT_MESSAGES_ON_COOLDOWN,
+    // invalid number of uploaded player colors
+    INVALID_COLOR_COUNT
 }
 
 
@@ -156,7 +159,8 @@ data class WorldInfoPacket(
     val worldId: Uuid,
     val isMainWorld: Boolean,
     val worldInfo: ConstWorldInfo,
-    val position: SerVector3
+    val position: SerVector3,
+    val playerColors: List<SerVector3>
 )
 
 @Serializable
@@ -182,13 +186,9 @@ data class EnterWorldPacket(val name: String)
 data class SharedPlayerInfo(
     val position: SerVector3,
     val rotation: Float,
-    val animation: Animation
-) {
-    @Serializable
-    enum class Animation {
-        IDLE, WALK, THINKING, SQUAT
-    }
-}
+    val animation: SharedPersonAnimation,
+    val colors: List<SerVector3>
+)
 
 @Serializable
 data class SharedRobotInfo(

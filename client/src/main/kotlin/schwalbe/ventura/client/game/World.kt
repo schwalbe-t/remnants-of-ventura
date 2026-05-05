@@ -14,7 +14,7 @@ class World(client: Client, info: WorldInfoPacket) {
 
     companion object {
         fun submitResources(resLoader: ResourceLoader) {
-            Player.submitResources(resLoader)
+            Person.submitResources(resLoader)
             Robot.submitResources(resLoader)
             ChunkLoader.submitResources(resLoader)
             VisualEffects.submitResources(resLoader)
@@ -32,7 +32,7 @@ class World(client: Client, info: WorldInfoPacket) {
     val id: Uuid = info.worldId
     val isMain: Boolean = info.isMainWorld
 
-    val player = Player()
+    val player = Player(info.position, info.playerColors)
     val chunks = ChunkLoader(
         ChunkLoader.requestChunksFromNetwork(client.network)
     )
@@ -50,7 +50,6 @@ class World(client: Client, info: WorldInfoPacket) {
     val camController = CameraController(this.playerAtCenterCamMode)
 
     init {
-        this.player.position.set(info.position.toVector3f())
         client.renderer.config = info.worldInfo.rendererConfig
         client.soundtrack.changeTracklist(Soundtrack[info.worldInfo.trackList])
     }

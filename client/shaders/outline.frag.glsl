@@ -1,5 +1,6 @@
 
 #include "common/renderer.frag.glsl"
+#include "common/placeholders.frag.glsl"
 #include "common/shading.frag.glsl"
 
 in vec2 fTexCoords;
@@ -14,6 +15,6 @@ void main(void) {
     #ifdef OUTLINE_COLOR_OVERRIDE
         oColor = OUTLINE_COLOR_OVERRIDE;
     #else
-        oColor = outlineColor(texColor);
+        oColor = outlineColor(withPlaceholders(texColor));
     #endif
 }

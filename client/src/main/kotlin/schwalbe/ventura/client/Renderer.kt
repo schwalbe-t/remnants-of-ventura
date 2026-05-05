@@ -59,6 +59,7 @@ object GeometryFrag : FragShaderDef<GeometryFrag> {
     override val path: String = "shaders/geometry.frag.glsl"
 
     val renderer = RendererFrag<GeometryFrag>()
+    val placeholderColors = vec3Arr("uPlaceholderColors", 128)
 }
 
 val geometryShader: Resource<Shader<GeometryVert, GeometryFrag>>
@@ -76,6 +77,7 @@ object OutlineFrag : FragShaderDef<OutlineFrag> {
     override val path: String = "shaders/outline.frag.glsl"
 
     val renderer = RendererFrag<OutlineFrag>()
+    val placeholderColors = vec3Arr("uPlaceholderColors", 128)
 }
 
 val outlineShader: Resource<Shader<OutlineVert, OutlineFrag>>

@@ -17,7 +17,7 @@ fun onlineSettingsScreen(client: Client): () -> GameScreen = {
             }
             PausedScreen.updateBackground(
                 client,
-                playerFollowCursor = true, playerAnim = PlayerAnim.thinking
+                playerFollowCursor = true, playerAnim = PersonAnim.thinking
             )
             root.invalidate()
         },

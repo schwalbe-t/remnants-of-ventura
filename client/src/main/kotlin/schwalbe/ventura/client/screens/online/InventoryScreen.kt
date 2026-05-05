@@ -194,7 +194,7 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
         client,
         camMode = { w -> CameraModes.playerInRightThird(w.player) },
         closeIf = { Key.ESCAPE.wasPressed || Key.TAB.wasPressed },
-        playerAnim = PlayerAnim.thinking,
+        playerAnim = PersonAnim.thinking,
         render = {
             selectedItemDisplay?.invalidate()
         }

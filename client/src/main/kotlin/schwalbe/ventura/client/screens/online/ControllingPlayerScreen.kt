@@ -110,7 +110,7 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             client.world?.state?.activeNameDisplays = playerNames
             client.world?.update(client, captureInput = !chat.isTyping)
             if (chat.isTyping) {
-                client.world?.player?.assertAnimation(PlayerAnim.thinking)
+                client.world?.player?.assertAnimation(PersonAnim.thinking)
             }
             client.world?.render(client)
             if (client.config.settings.showChat) {

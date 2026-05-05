@@ -18,3 +18,6 @@ const val ROBOT_NAME_MAX_LEN: Int = 32
 
 const val MAX_CHAT_MESSAGE_LENGTH: Int = 256 // in UTF-16 codepoints
 const val CHAT_MESSAGE_COOLDOWN_MS: Long = 3000 // in milliseconds
+
+// the number of definable colors for the player and NPCs
+const val PERSON_COLOR_COUNT: Int = 10;

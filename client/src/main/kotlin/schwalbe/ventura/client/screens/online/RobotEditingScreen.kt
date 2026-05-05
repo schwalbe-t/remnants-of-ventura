@@ -397,7 +397,7 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
         },
         closeIf = { Key.ESCAPE.wasPressed || Key.E.wasPressed },
         playerFollowCursor = false,
-        playerAnim = PlayerAnim.squat,
+        playerAnim = PersonAnim.squat,
         render = {
             val now: Long = System.currentTimeMillis()
             if (lastLogRequestTime + LOG_REQUEST_INTERVAL <= now) {

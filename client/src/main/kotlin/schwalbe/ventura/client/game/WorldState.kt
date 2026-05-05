@@ -50,11 +50,14 @@ class WorldState {
         }
     }
 
-    class PlayerState : AgentState<PlayerAnim>(PlayerAnim.idle) {
+    class PlayerState : AgentState<PersonAnim>(PersonAnim.idle) {
+        var colors: List<SerVector3>? = null
+
         fun interpolate(a: SharedPlayerInfo, b: SharedPlayerInfo, n: Float) {
             interpPos(a.position, b.position, n, this.position)
             this.rotation = interpRot(a.rotation, b.rotation, n)
-            interpAnim(PlayerAnim.fromSharedAnim(b.animation), this.animation)
+            interpAnim(PersonAnim.fromSharedAnim(b.animation), this.animation)
+            this.colors = b.colors
         }
     }
 
@@ -175,8 +178,9 @@ class WorldState {
     fun render(client: Client, pass: RenderPass) {
         for ((username, player) in this.interpolated.players) {
             if (username == client.username) { continue }
-            Player.render(
-                pass, player.position, player.rotation, player.animation
+            Person.render(
+                pass, player.position, player.rotation, player.animation,
+                player.colors ?: continue
             )
         }
         for (robot in this.interpolated.robots.values) {

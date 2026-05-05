@@ -11,34 +11,6 @@ import schwalbe.ventura.data.ObjectInstance
 import schwalbe.ventura.data.ObjectProp
 import org.joml.*
 
-object PlayerAnim : Animations<PlayerAnim> {
-    val idle = anim("idle")
-    val walk = anim("walk")
-    val thinking = anim("thinking")
-    val squat = anim("squat")
-}
-
-fun PlayerAnim.fromSharedAnim(a: SharedPlayerInfo.Animation) = when (a) {
-    SharedPlayerInfo.Animation.IDLE     -> PlayerAnim.idle
-    SharedPlayerInfo.Animation.WALK     -> PlayerAnim.walk
-    SharedPlayerInfo.Animation.THINKING     -> PlayerAnim.thinking
-    SharedPlayerInfo.Animation.SQUAT    -> PlayerAnim.squat
-}
-
-fun AnimationRef<PlayerAnim>.toSharedAnim() = when (this) {
-    PlayerAnim.idle     -> SharedPlayerInfo.Animation.IDLE
-    PlayerAnim.walk     -> SharedPlayerInfo.Animation.WALK
-    PlayerAnim.thinking     -> SharedPlayerInfo.Animation.THINKING
-    PlayerAnim.squat    -> SharedPlayerInfo.Animation.SQUAT
-    else -> SharedPlayerInfo.Animation.IDLE
-}
-
-val playerModel: Resource<Model<PlayerAnim>> = Model.loadFile(
-    "res/player.glb",
-    Renderer.meshProperties, PlayerAnim,
-    textureFilter = Texture.Filter.LINEAR
-)
-
 private fun rotateTowardsPoint(
     baseDir: Vector3fc, targetPoint: Vector3fc, axisFactors: Vector3fc,
     localToWorld: Matrix4fc, weight: () -> Float
@@ -63,32 +35,19 @@ private fun rotateTowardsPoint(
     jointToParent.rotateXYZ(deltaRotEuler)
 }
 
-class Player {
+class Player(startPos: SerVector3, startColors: List<SerVector3>) {
 
     companion object {
-        fun submitResources(loader: ResourceLoader) = loader.submitAll(
-            playerModel
-        )
-
-        const val MODEL_SCALE: Float = 1/5.5f
-        val MODEL_NO_ROTATION_DIR: Vector3fc = Vector3f(0f, 0f, +1f)
-
         const val WALK_SPEED: Float = 3f
-
-        const val OUTLINE_THICKNESS: Float = 0.015f
 
         const val PACKET_SEND_INTERVAL_MS: Long = 1000L / 20L
         const val WORLD_LEAVE_COOLDOWN: Long = 5_000
-
-        val relCollider: AxisAlignedBox = axisBoxOf(
-            Vector3f(-0.125f, 0f, -0.125f),
-            Vector3f(+0.125f, 1f, +0.125f)
-        )
     }
 
-    val anim = AnimState(PlayerAnim.idle)
+    val anim = AnimState(PersonAnim.idle)
+    var colors: List<SerVector3> = startColors
 
-    val position: Vector3f = Vector3f()
+    val position: Vector3f = startPos.toVector3f()
     var rotation: SmoothedFloat = 0f
         .smoothed(response = 10f, epsilon = 0.001f)
     var animInjectWeight: SmoothedFloat = 0f
@@ -96,7 +55,7 @@ class Player {
 
     fun rotateAlong(direction: Vector3fc) {
         var targetRot = xzVectorAngle(
-            MODEL_NO_ROTATION_DIR, Vector3f(direction).normalize()
+            Person.BASE_DIR, Vector3f(direction).normalize()
         )
         this.rotation.target += wrapAngle(targetRot - this.rotation.target)
     }
@@ -106,7 +65,7 @@ class Player {
     }
 
     fun assertAnimation(
-        targetAnim: AnimationRef<PlayerAnim>, transitionSecs: Float = 0.25f
+        targetAnim: AnimationRef<PersonAnim>, transitionSecs: Float = 0.25f
     ) {
         if (this.anim.latestAnim == targetAnim) { return }
         this.anim.transitionTo(targetAnim, transitionSecs)
@@ -114,7 +73,7 @@ class Player {
 
     private fun move(world: World, client: Client): Boolean {
         val collidingBefore: ObjectInstance? = world.chunks
-            .findIntersecting(Player.relCollider.translate(this.position))
+            .findIntersecting(Person.relCollider.translate(this.position))
         val velocity = Vector3f()
         if (Key.W.isPressed) { velocity.z -= 1f; }
         if (Key.S.isPressed) { velocity.z += 1f; }
@@ -122,13 +81,13 @@ class Player {
         if (Key.D.isPressed) { velocity.x += 1f; }
         if (velocity.lengthSquared() == 0f) { return false }
         velocity.normalize()
-        velocity.mul(Player.WALK_SPEED).mul(client.deltaTime)
+        velocity.mul(WALK_SPEED).mul(client.deltaTime)
         val newPosX = this.position.add(velocity.x(), 0f, 0f, Vector3f())
         val newPosZ = this.position.add(0f, 0f, velocity.z(), Vector3f())
         val collidingAfterX: ObjectInstance? = world.chunks
-            .findIntersecting(Player.relCollider.translate(newPosX))
+            .findIntersecting(Person.relCollider.translate(newPosX))
         val collidingAfterZ: ObjectInstance? = world.chunks
-            .findIntersecting(Player.relCollider.translate(newPosZ))
+            .findIntersecting(Person.relCollider.translate(newPosZ))
         if (collidingAfterX != null && collidingBefore == null) {
             velocity.x = 0f
         }
@@ -146,8 +105,8 @@ class Player {
             this.stopRotation()
         }
         if (moving != null) {
-            val targetAnim = if (moving) { PlayerAnim.walk }
-                else { PlayerAnim.idle }
+            val targetAnim = if (moving) { PersonAnim.walk }
+                else { PersonAnim.idle }
             this.assertAnimation(targetAnim)
         }
         this.anim.addTimePassed(deltaTime)
@@ -167,7 +126,8 @@ class Player {
             SharedPlayerInfo(
                 this.position.toSerVector3(),
                 this.rotation.value,
-                this.anim.latestAnim.toSharedAnim()
+                this.anim.latestAnim.toSharedAnim(),
+                this.colors
             )
         ))
     }
@@ -179,7 +139,7 @@ class Player {
         val allowWorldLeaveAfter: Long = this.allowWorldLeaveAfter ?: return
         if (System.currentTimeMillis() <= allowWorldLeaveAfter) { return }
         val colliding: ObjectInstance? = world.chunks.findIntersecting(
-            Player.relCollider.translate(this.position),
+            Person.relCollider.translate(this.position),
             includeAll = true
         )
         fun sendPacket(packet: () -> Packet) {
@@ -217,12 +177,12 @@ class Player {
 
     fun facePoint(target: Vector3fc) {
         this.animInjectWeight.target = 1f
-        val localToWorld: Matrix4f = Player
+        val localToWorld: Matrix4f = Person
             .modelTransform(this.position, this.rotation.value)
         fun rotateTowardsTarget(
             all: Float, x: Float, y: Float, z: Float
         ) = rotateTowardsPoint(
-            MODEL_NO_ROTATION_DIR, target, Vector3f(x, y, z), localToWorld,
+            Person.BASE_DIR, target, Vector3f(x, y, z), localToWorld,
             weight = { all * this.animInjectWeight.value }
         )
         this.anim.injections["head"] =
@@ -240,28 +200,9 @@ class Player {
     fun render(pass: RenderPass) {
         this.animInjectWeight.update()
         this.rotation.update()
-        Player.render(pass, this.position, this.rotation.value, this.anim)
+        Person.render(
+            pass, this.position, this.rotation.value, this.anim, this.colors
+        )
     }
 
-}
-
-fun Player.Companion.modelTransform(
-    pos: Vector3fc, rotY: Float
-): Matrix4f = Matrix4f()
-    .translate(pos)
-    .rotateY(rotY)
-    .scale(Player.MODEL_SCALE)
-
-fun Player.Companion.render(
-    pass: RenderPass, pos: Vector3fc, rotY: Float, anim: AnimState<PlayerAnim>
-) {
-    val transf = Player.modelTransform(pos, rotY)
-    val instances = listOf(transf)
-    pass.renderOutline(
-        playerModel(), Player.OUTLINE_THICKNESS, anim, instances,
-        renderedMeshes = listOf("body", "hair")
-    )
-    pass.renderGeometry(
-        playerModel(), anim, instances
-    )
 }

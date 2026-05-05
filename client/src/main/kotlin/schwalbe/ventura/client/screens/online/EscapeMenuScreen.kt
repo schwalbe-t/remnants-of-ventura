@@ -37,7 +37,7 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
     val screen = PausedScreen(
         client,
         camMode = { w -> CameraModes.playerInRightHalf(w.player) },
-        playerAnim = PlayerAnim.thinking
+        playerAnim = PersonAnim.thinking
     )
     val options = Axis.column()
     addOption(options, localized()[BUTTON_BACK_TO_GAME], action = {
@@ -53,6 +53,9 @@ fun escapeMenuScreen(client: Client): () -> GameScreen = {
     }
     addOption(options, localized()[TITLE_SETTINGS], action = {
         client.nav.push(onlineSettingsScreen(client))
+    })
+    addOption(options, localized()[TITLE_CHARACTER_CUSTOMIZATION], action = {
+        client.nav.push(playerCustomizationScreen(client))
     })
     addOption(options, localized()[BUTTON_LOG_OUT], action = {
         val s: NetworkClient.State = client.network.state

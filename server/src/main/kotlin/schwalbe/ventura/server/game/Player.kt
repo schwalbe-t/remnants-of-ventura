@@ -27,7 +27,9 @@ fun Player.getCurrentWorld(worlds: WorldRegistry): World {
     }
     if (world == null) {
         world = worlds.baseWorld
-        this.data.worlds.add(worlds.baseWorld.createPlayerEntry())
+        this.data.worlds.add(
+            worlds.baseWorld.createPlayerEntry(this.data.colors)
+        )
     }
     return world
 }
@@ -40,7 +42,7 @@ fun Player.pushWorld(newWorldId: Uuid, worlds: WorldRegistry): Boolean {
         val currentWorld: World? = worlds[currentWorldId]
         currentWorld?.handlePlayerLeaving(this)
     }
-    this.data.worlds.add(newWorld.createPlayerEntry())
+    this.data.worlds.add(newWorld.createPlayerEntry(this.data.colors))
     this.connection.outgoing.send(Packet.serialize(
         PacketType.BEGIN_WORLD_CHANGE, Unit
     ))

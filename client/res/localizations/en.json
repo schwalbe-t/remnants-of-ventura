@@ -110,6 +110,18 @@
         "BUTTON_LEAVE_INTERIOR": "Leave Interior",
         "BUTTON_LOG_OUT": "Log Out",
 
+        "TITLE_CHARACTER_CUSTOMIZATION": "Character Customization",
+        "COLOR_OPTION_SKIN": "Skin",
+        "COLOR_OPTION_HAIR": "Hair",
+        "COLOR_OPTION_EYEBROWS": "Eyebrows",
+        "COLOR_OPTION_HOODIE": "Hoodie",
+        "COLOR_OPTION_PANTS": "Pants",
+        "COLOR_OPTION_LEGS": "Legs",
+        "COLOR_OPTION_SHOES": "Shoes",
+        "COLOR_OPTION_HANDS": "Hands",
+        "COLOR_OPTION_IRIS": "Iris",
+        "COLOR_OPTION_EYES": "Eyes",
+
         "ERROR_INVALID_ACCOUNT_PARAMS": "Username already exists",
         "ERROR_INVALID_ACCOUNT_CREDS": "Username or password is invalid",
         "ERROR_SESSION_CREATION_COOLDOWN": "Please wait a moment before attempting to log in again",

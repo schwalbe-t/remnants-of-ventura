@@ -56,7 +56,7 @@ fun robotFileEditorScreen(
         },
         closeIf = { Key.ESCAPE.wasPressed || Key.C.wasPressed },
         playerFollowCursor = !playerSquat,
-        playerAnim = if (playerSquat) PlayerAnim.squat else PlayerAnim.thinking,
+        playerAnim = if (playerSquat) PersonAnim.squat else PersonAnim.thinking,
         render = {
             val playerToRobot: Vector3f? = playerToRobot()
             if (playerSquat && playerToRobot != null) {

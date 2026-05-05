@@ -19,7 +19,7 @@ class PausedScreen(
     closeIf: () -> Boolean = { Key.ESCAPE.wasPressed },
     captureInput: Boolean = false,
     playerFollowCursor: Boolean = true,
-    playerAnim: AnimationRef<PlayerAnim>?,
+    playerAnim: AnimationRef<PersonAnim>?,
     onOpen: () -> Unit = {},
     render: () -> Unit = {},
     onClose: () -> Unit = {}
@@ -29,7 +29,7 @@ class PausedScreen(
             client: Client,
             captureInput: Boolean = false,
             playerFollowCursor: Boolean = true,
-            playerAnim: AnimationRef<PlayerAnim>?
+            playerAnim: AnimationRef<PersonAnim>?
         ) {
             SourceFiles.update(client)
             val world: World = client.world ?: return

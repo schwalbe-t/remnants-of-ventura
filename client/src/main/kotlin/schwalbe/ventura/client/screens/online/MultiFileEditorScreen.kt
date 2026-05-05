@@ -33,7 +33,7 @@ fun multiFileEditorScreen(client: Client): () -> GameScreen = {
         camMode = { w -> CameraModes.playerFarCentered(w.player) },
         closeIf = { Key.ESCAPE.wasPressed || Key.C.wasPressed },
         playerFollowCursor = false,
-        playerAnim = PlayerAnim.thinking,
+        playerAnim = PersonAnim.thinking,
         render = {
             editor?.update()
         },

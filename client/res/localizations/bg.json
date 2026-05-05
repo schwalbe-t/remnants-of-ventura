@@ -110,6 +110,18 @@
         "BUTTON_LEAVE_INTERIOR": "Напусни интериора",
         "BUTTON_LOG_OUT": "Изход от акаунта",
 
+        "TITLE_CHARACTER_CUSTOMIZATION": "Персонализация на героя",
+        "COLOR_OPTION_SKIN": "Кожа",
+        "COLOR_OPTION_HAIR": "Коса",
+        "COLOR_OPTION_EYEBROWS": "Вежди",
+        "COLOR_OPTION_HOODIE": "Суичър",
+        "COLOR_OPTION_PANTS": "Панталони",
+        "COLOR_OPTION_LEGS": "Крака",
+        "COLOR_OPTION_SHOES": "Обувки",
+        "COLOR_OPTION_HANDS": "Ръце",
+        "COLOR_OPTION_IRIS": "Ирис",
+        "COLOR_OPTION_EYES": "Очи",
+
         "ERROR_INVALID_ACCOUNT_PARAMS": "Потребителското име вече съществува",
         "ERROR_INVALID_ACCOUNT_CREDS": "Потребителското име или паролата са грешни",
         "ERROR_SESSION_CREATION_COOLDOWN": "Моля, изчакайте момент, преди да опитате отново",

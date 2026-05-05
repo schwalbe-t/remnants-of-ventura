@@ -73,7 +73,7 @@ fun Robot.render(
             .collectTextureOverrides()
     }
     pass.renderOutline(
-        baseModel, Player.OUTLINE_THICKNESS, anim, baseInstances,
+        baseModel, Person.OUTLINE_THICKNESS, anim, baseInstances,
         meshTextureOverrides = baseTexOverrides
     )
     pass.renderGeometry(
@@ -89,7 +89,7 @@ fun Robot.render(
             else { ItemVariantResources.all[weaponItemVar.ordinal] }
         val weaponTexOverrides = weaponItemVarRes?.collectTextureOverrides()
         pass.renderOutline(
-            weaponItemTypeRes.model(), Player.OUTLINE_THICKNESS, null,
+            weaponItemTypeRes.model(), Person.OUTLINE_THICKNESS, null,
             weaponInstances,
             meshTextureOverrides = weaponTexOverrides
         )

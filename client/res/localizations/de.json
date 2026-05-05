@@ -110,6 +110,18 @@
         "BUTTON_LEAVE_INTERIOR": "Innenbereich verlassen",
         "BUTTON_LOG_OUT": "Abmelden",
 
+        "TITLE_CHARACTER_CUSTOMIZATION": "Charakteranpassung",
+        "COLOR_OPTION_SKIN": "Haut",
+        "COLOR_OPTION_HAIR": "Haare",
+        "COLOR_OPTION_EYEBROWS": "Augenbrauen",
+        "COLOR_OPTION_HOODIE": "Hoodie",
+        "COLOR_OPTION_PANTS": "Hose",
+        "COLOR_OPTION_LEGS": "Beine",
+        "COLOR_OPTION_SHOES": "Schuhe",
+        "COLOR_OPTION_HANDS": "Hände",
+        "COLOR_OPTION_IRIS": "Iris",
+        "COLOR_OPTION_EYES": "Augen",
+
         "ERROR_INVALID_ACCOUNT_PARAMS": "Benutzername ist bereits vergeben",
         "ERROR_INVALID_ACCOUNT_CREDS": "Benutzername oder Passwort falsch",
         "ERROR_SESSION_CREATION_COOLDOWN": "Bitte warten Sie einen Moment, bevor Sie es erneut versuchen",
