@@ -16,7 +16,7 @@ import java.nio.file.Path
 import schwalbe.ventura.client.Camera
 import schwalbe.ventura.client.Soundtrack
 import schwalbe.ventura.data.ObjectProp
-import schwalbe.ventura.data.TrackList
+import schwalbe.ventura.net.WorldStatePacket
 
 class WorldBackground(
     val displayed: World, val client: Client
@@ -38,6 +38,7 @@ class WorldBackground(
     val objectState = object : ObjectStateProvider {
         override fun isTriggered(obj: ObjectInstance)
             = obj[ObjectProp.Triggerable] in displayed.triggered
+        override fun lastWorldState(): WorldStatePacket? = null
     }
 
     init {

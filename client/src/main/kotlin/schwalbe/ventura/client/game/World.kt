@@ -3,12 +3,12 @@ package schwalbe.ventura.client.game
 
 import schwalbe.ventura.engine.*
 import schwalbe.ventura.client.*
-import org.joml.*
 import schwalbe.ventura.data.ObjectInstance
 import schwalbe.ventura.data.ObjectProp
 import schwalbe.ventura.net.WorldInfoPacket
-import schwalbe.ventura.utils.toVector3f
+import schwalbe.ventura.net.WorldStatePacket
 import kotlin.uuid.Uuid
+import org.joml.*
 
 class World(client: Client, info: WorldInfoPacket) {
 
@@ -26,6 +26,8 @@ class World(client: Client, info: WorldInfoPacket) {
     ) : ObjectStateProvider {
         override fun isTriggered(obj: ObjectInstance): Boolean
             = obj[ObjectProp.Triggerable] in state.interpolated.triggeredObjects
+        override fun lastWorldState(): WorldStatePacket?
+            = this.state.lastReceived
     }
 
 

@@ -11,6 +11,9 @@ import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.engine.Resource
 import schwalbe.ventura.utils.parseRgbHex
+import schwalbe.ventura.data.PersonStyle
+import schwalbe.ventura.net.WorldStatePacket
+import schwalbe.ventura.utils.toVector3f
 import org.joml.Matrix4fc
 import org.joml.Matrix4f
 import org.joml.Vector3f
@@ -21,6 +24,7 @@ import kotlin.math.sin
 
 interface ObjectStateProvider {
     fun isTriggered(obj: ObjectInstance): Boolean
+    fun lastWorldState(): WorldStatePacket?
 }
 
 abstract class ObjectOverrides {
@@ -147,7 +151,8 @@ object Objects {
         ),
         ObjectType.TUMBLEWEED to TumbleweedOverrides,
         ObjectType.BUTTON to ButtonOverrides,
-        ObjectType.LAMP to LampOverrides
+        ObjectType.LAMP to LampOverrides,
+        ObjectType.CHARACTER to CharacterOverrides
     )
 
 }
@@ -355,6 +360,46 @@ private object LampOverrides : ObjectOverrides() {
             meshTextureOverrides = texOverrides,
             shadowFactorOverride = litShadowFactor
         )
+    }
+
+}
+
+private object CharacterOverrides : ObjectOverrides() {
+
+    private fun getStyle(obj: ObjectInstance): PersonStyle
+        = if (ObjectProp.CharacterStylePreset in obj) {
+            obj[ObjectProp.CharacterStylePreset].style
+        } else {
+            obj[ObjectProp.CharacterStyleCustom].toPersonStyle()
+        }
+
+    private fun closestPlayer(
+        state: ObjectStateProvider, to: Vector3fc
+    ): Vector3f? = state.lastWorldState()
+        ?.players?.values?.minByOrNull { it.position.toVector3f().distance(to) }
+        ?.position?.toVector3f()
+
+    const val NEAR_LOOK_DIST: Float = 3f // dist <= this -> weight = 1
+    const val FAR_LOOK_DIST: Float = 5f // dist >= this -> weight = 0
+    const val LOOK_DIST_RANGE: Float = FAR_LOOK_DIST - NEAR_LOOK_DIST
+
+    override val render = RenderMethod.Single { pass, state, obj, _ ->
+        val pos = obj[ObjectProp.Position].toVector3f()
+        val rotY = obj[ObjectProp.Rotation].y
+        val anim = PersonAnim.fromSharedAnim(obj[ObjectProp.CharacterAnimation])
+        val animLen: Double = personModel().animations[anim.name]
+            ?.lengthSecs?.toDouble() ?: 1.0
+        val animTime = (System.currentTimeMillis().toDouble() / 1000) % animLen
+        val animState = AnimState(anim)
+        animState.addAnimationTimePassed(animTime.toFloat())
+        closestPlayer(state, pos)?.let { target ->
+            val dist: Float = pos.distance(target)
+            target.add(0f, 1.5f, 0f)
+            val weight: Float = ((FAR_LOOK_DIST - dist) / LOOK_DIST_RANGE)
+                .coerceIn(0f, 1f)
+            Person.facePoint(pos, rotY, target, weight, animState)
+        }
+        Person.render(pass, pos, rotY, animState, getStyle(obj))
     }
 
 }

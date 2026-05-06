@@ -1,10 +1,12 @@
 
 package schwalbe.ventura.data
 
+import schwalbe.ventura.data.CharacterStylePreset as CharacterStyleP
 import schwalbe.ventura.utils.SerVector3
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.joml.Matrix4f
+import schwalbe.ventura.PaletteColor
 
 // The maximum size in chunks of any client or server side colliders.
 // This number determines the radius of the area that is searched when looking
@@ -163,6 +165,11 @@ enum class ObjectType(
         applyColliders = false,
         tileColliderSize = null,
         renderOutline = false
+    ),
+
+    CHARACTER(
+        applyColliders = false,
+        tileColliderSize = null
     );
 
     enum class TextureFilter {
@@ -226,6 +233,56 @@ sealed interface ObjectProp<V> {
         companion object : PropType<TriggerFor, Array<String>>(
             default = arrayOf()
         )
+    }
+
+    @Serializable @SerialName("CHARACTER_DIALOGUE")
+    class CharacterDialogue(
+        override val v: String
+    ) : ObjectProp<String> {
+        companion object : PropType<CharacterDialogue, String>(default = "")
+    }
+
+    @Serializable @SerialName("CHARACTER_ANIMATION")
+    class CharacterAnimation(
+        override val v: SharedPersonAnimation
+    ) : ObjectProp<SharedPersonAnimation> {
+        companion object : PropType<CharacterAnimation, SharedPersonAnimation>(
+            default = SharedPersonAnimation.IDLE
+        )
+    }
+
+    @Serializable @SerialName("CHARACTER_STYLE_PRESET")
+    class CharacterStylePreset(
+        override val v: CharacterStyleP
+    ) : ObjectProp<CharacterStyleP> {
+        companion object : PropType<CharacterStylePreset, CharacterStyleP>(
+            default = CharacterStyleP.MERCHANT
+        )
+    }
+
+    @Serializable @SerialName("CHARACTER_STYLE_CUSTOM")
+    class CharacterStyleCustom(
+        override val v: Value
+    ) : ObjectProp<CharacterStyleCustom.Value> {
+        companion object : PropType<CharacterStyleCustom, Value>(
+            default = Value(
+                colors = List(PersonColorType.entries.size) {
+                    PaletteColor.BLACK
+                },
+                hair = PersonHairStyle.LONG
+            )
+        )
+
+        @Serializable
+        class Value(
+            val colors: List<PaletteColor>,
+            val hair: PersonHairStyle
+        ) {
+            fun toPersonStyle() = PersonStyle(
+                colors = this.colors.map { it.ser },
+                hair = this.hair
+            )
+        }
     }
 
 }

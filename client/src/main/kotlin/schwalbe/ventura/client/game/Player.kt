@@ -12,30 +12,6 @@ import schwalbe.ventura.data.ObjectProp
 import org.joml.*
 import schwalbe.ventura.data.PersonStyle
 
-private fun rotateTowardsPoint(
-    baseDir: Vector3fc, targetPoint: Vector3fc, axisFactors: Vector3fc,
-    localToWorld: Matrix4fc, weight: () -> Float
-): (Matrix4f, Matrix4fc) -> Matrix4f = { jointToParent, parentToLocal ->
-    val jointToWorld: Matrix4f = Matrix4f(localToWorld)
-        .mul(parentToLocal)
-        .mul(jointToParent)
-    val headPosWorld = jointToWorld.getTranslation(Vector3f(0f, 0f, 0f))
-    val toTargetWorld = Vector3f(targetPoint).sub(headPosWorld).normalize()
-    val headRotInv = jointToWorld.get3x3(Matrix3f()).invert()
-    val toTargetLocal = headRotInv.transform(toTargetWorld).normalize()
-    val forwardWorld = localToWorld
-        .transformDirection(Vector3f(baseDir))
-        .normalize()
-    val forwardLocal = headRotInv
-        .transform(Vector3f(forwardWorld))
-        .normalize()
-    val deltaRot = Quaternionf().rotationTo(forwardLocal, toTargetLocal)
-    val deltaRotWeighted = Quaternionf().identity().slerp(deltaRot, weight())
-    val deltaRotEuler = deltaRotWeighted
-        .getEulerAnglesXYZ(Vector3f()).mul(axisFactors)
-    jointToParent.rotateXYZ(deltaRotEuler)
-}
-
 class Player(startPos: SerVector3, startStyle: PersonStyle) {
 
     companion object {
@@ -178,24 +154,10 @@ class Player(startPos: SerVector3, startStyle: PersonStyle) {
 
     fun facePoint(target: Vector3fc) {
         this.animInjectWeight.target = 1f
-        val localToWorld: Matrix4f = Person
-            .modelTransform(this.position, this.rotation.value)
-        fun rotateTowardsTarget(
-            all: Float, x: Float, y: Float, z: Float
-        ) = rotateTowardsPoint(
-            Person.BASE_DIR, target, Vector3f(x, y, z), localToWorld,
-            weight = { all * this.animInjectWeight.value }
+        Person.facePoint(
+            this.position, this.rotation.value, target,
+            this.animInjectWeight.value, this.anim
         )
-        this.anim.injections["head"] =
-            rotateTowardsTarget(all = 0.33f, x = 0.75f, y = 1f, z = 0.50f)
-        this.anim.injections["neck"] =
-            rotateTowardsTarget(all = 0.33f, x = 0.50f, y = 1f, z = 0.25f)
-        this.anim.injections["body_upper"] =
-            rotateTowardsTarget(all = 0.33f, x = 0.25f, y = 1f, z = 0.00f)
-        this.anim.injections["shoulder_left"] =
-            rotateTowardsTarget(all = 0.2f, x = 0.00f, y = 1f, z = 0.00f)
-        this.anim.injections["shoulder_right"] =
-            rotateTowardsTarget(all = 0.2f, x = 0.00f, y = 1f, z = 0.00f)
     }
 
     fun render(pass: RenderPass) {

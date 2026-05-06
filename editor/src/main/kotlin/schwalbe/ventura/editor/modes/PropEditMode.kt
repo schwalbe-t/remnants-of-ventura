@@ -83,6 +83,7 @@ private class ObjectPropEditor(
                 .withHoverColor(HOVER_COLOR)
             )
             .add(this.valueInput
+                .wrapScrolling(horiz = true, vert = false)
                 .pad(0.5.vmin)
             )
         )

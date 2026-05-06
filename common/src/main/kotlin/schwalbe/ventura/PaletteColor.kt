@@ -4,8 +4,10 @@ package schwalbe.ventura
 import schwalbe.ventura.utils.SerVector3
 import schwalbe.ventura.utils.parseRgbHex
 import schwalbe.ventura.utils.toSerVector3
+import kotlinx.serialization.Serializable
 import org.joml.Vector3fc
 
+@Serializable
 enum class PaletteColor(val hex: String) {
     BLACK           ("443331"),
     DARK_BROWN      ("50473f"),

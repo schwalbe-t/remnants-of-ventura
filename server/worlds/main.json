@@ -3186,6 +3186,34 @@
 							}
 						}
 					]
+				},
+				{
+					"props": [
+						{
+							"type": "CHARACTER_STYLE_PRESET",
+							"v": "MERCHANT"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.16362461,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "CHARACTER"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 3.9366572,
+								"y": 0.0,
+								"z": 23.451172
+							}
+						}
+					]
 				}
 			]
 		},
