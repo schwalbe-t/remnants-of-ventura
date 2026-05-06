@@ -522,52 +522,6 @@
 							}
 						}
 					]
-				},
-				{
-					"props": [
-						{
-							"type": "CHARACTER_STYLE_CUSTOM",
-							"v": {
-								"colors": [
-									"CREAM",
-									"BLACK",
-									"DARK_BROWN",
-									"RED",
-									"WHITE",
-									"BLACK",
-									"WHITE",
-									"CREAM",
-									"BROWN",
-									"WHITE"
-								],
-								"hair": "LONG"
-							}
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 1.7720426,
-								"y": 0.0,
-								"z": 0.59667015
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 0.7461282,
-								"z": 0.0
-							}
-						},
-						{
-							"type": "TYPE",
-							"v": "CHARACTER"
-						},
-						{
-							"type": "CHARACTER_ANIMATION",
-							"v": "THINKING"
-						}
-					]
 				}
 			]
 		},

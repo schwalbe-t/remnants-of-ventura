@@ -77,6 +77,8 @@ data class PacketType<P>(
     val UP_CHAT_MESSAGE             = up<String>()
     val DOWN_CHAT_MESSAGE           = down<DownChatMessagePacket>()
     val CHANGE_PLAYER_STYLE         = up<PersonStyle>()
+    val REQUEST_DIALOGUE            = up<DialogueRequestPacket>()
+    val RECEIVE_DIALOGUE            = down<List<RemoteLocalization.Dialogue>>()
 
     val NUM_PACKET_TYPES: Int = this.pollNextPacketId()
 
@@ -287,4 +289,10 @@ data class RobotNameChangePacket(
 data class DownChatMessagePacket(
     val senderName: String?,
     val message: String
+)
+
+@Serializable
+data class DialogueRequestPacket(
+    val locale: String,
+    val selector: String
 )

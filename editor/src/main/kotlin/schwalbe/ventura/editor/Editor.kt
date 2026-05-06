@@ -10,7 +10,6 @@ import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.data.*
 import schwalbe.ventura.utils.toVector3f
 import org.joml.Vector3f
-import schwalbe.ventura.net.WorldStatePacket
 import java.io.File
 import java.nio.file.Path
 import javax.swing.JFileChooser
@@ -52,7 +51,7 @@ class Editor : Application<EditorMode>(
 
     object WorldObjectStateProvider : ObjectStateProvider {
         override fun isTriggered(obj: ObjectInstance): Boolean = false
-        override fun lastWorldState(): WorldStatePacket? = null
+        override fun worldState(): WorldState.Interpolated? = null
     }
 
 

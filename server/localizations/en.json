@@ -1,0 +1,38 @@
+{
+    "dialogue": {
+
+        "merchant_greeting_1": [
+            {
+                "name": "Merchant",
+                "lines": [
+                    "What's up? Are you looking for something?"
+                ]
+            }
+        ],
+        "merchant_greeting_2": [
+            {
+                "name": "Merchant",
+                "lines": [
+                    "If you need something, spit it out. Otherwise stop wasting my time.",
+                    "Why are you still here?"
+                ]
+            },
+            {
+                "name": "Annoyed Merchant",
+                "lines": [
+                    "You are starting to annoy me.",
+                    "Just go."
+                ]
+            }
+        ],
+        "merchant_greeting_3": [
+            {
+                "name": "Freaky Merchant",
+                "lines": [
+                    "Do you also like to hit the gritty while gooning to Sabubu Lex and Amogus?"
+                ]
+            }
+        ]
+
+    }
+}

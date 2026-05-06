@@ -103,6 +103,11 @@ enum class LocalKeys {
     KEYBIND_EDIT_ROBOT_CODE,
     KEYBIND_CONFIGURE_ROBOT,
     KEYBIND_MOVE,
+    KEYBIND_TALK,
+
+    // Character Dialogue Screen
+    KEYBIND_SKIP_DIALOGUE,
+    KEYBIND_NEXT_DIALOGUE,
 
     // Inventory Screen
     TITLE_INVENTORY,

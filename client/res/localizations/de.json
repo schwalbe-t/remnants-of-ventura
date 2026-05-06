@@ -75,6 +75,10 @@
         "KEYBIND_EDIT_ROBOT_CODE": "Roboter-Code bearbeiten",
         "KEYBIND_CONFIGURE_ROBOT": "Roboter konfigurieren",
         "KEYBIND_MOVE": "Bewegen",
+        "KEYBIND_TALK": "Sprechen",
+
+        "KEYBIND_SKIP_DIALOGUE": "Gespräch beenden",
+        "KEYBIND_NEXT_DIALOGUE": "Weiter",
 
         "TITLE_INVENTORY": "Inventar",
         "PLACEHOLDER_INVENTORY_EMPTY": "Dein Inventar ist leer.",

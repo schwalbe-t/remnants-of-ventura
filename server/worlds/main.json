@@ -3194,6 +3194,14 @@
 							"v": "MERCHANT"
 						},
 						{
+							"type": "POSITION",
+							"v": {
+								"x": 3.9366572,
+								"y": 0.0,
+								"z": 23.451172
+							}
+						},
+						{
 							"type": "ROTATION",
 							"v": {
 								"x": 0.0,
@@ -3206,12 +3214,8 @@
 							"v": "CHARACTER"
 						},
 						{
-							"type": "POSITION",
-							"v": {
-								"x": 3.9366572,
-								"y": 0.0,
-								"z": 23.451172
-							}
+							"type": "CHARACTER_DIALOGUE",
+							"v": "merchant_greeting_*"
 						}
 					]
 				}

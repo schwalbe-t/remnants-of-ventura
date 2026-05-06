@@ -1,7 +1,6 @@
 
 package schwalbe.ventura.client.screens
 
-import org.joml.Vector4f
 import schwalbe.ventura.client.Client
 import schwalbe.ventura.client.Renderer
 import schwalbe.ventura.client.game.ChunkLoader
@@ -11,12 +10,12 @@ import schwalbe.ventura.data.ObjectInstance
 import schwalbe.ventura.data.SerializedWorld
 import schwalbe.ventura.net.SharedChunkData
 import schwalbe.ventura.utils.GroundColorReader
-import java.nio.file.Files
-import java.nio.file.Path
 import schwalbe.ventura.client.Camera
 import schwalbe.ventura.client.Soundtrack
+import schwalbe.ventura.client.game.WorldState
 import schwalbe.ventura.data.ObjectProp
-import schwalbe.ventura.net.WorldStatePacket
+import java.nio.file.Files
+import java.nio.file.Path
 
 class WorldBackground(
     val displayed: World, val client: Client
@@ -38,7 +37,7 @@ class WorldBackground(
     val objectState = object : ObjectStateProvider {
         override fun isTriggered(obj: ObjectInstance)
             = obj[ObjectProp.Triggerable] in displayed.triggered
-        override fun lastWorldState(): WorldStatePacket? = null
+        override fun worldState(): WorldState.Interpolated? = null
     }
 
     init {

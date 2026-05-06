@@ -75,6 +75,10 @@
         "KEYBIND_EDIT_ROBOT_CODE": "Edit Robot Code",
         "KEYBIND_CONFIGURE_ROBOT": "Configure Robot",
         "KEYBIND_MOVE": "Move",
+        "KEYBIND_TALK": "Talk",
+
+        "KEYBIND_SKIP_DIALOGUE": "Stop Conversation",
+        "KEYBIND_NEXT_DIALOGUE": "Continue",
 
         "TITLE_INVENTORY": "Inventory",
         "PLACEHOLDER_INVENTORY_EMPTY": "Your inventory is empty.",

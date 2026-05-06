@@ -106,7 +106,7 @@ object Person {
         .scale(MODEL_SCALE)
 
     fun facePoint(
-        pos: Vector3fc, rotY: Float, target: Vector3fc, weight: Float,
+        pos: Vector3fc, rotY: Float, target: Vector3fc, weight: () -> Float,
         dest: AnimState<*>
     ) {
         val localToWorld: Matrix4f = modelTransform(pos, rotY)
@@ -114,7 +114,7 @@ object Person {
             all: Float, x: Float, y: Float, z: Float
         ) = rotateTowardsPoint(
             BASE_DIR, target, Vector3f(x, y, z), localToWorld,
-            weight = { all * weight }
+            weight = { all * weight() }
         )
         dest.injections["head"] =
             rotateTowardsTarget(all = 0.33f, x = 0.75f, y = 1f, z = 0.50f)

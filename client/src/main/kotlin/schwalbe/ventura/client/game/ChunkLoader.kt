@@ -206,7 +206,7 @@ class ChunkLoader(
         }
     }
 
-    private fun chunksInRange(r: Int): Sequence<ChunkRef>
+    fun chunksInRange(r: Int): Sequence<ChunkRef>
         = ((-r)..(+r)).asSequence().flatMap { x ->
             ((-r)..(+r)).asSequence().map { z ->
                 ChunkRef(this.centerX + x, this.centerZ + z)

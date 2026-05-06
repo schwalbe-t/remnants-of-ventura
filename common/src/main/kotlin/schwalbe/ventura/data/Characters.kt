@@ -9,12 +9,12 @@ enum class CharacterStylePreset(val style: PersonStyle) {
     MERCHANT(PersonStyle(
         colors = PersonColorType.makeColors(
             PersonColorType.SKIN to CREAM,
-            PersonColorType.HAIR to GREEN,
-            PersonColorType.EYEBROWS to GREEN,
-            PersonColorType.HOODIE to GREEN,
-            PersonColorType.PANTS to GREEN,
+            PersonColorType.HAIR to WINE,
+            PersonColorType.EYEBROWS to DARK_BROWN,
+            PersonColorType.HOODIE to DARK_GREEN,
+            PersonColorType.PANTS to DARK_GREEN,
             PersonColorType.LEGS to BLACK,
-            PersonColorType.SHOES to GREEN,
+            PersonColorType.SHOES to DARK_GREEN,
             PersonColorType.HANDS to BLACK,
             PersonColorType.IRIS to BROWN,
             PersonColorType.EYES to WHITE

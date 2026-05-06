@@ -11,7 +11,11 @@ import schwalbe.ventura.net.PacketHandler
 import schwalbe.ventura.net.WorldStatePacket
 import schwalbe.ventura.utils.toVector3f
 import schwalbe.ventura.engine.ui.*
+import schwalbe.ventura.data.*
 import org.joml.Vector3fc
+import schwalbe.ventura.net.DialogueRequestPacket
+import schwalbe.ventura.net.Packet
+import schwalbe.ventura.net.PacketType
 import kotlin.uuid.Uuid
 
 private fun findClosestOwnedRobot(
@@ -29,8 +33,29 @@ private fun findClosestOwnedRobot(
     return closestId to closestDist
 }
 
+private fun findClosestPlayerCharacter(
+    loader: ChunkLoader, observer: Vector3fc
+): Pair<ObjectInstance?, Float> {
+    var closestObj: ObjectInstance? = null
+    var closestDist: Float = Float.POSITIVE_INFINITY
+    for (chunkRef in loader.chunksInRange(CHARACTER_TALK_CHUNK_RANGE)) {
+        val chunk = loader.loaded[chunkRef] ?: continue
+        for (obj in chunk.instances) {
+            if (obj.obj[ObjectProp.Type] != ObjectType.CHARACTER) { continue }
+            if (ObjectProp.CharacterDialogue !in obj.obj) { continue }
+            val pos = obj.obj[ObjectProp.Position]
+            val dist: Float = observer.distance(pos.toVector3f())
+            if (dist >= closestDist) { continue }
+            closestObj = obj.obj
+            closestDist = dist
+        }
+    }
+    return closestObj to closestDist
+}
+
 const val MAX_ROBOT_EDIT_DIST: Float = 2f
-val KEYBINDS_WIDTH: UiSize = 20.vw
+const val MAX_CHARACTER_TALK_DIST: Float = 3f
+const val CHARACTER_TALK_CHUNK_RANGE: Int = 1
 
 private fun hasRobotInRange(client: Client): Boolean {
     val world = client.world ?: return false
@@ -38,6 +63,13 @@ private fun hasRobotInRange(client: Client): Boolean {
     val (closestId, closestDist)
         = findClosestOwnedRobot(worldState, world.player.position)
     return closestId != null && closestDist <= MAX_ROBOT_EDIT_DIST
+}
+
+private fun hasCharacterInRange(client: Client): Boolean {
+    val world = client.world ?: return false
+    val (closest, closestDist)
+        = findClosestPlayerCharacter(world.chunks, world.player.position)
+    return closest != null && closestDist <= MAX_CHARACTER_TALK_DIST
 }
 
 private fun defineKeybinds(client: Client): List<Keybind> = listOf(
@@ -63,6 +95,10 @@ private fun defineKeybinds(client: Client): List<Keybind> = listOf(
     Keybind(
         KEYBIND_CONFIGURE_ROBOT, listOf(Keybind.Key("E")),
         displayIf = { hasRobotInRange(client) }
+    ),
+    Keybind(
+        KEYBIND_TALK, listOf(Keybind.Key("Q")),
+        displayIf = { hasCharacterInRange(client) }
     )
 )
 
@@ -107,6 +143,20 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
                 }
                 robotStatus.update(client, worldState)
             }
+            val (closestChar, closestCharDist) = findClosestPlayerCharacter(
+                world.chunks, world.player.position
+            )
+            val hasCharInRange: Boolean = closestChar != null
+                && closestCharDist <= MAX_CHARACTER_TALK_DIST
+            if (hasCharInRange && Key.Q.wasPressed) {
+                client.nav.push(characterDialogueScreen(client, closestChar))
+                client.network.outPackets?.send(Packet.serialize(
+                    PacketType.REQUEST_DIALOGUE, DialogueRequestPacket(
+                        locale = client.config.language.id,
+                        selector = closestChar[ObjectProp.CharacterDialogue]
+                    )
+                ))
+            }
             client.world?.state?.activeNameDisplays = playerNames
             client.world?.update(client, captureInput = !chat.isTyping)
             if (chat.isTyping) {
@@ -119,12 +169,7 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
                 chat.root.withSize(0.px, 0.px)
             }
             chat.update()
-            if (client.config.settings.showControls) {
-                keybinds.root.withSize(KEYBINDS_WIDTH, 0.px)
-            } else {
-                keybinds.root.withSize(0.px, 0.px)
-            }
-            keybinds.update()
+            keybinds.update(client.config.settings.showControls)
         },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
             client.nav.replace(serverConnectionFailedScreen(reason, client))
@@ -143,9 +188,7 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
     screen.add(layer = 2, element = chat.root
         .pad(2.5.vmin)
     )
-    screen.add(layer = 3, element = keybinds.root
-        .pad(left = 100.pw - KEYBINDS_WIDTH - 2.5.vmin, top = 2.5.vmin)
-    )
+    screen.add(layer = 3, element = keybinds.createRootMount())
     screen
 }
 

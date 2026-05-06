@@ -80,7 +80,7 @@ class World(
             val player: Player = this.incoming.poll() ?: break
             this.mutPlayers[player.username] = player
             this.prepareIncomingPlayer(player)
-            this.registry.workers.playerWriter.add(player.serialize())
+            this.registry.services.playerWriter.add(player.serialize())
             player.connection.outgoing.send(Packet.serialize(
                 PacketType.COMPLETE_WORLD_CHANGE,
                 WorldInfoPacket(
@@ -598,6 +598,14 @@ class World(
                 return@onPacket
             }
             pl.data.style = style
+        }
+        ph.onPacket(PacketType.REQUEST_DIALOGUE) { request, pl ->
+            val dialogue: List<RemoteLocalization.Dialogue>
+                = this.registry.services.localizations
+                    .getDialogue(request.locale, request.selector)
+            pl.connection.outgoing.send(Packet.serialize(
+                PacketType.RECEIVE_DIALOGUE, dialogue
+            ))
         }
     }
 

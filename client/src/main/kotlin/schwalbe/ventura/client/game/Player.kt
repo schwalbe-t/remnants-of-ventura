@@ -156,13 +156,14 @@ class Player(startPos: SerVector3, startStyle: PersonStyle) {
         this.animInjectWeight.target = 1f
         Person.facePoint(
             this.position, this.rotation.value, target,
-            this.animInjectWeight.value, this.anim
+            { this.animInjectWeight.value }, this.anim
         )
     }
 
     fun render(pass: RenderPass) {
         this.animInjectWeight.update()
         this.rotation.update()
+
         Person.render(
             pass, this.position, this.rotation.value, this.anim, this.style
         )

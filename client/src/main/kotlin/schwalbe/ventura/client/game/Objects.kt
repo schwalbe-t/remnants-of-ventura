@@ -24,7 +24,7 @@ import kotlin.math.sin
 
 interface ObjectStateProvider {
     fun isTriggered(obj: ObjectInstance): Boolean
-    fun lastWorldState(): WorldStatePacket?
+    fun worldState(): WorldState.Interpolated?
 }
 
 abstract class ObjectOverrides {
@@ -375,9 +375,9 @@ private object CharacterOverrides : ObjectOverrides() {
 
     private fun closestPlayer(
         state: ObjectStateProvider, to: Vector3fc
-    ): Vector3f? = state.lastWorldState()
-        ?.players?.values?.minByOrNull { it.position.toVector3f().distance(to) }
-        ?.position?.toVector3f()
+    ): Vector3f? = state.worldState()
+        ?.players?.values?.minByOrNull { it.position.distance(to) }
+        ?.position?.let(::Vector3f)
 
     const val NEAR_LOOK_DIST: Float = 3f // dist <= this -> weight = 1
     const val FAR_LOOK_DIST: Float = 5f // dist >= this -> weight = 0
@@ -397,7 +397,7 @@ private object CharacterOverrides : ObjectOverrides() {
             target.add(0f, 1.5f, 0f)
             val weight: Float = ((FAR_LOOK_DIST - dist) / LOOK_DIST_RANGE)
                 .coerceIn(0f, 1f)
-            Person.facePoint(pos, rotY, target, weight, animState)
+            Person.facePoint(pos, rotY, target, { weight }, animState)
         }
         Person.render(pass, pos, rotY, animState, getStyle(obj))
     }

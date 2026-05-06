@@ -78,7 +78,7 @@ private fun computeRobotStats(
     if (!findWeaponSuccess) { return null }
     totalModules.addAll(processor.features.modules)
     totalMemoryLimit += processor.stats.baseMemory
-    var hasIgnored: Boolean = false
+    var hasIgnored = false
     for (item in attachments.asSequence().filterNotNull()) {
         if (item.type in PROCESSOR_INFO.keys) { continue }
         val info = ATTACHMENT_EXT[item.type] ?: continue
@@ -285,7 +285,7 @@ class PlayerRobot(
         val runtime: BigtonRuntime? = this.runtime
         if (runtime == null) {
             this.updateCompilation(
-                world.registry.workers.compilationQueue, owner.data.sourceFiles
+                world.registry.services.compilationQueue, owner.data.sourceFiles
             )
             return
         }

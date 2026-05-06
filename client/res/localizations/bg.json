@@ -75,6 +75,10 @@
         "KEYBIND_EDIT_ROBOT_CODE": "Редактирай кода на робота",
         "KEYBIND_CONFIGURE_ROBOT": "Конфигурирай робота",
         "KEYBIND_MOVE": "Движение",
+        "KEYBIND_TALK": "Говори",
+
+        "KEYBIND_SKIP_DIALOGUE": "Спри разговора",
+        "KEYBIND_NEXT_DIALOGUE": "Продължи",
 
         "TITLE_INVENTORY": "Инвентар",
         "PLACEHOLDER_INVENTORY_EMPTY": "Инвентарът е празен.",

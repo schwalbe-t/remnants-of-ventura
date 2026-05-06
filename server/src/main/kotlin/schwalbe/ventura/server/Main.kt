@@ -7,19 +7,19 @@ import schwalbe.ventura.server.game.CompilationQueue
 import schwalbe.ventura.server.game.WorldRegistry
 import schwalbe.ventura.server.game.StaticWorldData
 import schwalbe.ventura.server.persistence.*
+import schwalbe.ventura.utils.GroundColorReader
 import kotlinx.coroutines.*
+import kotlinx.datetime.*
 import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
-import kotlinx.datetime.*
-import schwalbe.ventura.utils.GroundColorReader
-import java.nio.file.Files
-import java.nio.file.Path
 import kotlin.io.path.extension
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.nameWithoutExtension
 import kotlin.system.exitProcess
+import java.nio.file.Files
+import java.nio.file.Path
 
 fun getKeyStorePath(): String = System.getenv("VENTURA_KEYSTORE_PATH")
     ?: "dev-keystore.p12"
@@ -42,6 +42,12 @@ fun getWorldFileDir(): String = System.getenv("VENTURA_WORLD_FILES_DIR")
 fun getMainWorldName(): String = System.getenv("VENTURA_MAIN_WORLD_NAME")
     ?: "main"
 
+fun getLocalizationsDir(): String = System.getenv("VENTURA_LOCALIZATIONS_DIR")
+    ?: "localizations"
+
+fun getFallbackLocale(): String = System.getenv("VENTURA_FALLBACK_LOCALE")
+    ?: "en"
+
 private fun scheduled(interval: Duration, f: () -> Unit) {
     thread {
         while (true) {
@@ -56,7 +62,9 @@ private fun scheduled(interval: Duration, f: () -> Unit) {
     }
 }
 
-class Workers {
+class Services(
+    val localizations: Localizations
+) {
     val playerWriter = PlayerWriter()
     val compilationQueue = CompilationQueue()
 }
@@ -88,8 +96,11 @@ fun main() {
         = loadWorlds(Path.of(getWorldFileDir()))
     println("Loaded ${worldData.size} world(s)")
 
-    val workers = Workers()
-    val worlds = WorldRegistry(workers, getMainWorldName())
+    val localizations = Localizations
+        .readDirectory(Path.of(getLocalizationsDir()), getFallbackLocale())
+
+    val services = Services(localizations)
+    val worlds = WorldRegistry(services, getMainWorldName())
     worldData.forEach { (name, data) -> worlds.add(name, data) }
 
     val port: Int = getPort()
@@ -128,10 +139,10 @@ fun main() {
     }
 
     CoroutineScope(Dispatchers.IO).launch {
-        workers.playerWriter.runWorker()
+        services.playerWriter.runWorker()
     }
 
     thread {
-        workers.compilationQueue.runWorker()
+        services.compilationQueue.runWorker()
     }
 }

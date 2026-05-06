@@ -19,7 +19,8 @@ class Keybind(
 }
 
 class KeybindDisplay(
-    val keybinds: List<Keybind>
+    val keybinds: List<Keybind>,
+    val width: UiSize = 20.vw
 ) {
 
     val blurBackground = BlurBackground().withRadius(2).withSpread(4)
@@ -72,7 +73,7 @@ class KeybindDisplay(
         }
     }
 
-    fun update() {
+    fun update(isEnabled: Boolean) {
         this.blurBackground.invalidate()
         var isDirty = false
         for (keybind in this.keybinds) {
@@ -82,7 +83,15 @@ class KeybindDisplay(
             isDirty = true
         }
         if (isDirty) { this.render() }
-        this.fitContent()
+        if (isEnabled) {
+            this.root.withWidth(this.width)
+            this.fitContent()
+        } else {
+            this.root.withSize(0.px, 0.px)
+        }
     }
+
+    fun createRootMount(): UiElement = this.root
+        .pad(left = 100.pw - this.width - 2.5.vmin, top = 2.5.vmin)
 
 }
