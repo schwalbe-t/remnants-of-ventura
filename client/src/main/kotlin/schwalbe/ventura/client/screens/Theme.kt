@@ -11,6 +11,7 @@ object Theme {
     val SECONDARY_FONT_COLOR: Vector4fc = Vector4f(0.75f, 0.75f, 0.75f, 1f)
 
     val PANEL_BACKGROUND: Vector4fc = Vector4f(0.2f, 0.2f, 0.2f, 0.2f)
+    val TOAST_BACKGROUND: Vector4fc = Vector4f(0.2f, 0.2f, 0.2f, 0.5f)
 
     val BUTTON_COLOR: Vector4fc = Vector4f(25f, 25f, 25f, 50f).div(255f)
     val BUTTON_HOVER_COLOR: Vector4fc = Vector4f(255f, 255f, 255f, 128f).div(255f)

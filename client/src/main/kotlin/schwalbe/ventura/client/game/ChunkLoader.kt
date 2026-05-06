@@ -64,7 +64,9 @@ private fun computeInstanceColliders(
     return colliders
 }
 
-fun buildChunkGroundGeometry(ref: ChunkRef, data: SharedChunkData): Geometry {
+fun buildChunkGroundGeometry(
+    ref: ChunkRef, data: SharedChunkData, height: Float
+): Geometry {
     val vertSize: Int = ChunkLoader.GROUND_GEOMETRY_ATTRIBS
         .sumOf { it.numBytes }
     val vbo = ByteBuffer
@@ -73,7 +75,7 @@ fun buildChunkGroundGeometry(ref: ChunkRef, data: SharedChunkData): Geometry {
     fun ByteBuffer.putVertex(chX: Int, chZ: Int, color: SerVector3) {
         // vec3 position
         putFloat(chX.chunksToUnits().toFloat())
-        putFloat(0f)
+        putFloat(height)
         putFloat(chZ.chunksToUnits().toFloat())
         // vec3 color
         putFloat(color.x)
@@ -110,8 +112,9 @@ typealias GroundRenderer = (RenderPass, Geometry, Iterable<Matrix4fc>) -> Unit
 
 class ChunkLoader(
     val requestChunks: (List<ChunkRef>) -> List<ChunkRef>,
+    val groundHeight: Float,
     val loadRadius: Int = DEFAULT_LOAD_RADIUS,
-    val renderRadius: Int = DEFAULT_RENDER_RADIUS
+    val renderRadius: Int = DEFAULT_RENDER_RADIUS,
 ) {
 
     class LoadedInstance(
@@ -179,10 +182,12 @@ class ChunkLoader(
     val requested: MutableSet<ChunkRef> = mutableSetOf()
     val loaded: MutableMap<ChunkRef, LoadedChunkData> = mutableMapOf()
 
-    fun onChunksReceived(chunks: List<Pair<ChunkRef, SharedChunkData>>) {
+    fun onChunksReceived(
+        chunks: List<Pair<ChunkRef, SharedChunkData>>
+    ) {
         for ((ref, data) in chunks) {
             val instances = computeChunkInstances(data)
-            val ground = buildChunkGroundGeometry(ref, data)
+            val ground = buildChunkGroundGeometry(ref, data, this.groundHeight)
             this.loaded[ref] = LoadedChunkData(instances, ground)
         }
     }
@@ -237,27 +242,30 @@ class ChunkLoader(
         }
     }
 
-    fun findIntersecting(
+    fun findAllIntersecting(
         b: AxisAlignedBox, includeAll: Boolean = false
-    ): ObjectInstance? {
-        val mcsc: Int = MAX_COLLIDER_SIZE_CHUNKS
-        val minChunkX: Int = b.min.x().unitsToChunkIdx() - mcsc
-        val maxChunkX: Int = b.max.x().unitsToChunkIdx() + mcsc
-        val minChunkZ: Int = b.min.z().unitsToChunkIdx() - mcsc
-        val maxChunkZ: Int = b.max.z().unitsToChunkIdx() + mcsc
-        for (chunkX in minChunkX..maxChunkX) {
-            for (chunkZ in minChunkZ..maxChunkZ) {
-                val chunk = this.loaded[ChunkRef(chunkX, chunkZ)] ?: continue
-                for (instance in chunk.instances) {
-                    val type = instance.obj[ObjectProp.Type]
-                    if (!type.applyColliders && !includeAll) { continue }
-                    if (instance.colliders.any { it.intersects(b) }) {
-                        return instance.obj
+    ): Sequence<ObjectInstance> {
+        val chunks = this
+        return sequence {
+            val mcsc: Int = MAX_COLLIDER_SIZE_CHUNKS
+            val minChunkX: Int = b.min.x().unitsToChunkIdx() - mcsc
+            val maxChunkX: Int = b.max.x().unitsToChunkIdx() + mcsc
+            val minChunkZ: Int = b.min.z().unitsToChunkIdx() - mcsc
+            val maxChunkZ: Int = b.max.z().unitsToChunkIdx() + mcsc
+            for (chunkX in minChunkX..maxChunkX) {
+                for (chunkZ in minChunkZ..maxChunkZ) {
+                    val chunk = chunks.loaded[ChunkRef(chunkX, chunkZ)]
+                        ?: continue
+                    for (instance in chunk.instances) {
+                        val type = instance.obj[ObjectProp.Type]
+                        if (!type.applyColliders && !includeAll) { continue }
+                        if (instance.colliders.any { it.intersects(b) }) {
+                            yield(instance.obj)
+                        }
                     }
                 }
             }
         }
-        return null
     }
 
     private fun renderChunk(

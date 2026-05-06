@@ -24,8 +24,9 @@
 				"z": 0.75
 			},
 			"defaultLit": true
-		}
-	},
+		},
+        "groundHeight": 0.0
+    },
 	"groundColor": "main_menu_ground.png",
 	"startPosition": {
 		"x": 0.0,
@@ -40,6 +41,8 @@
 			"untilZ": 99999999
 		}
 	],
+	"maintenanceAreas": [],
+	"challengeAreas": [],
 	"chunks": [
 		{
 			"chunkX": 0,
@@ -420,22 +423,6 @@
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 1.8147361,
-								"y": 9.536743E-7,
-								"z": 2.9945755
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
 								"x": 1.5882516,
 								"y": 0.0,
 								"z": 7.3832226
@@ -520,6 +507,22 @@
 								"y": 0.0,
 								"z": 7.110737
 							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 1.8147361,
+								"y": 9.536743E-7,
+								"z": 2.9945755
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
 						}
 					]
 				}
@@ -1580,22 +1583,6 @@
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -2.4377592,
-								"y": 0.0,
-								"z": 7.4000664
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
 								"x": -4.03809,
 								"y": 0.0,
 								"z": 9.113853
@@ -1647,22 +1634,6 @@
 								"x": -6.3918476,
 								"y": 0.0,
 								"z": 10.059952
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -5.7786536,
-								"y": 0.0,
-								"z": 11.745591
 							}
 						}
 					]
@@ -1848,6 +1819,46 @@
 								"y": 0.0,
 								"z": 11.864602
 							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -1.9160318,
+								"y": 0.0,
+								"z": 6.9646416
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -6.5426354,
+								"y": -1.9073486E-6,
+								"z": 12.414925
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.0,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "LUSH_GRASS"
 						}
 					]
 				}

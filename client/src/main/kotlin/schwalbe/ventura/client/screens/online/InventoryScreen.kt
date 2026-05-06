@@ -190,6 +190,7 @@ private fun createSelectedItemSection(
 
 fun inventoryMenuScreen(client: Client): () -> GameScreen = {
     var selectedItemDisplay: MsaaRenderDisplay? = null
+    val toasts = ToastDisplay(client.toasts)
     val screen = PausedScreen(
         client,
         camMode = { w -> CameraModes.playerInRightThird(w.player) },
@@ -197,8 +198,10 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
         playerAnim = PersonAnim.thinking,
         render = {
             selectedItemDisplay?.invalidate()
+            toasts.update()
         }
     )
+    screen.screen.packets?.displayTaggedErrorToasts(toasts)
     val selectedItemSection = Stack()
     fun renderSelectedItemSection(
         item: Item?, count: Int, afterAction: () -> Unit
@@ -247,5 +250,6 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
         )
         .add(fpw * (1f/3f), Space())
     )
+    screen.screen.add(layer = 1, element = toasts.root)
     screen.screen
 }

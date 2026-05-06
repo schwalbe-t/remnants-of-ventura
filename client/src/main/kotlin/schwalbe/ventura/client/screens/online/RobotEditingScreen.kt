@@ -379,6 +379,7 @@ private const val LOG_REQUEST_INTERVAL: Long = 1000L
 
 fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
     val contextMenu = ContextMenu()
+    val toasts = ToastDisplay(client.toasts)
     val sharedRobotInfo: SharedRobotInfo?
         = client.world?.state?.lastReceived?.allRobots[robotId]
     var lastLogRequestTime: Long = 0
@@ -412,8 +413,10 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
                     world.player.rotateAlong(toRobot)
                 }
             }
+            toasts.update()
         }
     )
+    screen.screen.packets?.displayTaggedErrorToasts(toasts)
     val l = localized()
     val rhs = Stack()
     fun resetRhs() {
@@ -475,5 +478,6 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
             client.nav.pop()
         }
     }
+    screen.screen.add(layer = 2, element = toasts.root)
     screen.screen
 }

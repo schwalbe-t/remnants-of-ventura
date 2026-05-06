@@ -127,6 +127,9 @@ class PlayerRobot(
     override val weaponItem: Item?
         get() = this.stats?.weaponItem
 
+    var lastSafeTileX: Int
+    var lastSafeTileZ: Int
+
     @Transient
     private var stats: RobotStats? = null
     @Transient
@@ -142,6 +145,8 @@ class PlayerRobot(
 
     init {
         this.alignPosition()
+        this.lastSafeTileX = this.tileX
+        this.lastSafeTileZ = this.tileZ
     }
 
     fun start() {
@@ -187,6 +192,37 @@ class PlayerRobot(
         this.stats = null
         this.compileTask = null
         this.runtime = null
+    }
+
+    private fun updateChallenges(world: World, owner: Player) {
+        val inChallenge: Boolean = world.static.world
+            .challengeAreas.any { it.contains(this.tileX, this.tileZ) }
+        if (!inChallenge) {
+            this.lastSafeTileX = this.tileX
+            this.lastSafeTileZ = this.tileZ
+            return
+        }
+        val isRunning: Boolean = this.status == RobotStatus.RUNNING
+            && this.runtime != null
+        if (isRunning) {
+            return
+        }
+        val lastSafePos = SerVector3(
+            this.lastSafeTileX.toFloat(), 0f, this.lastSafeTileZ.toFloat()
+        )
+        val newPos: SerVector3 = PlayerRobot.allocatePosition(
+            lastSafePos, world,
+            tileIsOccupied = { x, z ->
+                world.tileIsOccupied(x, z) ||
+                world.static.world.challengeAreas.any { it.contains(x, z) }
+            }
+        ) ?: this.position
+        this.position = newPos
+        this.alignPosition()
+        owner.connection.outgoing.send(Packet.serialize(
+            PacketType.TAGGED_ERROR,
+            TaggedErrorPacket.ROBOT_STOPPED_DURING_CHALLENGE
+        ))
     }
 
     private fun logError(
@@ -324,6 +360,7 @@ class PlayerRobot(
     }
 
     fun update(world: World, owner: Player) {
+        this.updateChallenges(world, owner)
         val attachmentCtx = GameAttachmentContext(world, owner, this)
         this.attachmentStates.states.values.forEach { it.update(attachmentCtx) }
         this.updateExecution(world, owner)
@@ -363,12 +400,12 @@ class PlayerRobot(
 
 }
 
-private const val MAX_ALLOCATION_DIST: Int = 8
+private const val MAX_ALLOCATION_DIST: Int = 4
 
 fun PlayerRobot.Companion.allocatePosition(
     center: SerVector3, world: World,
     tileIsOccupied: (Int, Int) -> Boolean = world::tileIsOccupied
-): SerVector3 {
+): SerVector3? {
     val centerTx: Int = center.x.unitsToUnitIdx()
     val centerTz: Int = center.z.unitsToUnitIdx()
     val queue: ArrayDeque<Long> = ArrayDeque()
@@ -398,9 +435,6 @@ fun PlayerRobot.Companion.allocatePosition(
         enqueue(curr.x,     curr.z - 1  )
         enqueue(curr.x,     curr.z + 1  )
     }
-    // no valid tile could be found;
-    // fall back to allowing any tile that isn't a collider
-    return PlayerRobot.allocatePosition(
-        center, world, tileIsOccupied = { _, _ -> false }
-    )
+    // no valid tile could be found
+    return null
 }

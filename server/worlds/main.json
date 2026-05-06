@@ -24,8 +24,9 @@
 				"z": 0.75
 			},
 			"defaultLit": true
-		}
-	},
+		},
+        "groundHeight": 0.0
+    },
 	"groundColor": "main_ground.png",
 	"startPosition": {
 		"x": 0.0,
@@ -38,6 +39,22 @@
 			"minZ": -32,
 			"untilX": 32,
 			"untilZ": 32
+		}
+	],
+	"maintenanceAreas": [
+		{
+			"minX": -32,
+			"minZ": -32,
+			"untilX": 32,
+			"untilZ": 32
+		}
+	],
+	"challengeAreas": [
+		{
+			"minX": 14,
+			"minZ": -26,
+			"untilX": 22,
+			"untilZ": -18
 		}
 	],
 	"chunks": [
@@ -486,30 +503,6 @@
 				{
 					"props": [
 						{
-							"type": "ENTER_WORLD",
-							"v": "test_interior"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 6.942938,
-								"y": 0.0,
-								"z": -15.340826
-							}
-						},
-						{
-							"type": "SCALE",
-							"v": 2.0
-						},
-						{
-							"type": "TYPE",
-							"v": "TRIGGER"
-						}
-					]
-				},
-				{
-					"props": [
-						{
 							"type": "TYPE",
 							"v": "TREE_RED"
 						},
@@ -719,6 +712,94 @@
 								"x": 2.2735684,
 								"y": 0.0,
 								"z": -13.762747
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "ENTER_WORLD",
+							"v": "test_interior"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 6.942938,
+								"y": 0.0,
+								"z": -15.340826
+							}
+						},
+						{
+							"type": "SCALE",
+							"v": 2.0
+						},
+						{
+							"type": "TYPE",
+							"v": "TRIGGER"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 12.0,
+								"y": 0.0,
+								"z": -5.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 14.0,
+								"y": 0.0,
+								"z": -5.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 14.0,
+								"y": 0.0,
+								"z": -7.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 12.0,
+								"y": 0.0,
+								"z": -7.0
 							}
 						}
 					]
@@ -1072,6 +1153,99 @@
 						{
 							"type": "TYPE",
 							"v": "ROCK"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -18.0,
+								"y": 0.0,
+								"z": -17.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "latch_test_button"
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"latch_test_button_lamp",
+								"latch_test"
+							]
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -21.0,
+								"y": 0.0,
+								"z": -17.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "LATCH"
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "latch_test"
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"latch_test_lamp"
+							]
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -18.0,
+								"y": 0.0,
+								"z": -19.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "latch_test_button_lamp"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -20.493694,
+								"y": 0.0,
+								"z": -18.998854
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "latch_test_lamp"
 						}
 					]
 				}
@@ -1879,6 +2053,38 @@
 								"x": 2.94152,
 								"y": 0.0,
 								"z": -19.356049
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "CHALLENGE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 14.0,
+								"y": 0.0,
+								"z": -18.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "CHALLENGE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 14.0,
+								"y": 0.0,
+								"z": -26.0
 							}
 						}
 					]
@@ -3190,6 +3396,10 @@
 				{
 					"props": [
 						{
+							"type": "CHARACTER_DIALOGUE",
+							"v": "merchant_greeting_*"
+						},
+						{
 							"type": "CHARACTER_STYLE_PRESET",
 							"v": "MERCHANT"
 						},
@@ -3212,10 +3422,6 @@
 						{
 							"type": "TYPE",
 							"v": "CHARACTER"
-						},
-						{
-							"type": "CHARACTER_DIALOGUE",
-							"v": "merchant_greeting_*"
 						}
 					]
 				}
@@ -3431,6 +3637,110 @@
 								"x": 50.0,
 								"y": 0.0,
 								"z": 11.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 1,
+			"chunkZ": -2
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "CHALLENGE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": -18.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "CHALLENGE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": -26.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": -4,
+			"chunkZ": -3
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -49.731476,
+								"y": 0.0,
+								"z": -32.62605
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": -3,
+			"chunkZ": -2
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "CHALLENGE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -43.8396,
+								"y": 0.0,
+								"z": -29.390278
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "CHALLENGE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -46.95849,
+								"y": 0.0,
+								"z": -29.272371
 							}
 						}
 					]

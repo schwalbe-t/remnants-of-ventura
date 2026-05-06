@@ -35,7 +35,8 @@ class World(client: Client, info: WorldInfoPacket) {
 
     val player = Player(info.position, info.playerStyle)
     val chunks = ChunkLoader(
-        ChunkLoader.requestChunksFromNetwork(client.network)
+        ChunkLoader.requestChunksFromNetwork(client.network),
+        groundHeight = info.worldInfo.groundHeight
     )
     val state = WorldState()
     val vfx = VisualEffects()

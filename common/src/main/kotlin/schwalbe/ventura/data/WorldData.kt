@@ -27,7 +27,8 @@ class RendererConfig(
 @Serializable
 data class ConstWorldInfo(
     val trackList: TrackList = TrackList.NONE,
-    val rendererConfig: RendererConfig = RendererConfig.DEFAULT
+    val rendererConfig: RendererConfig = RendererConfig.DEFAULT,
+    val groundHeight: Float = 0f
 )
 
 @Serializable
@@ -39,12 +40,12 @@ data class ChunkData(
 )
 
 @Serializable
-data class EnemyPeaceArea(
+data class TileArea(
     val minX: Int, val minZ: Int, val untilX: Int, val untilZ: Int
 ) {
     fun contains(x: Int, z: Int): Boolean =
         this.minX <= x && x < this.untilX &&
-                this.minZ <= z && z < this.untilZ
+        this.minZ <= z && z < this.untilZ
 }
 
 @Serializable
@@ -59,7 +60,9 @@ data class SerializedWorld(
     val info: ConstWorldInfo,
     val groundColor: String,
     val startPosition: SerVector3 = SerVector3(0f, 0f, 0f),
-    val peaceAreas: List<EnemyPeaceArea> = listOf(),
+    val peaceAreas: List<TileArea> = listOf(),
+    val maintenanceAreas: List<TileArea> = listOf(),
+    val challengeAreas: List<TileArea> = listOf(),
     val chunks: Map<ChunkRef, ChunkData> = mapOf(),
 ) {
     companion object {

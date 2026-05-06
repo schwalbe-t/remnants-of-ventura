@@ -33,6 +33,7 @@ fun robotFileEditorScreen(
     val file: Path = SourceFiles.getRobotSourceFile(robotId)
     val editorTitle: String = sharedRobotInfo?.name ?: robotId.toString()
     val editor: CodeEditor? = CodeEditor.openFile(file.toFile(), editorTitle)
+    val toasts = ToastDisplay(client.toasts)
     val screen = PausedScreen(
         client,
         camMode = { w -> CameraModes.playerInRightThird(w.player) },
@@ -63,8 +64,10 @@ fun robotFileEditorScreen(
                 world?.player?.rotateAlong(playerToRobot)
             }
             editor?.update()
+            toasts.update()
         }
     )
+    screen.packets.displayTaggedErrorToasts(toasts)
     screen.screen.add(layer = 0, element = Axis.row()
         .add(66.6.vw, Stack()
             .add(screen.background)
@@ -72,5 +75,6 @@ fun robotFileEditorScreen(
             .add(editor?.root ?: Space())
         )
     )
+    screen.screen.add(layer = 1, element = toasts.root)
     screen.screen
 }

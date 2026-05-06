@@ -31,7 +31,7 @@ class Player(startPos: SerVector3, startStyle: PersonStyle) {
         .smoothed(response = 10f, epsilon = 0.01f)
 
     fun rotateAlong(direction: Vector3fc) {
-        var targetRot = xzVectorAngle(
+        val targetRot = xzVectorAngle(
             Person.BASE_DIR, Vector3f(direction).normalize()
         )
         this.rotation.target += wrapAngle(targetRot - this.rotation.target)
@@ -49,8 +49,9 @@ class Player(startPos: SerVector3, startStyle: PersonStyle) {
     }
 
     private fun move(world: World, client: Client): Boolean {
-        val collidingBefore: ObjectInstance? = world.chunks
-            .findIntersecting(Person.relCollider.translate(this.position))
+        val collidingBefore: Boolean = world.chunks
+            .findAllIntersecting(Person.relCollider.translate(this.position))
+            .any()
         val velocity = Vector3f()
         if (Key.W.isPressed) { velocity.z -= 1f; }
         if (Key.S.isPressed) { velocity.z += 1f; }
@@ -61,14 +62,14 @@ class Player(startPos: SerVector3, startStyle: PersonStyle) {
         velocity.mul(WALK_SPEED).mul(client.deltaTime)
         val newPosX = this.position.add(velocity.x(), 0f, 0f, Vector3f())
         val newPosZ = this.position.add(0f, 0f, velocity.z(), Vector3f())
-        val collidingAfterX: ObjectInstance? = world.chunks
-            .findIntersecting(Person.relCollider.translate(newPosX))
-        val collidingAfterZ: ObjectInstance? = world.chunks
-            .findIntersecting(Person.relCollider.translate(newPosZ))
-        if (collidingAfterX != null && collidingBefore == null) {
+        val collidingAfterX: Boolean = world.chunks
+            .findAllIntersecting(Person.relCollider.translate(newPosX)).any()
+        val collidingAfterZ: Boolean = world.chunks
+            .findAllIntersecting(Person.relCollider.translate(newPosZ)).any()
+        if (collidingAfterX && !collidingBefore) {
             velocity.x = 0f
         }
-        if (collidingAfterZ != null && collidingBefore == null) {
+        if (collidingAfterZ && !collidingBefore) {
             velocity.z = 0f
         }
         if (velocity.lengthSquared() == 0f) { return false }
@@ -97,7 +98,7 @@ class Player(startPos: SerVector3, startStyle: PersonStyle) {
     private fun sendPositionUpdatePacket(client: Client) {
         val now: Long = System.currentTimeMillis()
         if (now < this.nextPacketSendTime) { return }
-        this.nextPacketSendTime = now + Player.PACKET_SEND_INTERVAL_MS
+        this.nextPacketSendTime = now + PACKET_SEND_INTERVAL_MS
         client.network.outPackets?.send(Packet.serialize(
             PacketType.PLAYER_STATE,
             SharedPlayerInfo(
@@ -115,15 +116,16 @@ class Player(startPos: SerVector3, startStyle: PersonStyle) {
     private fun handleWorldChangeColliders(world: World, client: Client) {
         val allowWorldLeaveAfter: Long = this.allowWorldLeaveAfter ?: return
         if (System.currentTimeMillis() <= allowWorldLeaveAfter) { return }
-        val colliding: ObjectInstance? = world.chunks.findIntersecting(
-            Person.relCollider.translate(this.position),
-            includeAll = true
-        )
+        val colliding: Sequence<ObjectInstance>
+            = world.chunks.findAllIntersecting(
+                Person.relCollider.translate(this.position),
+                includeAll = true
+            )
         fun sendPacket(packet: () -> Packet) {
             client.network.outPackets?.send(packet())
             this.allowWorldLeaveAfter = null
         }
-        for (prop in colliding?.props ?: listOf()) when (prop) {
+        for (obj in colliding) for (prop in obj.props) when (prop) {
             is ObjectProp.EnterWorldTrigger -> sendPacket {
                 Packet.serialize(
                     PacketType.REQUEST_WORLD_ENTER,

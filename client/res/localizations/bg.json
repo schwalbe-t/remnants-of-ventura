@@ -139,6 +139,9 @@
         "ERROR_PASSWORD_TOO_SHORT": "Паролата е твърде кратка",
         "ERROR_SERVER_OUTDATED": "Версията на сървъра е твърде стара! Клиент: {CLIENT}, Сървър: {SERVER}",
         "ERROR_CLIENT_OUTDATED": "Версията на клиента е твърде стара! Клиент: {CLIENT}, Сървър: {SERVER}",
+        "ERROR_NO_SPACE_FOR_ROBOT": "Няма място наблизо, за да пуснеш робота.",
+        "ERROR_NOT_IN_MAINTENANCE_AREA": "Роботът не може да бъде поправен тук.",
+        "ERROR_STOPPED_DURING_CHALLENGE": "Роботът беше върнат назад, защото спря.",
 
         "RobotStatus:name/STOPPED": "Спрял",
         "RobotStatus:name/RUNNING": "Работи",

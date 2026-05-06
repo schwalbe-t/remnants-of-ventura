@@ -122,8 +122,14 @@ enum class TaggedErrorPacket {
     // attempt to manipulate robot failed because robot does not exist or is
     // not owned by the calling player
     NOT_ROBOT_OWNER,
+    // could not find location to place robot
+    NO_SPACE_FOR_ROBOT,
     // attempt to repair robot failed because player out of range for repair
     ROBOT_TOO_FAR_AWAY_TO_REPAIR,
+    // robot cannot be repaired because it's not in a maintenance area
+    ROBOT_NOT_IN_MAINTENANCE_AREA,
+    // robot stopped during challenge
+    ROBOT_STOPPED_DURING_CHALLENGE,
     // attempt to change attachment failed because the attachment index is OOB
     ATTACHMENT_IDX_OOB,
     // attempt to change attachment failed due to item not being in inventory

@@ -32,6 +32,7 @@ private class ObjectSelector(
 
 private fun Editor.placeSelectedObject(selectedType: ObjectType) {
     if (!MButton.LEFT.wasPressed) { return }
+    if (Mouse.position.x() < this.window.width / 5) { return }
     val world: LoadedWorld = this.world ?: return
     val position: Vector3f = this
         .mouseInWorld(alignToGrid = Key.LEFT_SHIFT.isPressed)

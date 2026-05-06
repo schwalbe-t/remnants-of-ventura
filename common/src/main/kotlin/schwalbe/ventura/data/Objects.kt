@@ -56,9 +56,43 @@ enum class ObjectType(
         modelPath = "res/objects/nor_gate.glb",
         tileColliderSize = ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
     ),
+    LATCH(
+        modelPath = "res/objects/latch.glb",
+        tileColliderSize = ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
+    ),
     LAMP(
         modelPath = "res/objects/lamp.glb",
         tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
+    ),
+    MAINTENANCE_PILLAR(
+        modelPath = "res/objects/maintenance_pillar.glb",
+        applyColliders = false,
+        tileColliderSize = null
+    ),
+    CHALLENGE_PILLAR(
+        modelPath = "res/objects/challenge_pillar.glb",
+        applyColliders = false,
+        tileColliderSize = null
+    ),
+    SAFE(
+        modelPath = "res/objects/safe.glb",
+        applyColliders = true,
+        tileColliderSize = ObjectTileCollider(0f, 0f, +1f, +1f)
+    ),
+    DUNGEON_WALL(
+        modelPath = "res/objects/dungeon_wall.glb",
+        applyColliders = true,
+        tileColliderSize = ObjectTileCollider(0f, 0f, +5f, +1f)
+    ),
+    DUNGEON_PILLAR(
+        modelPath = "res/objects/dungeon_pillar.glb",
+        applyColliders = true,
+        tileColliderSize = ObjectTileCollider(0f, 0f, +1f, +1f)
+    ),
+    DUNGEON_FLOOR(
+        modelPath = "res/objects/dungeon_floor.glb",
+        applyColliders = false,
+        tileColliderSize = null
     ),
 
     ROCK(
@@ -283,6 +317,23 @@ sealed interface ObjectProp<V> {
                 hair = this.hair
             )
         }
+    }
+
+    @Serializable @SerialName("ITEM_DISPENSER")
+    class ItemDispenser(
+        override val v: Settings
+    ) : ObjectProp<ItemDispenser.Settings> {
+        companion object : PropType<ItemDispenser, Settings>(
+            default = Settings(item = Item(ItemType.BIGTON_1030), count = 1)
+        )
+
+        @Serializable
+        class Settings(
+            val item: Item,
+            val count: Int,
+            val givenTo: MutableSet<String> = mutableSetOf(),
+            val dist: Float = 4f
+        )
     }
 
 }

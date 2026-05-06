@@ -17,6 +17,7 @@ class LoadedWorld(val path: Path) {
     var lastModified: Long? = null
     val chunkLoader = ChunkLoader(
         requestChunks = this::loadChunks,
+        groundHeight = this.world.info.groundHeight,
         loadRadius = 5,
         renderRadius = 5
     )

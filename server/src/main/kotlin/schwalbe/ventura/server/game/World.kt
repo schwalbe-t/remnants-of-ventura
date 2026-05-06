@@ -70,6 +70,7 @@ class World(
         val playerPosition = player.data.worlds.last().state.position
         for (robot in player.data.deployedRobots.values) {
             val newPos = PlayerRobot.allocatePosition(playerPosition, this)
+                ?: playerPosition
             robot.resetPosition(newPos)
         }
     }
@@ -149,6 +150,30 @@ class World(
         )
         val item = GroundItem(pos, item, count, ownerName)
         this.groundItems[item.id] = item
+    }
+
+    private val dispensers: List<ObjectInstance>
+        = this.static.world.chunks.flatMap {
+            it.value.instances.filter { o -> ObjectProp.ItemDispenser in o }
+        }
+
+    @Synchronized
+    private fun updateItemDispensers() {
+        for (dispenser in this.dispensers) {
+            val dPos = dispenser[ObjectProp.Position]
+            val s = dispenser[ObjectProp.ItemDispenser]
+            for (player in this.players.values) {
+                if (player.username in s.givenTo) { continue }
+                val plPos = player.data.worlds.last().state.position
+                val dist = maxOf(abs(plPos.x - dPos.x), abs(plPos.z - dPos.z))
+                if (dist > s.dist) { continue }
+                val angle: Float = (Math.random() * 2 * PI).toFloat()
+                val itemPos
+                    = SerVector3(dPos.x + cos(angle), 0f, dPos.z + sin(angle))
+                this.spawnItem(itemPos, s.item, s.count, player.username)
+                s.givenTo.add(player.username)
+            }
+        }
     }
 
     @Synchronized
@@ -239,6 +264,7 @@ class World(
         for (player in this.players.values) {
             player.updateState(this)
         }
+        this.updateItemDispensers()
         this.updateEnemyRobots()
         this.updateGroundItems()
         this.triggerables.update(this)
@@ -418,17 +444,28 @@ class World(
                 ))
                 return@onPacket
             }
+            val playerPosition = pl.data.worlds.last().state.position
+            val robotPosition = PlayerRobot.allocatePosition(
+                center = playerPosition, this,
+                tileIsOccupied = { x, z ->
+                    val notInArea = this.static.world
+                        .maintenanceAreas.none { it.contains(x, z) }
+                    notInArea || this.tileIsOccupied(x, z)
+                }
+            )
+            if (robotPosition == null) {
+                return@onPacket pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.TAGGED_ERROR,
+                    TaggedErrorPacket.NO_SPACE_FOR_ROBOT
+                ))
+            }
             val wasRemoved: Boolean = pl.data.inventory.tryRemove(d.item)
             if (!wasRemoved) {
-                pl.connection.outgoing.send(Packet.serialize(
+                return@onPacket pl.connection.outgoing.send(Packet.serialize(
                     PacketType.TAGGED_ERROR,
                     TaggedErrorPacket.REQUESTED_ROBOT_NOT_IN_INVENTORY
                 ))
-                return@onPacket
             }
-            val playerPosition = pl.data.worlds.last().state.position
-            val robotPosition = PlayerRobot
-                .allocatePosition(center = playerPosition, this)
             val robot = PlayerRobot(d.robotType, d.item, robotPosition)
             pl.data.deployedRobots[robot.id] = robot
             pl.connection.outgoing.send(Packet.serialize(
@@ -463,6 +500,14 @@ class World(
                 return@onPacket pl.connection.outgoing.send(Packet.serialize(
                     PacketType.TAGGED_ERROR,
                     TaggedErrorPacket.ROBOT_TOO_FAR_AWAY_TO_REPAIR
+                ))
+            }
+            val inArea = this.static.world
+                .maintenanceAreas.any { it.contains(robot.tileX, robot.tileZ) }
+            if (!inArea) {
+                return@onPacket pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.TAGGED_ERROR,
+                    TaggedErrorPacket.ROBOT_NOT_IN_MAINTENANCE_AREA
                 ))
             }
             robot.health = robot.type.maxHealth

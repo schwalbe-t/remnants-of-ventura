@@ -139,6 +139,9 @@
         "ERROR_PASSWORD_TOO_SHORT": "Passwort zu kurz",
         "ERROR_SERVER_OUTDATED": "Serverversion ist zu alt! Client: {CLIENT}, Server: {SERVER}",
         "ERROR_CLIENT_OUTDATED": "Clientversion ist zu alt! Client: {CLIENT}, Server: {SERVER}",
+        "ERROR_NO_SPACE_FOR_ROBOT": "In der Nähe ist kein Platz zum Aufstellen deines Roboters.",
+        "ERROR_NOT_IN_MAINTENANCE_AREA": "Dein Roboter kann hier nicht repariert werden.",
+        "ERROR_STOPPED_DURING_CHALLENGE": "Dein Roboter wurde zurückgesetzt, da er angehalten wurde.",
 
         "RobotStatus:name/STOPPED": "Gestoppt",
         "RobotStatus:name/RUNNING": "Läuft",

@@ -2,8 +2,6 @@
 package schwalbe.ventura.server.game
 import schwalbe.ventura.data.*
 import schwalbe.ventura.utils.SerVector3
-import org.joml.Matrix4f
-import org.joml.Matrix4fc
 
 private fun SerializedWorld.triggerables(): Sequence<ObjectInstance> {
     val world: SerializedWorld = this
@@ -69,6 +67,7 @@ class Triggerables(
             ObjectType.OR_GATE to OR_GATE_BEHAVIOR,
             ObjectType.NAND_GATE to NAND_GATE_BEHAVIOR,
             ObjectType.NOR_GATE to NOR_GATE_BEHAVIOR,
+            ObjectType.LATCH to LATCH_BEHAVIOR,
             ObjectType.LAMP to LAMP_BEHAVIOR
         )
     }
@@ -137,11 +136,7 @@ private val BUTTON_BEHAVIOR = baseBehavior { world ->
         buttonPos.z - buttonRadius <= this.z &&
         this.z <= buttonPos.z + buttonRadius
     world.players.values.any { pl ->
-        val byPlayer = pl.data.worlds.last().state
-            .position.isOnButton()
-        val byRobot = pl.data
-            .deployedRobots.values.any { it.position.isOnButton() }
-        byPlayer || byRobot
+        pl.data.deployedRobots.values.any { it.position.isOnButton() }
     }
 }
 
@@ -156,6 +151,11 @@ private val NAND_GATE_BEHAVIOR
 
 private val NOR_GATE_BEHAVIOR
     = chainedBehavior { _, inputs -> inputs.values.none { it } }
+
+private val LATCH_BEHAVIOR
+    = chainedBehavior { _, inputs ->
+        this.isTriggered || inputs.values.any { it }
+    }
 
 private val LAMP_BEHAVIOR
     = chainedBehavior { _, inputs -> inputs.values.any { it } }

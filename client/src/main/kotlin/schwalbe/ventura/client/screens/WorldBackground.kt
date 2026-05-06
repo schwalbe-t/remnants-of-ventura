@@ -33,7 +33,10 @@ class WorldBackground(
     }
 
     val renderer = Renderer(this.client.out3d, camera = this.displayed.camera)
-    val chunkLoader = ChunkLoader(this::requestChunks)
+    val chunkLoader = ChunkLoader(
+        this::requestChunks,
+        groundHeight = displayed.world.info.groundHeight
+    )
     val objectState = object : ObjectStateProvider {
         override fun isTriggered(obj: ObjectInstance)
             = obj[ObjectProp.Triggerable] in displayed.triggered

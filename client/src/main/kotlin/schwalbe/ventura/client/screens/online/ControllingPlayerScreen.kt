@@ -107,6 +107,7 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
     val robotStatus = RobotStatusDisplayManager()
     val chat = ChatBox(client)
     val keybinds = KeybindDisplay(defineKeybinds(client))
+    val toasts = ToastDisplay(client.toasts)
     fun advancedEditing(): Boolean
         = client.config.settings.advancedEditingEnabled
     val screen = GameScreen(
@@ -170,6 +171,7 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             }
             chat.update()
             keybinds.update(client.config.settings.showControls)
+            toasts.update()
         },
         networkState = keepNetworkConnectionAlive(client, onFail = { reason ->
             client.nav.replace(serverConnectionFailedScreen(reason, client))
@@ -179,7 +181,8 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             .addErrorLogging()
             .addWorldHandling(client)
             .updateStoredSources(client)
-            .addChatMessageHandling(client),
+            .addChatMessageHandling(client)
+            .displayTaggedErrorToasts(toasts),
         navigator = client.nav
     )
     chat.handleChatMessages(screen.packets!!)
@@ -189,6 +192,7 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
         .pad(2.5.vmin)
     )
     screen.add(layer = 3, element = keybinds.createRootMount())
+    screen.add(layer = 4, element = toasts.root)
     screen
 }
 
