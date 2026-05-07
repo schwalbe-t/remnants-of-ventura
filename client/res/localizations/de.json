@@ -83,6 +83,13 @@
         "TITLE_INVENTORY": "Inventar",
         "PLACEHOLDER_INVENTORY_EMPTY": "Dein Inventar ist leer.",
 
+        "TITLE_PURCHASE": "Kauf",
+        "BUTTON_PURCHASE": "„{NAME}“ ×{COUNT} für {PRICE}¢ kaufen",
+        "TOAST_PURCHASE_SUCCESSFUL": "Gegenstand erfolgreich gekauft!",
+        "TITLE_SELL": "Verkauf",
+        "BUTTON_SELL": "„{NAME}“ ×1 für {REWARD}¢ verkaufen",
+        "TOAST_SALE_SUCCESSFUL": "Gegenstand erfolgreich verkauft!",
+
         "LABEL_ROBOT_STAT_HEALTH": "Leben:",
         "LABEL_ROBOT_STAT_MEMORY": "RAM:",
         "LABEL_ROBOT_STAT_PROCESSOR": "CPU:",
@@ -142,6 +149,8 @@
         "ERROR_NO_SPACE_FOR_ROBOT": "In der Nähe ist kein Platz zum Aufstellen deines Roboters.",
         "ERROR_NOT_IN_MAINTENANCE_AREA": "Dein Roboter kann hier nicht repariert werden.",
         "ERROR_STOPPED_DURING_CHALLENGE": "Dein Roboter wurde zurückgesetzt, da er angehalten wurde.",
+        "ERROR_NOT_ENOUGH_COINS": "Du hast nicht genug Geld für diesen Kauf.",
+        "ERROR_SOLD_ITEM_NOT_IN_INVENTORY": "Du besitzt diesen Gegenstand momentan nicht.",
 
         "RobotStatus:name/STOPPED": "Gestoppt",
         "RobotStatus:name/RUNNING": "Läuft",

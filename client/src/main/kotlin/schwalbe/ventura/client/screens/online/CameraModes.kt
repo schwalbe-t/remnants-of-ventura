@@ -41,12 +41,22 @@ object CameraModes {
         distance = { _ -> 10f }
     )
 
-    fun characterCentered(character: ObjectInstance) = CameraController.Mode(
+    fun characterCentered(char: ObjectInstance) = CameraController.Mode(
         lookAt = { _ -> Vector3f()
-            .add(character[ObjectProp.Position].toVector3f())
+            .add(char[ObjectProp.Position].toVector3f())
             .add(0f, +1.25f, 0f)
         },
         fovDegrees = 15f,
+        distance = { _ -> 10f }
+    )
+
+    fun characterInRightThird(char: ObjectInstance) = CameraController.Mode(
+        lookAt = { _ -> Vector3f()
+            .add(char[ObjectProp.Position].toVector3f())
+            .add(0f, +1.25f, 0f)
+        },
+        fovDegrees = 15f,
+        offsetAngleX = { _, hh, _ -> atan(tan(hh) * -2f/3f) },
         distance = { _ -> 10f }
     )
 

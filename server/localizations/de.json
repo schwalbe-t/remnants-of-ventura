@@ -1,0 +1,29 @@
+{
+    "dialogue": {
+        "merchant_greeting_1": [
+            {
+                "name": "Händler",
+                "lines": [
+                    "Was gibt's? Suchst du nach etwas Bestimmtem?",
+                    "@OPEN_SHOP:test"
+                ]
+            }
+        ],
+        "merchant_greeting_2": [
+            {
+                "name": "Händler",
+                "lines": [
+                    "Wenn du was brauchst, rück damit raus. Ansonsten hör auf, meine Zeit zu verschwenden.",
+                    "Warum bist du immer noch hier?"
+                ]
+            },
+            {
+                "name": "Verärgerter Händler",
+                "lines": [
+                    "Du fängst an, mich zu nerven. Wirst du jetzt was kaufen?",
+                    "@OPEN_SHOP:test"
+                ]
+            }
+        ]
+    }
+}

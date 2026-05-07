@@ -5,7 +5,8 @@
             {
                 "name": "Merchant",
                 "lines": [
-                    "What's up? Are you looking for something?"
+                    "What's up? Are you looking for something?",
+                    "@OPEN_SHOP:test"
                 ]
             }
         ],
@@ -20,8 +21,8 @@
             {
                 "name": "Annoyed Merchant",
                 "lines": [
-                    "You are starting to annoy me.",
-                    "Just go."
+                    "You are starting to annoy me. Are you gonna buy something?",
+                    "@OPEN_SHOP:test"
                 ]
             }
         ]

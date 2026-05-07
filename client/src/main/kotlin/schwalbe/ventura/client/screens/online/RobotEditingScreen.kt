@@ -428,14 +428,19 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
     resetRhs()
     fun onSetAttachment(onItemSelected: (Item?) -> Unit) {
         rhs.disposeAll()
-        val itemList = createItemListSection(
-            screen.packets,
-            displayedEntries = { i, _ -> i.type.category.isRobotAttachment },
-            onItemSelect = { i, _ ->
-                onItemSelected(i)
-                resetRhs()
-            }
-        )
+        val itemList = Stack()
+        screen.packets.onPacketUntil(
+            PacketType.INVENTORY_CONTENTS, itemList::wasDisposed
+        ) { i, _ ->
+            itemList.disposeAll().add(createItemListSection(
+                itemCounts = i.itemCounts,
+                displayedEntries = { i, _ -> i.type.category.isRobotAttachment },
+                onItemSelect = { i, _ ->
+                    onItemSelected(i)
+                    resetRhs()
+                }
+            ))
+        }
         rhs.add(itemList
             .withBottomButton(l[BUTTON_REMOVE_ITEM]) {
                 onItemSelected(null)

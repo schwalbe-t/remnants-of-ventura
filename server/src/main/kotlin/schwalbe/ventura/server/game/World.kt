@@ -8,7 +8,6 @@ import schwalbe.ventura.server.persistence.serialize
 import schwalbe.ventura.utils.GroundColorReader
 import schwalbe.ventura.utils.SerVector3
 import schwalbe.ventura.utils.insideSquareRadiusXZ
-import schwalbe.ventura.utils.toVector3f
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.PI
 import kotlin.math.abs
@@ -289,6 +288,7 @@ class World(
                 .filterValues { insideSquareRadiusXZ(it.position, observer, r) }
             return WorldStatePacket(
                 relTimestamp = now - pl.connection.connectedSince,
+                numCoins = pl.data.purse.numCoins,
                 fPlayerStates, fRobotStates, ownedRobots, fGroundItems,
                 triggeredObjects
             )
@@ -386,6 +386,61 @@ class World(
             pl.connection.outgoing.send(Packet.serialize(
                 PacketType.INVENTORY_CONTENTS,
                 InventoryContentsPacket(pl.data.inventory.itemCounts)
+            ))
+        }
+        ph.onPacket(PacketType.REQUEST_TRADES) { listName, pl ->
+            val trades: List<Trade> = this.registry.services.trades
+                .trades[listName]
+                ?: return@onPacket pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.TAGGED_ERROR,
+                    TaggedErrorPacket.REQUESTED_UNKNOWN_TRADE
+                ))
+            pl.connection.outgoing.send(Packet.serialize(
+                PacketType.AVAILABLE_TRADES,
+                AvailableTradesPacket(listName, trades)
+            ))
+        }
+        ph.onPacket(PacketType.EXECUTE_TRADE) { request, pl ->
+            val trade: Trade = this.registry.services.trades
+                .trades[request.name]
+                ?.getOrNull(request.tradeIdx)
+                ?: return@onPacket pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.TAGGED_ERROR,
+                    TaggedErrorPacket.REQUESTED_UNKNOWN_TRADE
+                ))
+            if (!pl.data.purse.tryRemoveCoins(trade.price)) {
+                return@onPacket pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.TAGGED_ERROR,
+                    TaggedErrorPacket.NOT_ENOUGH_COINS
+                ))
+            }
+            pl.data.inventory.add(trade.item, trade.count)
+            pl.connection.outgoing.send(Packet.serialize(
+                PacketType.TRADE_COMPLETED, Unit
+            ))
+        }
+        ph.onPacket(PacketType.REQUEST_PAWNS) { _, pl ->
+            pl.connection.outgoing.send(Packet.serialize(
+                PacketType.AVAILABLE_PAWNS,
+                this.registry.services.trades.pawns
+            ))
+        }
+        ph.onPacket(PacketType.EXECUTE_PAWN) { soldItem, pl ->
+            val reward: Int = this.registry.services.trades
+                .pawns[soldItem.type]
+                ?: return@onPacket pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.TAGGED_ERROR,
+                    TaggedErrorPacket.REQUESTED_UNKNOWN_TRADE
+                ))
+            if (!pl.data.inventory.tryRemove(soldItem, count = 1)) {
+                return@onPacket pl.connection.outgoing.send(Packet.serialize(
+                    PacketType.TAGGED_ERROR,
+                    TaggedErrorPacket.SOLD_ITEM_NOT_IN_INVENTORY
+                ))
+            }
+            pl.data.purse.addCoins(reward)
+            pl.connection.outgoing.send(Packet.serialize(
+                PacketType.PAWN_COMPLETED, Unit
             ))
         }
 

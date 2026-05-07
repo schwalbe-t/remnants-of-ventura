@@ -83,6 +83,13 @@
         "TITLE_INVENTORY": "Инвентар",
         "PLACEHOLDER_INVENTORY_EMPTY": "Инвентарът е празен.",
 
+        "TITLE_PURCHASE": "Покупка",
+        "BUTTON_PURCHASE": "Купи „{NAME}“ ×{COUNT} за {PRICE}¢",
+        "TOAST_PURCHASE_SUCCESSFUL": "Предметът е закупен успешно!",
+        "TITLE_SELL": "Продажба",
+        "BUTTON_SELL": "Продай „{NAME}“ ×1 за {REWARD}¢",
+        "TOAST_SALE_SUCCESSFUL": "Предметът е продаден успешно!",
+
         "LABEL_ROBOT_STAT_HEALTH": "Живот:",
         "LABEL_ROBOT_STAT_MEMORY": "Памет:",
         "LABEL_ROBOT_STAT_PROCESSOR": "Процесор:",
@@ -142,6 +149,8 @@
         "ERROR_NO_SPACE_FOR_ROBOT": "Няма място наблизо, за да пуснеш робота.",
         "ERROR_NOT_IN_MAINTENANCE_AREA": "Роботът не може да бъде поправен тук.",
         "ERROR_STOPPED_DURING_CHALLENGE": "Роботът беше върнат назад, защото спря.",
+        "ERROR_NOT_ENOUGH_COINS": "Нямаш достатъчно пари за тази покупка.",
+        "ERROR_SOLD_ITEM_NOT_IN_INVENTORY": "В момента не притежаваш този предмет.",
 
         "RobotStatus:name/STOPPED": "Спрял",
         "RobotStatus:name/RUNNING": "Работи",

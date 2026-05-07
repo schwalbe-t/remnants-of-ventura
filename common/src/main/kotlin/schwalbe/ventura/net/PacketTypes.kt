@@ -51,6 +51,14 @@ data class PacketType<P>(
 
     val REQUEST_INVENTORY_CONTENTS  = up<Unit>()
     val INVENTORY_CONTENTS          = down<InventoryContentsPacket>()
+    val REQUEST_TRADES              = up<String>()
+    val AVAILABLE_TRADES            = down<AvailableTradesPacket>()
+    val EXECUTE_TRADE               = up<TradeExecutionPacket>()
+    val TRADE_COMPLETED             = down<Unit>()
+    val REQUEST_PAWNS               = up<Unit>()
+    val AVAILABLE_PAWNS             = down<Map<ItemType, Int>>()
+    val EXECUTE_PAWN                = up<Item>()
+    val PAWN_COMPLETED              = down<Unit>()
 
     val UPLOAD_SOURCE_CONTENT       = up<UploadSourceContentsPacket>()
     val SOURCE_CONTENT_RECEIVED     = down<Unit>()
@@ -107,6 +115,13 @@ enum class TaggedErrorPacket {
     REQUESTED_WORLD_DOES_NOT_EXIST,
     // player is too deep on the world stack
     PLAYER_INSIDE_TOO_MANY_WORLDS,
+
+    // requested trade(s) don't exist
+    REQUESTED_UNKNOWN_TRADE,
+    // player doesn't have enough coins
+    NOT_ENOUGH_COINS,
+    // player can't give away item he doesn't have
+    SOLD_ITEM_NOT_IN_INVENTORY,
 
     // too many source files
     TOO_MANY_PLAYER_SOURCE_FILES,
@@ -227,6 +242,7 @@ data class PrivateRobotInfo(
 @Serializable
 data class WorldStatePacket(
     val relTimestamp: Long,
+    val numCoins: Int,
     val players: Map<String, SharedPlayerInfo>,
     val allRobots: Map<Uuid, SharedRobotInfo>,
     val ownedRobots: Map<Uuid, PrivateRobotInfo>,
@@ -243,6 +259,12 @@ data class VisualEffectPacket(
 
 @Serializable
 data class InventoryContentsPacket(val itemCounts: Map<Item, Int>)
+
+@Serializable
+data class AvailableTradesPacket(val name: String, val trades: List<Trade>)
+
+@Serializable
+data class TradeExecutionPacket(val name: String, val tradeIdx: Int)
 
 
 @Serializable

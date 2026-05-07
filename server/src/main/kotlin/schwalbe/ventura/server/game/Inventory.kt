@@ -1,8 +1,8 @@
 
 package schwalbe.ventura.server.game
 
-import kotlinx.serialization.Serializable
 import schwalbe.ventura.data.Item
+import kotlinx.serialization.Serializable
 import kotlin.collections.MutableMap
 
 @Serializable

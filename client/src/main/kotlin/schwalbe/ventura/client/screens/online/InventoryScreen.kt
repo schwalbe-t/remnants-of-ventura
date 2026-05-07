@@ -74,47 +74,43 @@ fun addInventoryItem(
     items.add(1.vmin, Space())
 }
 
+fun createInventoryTitle(): UiElement = Text()
+    .withText(localized()[TITLE_INVENTORY])
+    .withFont(googleSansSb())
+    .withSize(75.ph)
+    .pad(2.5.vmin)
+
 fun createItemListSection(
-    packetHandler: PacketHandler<Unit>,
+    title: UiElement = createInventoryTitle(),
+    itemCounts: Map<Item, Int>,
+    placeholder: LocalKeys? = PLACEHOLDER_INVENTORY_EMPTY,
     displayedEntries: (Item, Int) -> Boolean = { _, _ -> true },
-    onInventoryReceived: ((Item?) -> Int) -> Unit = {},
     onItemSelect: (Item, Int) -> Unit
 ): UiElement {
     val l = localized()
     val itemList = Axis.column()
-    packetHandler.onPacketUntil(
-        PacketType.INVENTORY_CONTENTS, until = itemList::wasDisposed
-    ) { i, _ ->
-        itemList.disposeAll()
-        val itemCounts = i.itemCounts.asSequence()
-            .filter { (_, c) -> c > 0 }
-            .filter { (i, c) -> displayedEntries(i, c) }
-            .sortedBy { (i, _) -> l[i.type.localNameKey] }
-        var isEmpty = true
-        for ((item, count) in itemCounts) {
-            isEmpty = false
-            addInventoryItem(itemList, item, count) {
-                onItemSelect(item, count)
-            }
+    val itemCounts = itemCounts.asSequence()
+        .filter { (_, c) -> c > 0 }
+        .filter { (i, c) -> displayedEntries(i, c) }
+        .sortedBy { (i, _) -> l[i.type.localNameKey] }
+    var isEmpty = true
+    for ((item, count) in itemCounts) {
+        isEmpty = false
+        addInventoryItem(itemList, item, count) {
+            onItemSelect(item, count)
         }
-        if (isEmpty) {
-            itemList.add(10.vmin, Text()
-                .withText(l[PLACEHOLDER_INVENTORY_EMPTY])
-                .withSize(1.5.vmin)
-                .withFont(googleSansI())
-                .pad(left = 2.5.vmin, right = 2.5.vmin)
-            )
-        }
-        itemList.add(50.ph, Space())
-        onInventoryReceived { item -> i.itemCounts[item] ?: 0 }
     }
-    return Axis.column()
-        .add(8.vmin, Text()
-            .withText(l[TITLE_INVENTORY])
-            .withFont(googleSansSb())
-            .withSize(75.ph)
-            .pad(2.5.vmin)
+    if (isEmpty && placeholder != null) {
+        itemList.add(10.vmin, Text()
+            .withText(l[placeholder])
+            .withSize(1.5.vmin)
+            .withFont(googleSansI())
+            .pad(left = 2.5.vmin, right = 2.5.vmin)
         )
+    }
+    itemList.add(50.ph, Space())
+    return Axis.column()
+        .add(8.vmin, title)
         .add(100.ph - 8.vmin, itemList.wrapThemedScrolling(horiz = false))
         .pad(bottom = 1.vmin)
 }
@@ -125,7 +121,7 @@ fun requestInventoryContents(client: Client) {
     ))
 }
 
-private fun createInventoryItemActionButton(
+fun createInventoryItemActionButton(
     content: String, handler: () -> Unit
 ): UiElement = Stack()
     .add(FlatBackground()
@@ -141,20 +137,18 @@ private fun createInventoryItemActionButton(
     .add(ClickArea().withLeftHandler(handler))
     .wrapBorderRadius(0.75.vmin)
 
-private fun createSelectedItemSection(
+fun createSelectedItemSection(
     item: Item, count: Int, itemDisplay: MsaaRenderDisplay,
-    onItemAction: (ItemAction) -> Unit
+    itemActions: List<Pair<String, () -> Unit>>
 ): Axis {
     val l = localized()
     val actionButtons = Axis.row()
-    val numActions: Int = item.type.category.actions.size
-    val paddingSum: UiSize = (numActions + 1) * 1.vmin
-    val buttonSize: UiSize = (100.pw - paddingSum) / numActions
-    for (action in item.type.category.actions) {
+    val paddingSum: UiSize = (itemActions.size + 1) * 1.vmin
+    val buttonSize: UiSize = (100.pw - paddingSum) / itemActions.size
+    for ((actionName, actionHandler) in itemActions) {
         actionButtons.add(1.vmin, Space())
         actionButtons.add(buttonSize, createInventoryItemActionButton(
-            content = l[action.localNameKey],
-            handler = { onItemAction(action) }
+            content = actionName, handler = actionHandler
         ))
     }
     actionButtons.add(1.vmin, Space())
@@ -213,31 +207,34 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
             msaaSamples = 4,
             fixedAngle = null // null = rotates over time
         )
-        selectedItemSection.add(createSelectedItemSection(
-            item, count, selectedItemDisplay,
-            onItemAction = onAction@{ action ->
-                val handler = ITEM_ACTION_HANDLERS[action] ?: return@onAction
-                handler(item, client)
+        val itemActions = item.type.category.actions.map {
+            localized()[it.localNameKey] to {
+                ITEM_ACTION_HANDLERS[it]?.invoke(item, client)
                 afterAction()
             }
+        }
+        selectedItemSection.add(createSelectedItemSection(
+            item, count, selectedItemDisplay, itemActions
         ))
     }
     var selectedItem: Item? = null
     fun afterItemAction(): Unit = requestInventoryContents(client)
-    val itemListSection = createItemListSection(
-        screen.packets,
-        onInventoryReceived = { countOf ->
-            renderSelectedItemSection(
-                selectedItem, countOf(selectedItem), ::afterItemAction
-            )
-        },
-        onItemSelect = { item, count ->
-            selectedItem = item
-            renderSelectedItemSection(
-                item, count, ::afterItemAction
-            )
-        },
-    )
+    val itemListSection = Stack()
+    screen.screen.packets?.onPacket(PacketType.INVENTORY_CONTENTS) { i, _ ->
+        itemListSection.disposeAll()
+        itemListSection.add(createItemListSection(
+            itemCounts = i.itemCounts,
+            onItemSelect = { item, count ->
+                selectedItem = item
+                renderSelectedItemSection(
+                    item, count, ::afterItemAction
+                )
+            },
+        ))
+        renderSelectedItemSection(
+            selectedItem, i.itemCounts[selectedItem] ?: 0, ::afterItemAction
+        )
+    }
     requestInventoryContents(client)
     screen.screen.add(layer = 0, element = Axis.row()
         .add(fpw * (2f/3f), Stack()

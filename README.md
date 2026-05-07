@@ -54,6 +54,7 @@ The server can be configured using the following environmental variables:
 - `VENTURA_MAIN_WORLD_NAME` - Name of the main world (defaults to `main`)
 - `VENTURA_LOCALIZATIONS_DIR` - Directory path containing the localization files (defaults to `localizations`)
 - `VENTURA_FALLBACK_LOCALE` - Language to use when the client requests localized text that doesn't exist in the requested language (defaults to `en`)
+- `VENTURA_TRADES_FILE` - Path to the JSON file defining the set of available trades (defaults to `trades.json`)
 - `VENTURA_DB_URL` - Url of the database (defaults to `jdbc:postgresql://localhost:5432/ventura`)
 - `VENTURA_DB_USER` - Username in the database (defaults to `ventura`)
 - `VENTURA_DB_PASS` - Password for the database **(has no default)**

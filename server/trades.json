@@ -1,0 +1,30 @@
+{
+    "trades": {
+        "test": [
+            {
+                "item": {
+                    "type": "BIGTON_1030"
+                },
+                "price": 100
+            },
+            {
+                "item": {
+                    "type": "BIGTON_2050"
+                },
+                "price": 500
+            },
+            {
+                "item": {
+                    "type": "DIGITAL_RADIO"
+                },
+                "count": 2,
+                "price": 300
+            }
+        ]
+    },
+    "pawns": {
+        "BIGTON_1030": 50,
+        "BIGTON_2050": 200,
+        "DIGITAL_RADIO": 75
+    }
+}

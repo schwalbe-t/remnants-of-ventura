@@ -89,7 +89,11 @@ val TAGGED_ERROR_TOASTS: Map<TaggedErrorPacket, LocalKeys> = mapOf(
     TaggedErrorPacket.ROBOT_NOT_IN_MAINTENANCE_AREA
         to ERROR_NOT_IN_MAINTENANCE_AREA,
     TaggedErrorPacket.ROBOT_STOPPED_DURING_CHALLENGE
-        to ERROR_STOPPED_DURING_CHALLENGE
+        to ERROR_STOPPED_DURING_CHALLENGE,
+    TaggedErrorPacket.NOT_ENOUGH_COINS
+        to ERROR_NOT_ENOUGH_COINS,
+    TaggedErrorPacket.SOLD_ITEM_NOT_IN_INVENTORY
+        to ERROR_SOLD_ITEM_NOT_IN_INVENTORY
 )
 
 fun PacketHandler<Unit>.displayTaggedErrorToasts(

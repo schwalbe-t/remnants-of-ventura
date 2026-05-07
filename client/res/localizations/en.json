@@ -83,6 +83,13 @@
         "TITLE_INVENTORY": "Inventory",
         "PLACEHOLDER_INVENTORY_EMPTY": "Your inventory is empty.",
 
+        "TITLE_PURCHASE": "Purchase",
+        "BUTTON_PURCHASE": "Purchase \"{NAME}\" ×{COUNT} for {PRICE}¢",
+        "TOAST_PURCHASE_SUCCESSFUL": "Purchased item successfully!",
+        "TITLE_SELL": "Sell",
+        "BUTTON_SELL": "Sell \"{NAME}\" ×1 for {REWARD}¢",
+        "TOAST_SALE_SUCCESSFUL": "Sold item successfully!",
+
         "LABEL_ROBOT_STAT_HEALTH": "Health:",
         "LABEL_ROBOT_STAT_MEMORY": "Memory:",
         "LABEL_ROBOT_STAT_PROCESSOR": "Processor:",
@@ -142,6 +149,8 @@
         "ERROR_NO_SPACE_FOR_ROBOT": "There is no space to deploy your robot nearby.",
         "ERROR_NOT_IN_MAINTENANCE_AREA": "Your robot cannot be repaired here.",
         "ERROR_STOPPED_DURING_CHALLENGE": "Your robot has been moved back because it has stopped.",
+        "ERROR_NOT_ENOUGH_COINS": "You do not have enough money for this purchase.",
+        "ERROR_SOLD_ITEM_NOT_IN_INVENTORY": "You currently do not own this item.",
 
         "RobotStatus:name/STOPPED": "Stopped",
         "RobotStatus:name/RUNNING": "Running",

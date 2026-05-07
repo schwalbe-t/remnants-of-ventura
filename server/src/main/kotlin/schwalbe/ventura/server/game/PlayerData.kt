@@ -48,6 +48,7 @@ private fun generatePlayerStyle(): PersonStyle {
 data class PlayerData(
     val worlds: MutableList<WorldEntry> = mutableListOf(),
     val inventory: Inventory = Inventory(),
+    var purse: Purse = Purse(),
     val deployedRobots: MutableMap<Uuid, PlayerRobot> = mutableMapOf(),
     val sourceFiles: SourceFiles = SourceFiles(),
     var style: PersonStyle = generatePlayerStyle()
@@ -98,6 +99,7 @@ fun PlayerData.Companion.createStartingData(
             Item(ItemType.LONG_RANGE_RADAR, null) to 99999,
             Item(ItemType.LASER, null) to 99999
         )),
+        purse = Purse(numCoins = 500),
         style = style
     )
 }

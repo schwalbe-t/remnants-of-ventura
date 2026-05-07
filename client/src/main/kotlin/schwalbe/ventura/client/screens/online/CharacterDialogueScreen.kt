@@ -21,6 +21,8 @@ import schwalbe.ventura.net.PacketHandler
 import schwalbe.ventura.net.PacketType
 import schwalbe.ventura.utils.toVector3f
 
+const val OPEN_SHOP: String = "@OPEN_SHOP:"
+
 fun characterDialogueScreen(
     client: Client, character: ObjectInstance
 ): () -> GameScreen = {
@@ -49,7 +51,13 @@ fun characterDialogueScreen(
             if (onShowNextSection()) { onShowNextLine() }
             return
         }
-        currentLine.withText(line)
+        when {
+            line.startsWith(OPEN_SHOP) -> {
+                val shopName: String = line.substring(OPEN_SHOP.length)
+                client.nav.replace(shopScreen(client, character, shopName))
+            }
+            else -> currentLine.withText(line)
+        }
     }
     fun onDialogueReceived(dialogue: List<RemoteLocalization.Dialogue>) {
         nextSections.clear()

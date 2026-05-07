@@ -8,6 +8,8 @@ import schwalbe.ventura.server.game.WorldRegistry
 import schwalbe.ventura.server.game.StaticWorldData
 import schwalbe.ventura.server.persistence.*
 import schwalbe.ventura.utils.GroundColorReader
+import schwalbe.ventura.server.game.Trades
+import schwalbe.ventura.server.game.readFile
 import kotlinx.coroutines.*
 import kotlinx.datetime.*
 import kotlin.concurrent.thread
@@ -48,6 +50,9 @@ fun getLocalizationsDir(): String = System.getenv("VENTURA_LOCALIZATIONS_DIR")
 fun getFallbackLocale(): String = System.getenv("VENTURA_FALLBACK_LOCALE")
     ?: "en"
 
+fun getTradesFile(): String = System.getenv("VENTURA_TRADES_FILE")
+    ?: "trades.json"
+
 private fun scheduled(interval: Duration, f: () -> Unit) {
     thread {
         while (true) {
@@ -63,13 +68,12 @@ private fun scheduled(interval: Duration, f: () -> Unit) {
 }
 
 class Services(
-    val localizations: Localizations
+    val localizations: Localizations,
+    val trades: Trades
 ) {
     val playerWriter = PlayerWriter()
     val compilationQueue = CompilationQueue()
 }
-
-
 
 fun loadWorlds(dirPath: Path): Map<String, StaticWorldData> {
     val loaded = mutableMapOf<String, StaticWorldData>()
@@ -98,8 +102,9 @@ fun main() {
 
     val localizations = Localizations
         .readDirectory(Path.of(getLocalizationsDir()), getFallbackLocale())
+    val trades = Trades.readFile(Path.of(getTradesFile()))
 
-    val services = Services(localizations)
+    val services = Services(localizations, trades)
     val worlds = WorldRegistry(services, getMainWorldName())
     worldData.forEach { (name, data) -> worlds.add(name, data) }
 
