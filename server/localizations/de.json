@@ -66,6 +66,35 @@
                     "Vielleicht lässt sich das mit einer Schleife kombinieren?"
                 ]
             }
+        ],
+
+        "merchant_greeting_1": [
+            {
+                "name": "Händler",
+                "lines": [
+                    "Etwas dabei, das dein Interesse weckt?",
+                    "@OPEN_SHOP:spawn_town"
+                ]
+            }
+        ],
+        "merchant_greeting_2": [
+            {
+                "name": "Händler",
+                "lines": [
+                    "Hast du etwas Bestimmtes im Sinn oder schaust du dich nur um?",
+                    "@OPEN_SHOP:spawn_town"
+                ]
+            }
+        ],
+
+        "combat_ruins_warning": [
+            {
+                "name": "Abenteurer",
+                "lines": [
+                    "Hey, bist du dir wirklich sicher, dass du da rein willst?",
+                    "Stell dich darauf ein, gegen viele unkontrollierte Roboter zu kämpfen..."
+                ]
+            }
         ]
     }
 }
