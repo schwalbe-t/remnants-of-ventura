@@ -78,9 +78,6 @@ private fun updateBasicRobot(robot: EnemyRobot): (World) -> Unit {
     return update@{ world ->
         val target: PlayerRobot = world.players.values
             .flatMap { it.data.deployedRobots.values }
-            .filter { world.static.world.peaceAreas.none { area ->
-                area.contains(it.tileX, it.tileZ)
-            } }
             .minByOrNull {
                 abs(it.tileX - robot.tileX) + abs(it.tileZ - robot.tileZ)
             }

@@ -10,7 +10,6 @@ import java.nio.file.Path
 class MutableWorld(
     val info: ConstWorldInfo,
     val groundColor: String,
-    val peaceAreas: List<TileArea>,
     val maintenanceAreas: List<TileArea>,
     val challengeAreas: List<TileArea>,
     val chunks: MutableMap<ChunkRef, MutableChunkData> = mutableMapOf(),
@@ -23,7 +22,6 @@ class MutableWorld(
 fun SerializedWorld.toMutableWorld() = MutableWorld(
     info = this.info,
     groundColor = this.groundColor,
-    peaceAreas = this.peaceAreas,
     maintenanceAreas = this.maintenanceAreas,
     challengeAreas = this.challengeAreas,
     chunks = this.chunks
@@ -35,7 +33,6 @@ fun SerializedWorld.toMutableWorld() = MutableWorld(
 fun MutableWorld.toSerializedWorld() = SerializedWorld(
     info = this.info,
     groundColor = this.groundColor,
-    peaceAreas = this.peaceAreas,
     maintenanceAreas = this.maintenanceAreas,
     challengeAreas = this.challengeAreas,
     chunks = this.chunks.mapValues { (_, c) -> c.toChunkData() },

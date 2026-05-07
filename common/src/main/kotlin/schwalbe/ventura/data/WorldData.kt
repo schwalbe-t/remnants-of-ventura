@@ -60,7 +60,6 @@ data class SerializedWorld(
     val info: ConstWorldInfo,
     val groundColor: String,
     val startPosition: SerVector3 = SerVector3(0f, 0f, 0f),
-    val peaceAreas: List<TileArea> = listOf(),
     val maintenanceAreas: List<TileArea> = listOf(),
     val challengeAreas: List<TileArea> = listOf(),
     val chunks: Map<ChunkRef, ChunkData> = mapOf(),

@@ -1,10 +1,9 @@
 
 package schwalbe.ventura.server.game
 
-import org.joml.Matrix4f
+import schwalbe.ventura.data.*
 import org.joml.Matrix4fc
 import org.joml.Vector3f
-import schwalbe.ventura.data.*
 
 private fun findChunkBounds(
     chunks: Collection<ChunkRef>
@@ -20,7 +19,7 @@ private fun findChunkBounds(
 private fun chunkFlatIdx(relTx: Int, relTz: Int): Int
     = relTz * 1.chunksToUnits() + relTx
 
-private fun ObjectTileCollider.applyTransform(
+fun ObjectTileCollider.applyTransform(
     transf: Matrix4fc
 ): ObjectTileCollider {
     val posTl = transf.transformPosition(Vector3f(this.left, 0f, this.top))
@@ -34,23 +33,26 @@ private fun ObjectTileCollider.applyTransform(
     return ObjectTileCollider(minX, maxX, minZ, maxZ)
 }
 
+fun ObjectInstance.computeTileCollider(): ObjectTileCollider? {
+    val rawColl = this[ObjectProp.Type].tileColliderSize ?: return null
+    return rawColl.applyTransform(this.buildTransform())
+}
+
+inline fun ObjectTileCollider.forEachContained(
+    crossinline f: (Int, Int) -> Unit
+) {
+    for (tx in this.left.unitsToUnitIdx()..this.right.unitsToUnitIdx()) {
+        for (tz in this.top.unitsToUnitIdx()..this.bottom.unitsToUnitIdx()) {
+            f(tx, tz)
+        }
+    }
+}
+
 private fun ObjectTileCollider.contains(tileX: Int, tileZ: Int): Boolean =
     this.left.unitsToUnitIdx() <= tileX &&
     tileX <= this.right.unitsToUnitIdx() &&
     this.top.unitsToUnitIdx() <= tileZ &&
     tileZ <= this.bottom.unitsToUnitIdx()
-
-private inline fun forEachCollidingTile(
-    obj: ObjectInstance, crossinline f: (Int, Int) -> Unit
-) {
-    val relColl = obj[ObjectProp.Type].tileColliderSize ?: return
-    val coll = relColl.applyTransform(obj.buildTransform())
-    for (tx in coll.left.unitsToUnitIdx()..coll.right.unitsToUnitIdx()) {
-        for (tz in coll.top.unitsToUnitIdx()..coll.bottom.unitsToUnitIdx()) {
-            f(tx, tz)
-        }
-    }
-}
 
 private fun collectChunkColliders(
     chunks: Map<ChunkRef, ChunkData>
@@ -67,7 +69,7 @@ private fun collectChunkColliders(
     }
     for (chunkData in chunks.values) {
         for (obj in chunkData.instances) {
-            forEachCollidingTile(obj) f@{ absTx, absTz ->
+            obj.computeTileCollider()?.forEachContained f@{ absTx, absTz ->
                 val chunkX: Int = absTx.unitsToChunks()
                 val chunkZ: Int = absTz.unitsToChunks()
                 val chunkR = ChunkRef(chunkX, chunkZ)
@@ -90,7 +92,7 @@ class ChunkCollisions(
 
     companion object {
         val DYNAMIC_COLLIDERS: Map<ObjectType, DynColliderGenerator> = mapOf(
-            ObjectType.AND_GATE to ::andGateDynColliders
+            ObjectType.DUNGEON_DOOR to ::dungeonDoorCollider
         )
     }
 
@@ -126,11 +128,10 @@ class ChunkCollisions(
         this.collidesWithDynamic(tileX, tileZ)
 }
 
-private fun andGateDynColliders(
+private val DUNGEON_DOOR_SIZE = ObjectTileCollider(+0.1f, +4.9f, +0.3f, +0.7f)
+private fun dungeonDoorCollider(
     obj: ObjectInstance, world: World, out: MutableList<ObjectTileCollider>
 ) {
     if (world.triggerables.isTriggered(obj[ObjectProp.Triggerable])) { return }
-    out.add(ObjectTileCollider(+0.25f, +0.75f, +0.25f, +0.75f)
-        .applyTransform(obj.buildTransform())
-    )
+    out.add(DUNGEON_DOOR_SIZE.applyTransform(obj.buildTransform()))
 }

@@ -8,10 +8,10 @@ import schwalbe.ventura.server.persistence.serialize
 import schwalbe.ventura.utils.GroundColorReader
 import schwalbe.ventura.utils.SerVector3
 import schwalbe.ventura.utils.insideSquareRadiusXZ
+import schwalbe.ventura.utils.toVector3f
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.PI
 import kotlin.math.abs
-import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
@@ -30,14 +30,9 @@ class World(
 ) {
 
     companion object {
-        const val ENEMIES_PER_UNSAFE_PLAYER: Int = 5
-        const val ENEMY_SPAWN_MIN_DIST: Float = 16f
-        const val ENEMY_MAX_DIST: Float = 48f
-        const val ENEMY_SPAWN_RANGE: Float
-            = ENEMY_MAX_DIST - ENEMY_SPAWN_MIN_DIST
         const val MAX_ROBOT_REPAIR_DIST: Float = 5f
-
-        const val ITEM_SPREAD: Float = 0.5f
+        const val DROPPED_ITEM_SPREAD: Float = 0.5f
+        const val ITEM_DISPENSER_SPREAD: Float = 1f
     }
 
 
@@ -69,7 +64,7 @@ class World(
     private fun prepareIncomingPlayer(player: Player) {
         val playerPosition = player.data.worlds.last().state.position
         for (robot in player.data.deployedRobots.values) {
-            val newPos = PlayerRobot.allocatePosition(playerPosition, this)
+            val newPos = Robot.allocatePosition(playerPosition, this)
                 ?: playerPosition
             robot.resetPosition(newPos)
         }
@@ -141,12 +136,12 @@ class World(
     @Synchronized
     fun spawnItem(
         origin: SerVector3, item: Item, count: Int = 1,
-        ownerName: String? = null
+        ownerName: String? = null, spread: Float = DROPPED_ITEM_SPREAD
     ) {
         val angle: Float = (Math.random() * 2.0 * PI).toFloat()
         val pos = SerVector3(
-            origin.x + cos(angle) * ITEM_SPREAD, origin.y,
-            origin.z + sin(angle) * ITEM_SPREAD
+            origin.x + cos(angle) * spread, origin.y,
+            origin.z + sin(angle) * spread
         )
         val item = GroundItem(pos, item, count, ownerName)
         this.groundItems[item.id] = item
@@ -167,65 +162,56 @@ class World(
                 val plPos = player.data.worlds.last().state.position
                 val dist = maxOf(abs(plPos.x - dPos.x), abs(plPos.z - dPos.z))
                 if (dist > s.dist) { continue }
-                val angle: Float = (Math.random() * 2 * PI).toFloat()
-                val itemPos
-                    = SerVector3(dPos.x + cos(angle), 0f, dPos.z + sin(angle))
-                this.spawnItem(itemPos, s.item, s.count, player.username)
+                this.spawnItem(
+                    dPos, s.item, s.count, player.username,
+                    ITEM_DISPENSER_SPREAD
+                )
                 s.givenTo.add(player.username)
             }
         }
     }
 
-    @Synchronized
-    private fun spawnEnemyRobots() {
-        val unsafePlayers: List<Player> = this.players.values.filter { player ->
-            val pos = player.data.worlds.last().state.position
-            val px: Int = pos.x.unitsToUnitIdx()
-            val pz: Int = pos.z.unitsToUnitIdx()
-            this.static.world.peaceAreas
-                .none { area -> area.contains(px, pz) }
+    private val spawners: List<ObjectInstance>
+        = this.static.world.chunks.flatMap {
+            it.value.instances.filter { o -> ObjectProp.EnemySpawner in o }
         }
-        val enemyLimit: Int = unsafePlayers.size * ENEMIES_PER_UNSAFE_PLAYER
-        while (this.enemyRobots.size < enemyLimit) {
-            val aroundPlayer: Player = unsafePlayers.random()
-            val aroundPos = aroundPlayer.data.worlds.last().state.position
-            val angle: Float = (Math.random() * 2f * PI).toFloat()
-            val dist: Float = ENEMY_SPAWN_MIN_DIST +
-                    Math.random().toFloat() * ENEMY_SPAWN_RANGE
-            val rtx: Int = (cos(angle) * dist).unitsToUnitIdx()
-            val rtz: Int = (sin(angle) * dist).unitsToUnitIdx()
-            val tx: Int = aroundPos.x.unitsToUnitIdx() + rtx
-            val tz: Int = aroundPos.z.unitsToUnitIdx() + rtz
-            if (this.static.world.peaceAreas.any { it.contains(tx, tz) }) {
-                continue
-            }
-            val spawned = EnemyRobot(
-                EnemyRobotConfig.BASIC,
-                SerVector3(tx.toFloat(), 0f, tz.toFloat())
-            )
-            this.enemyRobots[spawned.id] = spawned
-        }
-    }
 
     @Synchronized
-    private fun despawnEnemyRobots() {
-        val despawnTileDist: Int = ceil(ENEMY_MAX_DIST * 2).toInt()
-        for (robot in this.enemyRobots.values.toList()) {
-            val closestDist: Int = this.players.values.minOfOrNull { player ->
-                val playerPos = player.data.worlds.last().state.position
-                val playerTx: Int = playerPos.x.unitsToUnitIdx()
-                val playerTz: Int = playerPos.z.unitsToUnitIdx()
-                abs(playerTx - robot.tileX) + abs(playerTz - robot.tileZ)
-            } ?: Int.MAX_VALUE
-            if (closestDist <= despawnTileDist) { continue }
-            this.enemyRobots.remove(robot.id)
+    private fun updateEnemySpawners() {
+        for (spawner in this.spawners) {
+            val sPos = spawner[ObjectProp.Position]
+            val s = spawner[ObjectProp.EnemySpawner]
+            if (s.defeatedCount >= s.totalCount) { continue }
+            s.defeatedCount += s.created.count { it !in this.enemyRobots.keys }
+            s.created.removeIf { it !in this.enemyRobots.keys }
+            if (s.created.size >= s.maxConcurrent) { continue }
+            val pDist: Float = this.players.values
+                .minOfOrNull {
+                    val pPos = it.data.worlds.last().state.position
+                    abs(pPos.x - sPos.x) + abs(pPos.z - sPos.z)
+                }
+                ?: Float.MAX_VALUE
+            val isActive = pDist <= s.dist
+            if (!isActive) {
+                s.created.forEach { this.enemyRobots.remove(it) }
+                s.created.clear()
+                s.defeatedCount = 0
+                continue
+            }
+            val now = System.currentTimeMillis()
+            if (now < s.lastSpawn + s.interval) { continue }
+            s.lastSpawn = now
+            val cfg: EnemyRobotConfig = EnemyRobotConfig.entries
+                .firstOrNull { it.name == s.configName } ?: continue
+            val rPos = Robot.allocatePosition(sPos, this) ?: continue
+            val spawned = EnemyRobot(cfg, rPos)
+            this.enemyRobots[spawned.id] = spawned
+            s.created.add(spawned.id)
         }
     }
 
     @Synchronized
     private fun updateEnemyRobots() {
-        this.spawnEnemyRobots()
-        this.despawnEnemyRobots()
         for (robot in this.enemyRobots.values.filter { it.health <= 0f }) {
             robot.config.lootTable.generateLoot().forEach {
                 this.spawnItem(robot.position, it)
@@ -265,6 +251,7 @@ class World(
             player.updateState(this)
         }
         this.updateItemDispensers()
+        this.updateEnemySpawners()
         this.updateEnemyRobots()
         this.updateGroundItems()
         this.triggerables.update(this)
@@ -445,7 +432,7 @@ class World(
                 return@onPacket
             }
             val playerPosition = pl.data.worlds.last().state.position
-            val robotPosition = PlayerRobot.allocatePosition(
+            val robotPosition = Robot.allocatePosition(
                 center = playerPosition, this,
                 tileIsOccupied = { x, z ->
                     val notInArea = this.static.world

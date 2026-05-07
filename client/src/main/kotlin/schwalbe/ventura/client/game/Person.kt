@@ -94,8 +94,8 @@ object Person {
     const val OUTLINE_THICKNESS: Float = 0.015f
 
     val relCollider: AxisAlignedBox = axisBoxOf(
-        Vector3f(-0.125f, 0f, -0.125f),
-        Vector3f(+0.125f, 1f, +0.125f)
+        Vector3f(-0.125f, 0.15f, -0.125f),
+        Vector3f(+0.125f, 1.50f, +0.125f)
     )
 
     fun modelTransform(

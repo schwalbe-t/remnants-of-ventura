@@ -5,8 +5,10 @@ import schwalbe.ventura.data.CharacterStylePreset as CharacterStyleP
 import schwalbe.ventura.utils.SerVector3
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import org.joml.Matrix4f
 import schwalbe.ventura.PaletteColor
+import kotlin.uuid.Uuid
 
 // The maximum size in chunks of any client or server side colliders.
 // This number determines the radius of the area that is searched when looking
@@ -66,33 +68,50 @@ enum class ObjectType(
     ),
     MAINTENANCE_PILLAR(
         modelPath = "res/objects/maintenance_pillar.glb",
-        applyColliders = false,
-        tileColliderSize = null
+        tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
     ),
     CHALLENGE_PILLAR(
         modelPath = "res/objects/challenge_pillar.glb",
-        applyColliders = false,
-        tileColliderSize = null
+        tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
+    ),
+    COMBAT_PILLAR(
+        modelPath = "res/objects/combat_pillar.glb",
+        tileColliderSize = ObjectTileCollider(-0.25f, +0.25f, -0.25f, +0.25f)
     ),
     SAFE(
         modelPath = "res/objects/safe.glb",
         applyColliders = true,
-        tileColliderSize = ObjectTileCollider(0f, 0f, +1f, +1f)
+        tileColliderSize = ObjectTileCollider(+0.1f, +0.9f, +0.1f, +0.9f)
     ),
     DUNGEON_WALL(
         modelPath = "res/objects/dungeon_wall.glb",
         applyColliders = true,
-        tileColliderSize = ObjectTileCollider(0f, 0f, +5f, +1f)
+        tileColliderSize = ObjectTileCollider(+0.1f, +4.9f, +0.1f, +0.9f)
+    ),
+    DUNGEON_WALL_INVISIBLE(
+        modelPath = "res/objects/dungeon_wall_invisible.glb",
+        applyColliders = true,
+        tileColliderSize = ObjectTileCollider(+0.1f, +4.9f, +0.1f, +0.9f)
     ),
     DUNGEON_PILLAR(
         modelPath = "res/objects/dungeon_pillar.glb",
         applyColliders = true,
-        tileColliderSize = ObjectTileCollider(0f, 0f, +1f, +1f)
+        tileColliderSize = ObjectTileCollider(+0.1f, +0.1f, +0.9f, +0.9f)
     ),
     DUNGEON_FLOOR(
         modelPath = "res/objects/dungeon_floor.glb",
         applyColliders = false,
         tileColliderSize = null
+    ),
+    DUNGEON_DOOR(
+        modelPath = "res/objects/dungeon_door.glb",
+        applyColliders = true,
+        tileColliderSize = null
+    ),
+    ELEVATOR(
+        modelPath = "res/objects/elevator.glb",
+        applyColliders = true,
+        tileColliderSize = ObjectTileCollider(+0.1f, +4.9f, +0.1f, +4.9f)
     ),
 
     ROCK(
@@ -269,6 +288,21 @@ sealed interface ObjectProp<V> {
         )
     }
 
+    @Serializable @SerialName("DUNGEON_DOOR_STATE")
+    class DungeonDoorState(
+        override val v: State
+    ) : ObjectProp<DungeonDoorState.State> {
+        companion object : PropType<DungeonDoorState, State>(
+            default = State()
+        )
+
+        @Serializable
+        class State(
+            @Transient var height: Float = 0f,
+            @Transient var lastUpdate: Long = 0
+        )
+    }
+
     @Serializable @SerialName("CHARACTER_DIALOGUE")
     class CharacterDialogue(
         override val v: String
@@ -333,6 +367,33 @@ sealed interface ObjectProp<V> {
             val count: Int,
             val givenTo: MutableSet<String> = mutableSetOf(),
             val dist: Float = 4f
+        )
+    }
+
+    @Serializable @SerialName("ENEMY_SPAWNER")
+    class EnemySpawner(
+        override val v: Settings
+    ) : ObjectProp<EnemySpawner.Settings> {
+        companion object : PropType<EnemySpawner, Settings>(
+            default = Settings(
+                dist = 10f,
+                configName = "BASIC",
+                totalCount = 1,
+                maxConcurrent = 1,
+                interval = 5000
+            )
+        )
+
+        @Serializable
+        class Settings(
+            val dist: Float,
+            val configName: String,
+            val totalCount: Int,
+            val maxConcurrent: Int = Int.MAX_VALUE,
+            val interval: Long,
+            @Transient val created: MutableSet<Uuid> = mutableSetOf(),
+            @Transient var lastSpawn: Long = 0,
+            @Transient var defeatedCount: Int = 0
         )
     }
 

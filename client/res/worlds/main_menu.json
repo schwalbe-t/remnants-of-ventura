@@ -33,14 +33,6 @@
 		"y": 0.0,
 		"z": 0.0
 	},
-	"peaceAreas": [
-		{
-			"minX": -99999999,
-			"minZ": -99999999,
-			"untilX": 99999999,
-			"untilZ": 99999999
-		}
-	],
 	"maintenanceAreas": [],
 	"challengeAreas": [],
 	"chunks": [

@@ -12,7 +12,6 @@ import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.engine.Resource
 import schwalbe.ventura.utils.parseRgbHex
 import schwalbe.ventura.data.PersonStyle
-import schwalbe.ventura.net.WorldStatePacket
 import schwalbe.ventura.utils.toVector3f
 import org.joml.Matrix4fc
 import org.joml.Matrix4f
@@ -20,6 +19,7 @@ import org.joml.Vector3f
 import org.joml.Vector3fc
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.sign
 import kotlin.math.sin
 
 interface ObjectStateProvider {
@@ -152,6 +152,7 @@ object Objects {
         ObjectType.TUMBLEWEED to TumbleweedOverrides,
         ObjectType.BUTTON to ButtonOverrides,
         ObjectType.LAMP to LampOverrides,
+        ObjectType.DUNGEON_DOOR to DoorOverrides,
         ObjectType.CHARACTER to CharacterOverrides
     )
 
@@ -361,6 +362,32 @@ private object LampOverrides : ObjectOverrides() {
             shadowFactorOverride = litShadowFactor
         )
     }
+
+}
+
+private object DoorOverrides : ObjectOverrides() {
+
+    const val OPEN_HEIGHT: Float = -4.9f
+    const val CLOSED_HEIGHT: Float = 0f
+    const val MOVE_SPEED: Float = 2f
+
+    override fun update(state: ObjectStateProvider, obj: ObjectInstance) {
+        val now: Long = System.currentTimeMillis()
+        val isOpen: Boolean = state.isTriggered(obj)
+        val state = obj[ObjectProp.DungeonDoorState]
+        val targetHeight: Float = if (isOpen) OPEN_HEIGHT else CLOSED_HEIGHT
+        val toTarget: Float = sign(targetHeight - state.height)
+        val distToTarget: Float = abs(targetHeight - state.height)
+        val deltaTime: Float = (now - state.lastUpdate).toFloat() / 1000f
+        state.height += toTarget * minOf(MOVE_SPEED * deltaTime, distToTarget)
+        state.lastUpdate = now
+    }
+
+    override fun transform(
+        state: ObjectStateProvider,
+        obj: ObjectInstance
+    ): Matrix4f = obj.buildTransform()
+        .translateLocal(0f, obj[ObjectProp.DungeonDoorState].height, 0f)
 
 }
 

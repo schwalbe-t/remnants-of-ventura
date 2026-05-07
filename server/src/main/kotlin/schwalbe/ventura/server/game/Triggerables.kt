@@ -63,11 +63,13 @@ class Triggerables(
 
         val BEHAVIORS: Map<ObjectType, Behavior> = mapOf(
             ObjectType.BUTTON to BUTTON_BEHAVIOR,
+            ObjectType.COMBAT_PILLAR to COMBAT_PILLAR_BEHAVIOR,
             ObjectType.AND_GATE to AND_GATE_BEHAVIOR,
             ObjectType.OR_GATE to OR_GATE_BEHAVIOR,
             ObjectType.NAND_GATE to NAND_GATE_BEHAVIOR,
             ObjectType.NOR_GATE to NOR_GATE_BEHAVIOR,
             ObjectType.LATCH to LATCH_BEHAVIOR,
+            ObjectType.DUNGEON_DOOR to DUNGEON_DOOR_BEHAVIOR,
             ObjectType.LAMP to LAMP_BEHAVIOR
         )
     }
@@ -140,6 +142,12 @@ private val BUTTON_BEHAVIOR = baseBehavior { world ->
     }
 }
 
+private val COMBAT_PILLAR_BEHAVIOR = baseBehavior { _ ->
+    if (ObjectProp.EnemySpawner !in this.instance) { return@baseBehavior false }
+    val s = this.instance[ObjectProp.EnemySpawner]
+    s.defeatedCount >= s.totalCount
+}
+
 private val AND_GATE_BEHAVIOR
     = chainedBehavior { _, inputs -> inputs.values.all { it } }
 
@@ -156,6 +164,9 @@ private val LATCH_BEHAVIOR
     = chainedBehavior { _, inputs ->
         this.isTriggered || inputs.values.any { it }
     }
+
+private val DUNGEON_DOOR_BEHAVIOR
+    = chainedBehavior { _, inputs -> inputs.values.any { it } }
 
 private val LAMP_BEHAVIOR
     = chainedBehavior { _, inputs -> inputs.values.any { it } }
