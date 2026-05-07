@@ -1,40 +1,90 @@
 {
-	"instanceMode": "CONSTANT",
+	"instanceMode": "TEMPORARY",
 	"info": {
-		"trackList": "SURFACE",
+		"trackList": "RUINS",
 		"rendererConfig": {
 			"groundToSun": {
 				"x": 0.2,
 				"y": 0.25,
-				"z": 0.0
+				"z": -0.15
 			},
 			"baseColorFactor": {
-				"x": 1.2,
-				"y": 0.95,
-				"z": 0.75
+				"x": 0.9,
+				"y": 0.7,
+				"z": 0.6
 			},
 			"shadowColorFactor": {
 				"x": 0.7,
-				"y": 0.75,
-				"z": 0.9
+				"y": 0.8,
+				"z": 1.0
 			},
 			"outlineColorFactor": {
 				"x": 0.55,
 				"y": 0.65,
 				"z": 0.75
 			},
-			"defaultLit": true
+			"defaultLit": false
 		},
-		"groundHeight": 0.0
+		"groundHeight": -0.05
 	},
-	"groundColor": "main_ground.png",
+	"groundColor": "tutorial_ruins_ground.png",
 	"startPosition": {
 		"x": 0.5,
 		"y": 0.0,
 		"z": 0.5
 	},
-	"maintenanceAreas": [],
-	"challengeAreas": [],
+	"maintenanceAreas": [
+		{
+			"minX": 15,
+			"minZ": -2,
+			"untilX": 17,
+			"untilZ": 0
+		},
+		{
+			"minX": 15,
+			"minZ": 1,
+			"untilX": 17,
+			"untilZ": 3
+		},
+		{
+			"minX": 34,
+			"minZ": -4,
+			"untilX": 36,
+			"untilZ": -2
+		},
+		{
+			"minX": 55,
+			"minZ": -5,
+			"untilX": 57,
+			"untilZ": -3
+		},
+		{
+			"minX": 82,
+			"minZ": -8,
+			"untilX": 93,
+			"untilZ": 3
+		}
+	],
+	"challengeAreas": [
+		{
+			"minX": 58,
+			"minZ": -8,
+			"untilX": 69,
+			"untilZ": 3
+		},
+		{
+			"minX": 93,
+			"minZ": -8,
+			"untilX": 105,
+			"untilZ": 3
+		},
+		{
+			"minX": 76,
+			"minZ": -32,
+			"untilX": 106,
+			"untilZ": -15
+		}
+	],
 	"chunks": [
 		{
 			"chunkX": 0,
@@ -46,14 +96,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINED_WALL"
+							"v": "DUNGEON_WALL_INVISIBLE"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 0.42074382,
+								"x": 4.0,
 								"y": 0.0,
-								"z": 3.0473347
+								"z": 3.0
 							}
 						}
 					]
@@ -62,21 +112,37 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINED_WALL"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 2.9971316,
+								"x": 10.0,
 								"y": 0.0,
-								"z": 0.48548126
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.0,
+								"y": 0.0,
+								"z": 4.0
 							}
 						},
 						{
 							"type": "ROTATION",
 							"v": {
 								"x": 0.0,
-								"y": -1.5889769,
+								"y": -1.5707963,
 								"z": 0.0
 							}
 						}
@@ -86,14 +152,54 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_WALL_INVISIBLE"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 5.62899,
+								"x": 10.0,
 								"y": 0.0,
-								"z": 2.2546196
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 14.534542,
+								"y": 0.0,
+								"z": 3.525383
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": -1,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.0,
+								"y": 0.0,
+								"z": -2.0
 							}
 						}
 					]
@@ -102,406 +208,54 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 4.8237495,
+								"x": -3.0,
 								"y": 0.0,
-								"z": 4.393568
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.0,
+								"y": 0.0,
+								"z": -2.0
 							}
 						},
 						{
 							"type": "ROTATION",
 							"v": {
 								"x": 0.0,
-								"y": 0.0,
+								"y": -1.5707963,
 								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 4.043765,
-								"y": 0.0,
-								"z": 9.485346
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 0.35492072,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 6.7204823,
-								"y": 0.0,
-								"z": 4.234476
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 0.17523348,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 11.741259,
-								"y": 0.0,
-								"z": 0.37504578
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.344393,
-								"y": 0.0,
-								"z": 1.9096088
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 1.8064508,
-								"y": 0.0,
-								"z": 4.4347134
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 0.371865,
-								"y": 0.0,
-								"z": 4.5106106
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 2.239983,
-								"y": 0.0,
-								"z": 0.9820957
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 10.617349,
-								"y": 0.0,
-								"z": 0.36225128
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 12.298032,
-								"y": 0.0,
-								"z": 3.4859123
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 8.813011,
-								"y": 0.0,
-								"z": 4.0852623
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 12.199787,
-								"y": 0.0,
-								"z": 8.781048
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 8.185183,
-								"y": 0.0,
-								"z": 13.950401
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 11.628577,
-								"y": 0.0,
-								"z": 13.28001
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 4.6115904,
-								"y": 0.0,
-								"z": 13.040646
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 1.2939082,
-								"y": 0.0,
-								"z": 13.120598
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.253251,
-								"y": 0.0,
-								"z": 11.614769
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 8.069445,
-								"y": 0.0,
-								"z": 5.1231346
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 7.1030164,
-								"y": 0.0,
-								"z": 6.554989
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 6.3697534,
-								"y": 0.0,
-								"z": 15.307133
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 14.6633835,
-								"y": 0.0,
-								"z": 14.627911
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.715598,
-								"y": 0.0,
-								"z": 6.5214043
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.454661,
-								"y": 0.0,
-								"z": 13.618771
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.962922,
-								"y": 0.0,
-								"z": 4.7544518
 							}
 						}
 					]
@@ -518,7 +272,1480 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINED_WALL"
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -3.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 0,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 3.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 9.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 9.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 15.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"deploy_puzzle_door_1_latch",
+								"deploy_puzzle_button_none"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "deploy_puzzle_button_any"
+						},
+						{
+							"type": "TYPE",
+							"v": "OR_GATE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 11.0,
+								"y": 0.0,
+								"z": -7.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 15.0,
+								"y": 0.0,
+								"z": -7.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"deploy_puzzle_button_none_and_door_1"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "deploy_puzzle_button_none"
+						},
+						{
+							"type": "TYPE",
+							"v": "NAND_GATE"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 13.0,
+								"y": 0.0,
+								"z": -7.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "deploy_puzzle_door_1_latch"
+						},
+						{
+							"type": "TYPE",
+							"v": "LATCH"
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"deploy_puzzle_door_1",
+								"deploy_puzzle_button_none_and_door_1"
+							]
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "CHARACTER_ANIMATION",
+							"v": "THINKING"
+						},
+						{
+							"type": "CHARACTER_DIALOGUE",
+							"v": "tutorial_ruins_deploy_puzzle_hint"
+						},
+						{
+							"type": "CHARACTER_STYLE_CUSTOM",
+							"v": {
+								"colors": [
+									"CREAM",
+									"DARK_BLUE",
+									"BLACK",
+									"RED",
+									"WHITE",
+									"BLACK",
+									"WHITE",
+									"WHITE",
+									"PURPLE",
+									"WHITE"
+								],
+								"hair": "SHORT"
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.708819,
+								"y": 0.0,
+								"z": -1.2630787
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.57923114,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "CHARACTER"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 14.507347,
+								"y": 0.0,
+								"z": -2.4278755
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 1,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 16.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 16.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 16.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 21.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 21.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 27.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 16.0,
+								"y": 0.0,
+								"z": -1.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "deploy_puzzle_button_1"
+						},
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"deploy_puzzle_button_any"
+							]
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 19.0,
+								"y": 0.0,
+								"z": -7.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"deploy_puzzle_door_2"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "deploy_puzzle_door_2_latch"
+						},
+						{
+							"type": "TYPE",
+							"v": "LATCH"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 17.0,
+								"y": 0.0,
+								"z": -7.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"deploy_puzzle_door_2_latch"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "deploy_puzzle_button_none_and_door_1"
+						},
+						{
+							"type": "TYPE",
+							"v": "AND_GATE"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 27.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 17.535187,
+								"y": 0.0,
+								"z": -2.4077587
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "DUNGEON_DOOR_STATE",
+							"v": {}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "deploy_puzzle_door_2"
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_DOOR"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "DUNGEON_DOOR_STATE",
+							"v": {}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "deploy_puzzle_door_1"
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_DOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 1,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 16.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 16.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.0,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 16.0,
+								"y": 0.0,
+								"z": 2.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"deploy_puzzle_button_any"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "deploy_puzzle_button_2"
+						},
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 17.46833,
+								"y": 0.0,
+								"z": 3.5350323
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 2,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 34.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 40.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 2,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 34.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 34.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 40.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 40.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 33.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 39.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 45.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 34.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 40.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 45.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 33.512936,
+								"y": 0.0,
+								"z": -4.480421
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 33.517357,
+								"y": 0.0,
+								"z": -1.4581413
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 36.481815,
+								"y": 0.0,
+								"z": -1.5029202
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 36.487984,
+								"y": 0.0,
+								"z": -4.454712
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 41.0,
+								"y": 0.0,
+								"z": -7.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"first_program_puzzle_door"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "first_program_puzzle_door_latch"
+						},
+						{
+							"type": "TYPE",
+							"v": "LATCH"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "CHARACTER_DIALOGUE",
+							"v": "tutorial_ruins_first_program_puzzle_hint"
+						},
+						{
+							"type": "CHARACTER_STYLE_CUSTOM",
+							"v": {
+								"colors": [
+									"CREAM",
+									"BLACK",
+									"BLACK",
+									"RED",
+									"WHITE",
+									"BLACK",
+									"WHITE",
+									"WHITE",
+									"BROWN",
+									"WHITE"
+								],
+								"hair": "LONG"
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 32.09887,
+								"y": 0.0,
+								"z": -3.6767626
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 0.29779682,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "CHARACTER"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 39.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"first_program_puzzle_lamp",
+								"first_program_puzzle_door_latch"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "first_program_puzzle_button"
+						},
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 40.50352,
+								"y": 0.0,
+								"z": -4.467044
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "first_program_puzzle_lamp"
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "DUNGEON_DOOR_STATE",
+							"v": {}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "first_program_puzzle_door"
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_DOOR"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 3,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 51.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 51.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 52.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 58.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "ROTATION",
@@ -531,9 +1758,9 @@
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -2.2057295,
+								"x": 52.0,
 								"y": 0.0,
-								"z": 0.53521156
+								"z": -8.0
 							}
 						}
 					]
@@ -542,14 +1769,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -4.023471,
+								"x": 52.0,
 								"y": 0.0,
-								"z": 0.6541195
+								"z": -8.0
 							}
 						}
 					]
@@ -558,14 +1785,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -3.9043393,
+								"x": 52.0,
 								"y": 0.0,
-								"z": 3.6582851
+								"z": -9.0
 							}
 						}
 					]
@@ -574,14 +1801,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -2.9809437,
+								"x": 57.0,
 								"y": 0.0,
-								"z": 7.450224
+								"z": -9.0
 							}
 						}
 					]
@@ -590,14 +1817,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -0.969517,
+								"x": 58.0,
 								"y": 0.0,
-								"z": 8.726166
+								"z": -9.0
 							}
 						}
 					]
@@ -606,14 +1833,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -6.227945,
+								"x": 63.0,
 								"y": 0.0,
-								"z": 3.5776062
+								"z": -9.0
 							}
 						}
 					]
@@ -622,14 +1849,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -4.0803533,
+								"x": 58.0,
 								"y": 0.0,
-								"z": 0.04758835
+								"z": -8.0
 							}
 						}
 					]
@@ -638,30 +1865,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "MAINTENANCE_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -1.9397242,
-								"y": -1.9073486E-6,
-								"z": 0.43926048
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -1.3729951,
+								"x": 54.4649,
 								"y": 0.0,
-								"z": 12.517002
+								"z": -5.382128
 							}
 						}
 					]
@@ -670,14 +1881,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "MAINTENANCE_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -2.9896584,
+								"x": 54.44413,
 								"y": 0.0,
-								"z": 14.877621
+								"z": -2.4276962
 							}
 						}
 					]
@@ -686,14 +1897,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "MAINTENANCE_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -4.2286367,
+								"x": 57.52277,
 								"y": 0.0,
-								"z": 9.44249
+								"z": -2.492054
 							}
 						}
 					]
@@ -702,30 +1913,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "MAINTENANCE_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -10.566031,
-								"y": -3.8146973E-6,
-								"z": 2.3140068
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -9.937892,
+								"x": 57.49279,
 								"y": 0.0,
-								"z": 4.8718796
+								"z": -5.43194
 							}
 						}
 					]
@@ -734,222 +1929,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "CHALLENGE_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -7.176479,
+								"x": 58.495975,
 								"y": 0.0,
-								"z": 6.025772
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -10.218781,
-								"y": 0.0,
-								"z": 13.200394
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.103848,
-								"y": 0.0,
-								"z": 3.7226448
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.601404,
-								"y": 0.0,
-								"z": 15.049877
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -13.355017,
-								"y": 0.0,
-								"z": 4.175297
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -12.590029,
-								"y": 0.0,
-								"z": 6.1706543
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -7.3689737,
-								"y": 0.0,
-								"z": 9.511761
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -7.4907675,
-								"y": 0.0,
-								"z": 12.508858
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -6.128352,
-								"y": 0.0,
-								"z": 15.458416
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -12.459954,
-								"y": 0.0,
-								"z": 15.031094
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -13.251541,
-								"y": 0.0,
-								"z": 15.810635
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -14.926884,
-								"y": 0.0,
-								"z": 8.798283
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.928602,
-								"y": 0.0,
-								"z": 6.1706543
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -8.847696,
-								"y": 0.0,
-								"z": 7.7500267
+								"z": -7.4462814
 							}
 						}
 					]
@@ -957,7 +1944,7 @@
 			]
 		},
 		{
-			"chunkX": -1,
+			"chunkX": 4,
 			"chunkZ": -1
 		},
 		{
@@ -966,286 +1953,351 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINED_WALL"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -2.0197217,
+								"x": 64.0,
 								"y": 0.0,
-								"z": -4.534855
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 70.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 64.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 69.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 70.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 75.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 75.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 64.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 70.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "CHALLENGE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 68.432526,
+								"y": 0.0,
+								"z": -7.38945
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 72.45172,
+								"y": 0.0,
+								"z": -5.3958397
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "loop_puzzle_button_lamp"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 73.0,
+								"y": 0.0,
+								"z": -7.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "LATCH"
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"loop_puzzle_door"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "loop_puzzle_door_latch"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 71.0,
+								"y": 0.0,
+								"z": -4.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"loop_puzzle_button_lamp",
+								"loop_puzzle_door_latch"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "loop_puzzle_button"
+						},
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 75.0,
+								"y": 0.0,
+								"z": -15.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -15.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "DUNGEON_DOOR_STATE",
+							"v": {}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -2.0
 							}
 						},
 						{
 							"type": "ROTATION",
 							"v": {
 								"x": 0.0,
-								"y": 1.4435327,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "RUINED_WALL"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.0653781,
+								"y": -1.5707963,
 								"z": 0.0
 							}
 						},
 						{
+							"type": "TRIGGERABLE",
+							"v": "loop_puzzle_door"
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_DOOR"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
 							"type": "POSITION",
 							"v": {
-								"x": -2.9752495,
+								"x": 76.0,
 								"y": 0.0,
-								"z": -9.336783
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -4.9820995,
-								"y": 0.0,
-								"z": -1.9825382
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 0.0,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -3.2091556,
-								"y": 0.0,
-								"z": -6.3233414
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 2.9741995,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -0.6515602,
-								"y": 0.0,
-								"z": -15.668442
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -6.041408,
-								"y": 0.0,
-								"z": -2.6072445
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -4.52903,
-								"y": 0.0,
-								"z": -5.308798
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -3.758857,
-								"y": 0.0,
-								"z": -1.4753876
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -3.039472,
-								"y": -1.9073486E-6,
-								"z": -4.50424
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -1.8120782,
-								"y": 0.0,
-								"z": -5.5917416
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -1.8122157,
-								"y": 0.0,
-								"z": -3.0583687
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -2.5933244,
-								"y": 0.0,
-								"z": -9.989446
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -10.681106,
-								"y": 3.8146973E-6,
-								"z": -3.690052
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -8.48681,
-								"y": -3.8146973E-6,
-								"z": -3.5726738
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -13.729154,
-								"y": 3.8146973E-6,
-								"z": -3.3522377
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -7.1786337,
-								"y": 0.0,
-								"z": -1.6966019
+								"z": -2.0
 							}
 						}
 					]
@@ -1253,8 +2305,8 @@
 			]
 		},
 		{
-			"chunkX": 0,
-			"chunkZ": -1
+			"chunkX": 3,
+			"chunkZ": 0
 		},
 		{
 			"instances": [
@@ -1262,22 +2314,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINED_WALL"
+							"v": "DUNGEON_WALL_INVISIBLE"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 3.0289216,
+								"x": 52.0,
 								"y": 0.0,
-								"z": -4.5593624
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 1.5344353,
-								"z": 0.0
+								"z": 3.0
 							}
 						}
 					]
@@ -1286,14 +2330,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_WALL_INVISIBLE"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 5.2117634,
+								"x": 58.0,
 								"y": 0.0,
-								"z": -6.9435844
+								"z": 3.0
 							}
 						}
 					]
@@ -1302,14 +2346,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "CHALLENGE_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 5.0178986,
+								"x": 58.476055,
 								"y": 0.0,
-								"z": -3.0668087
+								"z": 2.5646324
 							}
 						}
 					]
@@ -1317,424 +2361,20 @@
 				{
 					"props": [
 						{
-							"type": "TYPE",
-							"v": "RUINED_WALL"
+							"type": "CHARACTER_ANIMATION",
+							"v": "THINKING"
 						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 12.148004,
-								"y": 0.0,
-								"z": -15.01833
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 0.92284286,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "RUINED_WALL"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 0.51050884,
-								"z": 0.0
-							}
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 5.2319984,
-								"y": -1.9073486E-6,
-								"z": -8.589809
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "RUINED_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 8.799772,
-								"y": -1.9073486E-6,
-								"z": -11.388746
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 0.73958325,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.3568535,
-								"y": 0.0,
-								"z": -8.851612
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 13.570734,
-								"y": 0.0,
-								"z": -11.83861
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 11.277262,
-								"y": 0.0,
-								"z": -3.1748276
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 14.236628,
-								"y": 0.0,
-								"z": -4.037649
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 4.8575225,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 1.4694085,
-								"y": -1.9073486E-6,
-								"z": -14.788211
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 1.9239669,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.940557,
-								"y": 0.0,
-								"z": -15.264125
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 8.514491,
-								"y": 0.0,
-								"z": -13.572938
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 7.8943634,
-								"y": 0.0,
-								"z": -12.250539
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 13.444124,
-								"y": 1.9073486E-6,
-								"z": -14.608923
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 11.019205,
-								"y": 0.0,
-								"z": -11.008186
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.544112,
-								"y": 0.0,
-								"z": -8.76621
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 6.7579913,
-								"y": 0.0,
-								"z": -7.1299076
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 5.143859,
-								"y": 1.9073486E-6,
-								"z": -1.9486046
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 8.355129,
-								"y": 1.9073486E-6,
-								"z": -1.4851341
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 12.8221035,
-								"y": 0.0,
-								"z": -2.6695518
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 2.4480348,
-								"y": 0.0,
-								"z": -3.1138115
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 13.912791,
-								"y": 0.0,
-								"z": -0.50832367
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.993312,
-								"y": 0.0,
-								"z": -4.1317368
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.228053,
-								"y": 0.0,
-								"z": -5.922573
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.065276,
-								"y": 0.0,
-								"z": -12.85228
-							}
-						}
-					]
-				},
-				{
-					"props": [
 						{
 							"type": "CHARACTER_DIALOGUE",
-							"v": "tutorial_ruins_invitation"
+							"v": "tutorial_ruins_loop_puzzle_hint"
 						},
 						{
 							"type": "CHARACTER_STYLE_CUSTOM",
 							"v": {
 								"colors": [
 									"CREAM",
-									"BLACK",
-									"BLACK",
+									"DARK_GRAY",
+									"DARK_GRAY",
 									"RED",
 									"WHITE",
 									"BLACK",
@@ -1749,16 +2389,16 @@
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 1.0028577,
+								"x": 56.986794,
 								"y": 0.0,
-								"z": -11.378321
+								"z": 2.1644516
 							}
 						},
 						{
 							"type": "ROTATION",
 							"v": {
 								"x": 0.0,
-								"y": -0.049087387,
+								"y": -2.3561945,
 								"z": 0.0
 							}
 						},
@@ -1771,8 +2411,8 @@
 			]
 		},
 		{
-			"chunkX": -1,
-			"chunkZ": -2
+			"chunkX": 4,
+			"chunkZ": 0
 		},
 		{
 			"instances": [
@@ -1780,22 +2420,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINS_FLOORS"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 0.0,
-								"z": 0.0
-							}
+							"v": "DUNGEON_WALL_INVISIBLE"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -3.0,
+								"x": 64.0,
 								"y": 0.0,
-								"z": -23.0
+								"z": 3.0
 							}
 						}
 					]
@@ -1804,22 +2436,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINS_WALL"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 1.5707963,
-								"z": 0.0
-							}
+							"v": "DUNGEON_WALL_INVISIBLE"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -3.0,
+								"x": 70.0,
 								"y": 0.0,
-								"z": -23.0
+								"z": 3.0
 							}
 						}
 					]
@@ -1828,14 +2452,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINS_WALL"
+							"v": "CHALLENGE_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -3.0,
+								"x": 68.48086,
 								"y": 0.0,
-								"z": -23.0
+								"z": 2.5646286
 							}
 						}
 					]
@@ -1844,110 +2468,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_RED"
+							"v": "DUNGEON_WALL_INVISIBLE"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -4.7347107,
+								"x": 76.0,
 								"y": 0.0,
-								"z": -18.113644
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 5.790427,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -1.631441,
-								"y": 0.0,
-								"z": -18.055695
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 2.0427475,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -4.0319104,
-								"y": 0.0,
-								"z": -17.828636
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -2.2600572,
-								"y": 0.0,
-								"z": -19.330643
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -0.59163564,
-								"y": 0.0,
-								"z": -19.012917
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -2.1201377,
-								"y": -1.9073486E-6,
-								"z": -16.511436
+								"z": 3.0
 							}
 						}
 					]
@@ -1955,8 +2483,8 @@
 			]
 		},
 		{
-			"chunkX": 0,
-			"chunkZ": -2
+			"chunkX": 5,
+			"chunkZ": -1
 		},
 		{
 			"instances": [
@@ -1964,14 +2492,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINS_FLOORS"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 3.0,
+								"x": 81.0,
 								"y": 0.0,
-								"z": -23.0
+								"z": -3.0
 							}
 						}
 					]
@@ -1980,38 +2508,22 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINS_FLOORS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 3.0,
-								"y": 0.0,
-								"z": -29.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "RUINS_WALL"
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "ROTATION",
 							"v": {
 								"x": 0.0,
-								"y": 3.1415925,
+								"y": -1.5707963,
 								"z": 0.0
 							}
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 3.0,
+								"x": 82.0,
 								"y": 0.0,
-								"z": -23.0
+								"z": -8.0
 							}
 						}
 					]
@@ -2020,22 +2532,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINS_WALL"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 1.5707963,
-								"z": 0.0
-							}
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 3.0,
+								"x": 81.0,
 								"y": 0.0,
-								"z": -23.0
+								"z": -9.0
 							}
 						}
 					]
@@ -2044,70 +2548,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINED_WALL"
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 13.063438,
-								"y": 1.9073486E-6,
-								"z": -29.139013
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 1.960223,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "RUINED_WALL"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 1.6035212,
-								"z": 0.0
-							}
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 14.070375,
-								"y": -1.9073486E-6,
-								"z": -24.53128
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "RUINED_WALL"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 1.488984,
-								"z": 0.0
-							}
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 13.9382715,
+								"x": 82.0,
 								"y": 0.0,
-								"z": -19.412941
+								"z": -9.0
 							}
 						}
 					]
@@ -2116,14 +2564,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 15.383089,
+								"x": 88.0,
 								"y": 0.0,
-								"z": -30.230219
+								"z": -9.0
 							}
 						}
 					]
@@ -2132,22 +2580,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 15.298034,
+								"x": 87.0,
 								"y": 0.0,
-								"z": -16.333899
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 4.582585,
-								"z": 0.0
+								"z": -9.0
 							}
 						}
 					]
@@ -2156,22 +2596,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 15.91391,
+								"x": 93.0,
 								"y": 0.0,
-								"z": -24.64636
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 4.351178,
-								"z": 0.0
+								"z": -9.0
 							}
 						}
 					]
@@ -2180,22 +2612,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_PINK"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 5.5642715,
+								"x": 82.0,
 								"y": 0.0,
-								"z": -17.82527
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 2.6255229,
-								"z": 0.0
+								"z": -8.0
 							}
 						}
 					]
@@ -2204,14 +2628,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 3.8655856,
+								"x": 88.0,
 								"y": 0.0,
-								"z": -16.54419
+								"z": -8.0
 							}
 						}
 					]
@@ -2220,14 +2644,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 4.4799523,
+								"x": 82.0,
 								"y": 0.0,
-								"z": -17.382153
+								"z": -2.0
 							}
 						}
 					]
@@ -2236,14 +2660,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 1.5114864,
+								"x": 88.0,
 								"y": 0.0,
-								"z": -17.010157
+								"z": -2.0
 							}
 						}
 					]
@@ -2252,14 +2676,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 6.130357,
+								"x": 94.0,
 								"y": 0.0,
-								"z": -19.110447
+								"z": -2.0
 							}
 						}
 					]
@@ -2268,14 +2692,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 6.399026,
+								"x": 94.0,
 								"y": 0.0,
-								"z": -27.546959
+								"z": -8.0
 							}
 						}
 					]
@@ -2284,14 +2708,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 6.759905,
+								"x": 94.0,
 								"y": 0.0,
-								"z": -24.723957
+								"z": -14.0
 							}
 						}
 					]
@@ -2300,14 +2724,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "CHALLENGE_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 6.6764464,
+								"x": 93.526245,
 								"y": 0.0,
-								"z": -21.609747
+								"z": -7.377631
 							}
 						}
 					]
@@ -2316,14 +2740,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_WALL_INVISIBLE"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 6.4672375,
+								"x": 82.0,
 								"y": 0.0,
-								"z": -30.26773
+								"z": -15.0
 							}
 						}
 					]
@@ -2332,14 +2756,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_WALL_INVISIBLE"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 12.183826,
+								"x": 88.0,
 								"y": 0.0,
-								"z": -29.294455
+								"z": -15.0
 							}
 						}
 					]
@@ -2348,30 +2772,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "MAINTENANCE_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 13.005048,
-								"y": -1.9073486E-6,
-								"z": -25.50769
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 12.955791,
+								"x": 82.51012,
 								"y": 0.0,
-								"z": -21.792852
+								"z": -7.4086895
 							}
 						}
 					]
@@ -2380,182 +2788,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "MAINTENANCE_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 15.349665,
+								"x": 92.4509,
 								"y": 0.0,
-								"z": -28.599709
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.009719,
-								"y": 0.0,
-								"z": -26.16523
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.345178,
-								"y": 0.0,
-								"z": -23.039948
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.244052,
-								"y": 1.9073486E-6,
-								"z": -19.38583
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 14.507123,
-								"y": 0.0,
-								"z": -30.617348
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 6.5006313,
-								"y": 0.0,
-								"z": -27.162003
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 11.8837185,
-								"y": 0.0,
-								"z": -29.404018
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 12.816603,
-								"y": 0.0,
-								"z": -25.726463
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 4.1958213,
-								"y": 0.0,
-								"z": -17.27992
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "ENTER_WORLD",
-							"v": "tutorial_ruins"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.284006,
-								"y": 0.0,
-								"z": -30.319008
-							}
-						},
-						{
-							"type": "SCALE",
-							"v": 2.0
-						},
-						{
-							"type": "TYPE",
-							"v": "TRIGGER"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LAMP"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 12.146774,
-								"y": 0.0,
-								"z": -26.690601
+								"z": -7.40106
 							}
 						}
 					]
@@ -2564,39 +2804,39 @@
 					"props": [
 						{
 							"type": "CHARACTER_ANIMATION",
-							"v": "SQUAT"
+							"v": "THINKING"
 						},
 						{
 							"type": "CHARACTER_STYLE_CUSTOM",
 							"v": {
 								"colors": [
-									"CREAM",
 									"BROWN",
-									"BROWN",
+									"BLACK",
+									"BLACK",
 									"RED",
 									"WHITE",
 									"BLACK",
 									"WHITE",
 									"WHITE",
-									"DARK_BLUE",
+									"BLACK",
 									"WHITE"
 								],
-								"hair": "LONG"
+								"hair": "SHORT"
 							}
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 11.803433,
+								"x": 82.52369,
 								"y": 0.0,
-								"z": -27.322773
+								"z": -1.5021696
 							}
 						},
 						{
 							"type": "ROTATION",
 							"v": {
 								"x": 0.0,
-								"y": -0.08835733,
+								"y": 0.6839509,
 								"z": 0.0
 							}
 						},
@@ -2606,14 +2846,989 @@
 						},
 						{
 							"type": "CHARACTER_DIALOGUE",
-							"v": "tutorial_ruins_about_elevator"
+							"v": "tutorial_ruins_follow_puzzle_hint"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 94.0,
+								"y": 0.0,
+								"z": -14.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "DUNGEON_DOOR_STATE",
+							"v": {}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 94.0,
+								"y": 0.0,
+								"z": -15.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "follow_puzzle_door_1"
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_DOOR"
 						}
 					]
 				}
 			]
 		},
 		{
-			"chunkX": 0,
+			"chunkX": 5,
+			"chunkZ": -2
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 94.0,
+								"y": 0.0,
+								"z": -20.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 88.0,
+								"y": 0.0,
+								"z": -20.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": -20.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": -32.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 88.0,
+								"y": 0.0,
+								"z": -32.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 94.0,
+								"y": 0.0,
+								"z": -32.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 81.0,
+								"y": 0.0,
+								"z": -21.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 87.0,
+								"y": 0.0,
+								"z": -21.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 93.0,
+								"y": 0.0,
+								"z": -21.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": -21.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 88.0,
+								"y": 0.0,
+								"z": -21.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 94.0,
+								"y": 0.0,
+								"z": -21.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": -27.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 88.0,
+								"y": 0.0,
+								"z": -27.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 94.0,
+								"y": 0.0,
+								"z": -27.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": -26.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 4,
+			"chunkZ": -2
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -20.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -26.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -32.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 75.0,
+								"y": 0.0,
+								"z": -27.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 75.0,
+								"y": 0.0,
+								"z": -21.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -20.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -26.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -32.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 6,
+			"chunkZ": -2
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 100.0,
+								"y": 0.0,
+								"z": -32.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 106.0,
+								"y": 0.0,
+								"z": -26.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 99.0,
+								"y": 0.0,
+								"z": -21.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 100.0,
+								"y": 0.0,
+								"z": -20.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "CHALLENGE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 106.50186,
+								"y": 0.0,
+								"z": -26.452332
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 100.0,
+								"y": 0.0,
+								"z": -27.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 106.0,
+								"y": 0.0,
+								"z": -26.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 106.0,
+								"y": 0.0,
+								"z": -21.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "ITEM_DISPENSER",
+							"v": {
+								"item": {
+									"type": "BIGTON_2030",
+									"variant": null
+								},
+								"count": 1,
+								"givenTo": [],
+								"dist": 4.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 111.0,
+								"y": 0.0,
+								"z": -30.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "SAFE"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 103.0,
+								"y": 0.0,
+								"z": -31.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"follow_puzzle_door_2_latch",
+								"follow_puzzle_door_2_button_lamp"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "follow_puzzle_door_2_button"
+						},
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 106.0,
+								"y": 0.0,
+								"z": -32.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "DUNGEON_DOOR_STATE",
+							"v": {}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "follow_puzzle_door_2"
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_DOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 106.0,
+								"y": 0.0,
+								"z": -32.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 7,
+			"chunkZ": -2
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 112.0,
+								"y": 0.0,
+								"z": -26.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 112.0,
+								"y": 0.0,
+								"z": -32.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 118.0,
+								"y": 0.0,
+								"z": -32.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 118.0,
+								"y": 0.0,
+								"z": -26.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 123.0,
+								"y": 0.0,
+								"z": -27.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 123.0,
+								"y": 0.0,
+								"z": -21.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 124.0,
+								"y": 0.0,
+								"z": -32.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 124.0,
+								"y": 0.0,
+								"z": -26.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 112.0,
+								"y": 0.0,
+								"z": -21.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 118.0,
+								"y": 0.0,
+								"z": -21.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 114.0,
+								"y": 0.0,
+								"z": -30.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "SAFE"
+						},
+						{
+							"type": "ITEM_DISPENSER",
+							"v": {
+								"item": {
+									"type": "LASER",
+									"variant": null
+								},
+								"count": 1,
+								"givenTo": [],
+								"dist": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 117.0,
+								"y": 0.0,
+								"z": -30.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "SAFE"
+						},
+						{
+							"type": "ITEM_DISPENSER",
+							"v": {
+								"item": {
+									"type": "SHORT_RANGE_RADAR",
+									"variant": null
+								},
+								"count": 1,
+								"givenTo": [],
+								"dist": 4.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 6,
 			"chunkZ": -3
 		},
 		{
@@ -2622,14 +3837,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINS_FLOORS"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 3.0,
+								"x": 106.0,
 								"y": 0.0,
-								"z": -35.0
+								"z": -38.0
 							}
 						}
 					]
@@ -2638,14 +3853,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINS_FLOORS"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 9.0,
+								"x": 100.0,
 								"y": 0.0,
-								"z": -35.0
+								"z": -38.0
 							}
 						}
 					]
@@ -2654,14 +3869,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINS_FLOORS"
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 15.0,
+								"x": 100.0,
 								"y": 0.0,
-								"z": -35.0
+								"z": -39.0
 							}
 						}
 					]
@@ -2670,22 +3885,118 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINS_WALL"
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 106.0,
+								"y": 0.0,
+								"z": -39.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 99.0,
+								"y": 0.0,
+								"z": -33.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 99.0,
+								"y": 0.0,
+								"z": -39.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 105.0,
+								"y": 0.0,
+								"z": -39.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 111.0,
+								"y": 0.0,
+								"z": -39.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 105.0,
+								"y": 0.0,
+								"z": -33.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "ROTATION",
 							"v": {
 								"x": 0.0,
-								"y": 1.5707963,
+								"y": -1.5707963,
 								"z": 0.0
 							}
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 9.0,
+								"x": 106.0,
 								"y": 0.0,
-								"z": -35.0
+								"z": -38.0
 							}
 						}
 					]
@@ -2694,22 +4005,164 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "RUINS_WALL"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 1.5707963,
-								"z": 0.0
-							}
+							"v": "CHALLENGE_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 15.0,
+								"x": 106.57521,
 								"y": 0.0,
-								"z": -35.0
+								"z": -32.45976
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 111.0,
+								"y": 0.0,
+								"z": -45.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 103.0,
+								"y": 0.0,
+								"z": -36.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "LATCH"
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"follow_puzzle_door_2"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "follow_puzzle_door_2_latch"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 103.49158,
+								"y": 0.0,
+								"z": -32.459152
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "follow_puzzle_door_2_button_lamp"
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 7,
+			"chunkZ": -3
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 112.0,
+								"y": 0.0,
+								"z": -38.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 118.0,
+								"y": 0.0,
+								"z": -38.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 118.0,
+								"y": 0.0,
+								"z": -39.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 117.0,
+								"y": 0.0,
+								"z": -39.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 123.0,
+								"y": 0.0,
+								"z": -39.0
 							}
 						}
 					]
@@ -2723,40 +4176,64 @@
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 6.5489063,
+								"x": 112.0,
 								"y": 0.0,
-								"z": -35.345245
+								"z": -44.0
 							}
 						}
 					]
-				}
-			]
-		},
-		{
-			"chunkX": 1,
-			"chunkZ": -2
-		},
-		{
-			"instances": [
+				},
 				{
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 19.048433,
+								"x": 117.0,
 								"y": 0.0,
-								"z": -26.42165
+								"z": -45.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 112.0,
+								"y": 0.0,
+								"z": -44.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 124.0,
+								"y": 0.0,
+								"z": -38.0
 							}
 						},
 						{
 							"type": "ROTATION",
 							"v": {
 								"x": 0.0,
-								"y": 0.5682739,
+								"y": -1.5707963,
 								"z": 0.0
 							}
 						}
@@ -2766,22 +4243,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 19.889875,
+								"x": 123.0,
 								"y": 0.0,
-								"z": -18.322163
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 5.7976246,
-								"z": 0.0
+								"z": -33.0
 							}
 						}
 					]
@@ -2790,286 +4259,22 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "TRIGGER"
+						},
+						{
+							"type": "SCALE",
+							"v": 2.0
+						},
+						{
+							"type": "LEAVE_WORLD",
+							"v": {}
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 18.01751,
+								"x": 114.743576,
 								"y": 0.0,
-								"z": -26.199486
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 17.520634,
-								"y": 0.0,
-								"z": -21.826817
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 24.772526,
-								"y": 0.0,
-								"z": -17.739708
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 23.92162,
-								"y": 0.0,
-								"z": -24.38402
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.9685,
-								"y": 0.0,
-								"z": -18.73382
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.094336,
-								"y": 0.0,
-								"z": -24.125881
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.359423,
-								"y": 0.0,
-								"z": -29.751953
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 26.50275,
-								"y": 0.0,
-								"z": -30.952454
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 23.371168,
-								"y": 0.0,
-								"z": -30.636047
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 27.204126,
-								"y": 0.0,
-								"z": -25.870205
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 27.202015,
-								"y": 0.0,
-								"z": -23.369427
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 27.87365,
-								"y": 0.0,
-								"z": -19.631998
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 22.61747,
-								"y": 0.0,
-								"z": -27.327133
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 29.392532,
-								"y": 0.0,
-								"z": -30.23872
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 28.907837,
-								"y": 0.0,
-								"z": -20.504583
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 30.03796,
-								"y": 0.0,
-								"z": -19.314146
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 22.410292,
-								"y": 0.0,
-								"z": -19.444897
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 22.068913,
-								"y": 0.0,
-								"z": -29.850998
+								"z": -38.566254
 							}
 						}
 					]
@@ -3077,1087 +4282,7 @@
 			]
 		},
 		{
-			"chunkX": 1,
-			"chunkZ": -1
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 17.862576,
-								"y": 0.0,
-								"z": -15.400408
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 1.4899383,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 17.683916,
-								"y": 0.0,
-								"z": -9.837364
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 2.1100295,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 19.852737,
-								"y": 0.0,
-								"z": -4.600857
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 1.3329891,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 16.197193,
-								"y": 0.0,
-								"z": -15.105357
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 17.664845,
-								"y": 0.0,
-								"z": -4.8211174
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 17.664738,
-								"y": -1.9073486E-6,
-								"z": -10.304714
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 17.320538,
-								"y": 0.0,
-								"z": -11.10355
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 18.851934,
-								"y": 0.0,
-								"z": -8.257826
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 16.307701,
-								"y": -1.9073486E-6,
-								"z": -9.088177
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 20.747066,
-								"y": 3.8146973E-6,
-								"z": -0.045272827
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 27.877235,
-								"y": 0.0,
-								"z": -8.877071
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 17.25422,
-								"y": 0.0,
-								"z": -7.0031586
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 23.02796,
-								"y": 0.0,
-								"z": -6.787777
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 23.12511,
-								"y": 0.0,
-								"z": -2.7410774
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.158913,
-								"y": 0.0,
-								"z": -15.429886
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 23.970627,
-								"y": 0.0,
-								"z": -13.279282
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 23.101803,
-								"y": 0.0,
-								"z": -8.80702
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.63083,
-								"y": 0.0,
-								"z": -11.716539
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 26.108374,
-								"y": 0.0,
-								"z": -4.4794464
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 26.501926,
-								"y": 0.0,
-								"z": -1.6023102
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 24.861927,
-								"y": 0.0,
-								"z": -9.711103
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 26.58604,
-								"y": 0.0,
-								"z": -13.921864
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 27.874228,
-								"y": 0.0,
-								"z": -14.9770775
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 29.44578,
-								"y": 0.0,
-								"z": -5.2145805
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 29.278557,
-								"y": 0.0,
-								"z": -2.324665
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 30.950424,
-								"y": 0.0,
-								"z": -13.831236
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 31.040077,
-								"y": 0.0,
-								"z": -8.743341
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 23.465668,
-								"y": 0.0,
-								"z": -15.319473
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 17.984592,
-								"y": 0.0,
-								"z": -4.663536
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": 0,
-			"chunkZ": 1
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 1.0957282,
-								"y": 0.0,
-								"z": 16.631062
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 4.413053,
-								"y": 0.0,
-								"z": 16.484943
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 10.432989,
-								"y": 0.0,
-								"z": 17.209923
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 1.664201,
-								"y": 0.0,
-								"z": 27.782803
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 10.503778,
-								"y": 0.0,
-								"z": 21.91212
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 6.717101,
-								"y": 0.0,
-								"z": 16.700645
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 6.7989516,
-								"y": 0.0,
-								"z": 20.482084
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.359331,
-								"y": 0.0,
-								"z": 19.961887
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 8.362236,
-								"y": 0.0,
-								"z": 18.09404
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 7.08255,
-								"y": 0.0,
-								"z": 21.982603
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": -1,
-			"chunkZ": 1
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -7.2809615,
-								"y": 0.0,
-								"z": 18.674068
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -14.039106,
-								"y": 0.0,
-								"z": 27.40871
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -2.3244143,
-								"y": 0.0,
-								"z": 21.107613
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -8.603737,
-								"y": 0.0,
-								"z": 18.312103
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -4.2242737,
-								"y": 0.0,
-								"z": 18.409771
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -7.3589597,
-								"y": 0.0,
-								"z": 21.155218
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -12.185221,
-								"y": 0.0,
-								"z": 20.854452
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.543578,
-								"y": 0.0,
-								"z": 18.312103
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -4.7703714,
-								"y": 0.0,
-								"z": 16.091862
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -7.9109907,
-								"y": 0.0,
-								"z": 22.058678
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": -2,
-			"chunkZ": 1
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -21.30917,
-								"y": 0.0,
-								"z": 19.993816
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": 1,
-			"chunkZ": 1
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 19.288317,
-								"y": 0.0,
-								"z": 20.862896
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 18.479723,
-								"y": 0.0,
-								"z": 17.86826
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": 1,
-			"chunkZ": 0
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 16.465527,
-								"y": 0.0,
-								"z": 7.549202
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 20.257357,
-								"y": 0.0,
-								"z": 13.208401
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "TREE_GREEN"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 26.251244,
-								"y": 0.0,
-								"z": 3.344078
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 17.216726,
-								"y": 0.0,
-								"z": 0.40819168
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 20.888603,
-								"y": 0.0,
-								"z": 7.2728424
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.967026,
-								"y": 0.0,
-								"z": 0.947258
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 20.7611,
-								"y": 0.0,
-								"z": 2.5218315
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 17.888577,
-								"y": 0.0,
-								"z": 6.9749756
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 16.130463,
-								"y": 0.0,
-								"z": 9.011665
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_GRASS"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 22.047043,
-								"y": 0.0,
-								"z": 15.642059
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "LUSH_BUSH"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 16.155119,
-								"y": 0.0,
-								"z": 0.4483986
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": 1,
+			"chunkX": 5,
 			"chunkZ": -3
 		},
 		{
@@ -4166,14 +4291,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 23.37534,
+								"x": 94.0,
 								"y": 0.0,
-								"z": -33.022636
+								"z": -33.0
 							}
 						}
 					]
@@ -4182,14 +4307,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 21.571157,
+								"x": 88.0,
 								"y": 0.0,
-								"z": -41.592575
+								"z": -33.0
 							}
 						}
 					]
@@ -4198,14 +4323,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 20.109386,
+								"x": 82.0,
 								"y": 0.0,
-								"z": -37.23033
+								"z": -33.0
 							}
 						}
 					]
@@ -4214,14 +4339,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "TREE_GREEN"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 28.25064,
+								"x": 81.0,
 								"y": 0.0,
-								"z": -32.65131
+								"z": -33.0
 							}
 						}
 					]
@@ -4230,14 +4355,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 20.125008,
+								"x": 87.0,
 								"y": 0.0,
-								"z": -34.822807
+								"z": -33.0
 							}
 						}
 					]
@@ -4246,14 +4371,38 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 19.893095,
+								"x": 93.0,
 								"y": 0.0,
-								"z": -37.376457
+								"z": -33.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 4,
+			"chunkZ": -3
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -33.0
 							}
 						}
 					]
@@ -4262,14 +4411,38 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 22.800812,
+								"x": 75.0,
 								"y": 0.0,
-								"z": -37.193634
+								"z": -33.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 6,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 99.0,
+								"y": 0.0,
+								"z": -3.0
 							}
 						}
 					]
@@ -4278,14 +4451,22 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 22.925966,
+								"x": 100.0,
 								"y": 0.0,
-								"z": -34.134964
+								"z": -2.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
 							}
 						}
 					]
@@ -4294,14 +4475,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 26.652107,
+								"x": 100.0,
 								"y": 0.0,
-								"z": -33.96464
+								"z": -14.0
 							}
 						}
 					]
@@ -4310,14 +4491,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_WALL"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 25.671509,
+								"x": 100.0,
 								"y": 0.0,
-								"z": -43.42531
+								"z": -15.0
 							}
 						}
 					]
@@ -4326,14 +4507,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_GRASS"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 29.412434,
+								"x": 105.0,
 								"y": 0.0,
-								"z": -33.036205
+								"z": -15.0
 							}
 						}
 					]
@@ -4342,14 +4523,295 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "LUSH_BUSH"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 20.869368,
+								"x": 105.0,
 								"y": 0.0,
-								"z": -35.39942
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 106.0,
+								"y": 0.0,
+								"z": -14.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 100.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 100.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 101.0,
+								"y": 0.0,
+								"z": -13.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"follow_puzzle_door_1"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "follow_puzzle_door_1_latch"
+						},
+						{
+							"type": "TYPE",
+							"v": "LATCH"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 99.4827,
+								"y": 0.0,
+								"z": -12.45575
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "LAMP"
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "follow_puzzle_door_1_button_lamp"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 98.0,
+								"y": 0.0,
+								"z": -12.0
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"follow_puzzle_door_1_latch",
+								"follow_puzzle_door_1_button_lamp"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "follow_puzzle_door_1_button"
+						},
+						{
+							"type": "TYPE",
+							"v": "BUTTON"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 99.0,
+								"y": 0.0,
+								"z": -15.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 6,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 99.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 5,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "CHALLENGE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 93.48351,
+								"y": -1.9073486E-6,
+								"z": 2.5826797
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 88.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 94.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 92.48655,
+								"y": 0.0,
+								"z": 2.5664425
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.4977,
+								"y": 0.0,
+								"z": 2.5485954
 							}
 						}
 					]

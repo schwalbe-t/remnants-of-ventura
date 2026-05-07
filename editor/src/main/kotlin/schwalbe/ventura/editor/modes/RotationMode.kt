@@ -36,6 +36,14 @@ private const val DEGREE: Double = PI / 180.0
 private fun updateSelectedObjectRotation(
     editor: Editor, anchor: AnchoredMouse
 ): SerVector3? {
+    if (Key.R.wasPressed) {
+        anchor.pos = null
+        anchor.angle = null
+        return modifyRotation(editor) {
+            val newY = (Math.random() * 2.0 * PI).toFloat()
+            SerVector3(it.x, newY, it.z)
+        }
+    }
     if (MButton.LEFT.isPressed) {
         val currRot: Float = editor.getSelectedObject()
             ?.get(ObjectProp.Rotation)?.y ?: 0f
@@ -67,12 +75,6 @@ private fun updateSelectedObjectRotation(
     if (Key.RIGHT.wasPressed) {
         return modifyRotation(editor) {
             val newY = ((it.y / DEGREE).roundToInt() - 1) * DEGREE.toFloat()
-            SerVector3(it.x, newY, it.z)
-        }
-    }
-    if (Key.R.wasPressed) {
-        return modifyRotation(editor) {
-            val newY = (Math.random() * 2.0 * PI).toFloat()
             SerVector3(it.x, newY, it.z)
         }
     }

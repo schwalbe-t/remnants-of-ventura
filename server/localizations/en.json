@@ -1,28 +1,70 @@
 {
     "dialogue": {
 
-        "merchant_greeting_1": [
+        "tutorial_ruins_invitation": [
             {
-                "name": "Merchant",
+                "name": "Adventurer",
                 "lines": [
-                    "What's up? Are you looking for something?",
-                    "@OPEN_SHOP:test"
+                    "Hey! I haven't seen you here before.",
+                    "Are you a new adventurer? If you are, you should totally explore the ruins to my right.",
+                    "The rest of my party is already inside. I think they would be willing to help you if you need it."
                 ]
             }
         ],
-        "merchant_greeting_2": [
+        "tutorial_ruins_about_elevator": [
             {
-                "name": "Merchant",
+                "name": "Adventurer",
                 "lines": [
-                    "If you need something, spit it out. Otherwise stop wasting my time.",
-                    "Why are you still here?"
+                    "What am I doing? I am trying to analyze this ancient lamp.",
+                    "These old contraptions truly are interesting...",
+                    "That elevator for example; how does it still work after all this time?"
                 ]
-            },
+            }
+        ],
+        "tutorial_ruins_deploy_puzzle_hint": [
             {
-                "name": "Annoyed Merchant",
+                "name": "Adventurer",
                 "lines": [
-                    "You are starting to annoy me. Are you gonna buy something?",
-                    "@OPEN_SHOP:test"
+                    "You want to know my thoughts on this puzzle? It certainly is interesting.",
+                    "Based on what I can tell, you need to place a robot onto one of the buttons to open the first door.",
+                    "To achieve this, you can open your inventory (Tab), select your robot and deploy it.",
+                    "The door after it then only opens when there are no robots on any of the buttons.",
+                    "If you configure the robot (E while near it), you can destroy it and pick it back up."
+                ]
+            }
+        ],
+        "tutorial_ruins_first_program_puzzle_hint": [
+            {
+                "name": "Adventurer",
+                "lines": [
+                    "It looks like here we only need to move a robot onto the button.",
+                    "However, we are only allowed to deploy robots in the area shown by the hammers.",
+                    "I guess that means we have to program the robot to move onto the button.",
+                    "Once you have a robot deployed, you configure it (E while near it) and use left click to add a processor to the modules.",
+                    "You can then program the robot (C while near it) and write:\n\nmove(right)",
+                    "Then you just need to start the robot, possibly several times.",
+                    "Don't forget to take the robot with you when you're done!"
+                ]
+            }
+        ],
+        "tutorial_ruins_loop_puzzle_hint": [
+            {
+                "name": "Adventurer",
+                "lines": [
+                    "This puzzle looks similar to the previous one, doesn't it?",
+                    "Looks can be deceiving though. See those red antennas? Your robot cannot stop inside of that area.",
+                    "Not a big deal, you can simply wrap your code in a loop! This will make it so the code is repeated over and over again:\n\nloop {\n    move(right)\n}"
+                ]
+            }
+        ],
+        "tutorial_ruins_follow_puzzle_hint": [
+            {
+                "name": "Adventurer",
+                "lines": [
+                    "For this puzzle the robot needs to move for a very long time without stopping.",
+                    "If only there was a way for the robot to follow the player?",
+                    "I think the robot would move towards the player if one wrote something like this:\n\nmove(playerDir())",
+                    "Maybe this could be combined with a loop?"
                 ]
             }
         ]

@@ -377,20 +377,21 @@ private object DoorOverrides : ObjectOverrides() {
         val now: Long = System.currentTimeMillis()
         val isOpen: Boolean = state.isTriggered(obj)
         val s = obj[ObjectProp.DungeonDoorState]
-        val targetHeight: Float = if (isOpen) OPEN_HEIGHT else CLOSED_HEIGHT
-        val toTarget: Float = sign(targetHeight - s.height)
-        if (s.lastUpdate == 0L && toTarget != 0f) {
-            state.sounds?.play(SoundEffects.DOOR())
+        val lastOpen: Boolean? = s.lastOpen
+        if (s.lastUpdate == 0L) {
             s.lastUpdate = now
         }
+        if (lastOpen != null && lastOpen != isOpen) {
+            state.sounds?.play(SoundEffects.DOOR())
+        }
+        val targetHeight: Float = if (isOpen) OPEN_HEIGHT else CLOSED_HEIGHT
+        val toTarget: Float = sign(targetHeight - s.height)
         val distToTarget: Float = abs(targetHeight - s.height)
         val deltaTime: Float = (now - s.lastUpdate).toFloat() / 1000f
         val maxFrameDist: Float = MOVE_SPEED * deltaTime
         s.height += toTarget * minOf(maxFrameDist, distToTarget)
         s.lastUpdate = now
-        if (distToTarget <= maxFrameDist) {
-            s.lastUpdate = 0
-        }
+        s.lastOpen = isOpen
     }
 
     override fun transform(

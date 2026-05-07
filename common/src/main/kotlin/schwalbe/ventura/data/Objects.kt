@@ -299,7 +299,8 @@ sealed interface ObjectProp<V> {
         @Serializable
         class State(
             @Transient var height: Float = 0f,
-            @Transient var lastUpdate: Long = 0
+            @Transient var lastUpdate: Long = 0,
+            @Transient var lastOpen: Boolean? = null
         )
     }
 

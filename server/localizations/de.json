@@ -1,27 +1,69 @@
 {
     "dialogue": {
-        "merchant_greeting_1": [
+        "tutorial_ruins_invitation": [
             {
-                "name": "Händler",
+                "name": "Abenteurer",
                 "lines": [
-                    "Was gibt's? Suchst du nach etwas Bestimmtem?",
-                    "@OPEN_SHOP:test"
+                    "Hey! Dich habe ich hier noch nie gesehen.",
+                    "Bist du ein neuer Abenteurer? Wenn ja, solltest du unbedingt die Ruinen zu meiner Rechten erkunden.",
+                    "Der Rest meiner Gruppe ist schon drin. Ich denke, sie würden dir helfen, falls du Unterstützung brauchst."
                 ]
             }
         ],
-        "merchant_greeting_2": [
+        "tutorial_ruins_about_elevator": [
             {
-                "name": "Händler",
+                "name": "Abenteurer",
                 "lines": [
-                    "Wenn du was brauchst, rück damit raus. Ansonsten hör auf, meine Zeit zu verschwenden.",
-                    "Warum bist du immer noch hier?"
+                    "Was ich hier mache? Ich versuche, diese antike Lampe zu analysieren.",
+                    "Diese alten Apparaturen sind wirklich interessant...",
+                    "Dieser Aufzug zum Beispiel; wie kann es sein, dass er nach all der Zeit immer noch funktioniert?"
                 ]
-            },
+            }
+        ],
+        "tutorial_ruins_deploy_puzzle_hint": [
             {
-                "name": "Verärgerter Händler",
+                "name": "Abenteurer",
                 "lines": [
-                    "Du fängst an, mich zu nerven. Wirst du jetzt was kaufen?",
-                    "@OPEN_SHOP:test"
+                    "Du willst wissen, was ich über dieses Rätsel denke? Es ist durchaus interessant.",
+                    "Soweit ich das beurteilen kann, musst du einen Roboter auf einen der Knöpfe stellen, um die erste Tür zu öffnen.",
+                    "Dazu kannst du dein Inventar öffnen (Tab), deinen Roboter auswählen und ihn platzieren.",
+                    "Die darauffolgende Tür öffnet sich dann nur, wenn sich kein Roboter auf einem der Knöpfe befindet.",
+                    "Wenn du den Roboter konfigurierst (E in seiner Nähe), kannst du ihn zerstören und wieder aufheben."
+                ]
+            }
+        ],
+        "tutorial_ruins_first_program_puzzle_hint": [
+            {
+                "name": "Abenteurer",
+                "lines": [
+                    "Es sieht so aus, als müssten wir hier nur einen Roboter auf den Knopf bewegen.",
+                    "Allerdings dürfen wir Roboter nur in dem Bereich platzieren, der durch die Hämmer markiert ist.",
+                    "Ich schätze, das bedeutet, dass wir den Roboter so programmieren müssen, dass er sich auf den Knopf bewegt.",
+                    "Sobald du einen Roboter platziert hast, kannst du ihn konfigurieren (E in seiner Nähe) und per Linksklick einen Prozessor zu den Modulen hinzufügen.",
+                    "Dann kannst du den Roboter programmieren (C in seiner Nähe) und folgendes schreiben:\n\nmove(right)",
+                    "Dann musst du den Roboter nur noch starten, eventuell mehrmals.",
+                    "Vergiss nicht, den Roboter wieder mitzunehmen, wenn du fertig bist!"
+                ]
+            }
+        ],
+        "tutorial_ruins_loop_puzzle_hint": [
+            {
+                "name": "Abenteurer",
+                "lines": [
+                    "Dieses Rätsel sieht dem vorherigen sehr ähnlich, nicht wahr?",
+                    "Doch der Schein trügt. Siehst du diese roten Antennen? Dein Roboter darf innerhalb dieses Bereichs nicht anhalten.",
+                    "Kein Problem, du kannst deinen Code einfach in eine Schleife packen! Das sorgt dafür, dass der Code immer und immer wieder wiederholt wird:\n\nloop {\n    move(right)\n}"
+                ]
+            }
+        ],
+        "tutorial_ruins_follow_puzzle_hint": [
+            {
+                "name": "Abenteurer",
+                "lines": [
+                    "Für dieses Rätsel muss sich der Roboter sehr lange bewegen, ohne anzuhalten.",
+                    "Wenn es nur einen Weg gäbe, wie der Roboter dem Spieler folgen könnte...",
+                    "Ich glaube, der Roboter würde sich zum Spieler bewegen, wenn man so etwas schreiben würde:\n\nmove(playerDir())",
+                    "Vielleicht lässt sich das mit einer Schleife kombinieren?"
                 ]
             }
         ]

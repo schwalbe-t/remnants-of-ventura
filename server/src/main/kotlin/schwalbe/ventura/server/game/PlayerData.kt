@@ -73,33 +73,10 @@ fun PlayerData.Companion.createStartingData(
     return PlayerData(
         worlds = mutableListOf(worlds.baseWorld.createPlayerEntry(style)),
         inventory = Inventory(itemCounts = mutableMapOf(
-            Item(ItemType.KENDAL_DYNAMICS_SCOUT, ItemVariant.SCOUT_CAMOUFLAGE) to 10,
-            Item(ItemType.KENDAL_DYNAMICS_SCOUT, ItemVariant.SCOUT_FIREWORKS) to 10,
-            Item(ItemType.KENDAL_DYNAMICS_SCOUT, ItemVariant.SCOUT_LADYBUG) to 10,
-            Item(ItemType.BIGTON_1030, null) to 99999,
-            Item(ItemType.BIGTON_1050, null) to 99999,
-            Item(ItemType.BIGTON_1070, null) to 99999,
-            Item(ItemType.BIGTON_2030, null) to 99999,
-            Item(ItemType.BIGTON_2050, null) to 99999,
-            Item(ItemType.BIGTON_2070, null) to 99999,
-            Item(ItemType.BIGTON_3030, null) to 99999,
-            Item(ItemType.BIGTON_3050, null) to 99999,
-            Item(ItemType.BIGTON_3070, null) to 99999,
-            Item(ItemType.PIVOTAL_ME2048, null) to 99999,
-            Item(ItemType.PIVOTAL_ME5120, null) to 99999,
-            Item(ItemType.PIVOTAL_ME10K, null) to 99999,
-            Item(ItemType.PIVOTAL_ME20K, null) to 99999,
-            Item(ItemType.DIGITAL_RADIO, null) to 99999,
-            Item(ItemType.GPS_RECEIVER, null) to 99999,
-            Item(ItemType.SHORT_RANGE_SONAR, null) to 99999,
-            Item(ItemType.MID_RANGE_SONAR, null) to 99999,
-            Item(ItemType.LONG_RANGE_SONAR, null) to 99999,
-            Item(ItemType.SHORT_RANGE_RADAR, null) to 99999,
-            Item(ItemType.MID_RANGE_RADAR, null) to 99999,
-            Item(ItemType.LONG_RANGE_RADAR, null) to 99999,
-            Item(ItemType.LASER, null) to 99999
+            Item(ItemType.KENDAL_DYNAMICS_SCOUT, ItemVariant.SCOUT_CAMOUFLAGE) to 1,
+            Item(ItemType.BIGTON_1030, null) to 1
         )),
-        purse = Purse(numCoins = 500),
+        purse = Purse(numCoins = 0),
         style = style
     )
 }
