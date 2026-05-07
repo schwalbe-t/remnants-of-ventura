@@ -20,6 +20,7 @@ private fun submitPreloadResources(resLoader: ResourceLoader) {
 private fun submitGameResources(resLoader: ResourceLoader) {
     submitScreenResources(resLoader)
     Soundtrack.submitResources(resLoader)
+    SoundEffects.submitResources(resLoader)
     Renderer.submitResources(resLoader)
     World.submitResources(resLoader)
     Items.submitResources(resLoader)

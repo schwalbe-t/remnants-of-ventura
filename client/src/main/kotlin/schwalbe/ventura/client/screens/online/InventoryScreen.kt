@@ -201,7 +201,7 @@ fun inventoryMenuScreen(client: Client): () -> GameScreen = {
             toasts.update()
         }
     )
-    screen.screen.packets?.displayTaggedErrorToasts(toasts)
+    screen.screen.packets?.displayTaggedErrorToasts(toasts, client)
     val selectedItemSection = Stack()
     fun renderSelectedItemSection(
         item: Item?, count: Int, afterAction: () -> Unit

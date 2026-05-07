@@ -181,14 +181,13 @@ class World(
         for (spawner in this.spawners) {
             val sPos = spawner[ObjectProp.Position]
             val s = spawner[ObjectProp.EnemySpawner]
-            if (s.defeatedCount >= s.totalCount) { continue }
             s.defeatedCount += s.created.count { it !in this.enemyRobots.keys }
             s.created.removeIf { it !in this.enemyRobots.keys }
-            if (s.created.size >= s.maxConcurrent) { continue }
+            if (s.defeatedCount + s.created.size >= s.totalCount) { continue }
             val pDist: Float = this.players.values
                 .minOfOrNull {
                     val pPos = it.data.worlds.last().state.position
-                    abs(pPos.x - sPos.x) + abs(pPos.z - sPos.z)
+                    maxOf(abs(pPos.x - sPos.x), abs(pPos.z - sPos.z))
                 }
                 ?: Float.MAX_VALUE
             val isActive = pDist <= s.dist
@@ -198,6 +197,7 @@ class World(
                 s.defeatedCount = 0
                 continue
             }
+            if (s.created.size >= s.maxConcurrent) { continue }
             val now = System.currentTimeMillis()
             if (now < s.lastSpawn + s.interval) { continue }
             s.lastSpawn = now

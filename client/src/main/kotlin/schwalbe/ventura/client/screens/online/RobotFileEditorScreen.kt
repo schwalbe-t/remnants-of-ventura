@@ -67,7 +67,7 @@ fun robotFileEditorScreen(
             toasts.update()
         }
     )
-    screen.packets.displayTaggedErrorToasts(toasts)
+    screen.packets.displayTaggedErrorToasts(toasts, client)
     screen.screen.add(layer = 0, element = Axis.row()
         .add(66.6.vw, Stack()
             .add(screen.background)

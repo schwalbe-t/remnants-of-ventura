@@ -157,21 +157,21 @@ fun Robot.Companion.allocatePosition(
         if (world.chunkCollisions[tx, tz]) { return }
         queue.add(tile.packed)
     }
+    fun enqueueNeighbours(tx: Int, tz: Int) {
+        enqueue(tx - 1, tz      )
+        enqueue(tx + 1, tz      )
+        enqueue(tx,     tz - 1  )
+        enqueue(tx,     tz + 1  )
+    }
     fun posOfTile(tx: Int, tz: Int) = SerVector3(tx + 0.5f, 0.0f, tz + 0.5f)
     enqueue(centerTx, centerTz)
-    if (queue.isEmpty()) {
-        // if center is not valid position (queue empty), return it as tile
-        return posOfTile(centerTx, centerTz)
-    }
+    enqueueNeighbours(centerTx, centerTz)
     while (queue.isNotEmpty()) {
         val curr: IntPair = queue.removeFirst().toIntPair()
         if (!tileIsOccupied(curr.x, curr.z)) {
             return posOfTile(curr.x, curr.z)
         }
-        enqueue(curr.x - 1, curr.z      )
-        enqueue(curr.x + 1, curr.z      )
-        enqueue(curr.x,     curr.z - 1  )
-        enqueue(curr.x,     curr.z + 1  )
+        enqueueNeighbours(curr.x, curr.z)
     }
     // no valid tile could be found
     return null

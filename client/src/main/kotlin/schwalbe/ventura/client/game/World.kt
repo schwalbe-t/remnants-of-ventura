@@ -8,6 +8,7 @@ import schwalbe.ventura.data.ObjectProp
 import schwalbe.ventura.net.WorldInfoPacket
 import kotlin.uuid.Uuid
 import org.joml.*
+import schwalbe.ventura.engine.audio.SoundEffectsPlayer
 
 class World(client: Client, info: WorldInfoPacket) {
 
@@ -21,6 +22,7 @@ class World(client: Client, info: WorldInfoPacket) {
     }
 
     class WorldObjectStateProvider(
+        override val sounds: SoundEffectsPlayer,
         val state: WorldState
     ) : ObjectStateProvider {
         override fun isTriggered(obj: ObjectInstance): Boolean
@@ -40,7 +42,9 @@ class World(client: Client, info: WorldInfoPacket) {
     )
     val state = WorldState()
     val vfx = VisualEffects()
-    val objectStateProvider = WorldObjectStateProvider(this.state)
+    val objectStateProvider = WorldObjectStateProvider(
+        client.sounds, this.state
+    )
 
     val playerAtCenterCamMode = CameraController.Mode(
         lookAt = { _ -> Vector3f()
@@ -54,6 +58,7 @@ class World(client: Client, info: WorldInfoPacket) {
     init {
         client.renderer.config = info.worldInfo.rendererConfig
         client.soundtrack.changeTracklist(Soundtrack[info.worldInfo.trackList])
+        client.sounds.play(SoundEffects.DEEP_WOOSH())
     }
 
     fun dispose() {

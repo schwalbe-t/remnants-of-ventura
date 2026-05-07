@@ -2,6 +2,7 @@
 package schwalbe.ventura.client.screens.online
 
 import schwalbe.ventura.client.Client
+import schwalbe.ventura.client.SoundEffects
 import schwalbe.ventura.data.*
 import schwalbe.ventura.net.*
 
@@ -17,6 +18,7 @@ val ITEM_ACTION_HANDLERS: Map<ItemAction, ItemActionHandler> = mapOf(
         client.network.outPackets?.send(Packet.serialize(
             PacketType.DEPLOY_ROBOT, RobotDeploymentPacket(robotType, item)
         ))
+        client.sounds.play(SoundEffects.PRINTER())
     }
 
 )

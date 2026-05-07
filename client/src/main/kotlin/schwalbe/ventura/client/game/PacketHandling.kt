@@ -65,5 +65,5 @@ fun PacketHandler<Unit>.addWorldHandling(client: Client) = this
     .onPacket(PacketType.VISUAL_EFFECT) { v: VisualEffectPacket, _ ->
         val world: World = client.world ?: return@onPacket
         val renderer = v.vfx.toVfxRenderer(world) ?: return@onPacket
-        world.vfx.add(v.relTimestamp, renderer)
+        world.vfx.add(v.relTimestamp, renderer, client)
     }

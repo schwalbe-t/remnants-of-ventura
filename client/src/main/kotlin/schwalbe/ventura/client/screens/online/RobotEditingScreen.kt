@@ -366,6 +366,7 @@ private fun createRobotSettingsSection(
             client.network.outPackets?.send(Packet.serialize(
                 PacketType.REPAIR_ROBOT, robotId
             ))
+            client.sounds.play(SoundEffects.ROBOT_REPAIR())
         }
         .withBottomButton(l[BUTTON_DESTROY_ROBOT]) {
             client.network.outPackets?.send(Packet.serialize(
@@ -390,6 +391,7 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
             client.network.outPackets?.send(Packet.serialize(
                 PacketType.PAUSE_ROBOT, robotId
             ))
+            client.sounds.play(SoundEffects.PRINTER())
         },
         onClose = {
             client.network.outPackets?.send(Packet.serialize(
@@ -416,7 +418,7 @@ fun robotEditingScreen(client: Client, robotId: Uuid): () -> GameScreen = {
             toasts.update()
         }
     )
-    screen.screen.packets?.displayTaggedErrorToasts(toasts)
+    screen.screen.packets?.displayTaggedErrorToasts(toasts, client)
     val l = localized()
     val rhs = Stack()
     fun resetRhs() {

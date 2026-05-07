@@ -14,6 +14,7 @@ import schwalbe.ventura.client.Camera
 import schwalbe.ventura.client.Soundtrack
 import schwalbe.ventura.client.game.WorldState
 import schwalbe.ventura.data.ObjectProp
+import schwalbe.ventura.engine.audio.SoundEffectsPlayer
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -38,6 +39,7 @@ class WorldBackground(
         groundHeight = displayed.world.info.groundHeight
     )
     val objectState = object : ObjectStateProvider {
+        override val sounds: SoundEffectsPlayer? = null
         override fun isTriggered(obj: ObjectInstance)
             = obj[ObjectProp.Triggerable] in displayed.triggered
         override fun worldState(): WorldState.Interpolated? = null

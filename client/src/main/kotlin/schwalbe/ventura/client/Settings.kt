@@ -25,6 +25,7 @@ data class Settings(
 fun Settings.applyAudio(client: Client): Settings {
     AudioListener.gain = this.generalVolume
     client.soundtrack.gain = this.musicVolume
+    client.sounds.gain = this.sfxVolume
     return this
 }
 

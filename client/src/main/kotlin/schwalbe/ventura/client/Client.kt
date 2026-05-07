@@ -6,6 +6,7 @@ import schwalbe.ventura.client.game.ChatMessageBuffer
 import schwalbe.ventura.client.game.World
 import schwalbe.ventura.client.screens.online.ToastManager
 import schwalbe.ventura.engine.*
+import schwalbe.ventura.engine.audio.SoundEffectsPlayer
 import schwalbe.ventura.engine.audio.SoundtrackPlayer
 import schwalbe.ventura.engine.input.*
 
@@ -25,6 +26,7 @@ class Client : Application<GameScreen>(
     val toasts = ToastManager()
 
     val soundtrack = SoundtrackPlayer()
+    val sounds = SoundEffectsPlayer()
     val renderer = Renderer(this.out3d)
     var username: String = ""
     var world: World? = null

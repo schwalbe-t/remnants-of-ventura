@@ -144,6 +144,7 @@ class WorldState {
             .filter { it !in after.allRobots.keys }
             .forEach { robotId ->
                 this.interpolated.robots.remove(robotId)
+                client.sounds.play(SoundEffects.ROBOT_DESTRUCT())
             }
         for ((robotId, rAfter) in after.allRobots) {
             val rBefore = before.allRobots[robotId] ?: rAfter
@@ -151,6 +152,16 @@ class WorldState {
             state.interpolate(rBefore, rAfter, n)
         }
         this.interpolated.ownedRobots = after.ownedRobots
+        val hasNewItem = after.groundItems.keys
+            .any { it !in this.interpolated.groundItems.keys }
+        if (hasNewItem) {
+            client.sounds.play(SoundEffects.POP())
+        }
+        val hasGoneItem = this.interpolated.groundItems.keys
+            .any { it !in after.groundItems.keys }
+        if (hasGoneItem) {
+            client.sounds.play(SoundEffects.ITEM_PICKUP())
+        }
         this.interpolated.groundItems = after.groundItems
         this.interpolated.triggeredObjects = after.triggeredObjects
         val dt: Float = client.deltaTime

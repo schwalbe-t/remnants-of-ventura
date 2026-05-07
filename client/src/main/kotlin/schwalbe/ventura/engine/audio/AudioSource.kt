@@ -42,6 +42,7 @@ class AudioSource : Disposable {
     fun stop(): Unit = alSourceStop(this.getSourceId())
 
     fun play(audio: Audio) {
+        this.stop()
         alSourcei(this.getSourceId(), AL_BUFFER, audio.getBufferId())
         alSourcePlay(this.getSourceId())
     }

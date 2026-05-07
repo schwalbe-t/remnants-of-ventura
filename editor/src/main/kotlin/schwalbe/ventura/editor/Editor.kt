@@ -10,6 +10,7 @@ import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.data.*
 import schwalbe.ventura.utils.toVector3f
 import org.joml.Vector3f
+import schwalbe.ventura.engine.audio.SoundEffectsPlayer
 import java.io.File
 import java.nio.file.Path
 import javax.swing.JFileChooser
@@ -50,6 +51,7 @@ class Editor : Application<EditorMode>(
     }
 
     object WorldObjectStateProvider : ObjectStateProvider {
+        override val sounds: SoundEffectsPlayer? = null
         override fun isTriggered(obj: ObjectInstance): Boolean = false
         override fun worldState(): WorldState.Interpolated? = null
     }

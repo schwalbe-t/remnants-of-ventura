@@ -182,7 +182,7 @@ fun controllingPlayerScreen(client: Client): () -> GameScreen = {
             .addWorldHandling(client)
             .updateStoredSources(client)
             .addChatMessageHandling(client)
-            .displayTaggedErrorToasts(toasts),
+            .displayTaggedErrorToasts(toasts, client),
         navigator = client.nav
     )
     chat.handleChatMessages(screen.packets!!)

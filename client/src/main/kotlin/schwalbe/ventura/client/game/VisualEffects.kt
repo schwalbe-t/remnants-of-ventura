@@ -3,6 +3,7 @@ package schwalbe.ventura.client.game
 
 import schwalbe.ventura.client.RenderPass
 import schwalbe.ventura.client.Renderer
+import schwalbe.ventura.client.Client
 import schwalbe.ventura.data.Item
 import schwalbe.ventura.data.VisualEffect
 import schwalbe.ventura.engine.Resource
@@ -10,12 +11,14 @@ import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.utils.toVector3f
 import org.joml.*
+import schwalbe.ventura.client.SoundEffects
 
 class VisualEffects {
 
     data class Renderer(
         val duration: Float,
-        val render: (RenderPass, Float) -> Unit
+        val render: (RenderPass, Float) -> Unit,
+        val onStart: (Client) -> Unit = {}
     )
 
     data class Entry(
@@ -30,8 +33,9 @@ class VisualEffects {
     private val queued: MutableList<Entry> = mutableListOf()
     private val rendered: MutableList<Entry> = mutableListOf()
 
-    fun add(relTime: Long, vfx: Renderer) {
+    fun add(relTime: Long, vfx: Renderer, client: Client) {
         this.queued.add(Entry(dispAfter = relTime, remTime = vfx.duration, vfx))
+        vfx.onStart(client)
     }
 
     fun render(pass: RenderPass, deltaTime: Float, worldState: WorldState) {
@@ -79,7 +83,10 @@ private fun laserRenderer(
         .scale(1f, 1f, rayLength)
     val rayInstances = listOf(rayTransform)
     return VisualEffects.Renderer(
-        duration = 0.25f,
+        onStart = { client ->
+            client.sounds.play(SoundEffects.LASER())
+        },
+        duration = 1f,
         render = { pass, _ ->
             pass.renderOutline(
                 LASER_RAY(), OUTLINE_THICKNESS, null, rayInstances

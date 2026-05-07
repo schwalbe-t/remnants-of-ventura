@@ -1,8 +1,10 @@
 
 package schwalbe.ventura.client.screens.online
 
+import schwalbe.ventura.client.Client
 import schwalbe.ventura.client.LocalKeys
 import schwalbe.ventura.client.LocalKeys.*
+import schwalbe.ventura.client.SoundEffects
 import schwalbe.ventura.client.localized
 import schwalbe.ventura.client.screens.Theme
 import schwalbe.ventura.client.screens.googleSansSb
@@ -91,8 +93,9 @@ val TAGGED_ERROR_TOASTS: Map<TaggedErrorPacket, LocalKeys> = mapOf(
 )
 
 fun PacketHandler<Unit>.displayTaggedErrorToasts(
-    display: ToastDisplay,
+    display: ToastDisplay, client: Client,
     mapping: Map<TaggedErrorPacket, LocalKeys> = TAGGED_ERROR_TOASTS
 ): PacketHandler<Unit> = this.onPacket(PacketType.TAGGED_ERROR) { err, _ ->
     display.manager.show(mapping[err] ?: return@onPacket)
+    client.sounds.play(SoundEffects.ERROR())
 }

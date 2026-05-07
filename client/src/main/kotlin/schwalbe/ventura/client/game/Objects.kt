@@ -10,6 +10,7 @@ import schwalbe.ventura.data.buildTransform
 import schwalbe.ventura.engine.gfx.*
 import schwalbe.ventura.engine.ResourceLoader
 import schwalbe.ventura.engine.Resource
+import schwalbe.ventura.engine.audio.SoundEffectsPlayer
 import schwalbe.ventura.utils.parseRgbHex
 import schwalbe.ventura.data.PersonStyle
 import schwalbe.ventura.utils.toVector3f
@@ -23,6 +24,7 @@ import kotlin.math.sign
 import kotlin.math.sin
 
 interface ObjectStateProvider {
+    val sounds: SoundEffectsPlayer?
     fun isTriggered(obj: ObjectInstance): Boolean
     fun worldState(): WorldState.Interpolated?
 }
@@ -369,18 +371,26 @@ private object DoorOverrides : ObjectOverrides() {
 
     const val OPEN_HEIGHT: Float = -4.9f
     const val CLOSED_HEIGHT: Float = 0f
-    const val MOVE_SPEED: Float = 2f
+    const val MOVE_SPEED: Float = 2.5f
 
     override fun update(state: ObjectStateProvider, obj: ObjectInstance) {
         val now: Long = System.currentTimeMillis()
         val isOpen: Boolean = state.isTriggered(obj)
-        val state = obj[ObjectProp.DungeonDoorState]
+        val s = obj[ObjectProp.DungeonDoorState]
         val targetHeight: Float = if (isOpen) OPEN_HEIGHT else CLOSED_HEIGHT
-        val toTarget: Float = sign(targetHeight - state.height)
-        val distToTarget: Float = abs(targetHeight - state.height)
-        val deltaTime: Float = (now - state.lastUpdate).toFloat() / 1000f
-        state.height += toTarget * minOf(MOVE_SPEED * deltaTime, distToTarget)
-        state.lastUpdate = now
+        val toTarget: Float = sign(targetHeight - s.height)
+        if (s.lastUpdate == 0L && toTarget != 0f) {
+            state.sounds?.play(SoundEffects.DOOR())
+            s.lastUpdate = now
+        }
+        val distToTarget: Float = abs(targetHeight - s.height)
+        val deltaTime: Float = (now - s.lastUpdate).toFloat() / 1000f
+        val maxFrameDist: Float = MOVE_SPEED * deltaTime
+        s.height += toTarget * minOf(maxFrameDist, distToTarget)
+        s.lastUpdate = now
+        if (distToTarget <= maxFrameDist) {
+            s.lastUpdate = 0
+        }
     }
 
     override fun transform(

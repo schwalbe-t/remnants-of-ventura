@@ -11,6 +11,7 @@ import schwalbe.ventura.data.ObjectInstance
 import schwalbe.ventura.data.ObjectProp
 import org.joml.*
 import schwalbe.ventura.data.PersonStyle
+import schwalbe.ventura.engine.audio.AudioListener
 
 class Player(startPos: SerVector3, startStyle: PersonStyle) {
 
@@ -152,6 +153,7 @@ class Player(startPos: SerVector3, startStyle: PersonStyle) {
         this.updateAnimations(moving, client.deltaTime)
         this.sendPositionUpdatePacket(client)
         this.handleWorldChangeColliders(world, client)
+        AudioListener.position = this.position
     }
 
     fun facePoint(target: Vector3fc) {
