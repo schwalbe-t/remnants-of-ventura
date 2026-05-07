@@ -27,7 +27,7 @@
 		},
 		"groundHeight": -0.05
 	},
-	"groundColor": "tutorial_ruins_ground.png",
+	"groundColor": "ruins_ground.png",
 	"startPosition": {
 		"x": 0.5,
 		"y": 0.0,
@@ -3485,34 +3485,6 @@
 				{
 					"props": [
 						{
-							"type": "ITEM_DISPENSER",
-							"v": {
-								"item": {
-									"type": "BIGTON_2030",
-									"variant": null
-								},
-								"count": 1,
-								"givenTo": [],
-								"dist": 4.0
-							}
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 111.0,
-								"y": 0.0,
-								"z": -30.0
-							}
-						},
-						{
-							"type": "TYPE",
-							"v": "SAFE"
-						}
-					]
-				},
-				{
-					"props": [
-						{
 							"type": "POSITION",
 							"v": {
 								"x": 103.0,
@@ -3582,6 +3554,34 @@
 								"y": 0.0,
 								"z": -32.0
 							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "ITEM_DISPENSER",
+							"v": {
+								"item": {
+									"type": "BIGTON_2030",
+									"variant": null
+								},
+								"count": 1,
+								"givenTo": [],
+								"dist": 4.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 111.0,
+								"y": 0.0,
+								"z": -30.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "SAFE"
 						}
 					]
 				}
@@ -3772,18 +3772,6 @@
 				{
 					"props": [
 						{
-							"type": "POSITION",
-							"v": {
-								"x": 114.0,
-								"y": 0.0,
-								"z": -30.0
-							}
-						},
-						{
-							"type": "TYPE",
-							"v": "SAFE"
-						},
-						{
 							"type": "ITEM_DISPENSER",
 							"v": {
 								"item": {
@@ -3794,15 +3782,11 @@
 								"givenTo": [],
 								"dist": 4.0
 							}
-						}
-					]
-				},
-				{
-					"props": [
+						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 117.0,
+								"x": 114.0,
 								"y": 0.0,
 								"z": -30.0
 							}
@@ -3810,7 +3794,11 @@
 						{
 							"type": "TYPE",
 							"v": "SAFE"
-						},
+						}
+					]
+				},
+				{
+					"props": [
 						{
 							"type": "ITEM_DISPENSER",
 							"v": {
@@ -3822,6 +3810,18 @@
 								"givenTo": [],
 								"dist": 4.0
 							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 117.0,
+								"y": 0.0,
+								"z": -30.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "SAFE"
 						}
 					]
 				}

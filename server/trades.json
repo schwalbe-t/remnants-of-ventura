@@ -1,30 +1,136 @@
 {
     "trades": {
-        "test": [
+        "spawn_town": [
             {
                 "item": {
-                    "type": "BIGTON_1030"
+                    "type": "KENDAL_DYNAMICS_SCOUT",
+                    "variant": "SCOUT_CAMOUFLAGE"
                 },
-                "price": 100
+                "price": 1000
             },
             {
                 "item": {
-                    "type": "BIGTON_2050"
+                    "type": "KENDAL_DYNAMICS_SCOUT",
+                    "variant": "SCOUT_LADYBUG"
                 },
-                "price": 500
+                "price": 1500
+            },
+            {
+                "item": {
+                    "type": "BIGTON_1050"
+                },
+                "price": 50
+            },
+            {
+                "item": {
+                    "type": "BIGTON_2070"
+                },
+                "price": 120
+            },
+            {
+                "item": {
+                    "type": "BIGTON_3050"
+                },
+                "price": 200
+            },
+            {
+                "item": {
+                    "type": "BIGTON_3070"
+                },
+                "price": 250
+            },
+            {
+                "item": {
+                    "type": "PIVOTAL_ME2048"
+                },
+                "price": 50
+            },
+            {
+                "item": {
+                    "type": "PIVOTAL_ME5120"
+                },
+                "price": 125
+            },
+            {
+                "item": {
+                    "type": "PIVOTAL_ME10K"
+                },
+                "price": 200
+            },
+            {
+                "item": {
+                    "type": "PIVOTAL_ME20K"
+                },
+                "price": 350
             },
             {
                 "item": {
                     "type": "DIGITAL_RADIO"
                 },
                 "count": 2,
-                "price": 300
+                "price": 200
+            },
+            {
+                "item": {
+                    "type": "GPS_RECEIVER"
+                },
+                "price": 100
+            },
+            {
+                "item": {
+                    "type": "SHORT_RANGE_SONAR"
+                },
+                "price": 100
+            },
+            {
+                "item": {
+                    "type": "MID_RANGE_SONAR"
+                },
+                "price": 200
+            },
+            {
+                "item": {
+                    "type": "SHORT_RANGE_RADAR"
+                },
+                "price": 100
+            },
+            {
+                "item": {
+                    "type": "MID_RANGE_RADAR"
+                },
+                "price": 200
+            },
+            {
+                "item": {
+                    "type": "LASER"
+                },
+                "price": 100
             }
         ]
     },
     "pawns": {
-        "BIGTON_1030": 50,
-        "BIGTON_2050": 200,
-        "DIGITAL_RADIO": 75
+        "KENDAL_DYNAMICS_SCOUT": 500,
+        "BIGTON_1030": 10,
+        "BIGTON_1050": 20,
+        "BIGTON_1070": 30,
+        "BIGTON_2030": 50,
+        "BIGTON_2050": 60,
+        "BIGTON_2070": 70,
+        "BIGTON_3030": 100,
+        "BIGTON_3050": 110,
+        "BIGTON_3070": 120,
+        "PIVOTAL_ME2048": 25,
+        "PIVOTAL_ME5120": 50,
+        "PIVOTAL_ME10K": 75,
+        "PIVOTAL_ME20K": 100,
+        "DIGITAL_RADIO": 50,
+        "GPS_RECEIVER": 50,
+        "SHORT_RANGE_SONAR": 50,
+        "MID_RANGE_SONAR": 100,
+        "LONG_RANGE_SONAR": 150,
+        "SHORT_RANGE_RADAR": 50,
+        "MID_RANGE_RADAR": 100,
+        "LONG_RANGE_RADAR": 150,
+        "LASER": 50
     }
 }

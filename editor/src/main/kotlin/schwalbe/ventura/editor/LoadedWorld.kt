@@ -18,8 +18,8 @@ class LoadedWorld(val path: Path) {
     val chunkLoader = ChunkLoader(
         requestChunks = this::loadChunks,
         groundHeight = this.world.info.groundHeight,
-        loadRadius = 5,
-        renderRadius = 5
+        loadRadius = 2,
+        renderRadius = 2
     )
     var selectedObject: ObjectInstanceRef? = null
 

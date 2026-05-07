@@ -27,21 +27,21 @@
 		},
 		"groundHeight": -0.05
 	},
-	"groundColor": "test_interior_ground.png",
+	"groundColor": "ruins_ground.png",
 	"startPosition": {
-		"x": 0.0,
+		"x": 0.5,
 		"y": 0.0,
-		"z": 0.0
+		"z": 0.5
 	},
-	"maintenanceAreas": [],
-	"challengeAreas": [
+	"maintenanceAreas": [
 		{
-			"minX": 21,
-			"minZ": 3,
-			"untilX": 37,
-			"untilZ": 19
+			"minX": 13,
+			"minZ": -5,
+			"untilX": 24,
+			"untilZ": 6
 		}
 	],
+	"challengeAreas": [],
 	"chunks": [
 		{
 			"chunkX": -1,
@@ -53,38 +53,14 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -4.0,
+								"x": -2.0,
 								"y": 0.0,
-								"z": -4.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 1.5707963,
-								"z": 0.0
-							}
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -4.0,
-								"y": 0.0,
-								"z": -4.0
+								"z": -2.0
 							}
 						}
 					]
@@ -98,9 +74,9 @@
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -3.0,
+								"x": -2.0,
 								"y": 0.0,
-								"z": -3.0
+								"z": -8.0
 							}
 						}
 					]
@@ -110,22 +86,6 @@
 						{
 							"type": "TYPE",
 							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -4.0,
-								"y": 0.0,
-								"z": -10.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
@@ -141,28 +101,12 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -9.0,
-								"y": 0.0,
-								"z": -3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.0,
+								"x": -3.0,
 								"y": 0.0,
 								"z": -3.0
 							}
@@ -176,43 +120,19 @@
 							"v": "DUNGEON_WALL"
 						},
 						{
-							"type": "POSITION",
+							"type": "ROTATION",
 							"v": {
-								"x": -9.0,
-								"y": 0.0,
-								"z": -4.0
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
 							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -16.0,
+								"x": -2.0,
 								"y": 0.0,
-								"z": -4.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -10.0,
-								"y": 0.0,
-								"z": -4.0
+								"z": -8.0
 							}
 						}
 					]
@@ -226,201 +146,10 @@
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -15.0,
+								"x": -2.0,
 								"y": 0.0,
-								"z": -9.0
+								"z": -14.0
 							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.0,
-								"y": 0.0,
-								"z": -10.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.0,
-								"y": 0.0,
-								"z": -9.0
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.5707963,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -9.0,
-								"y": 0.0,
-								"z": -9.0
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.5707963,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -16.0,
-								"y": 0.0,
-								"z": -10.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -10.0,
-								"y": 0.0,
-								"z": -10.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.0,
-								"y": 1.9073486E-6,
-								"z": -3.0
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.5707963,
-								"z": 0.0
-							}
-						},
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -12.50262,
-								"y": 0.0,
-								"z": -0.9680538
-							}
-						},
-						{
-							"type": "TRIGGER_FOR",
-							"v": [
-								"test_door",
-								"test_door_lamp"
-							]
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "test_door_button"
-						},
-						{
-							"type": "TYPE",
-							"v": "BUTTON"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -9.697823,
-								"y": 0.0,
-								"z": -2.2652426
-							}
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "test_door_lamp"
-						},
-						{
-							"type": "TYPE",
-							"v": "LAMP"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.0,
-								"y": 0.0,
-								"z": -4.0
-							}
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "test_door"
-						},
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_DOOR"
-						},
-						{
-							"type": "DUNGEON_DOOR_STATE",
-							"v": {}
 						}
 					]
 				},
@@ -433,9 +162,1809 @@
 						{
 							"type": "POSITION",
 							"v": {
+								"x": -2.0,
+								"y": 0.0,
+								"z": -14.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
 								"x": -3.0,
 								"y": 0.0,
 								"z": -15.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 0,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 3.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 3.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 9.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 9.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 3.0,
+								"y": 0.0,
+								"z": -15.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 15.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 13.496638,
+								"y": 0.0,
+								"z": -4.429474
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 0,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 4.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 10.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 13.564332,
+								"y": 0.0,
+								"z": 5.592699
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 1,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 16.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 16.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 23.503054,
+								"y": 0.0,
+								"z": 5.5706425
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "RUINED_WALL"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 27.503479,
+								"y": 0.0,
+								"z": 5.906328
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 1,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 16.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 16.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 16.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 21.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 22.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 27.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 27.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 23.480186,
+								"y": 0.0,
+								"z": -4.4014854
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 1.9073486E-6,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 28.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": -1,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -3.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -2.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 2,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 34.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 40.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 34.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 40.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 34.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 40.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 33.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 39.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 45.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 45.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "DUNGEON_DOOR_STATE",
+							"v": {}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "door_1"
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_DOOR"
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 3,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 52.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 58.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 52.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 58.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 52.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 58.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 51.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 57.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 63.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 63.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 4,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 64.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 70.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 70.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 64.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 64.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 70.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 69.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 75.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 64.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "DUNGEON_DOOR_STATE",
+							"v": {}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 64.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "door_2"
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_DOOR"
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 5,
+			"chunkZ": -1
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 88.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 94.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 94.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 88.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 94.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 81.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 87.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 93.0,
+								"y": 0.0,
+								"z": -9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": -8.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 81.0,
+								"y": 0.0,
+								"z": -3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 88.0,
+								"y": 0.0,
+								"z": -14.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 87.0,
+								"y": 0.0,
+								"z": -15.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 93.0,
+								"y": 0.0,
+								"z": -15.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "ELEVATOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 88.0,
+								"y": 0.0,
+								"z": -14.0
 							}
 						}
 					]
@@ -457,9 +1986,61 @@
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -0.25967023,
+								"x": 90.753235,
 								"y": 0.0,
-								"z": -8.830669
+								"z": -8.542013
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "door_3"
+						},
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_DOOR"
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 5,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 94.0,
+								"y": 0.0,
+								"z": 4.0
 							}
 						}
 					]
@@ -468,14 +2049,154 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
+							"v": "DUNGEON_FLOOR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -4.0,
+								"x": 88.0,
 								"y": 0.0,
-								"z": -16.0
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 90.0,
+								"y": 0.0,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "SAFE"
+						},
+						{
+							"type": "ITEM_DISPENSER",
+							"v": {
+								"item": {
+									"type": "KENDAL_DYNAMICS_SCOUT",
+									"variant": "SCOUT_FIREWORKS"
+								},
+								"count": 1,
+								"givenTo": [],
+								"dist": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 94.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 88.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 82.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "RUINED_WALL"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 81.4485,
+								"y": -1.9073486E-6,
+								"z": 5.906328
 							}
 						}
 					]
@@ -483,7 +2204,491 @@
 			]
 		},
 		{
-			"chunkX": 0,
+			"chunkX": 4,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 70.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 64.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 64.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 70.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 76.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 64.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "ENEMY_SPAWNER",
+							"v": {
+								"dist": 10.0,
+								"configName": "BASIC",
+								"totalCount": 9,
+								"maxConcurrent": 3,
+								"interval": 5000
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 72.49742,
+								"y": 0.0,
+								"z": 0.5132866
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"door_3"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "combat_3"
+						},
+						{
+							"type": "TYPE",
+							"v": "COMBAT_PILLAR"
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 2,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 34.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 40.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 34.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 40.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 46.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5707963,
+								"z": 0.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "RUINED_WALL"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": -1.5740688,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 45.489838,
+								"y": 0.0,
+								"z": 6.076109
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 36.49188,
+								"y": 0.0,
+								"z": 0.531065
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"door_1"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "combat_1"
+						},
+						{
+							"type": "TYPE",
+							"v": "COMBAT_PILLAR"
+						},
+						{
+							"type": "ENEMY_SPAWNER",
+							"v": {
+								"dist": 10.0,
+								"configName": "BASIC",
+								"totalCount": 3,
+								"maxConcurrent": 1,
+								"interval": 5000
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 3,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 52.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_FLOOR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 58.0,
+								"y": 0.0,
+								"z": 4.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 52.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL_INVISIBLE"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 58.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "RUINED_WALL"
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.5806139,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 63.539505,
+								"y": -1.9073486E-6,
+								"z": 5.9792347
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 54.489853,
+								"y": 0.0,
+								"z": 0.47932434
+							}
+						},
+						{
+							"type": "TRIGGER_FOR",
+							"v": [
+								"door_2"
+							]
+						},
+						{
+							"type": "TRIGGERABLE",
+							"v": "combat_2"
+						},
+						{
+							"type": "TYPE",
+							"v": "COMBAT_PILLAR"
+						},
+						{
+							"type": "ENEMY_SPAWNER",
+							"v": {
+								"dist": 10.0,
+								"configName": "BASIC",
+								"totalCount": 6,
+								"maxConcurrent": 2,
+								"interval": 5000
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 6,
 			"chunkZ": -1
 		},
 		{
@@ -497,151 +2702,7 @@
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 2.0,
-								"y": 0.0,
-								"z": -4.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 3.0,
-								"y": 0.0,
-								"z": -4.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.0,
-								"y": 0.0,
-								"z": -4.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 14.0,
-								"y": 0.0,
-								"z": -4.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 3.0,
-								"y": 0.0,
-								"z": -3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.0,
-								"y": 0.0,
-								"z": -3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 0.0,
-								"z": 0.0
-							}
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 8.0,
-								"y": 0.0,
-								"z": -4.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 2.0,
-								"y": 0.0,
-								"z": -10.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.5707963,
-								"z": 0.0
-							}
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 3.0,
+								"x": 99.0,
 								"y": 0.0,
 								"z": -9.0
 							}
@@ -652,15 +2713,31 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "DUNGEON_WALL"
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": 15.0,
+								"x": 99.0,
 								"y": 0.0,
 								"z": -3.0
 							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 100.0,
+								"y": 0.0,
+								"z": -8.0
+							}
 						},
 						{
 							"type": "ROTATION",
@@ -668,364 +2745,6 @@
 								"x": 0.0,
 								"y": -1.5707963,
 								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 2.0,
-								"y": 0.0,
-								"z": -16.0
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": -1,
-			"chunkZ": 0
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -2.0,
-								"y": 0.0,
-								"z": 14.0
-							}
-						},
-						{
-							"type": "TYPE",
-							"v": "LAMP"
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "or_lamp"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -4.0,
-								"y": 0.0,
-								"z": 7.0
-							}
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "left_lamp"
-						},
-						{
-							"type": "TYPE",
-							"v": "LAMP"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -5.0,
-								"y": 0.0,
-								"z": 14.0
-							}
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "and_lamp"
-						},
-						{
-							"type": "TYPE",
-							"v": "LAMP"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -5.0,
-								"y": 0.0,
-								"z": 11.0
-							}
-						},
-						{
-							"type": "TRIGGER_FOR",
-							"v": [
-								"and_lamp"
-							]
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "and"
-						},
-						{
-							"type": "TYPE",
-							"v": "AND_GATE"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -2.0,
-								"y": 1.9073486E-6,
-								"z": 7.0
-							}
-						},
-						{
-							"type": "TRIGGER_FOR",
-							"v": [
-								"left_lamp",
-								"and",
-								"or",
-								"nand",
-								"nor"
-							]
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "left"
-						},
-						{
-							"type": "TYPE",
-							"v": "BUTTON"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TRIGGER_FOR",
-							"v": [
-								"or_lamp"
-							]
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "or"
-						},
-						{
-							"type": "TYPE",
-							"v": "OR_GATE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -2.0,
-								"y": 0.0,
-								"z": 11.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -3.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -3.0,
-								"y": 0.0,
-								"z": 9.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -9.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -9.0,
-								"y": 0.0,
-								"z": 9.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -9.0,
-								"y": 0.0,
-								"z": 15.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -3.0,
-								"y": 0.0,
-								"z": 15.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.0,
-								"y": 0.0,
-								"z": 9.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.0,
-								"y": 0.0,
-								"z": 15.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -16.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -16.0,
-								"y": 0.0,
-								"z": 9.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -16.0,
-								"y": 0.0,
-								"z": 15.0
 							}
 						}
 					]
@@ -1037,36 +2756,76 @@
 							"v": "DUNGEON_WALL"
 						},
 						{
+							"type": "POSITION",
+							"v": {
+								"x": 100.0,
+								"y": 0.0,
+								"z": -2.0
+							}
+						},
+						{
 							"type": "ROTATION",
 							"v": {
 								"x": 0.0,
 								"y": -1.5707963,
 								"z": 0.0
 							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"chunkX": 6,
+			"chunkZ": 0
+		},
+		{
+			"instances": [
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
 						},
 						{
 							"type": "POSITION",
 							"v": {
-								"x": -15.0,
+								"x": 99.0,
+								"y": 0.0,
+								"z": 3.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_PILLAR"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 99.0,
+								"y": 0.0,
+								"z": 9.0
+							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "TYPE",
+							"v": "DUNGEON_WALL"
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": 100.0,
 								"y": 0.0,
 								"z": 4.0
 							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.0,
-								"y": 0.0,
-								"z": 10.0
-							}
 						},
 						{
 							"type": "ROTATION",
@@ -1074,1320 +2833,6 @@
 								"x": 0.0,
 								"y": -1.5707963,
 								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -10.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -10.0,
-								"y": 0.0,
-								"z": 15.0
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": 0,
-			"chunkZ": 0
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 1.0,
-								"y": 0.0,
-								"z": 14.0
-							}
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "nand_lamp"
-						},
-						{
-							"type": "TYPE",
-							"v": "LAMP"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 1.0,
-								"y": 0.0,
-								"z": 11.0
-							}
-						},
-						{
-							"type": "TRIGGER_FOR",
-							"v": [
-								"nand_lamp"
-							]
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "nand"
-						},
-						{
-							"type": "TYPE",
-							"v": "NAND_GATE"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 4.0,
-								"y": 0.0,
-								"z": 7.0
-							}
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "right_lamp"
-						},
-						{
-							"type": "TYPE",
-							"v": "LAMP"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 4.0,
-								"y": 0.0,
-								"z": 14.0
-							}
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "nor_lamp"
-						},
-						{
-							"type": "TYPE",
-							"v": "LAMP"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 4.0,
-								"y": 0.0,
-								"z": 11.0
-							}
-						},
-						{
-							"type": "TRIGGER_FOR",
-							"v": [
-								"nor_lamp"
-							]
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "nor"
-						},
-						{
-							"type": "TYPE",
-							"v": "NOR_GATE"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 2.0,
-								"y": 0.0,
-								"z": 7.0
-							}
-						},
-						{
-							"type": "TRIGGER_FOR",
-							"v": [
-								"right_lamp",
-								"and",
-								"or",
-								"nand",
-								"nor"
-							]
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "right"
-						},
-						{
-							"type": "TYPE",
-							"v": "BUTTON"
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 3.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 3.0,
-								"y": 0.0,
-								"z": 9.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.0,
-								"y": 0.0,
-								"z": 9.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 3.0,
-								"y": 0.0,
-								"z": 15.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.0,
-								"y": 0.0,
-								"z": 15.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 14.0,
-								"y": 0.0,
-								"z": 2.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 14.0,
-								"y": 0.0,
-								"z": 8.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 14.0,
-								"y": 0.0,
-								"z": 14.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.5707963,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.0,
-								"y": 0.0,
-								"z": 15.0
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.5707963,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 8.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 8.0,
-								"y": 0.0,
-								"z": 14.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "SAFE"
-						},
-						{
-							"type": "ITEM_DISPENSER",
-							"v": {
-								"item": {
-									"type": "LONG_RANGE_SONAR",
-									"variant": null
-								},
-								"count": 68,
-								"givenTo": [],
-								"dist": 4.0
-							}
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 11.0,
-								"y": 0.0,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.0,
-								"y": 0.0,
-								"z": 9.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.0,
-								"y": 0.0,
-								"z": 8.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL_INVISIBLE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 15.0,
-								"y": 0.0,
-								"z": 14.0
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": -1,
-			"chunkZ": 1
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -16.0,
-								"y": 0.0,
-								"z": 20.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.0,
-								"y": 0.0,
-								"z": 16.0
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.5707963,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL_INVISIBLE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -9.0,
-								"y": 0.0,
-								"z": 20.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL_INVISIBLE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -3.0,
-								"y": 1.9073486E-6,
-								"z": 20.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL_INVISIBLE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -15.0,
-								"y": 0.0,
-								"z": 20.0
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": 0,
-			"chunkZ": 1
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 14.0,
-								"y": 0.0,
-								"z": 20.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL_INVISIBLE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 3.0,
-								"y": 0.0,
-								"z": 20.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL_INVISIBLE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 9.0,
-								"y": 0.0,
-								"z": 20.0
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": 1,
-			"chunkZ": 0
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.0,
-								"y": 0.0,
-								"z": 9.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 27.0,
-								"y": 0.0,
-								"z": 9.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 20.0,
-								"y": 0.0,
-								"z": 8.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.5707963,
-								"z": 0.0
-							}
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 20.0,
-								"y": 0.0,
-								"z": 2.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.0,
-								"y": 0.0,
-								"z": 2.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 27.0,
-								"y": 0.0,
-								"z": 2.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 26.0,
-								"y": 0.0,
-								"z": 2.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 20.0,
-								"y": 0.0,
-								"z": 14.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.0,
-								"y": 0.0,
-								"z": 15.0
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.5707963,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 27.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 27.0,
-								"y": 0.0,
-								"z": 15.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.0,
-								"y": 0.0,
-								"z": 15.0
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": 0.0,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "CHALLENGE_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.518147,
-								"y": 0.0,
-								"z": 3.5016785
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "ENEMY_SPAWNER",
-							"v": {
-								"dist": 7.5,
-								"configName": "BASIC",
-								"totalCount": 3,
-								"maxConcurrent": 1,
-								"interval": 10000
-							}
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 29.515652,
-								"y": 0.0,
-								"z": 11.468533
-							}
-						},
-						{
-							"type": "TYPE",
-							"v": "COMBAT_PILLAR"
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "test_combat_challenge"
-						},
-						{
-							"type": "TRIGGER_FOR",
-							"v": [
-								"test_combat_challenge_lamp"
-							]
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": 2,
-			"chunkZ": 0
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 33.0,
-								"y": 0.0,
-								"z": 9.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 33.0,
-								"y": 0.0,
-								"z": 2.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 32.0,
-								"y": 0.0,
-								"z": 2.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 38.0,
-								"y": 0.0,
-								"z": 2.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 39.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.5707963,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 39.0,
-								"y": 0.0,
-								"z": 9.0
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.5707963,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 38.0,
-								"y": 0.0,
-								"z": 8.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 38.0,
-								"y": 0.0,
-								"z": 14.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 39.0,
-								"y": 0.0,
-								"z": 15.0
-							}
-						},
-						{
-							"type": "ROTATION",
-							"v": {
-								"x": 0.0,
-								"y": -1.5707963,
-								"z": 0.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 33.0,
-								"y": 0.0,
-								"z": 3.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_FLOOR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 33.0,
-								"y": 0.0,
-								"z": 15.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "CHALLENGE_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 37.47039,
-								"y": 1.9073486E-6,
-								"z": 3.5052795
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 37.462708,
-								"y": 1.9073486E-6,
-								"z": 11.527267
-							}
-						},
-						{
-							"type": "TYPE",
-							"v": "LAMP"
-						},
-						{
-							"type": "TRIGGERABLE",
-							"v": "test_combat_challenge_lamp"
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": 2,
-			"chunkZ": 1
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 38.0,
-								"y": 0.0,
-								"z": 20.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL_INVISIBLE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 33.0,
-								"y": 0.0,
-								"z": 20.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "CHALLENGE_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 37.502277,
-								"y": 0.0,
-								"z": 19.485788
-							}
-						}
-					]
-				}
-			]
-		},
-		{
-			"chunkX": 1,
-			"chunkZ": 1
-		},
-		{
-			"instances": [
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 20.0,
-								"y": 0.0,
-								"z": 20.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL_INVISIBLE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.0,
-								"y": 0.0,
-								"z": 20.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "DUNGEON_WALL_INVISIBLE"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 27.0,
-								"y": 0.0,
-								"z": 20.0
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
-							"v": "CHALLENGE_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": 21.52464,
-								"y": 0.0,
-								"z": 19.474792
 							}
 						}
 					]

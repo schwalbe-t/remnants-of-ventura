@@ -67,6 +67,35 @@
                     "Maybe this could be combined with a loop?"
                 ]
             }
+        ],
+
+        "merchant_greeting_1": [
+            {
+                "name": "Merchant",
+                "lines": [
+                    "Anything that catches your eye?",
+                    "@OPEN_SHOP:spawn_town"
+                ]
+            }
+        ],
+        "merchant_greeting_2": [
+            {
+                "name": "Merchant",
+                "lines": [
+                    "Do you have something specific in mind, or are you just browsing?",
+                    "@OPEN_SHOP:spawn_town"
+                ]
+            }
+        ],
+
+        "combat_ruins_warning": [
+            {
+                "name": "Adventurer",
+                "lines": [
+                    "Hey, are you really sure you wanna go in there?",
+                    "Be prepared to fight a lot of uncontrolled robots..."
+                ]
+            }
         ]
 
     }

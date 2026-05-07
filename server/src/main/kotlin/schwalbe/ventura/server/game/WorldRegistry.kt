@@ -1,12 +1,21 @@
 
 package schwalbe.ventura.server.game
 
+import schwalbe.ventura.data.SerializedWorld
 import schwalbe.ventura.data.WorldInstanceMode
 import schwalbe.ventura.server.Services
 import schwalbe.ventura.server.persistence.serialize
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.uuid.Uuid
+
+private fun StaticWorldData.deepCopy(): StaticWorldData {
+    val worldJson = SerializedWorld.SERIALIZER.encodeToString(this.world)
+    return StaticWorldData(
+        world = SerializedWorld.SERIALIZER.decodeFromString(worldJson),
+        groundColor = this.groundColor
+    )
+}
 
 class WorldRegistry(
     val services: Services,
@@ -41,7 +50,7 @@ class WorldRegistry(
         class Session(val id: Uuid, var time: Long)
 
         companion object {
-            const val OPEN_DURATION_MS: Long = 5 * 60_000
+            const val OPEN_DURATION_MS: Long = 30_000
             const val CLOSE_IDLE_DURATION_MS: Long = 5 * 60_000
         }
 
@@ -107,7 +116,7 @@ class WorldRegistry(
         check(id !in this.worldsById.keys) {
             "World ID collision: Attempt to register $id more than once"
         }
-        val world = World(this, name, id, data)
+        val world = World(this, name, id, data.deepCopy())
         this.worldsById[id] = world
         println("Created ${data.world.instanceMode} world instance $id for '$name'")
         return id
