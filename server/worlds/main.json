@@ -7677,22 +7677,6 @@
 					"props": [
 						{
 							"type": "TYPE",
-							"v": "MAINTENANCE_PILLAR"
-						},
-						{
-							"type": "POSITION",
-							"v": {
-								"x": -106.45834,
-								"y": 0.0,
-								"z": -36.493847
-							}
-						}
-					]
-				},
-				{
-					"props": [
-						{
-							"type": "TYPE",
 							"v": "LUSH_GRASS"
 						},
 						{
@@ -7822,6 +7806,68 @@
 								"y": 0.0,
 								"z": -43.902225
 							}
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -106.45834,
+								"y": 0.0,
+								"z": -36.493847
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "MAINTENANCE_PILLAR"
+						}
+					]
+				},
+				{
+					"props": [
+						{
+							"type": "CHARACTER_DIALOGUE",
+							"v": "bigton_hint_*"
+						},
+						{
+							"type": "CHARACTER_STYLE_CUSTOM",
+							"v": {
+								"colors": [
+									"CREAM",
+									"BLACK",
+									"BLACK",
+									"PURPLE",
+									"DARK_BROWN",
+									"CREAM",
+									"WHITE",
+									"CREAM",
+									"BLACK",
+									"WHITE"
+								],
+								"hair": "LONG"
+							}
+						},
+						{
+							"type": "POSITION",
+							"v": {
+								"x": -106.4876,
+								"y": 0.0,
+								"z": -35.45999
+							}
+						},
+						{
+							"type": "ROTATION",
+							"v": {
+								"x": 0.0,
+								"y": 1.043925,
+								"z": 0.0
+							}
+						},
+						{
+							"type": "TYPE",
+							"v": "CHARACTER"
 						}
 					]
 				}

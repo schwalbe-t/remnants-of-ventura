@@ -95,6 +95,80 @@
                     "Stell dich darauf ein, gegen viele unkontrollierte Roboter zu kämpfen..."
                 ]
             }
+        ],
+
+        "bigton_hint_laser": [
+            {
+                "name": "Abenteurer – Über Laser",
+                "lines": [
+                    "Was gibt's? Du willst wissen, wie man den Laser benutzt?",
+                    "Nun, es ist eigentlich gar nicht so kompliziert! Du kannst den Laser mit der Funktion „laserShoot“ in jede beliebige Richtung abfeuern.",
+                    "Um den Laser zum Beispiel nach links schießen zu lassen, schreibst du:\n\nlaserShoot(left)",
+                    "Der Laser hat jedoch eine Abklingzeit, in der „laserShoot“ nichts bewirkt.",
+                    "Du kannst dies prüfen, indem du „laserCanShoot“ aufrufst:\n\nif laserCanShoot() {\n    print(\"kann schießen!\")\n} else {\n    print(\"kann noch nicht schießen\")\n}"
+                ]
+            }
+        ],
+        "bigton_hint_radar": [
+            {
+                "name": "Abenteurer – Über Radare",
+                "lines": [
+                    "Du brauchst Hilfe mit dem Radar-Modul? Ja, ich habe auch eine Weile gebraucht, um das zu durchschauen.",
+                    "Um es zu benutzen, musst du dem Radar-Modul zuerst befehlen, nach Robotern in der Nähe zu suchen. Das machst du so:\n\nradarSearch()",
+                    "Die Funktion „radarSearch“ gibt die Anzahl der gefundenen Roboter zurück, sodass du prüfen kannst, wie viele sich im Radarbereich befinden:\n\nprint(radarSearch())",
+                    "Sobald du „radarSearch“ ausgeführt hast, kannst du „radarNext“ verwenden, um jeden der gefundenen Roboter nacheinander auszuwählen. Es gibt 1 zurück, wenn der nächste Roboter ausgewählt wurde, oder 0, falls keine weiteren Roboter gefunden wurden.",
+                    "Ähnlich wie „playerDir“ gibt dir die Funktion „radarRobotDir“ dann die Richtung zum zuletzt ausgewählten Roboter an. Dieser Code zeigt zum Beispiel die Richtungen zu allen vom Radar gefundenen Robotern an:\n\nradarSearch()\nwhile radarNext() {\n    print(radarRobotDir())\n}",
+                    "Interessant ist, dass „radarNext“ die gefundenen Roboter in der Reihenfolge ihrer Entfernung auswählt – der nächste zuerst. Wenn du also nur etwas für den nächsten Roboter tun willst, reicht eine „if“-Abfrage:\n\nradarSearch()\nif radarNext() {\n    print(radarRobotDir())\n}"
+                ]
+            }
+        ],
+        "bigton_hint_sonar": [
+            {
+                "name": "Abenteurer – Über Sonare",
+                "lines": [
+                    "Das Sonar-Modul? Ich benutze es nicht oft, aber wenn ich mich recht erinnere, еs ist eigentlich gar nicht so kompliziert.",
+                    "Ich bin mir ziemlich sicher, dass es eine „sonarDist“-Funktion gibt, die eine Richtung entgegennimmt und die Anzahl der Felder zurückgibt, die sich der Roboter in diese Richtung bewegen könnte, bevor er gegen ein Hindernis stößt.",
+                    "Um zum Beispiel zu prüfen, wie viel Platz nach rechts ist, würde ich so etwas schreiben:\n\nprint(sonarDist(right))"
+                ]
+            }
+        ],
+        "bigton_hint_async_movement": [
+            {
+                "name": "Abenteurer – Über „moveAsync“",
+                "lines": [
+                    "Bist du auch davon verwirrt, dass die „move“-Funktion dein Programm blockiert, bis der Roboter aufgehört hat, sich zu bewegen?",
+                    "Ich habe vor kurzem gelernt, dass es eine andere Funktion namens „moveAsync“ gibt, die das nicht tut!",
+                    "„moveAsync“ macht dasselbe wie „move“, lässt das Programm aber weiterlaufen. Beachte jedoch, dass sowohl „moveAsync“ als auch „move“ nichts tun, während der Roboter bereits in Bewegung ist.",
+                    "Übrigens kannst du die Funktion „canMove“ verwenden, um zu prüfen, ob der Roboter bewegt werden kann. Sie gibt 1 zurück, wenn der Roboter stillsteht, und 0, wenn er sich bereits bewegt."
+                ]
+            }
+        ],
+        "bigton_hint_tick": [
+            {
+                "name": "Abenteurer – Über „tick“-Schleifen",
+                "lines": [
+                    "Machst du dir Sorgen, dass deine Programme 100 % CPU-Leistung verbrauchen?",
+                    "Nun, du schreibst deinen Roboter-Code wahrscheinlich in einer „loop“-Schleife, die den Inhalt so schnell wie möglich wiederholt.",
+                    "Du kannst jedoch eine „tick“-Schleife verwenden. Sie ist einer normalen „loop“ sehr ähnlich, wartet aber eine kurze Zeit, bevor sie den Code wiederholt.",
+                    "Das sorgt dafür, dass dein Prozessor nicht ständig voll ausgelastet ist.",
+                    "Die genaue Frequenz? Wenn ich raten müsste, würde ich sagen, dass eine „tick“-Schleife etwa 20 Mal pro Sekunde wiederholt wird."
+                ]
+            }
+        ],
+        "bigton_hint_cardinals": [
+            {
+                "name": "Abenteurer – Über Hauptrichtungsangaben",
+                "lines": [
+                    "Bist du beim Programmieren wegen der Richtungsangaben verwirrt? Verständlich, sie sind nicht besonders intuitiv.",
+                    "Im Grunde wird ein „left“ in deinem Code durch ein Zahlenpaar ersetzt, in diesem Fall (-1, 0).",
+                    "Dieses Zahlenpaar repräsentiert die Richtung; die erste Zahl steht für die horizontalen Schritte, die zweite für die vertikalen Schritte.",
+                    "Negative Zahlen zeigen nach links und oben, positive Zahlen nach rechts und unten.",
+                    "Diese Zahlen müssen jedoch nicht immer -1, 0 oder 1 sein. Wenn sie es aber sind, nennen wir das eine Hauptrichtung (Cardinal Direction), da es entweder „left“, „right“, „up“, „down“ oder „here“ sein muss.",
+                    "Zum Beispiel geben „playerDir“ oder „radarRobotDir“ nicht immer Hauptrichtungen zurück, sondern einfach die Anzahl der horizontalen und vertikalen Schritte.",
+                    "„toCardinal“ nimmt eine Richtung entgegen und gibt die Hauptrichtung zurück, die der Eingabe am nächsten kommt.",
+                    "„toLesserCardinal“ nimmt eine Richtung entgegen und gibt eine andere Hauptrichtung zurück, die der Eingabe am nächsten kommt, jedoch ohne die, die von „toCardinal“ zurückgegeben wurde."
+                ]
+            }
         ]
     }
 }

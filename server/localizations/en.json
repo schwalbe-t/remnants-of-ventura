@@ -96,6 +96,80 @@
                     "Be prepared to fight a lot of uncontrolled robots..."
                 ]
             }
+        ],
+
+        "bigton_hint_laser": [
+            {
+                "name": "Adventurer - About Lasers",
+                "lines": [
+                    "What's up? You want to know how to use the laser?",
+                    "Well, it's actually not that complicated! You can shoot the laser in any given direction by using the \"laserShoot\"-function.",
+                    "For example, to shoot the laser towards the left, you can write:\n\nlaserShoot(left)",
+                    "However, the laser has a cooldown, during which \"laserShoot\" does nothing.",
+                    "You can check for this by calling \"laserCanShoot\":\n\nif laserCanShoot() {\n    print(\"can shoot!\")\n} else {\n    print(\"cannot shoot yet\")\n}"
+                ]
+            }
+        ],
+        "bigton_hint_radar": [
+            {
+                "name": "Adventurer - About Radars",
+                "lines": [
+                    "You need help with the radar module? Yeah that one took me a while to figure out too.",
+                    "To start using it, you first need to tell the radar module to search for robots nearby. You can do this by writing:\n\nradarSearch()",
+                    "The \"radarSearch\"-function results in the number of robots that were found, so you can check how many robots there are in the radar area:\n\nprint(radarSearch())",
+                    "Once you have used the \"radarSearch\"-function, you can use \"radarNext\" to select each of the found robots. It returns 1 if the next robot was selected, or 0 if no more robots have been found.",
+                    "Similar to \"playerDir\", the \"radarRobotDir\"-function then tells you the direction towards the last selected robot. This code for example shows the directions to all robots found by the radar:\n\nradarSearch()\nwhile radarNext() {\n    print(radarRobotDir())\n}",
+                    "An interesting fact is that \"radarNext\" selects the found robots in order of increasing distance. This means that to only do something for the closest found robot, you can just use an \"if\"-statement:\n\nradarSearch()\nif radarNext() {\n    print(radarRobotDir())\n}"
+                ]
+            }
+        ],
+        "bigton_hint_sonar": [
+            {
+                "name": "Adventurer - About Sonars",
+                "lines": [
+                    "The sonar module? I don't use it much, but if I remember correctly it's not actually that complicated.",
+                    "I am pretty sure there is a \"sonarDist\" function that takes a direction and returns the number of tiles that the robot could move in that direction before hitting an obstacle.",
+                    "For example, to check how much space there is towards the right, I would write something like:\n\nprint(sonarDist(right))"
+                ]
+            }
+        ],
+        "bigton_hint_async_movement": [
+            {
+                "name": "Adventurer - About \"moveAsync\"",
+                "lines": [
+                    "Are you also confused about the \"move\"-function blocking your program until the robot has stopped moving?",
+                    "I recently learned that there exists another function called \"moveAsync\", which doesn't do this!",
+                    "\"moveAsync\" does the same thing as \"move\", but keeps the program runnning. However, \"moveAsync\" and \"move\" do nothing while the robot is already moving.",
+                    "By the way, you can use the \"canMove\"-function to check if the robot can be moved. It returns 1 if the robot is standing still, and 0 if it is already moving."
+                ]
+            }
+        ],
+        "bigton_hint_tick": [
+            {
+                "name": "Adventurer - About \"tick\"-loops",
+                "lines": [
+                    "Are you worried about your programs using up 100% CPU time?",
+                    "Well, you are probably writing your robot code in a \"loop\", which repeats the code inside as fast as possible.",
+                    "However, you can use a \"tick\"-loop, which is very similar to a \"loop\", but simply waits a short time before repeating the code.",
+                    "This makes it so your processor isn't as busy all the time.",
+                    "The exact frequency? If I had to guess, I would probably say a \"tick\" loop repeats somewhere around 20 times per second."
+                ]
+            }
+        ],
+        "bigton_hint_cardinals": [
+            {
+                "name": "Adventurer - About Cardinal Directions",
+                "lines": [
+                    "You are confused about directions when writing code? Understandable, they are not that intuitive.",
+                    "Basically, when you write \"left\" in your code, that gets replaced with a pair of numbers, in this case (-1, 0).",
+                    "This pair of numbers represents the direction; the first number the number of horizontal steps, the second number the number of vertical steps.",
+                    "Negative numbers point left and up, positive numbers point right and down.",
+                    "These numbers don't always need to be -1, 0 or 1 though. If they are however, we call that direction a cardinal direction, as it must either be \"left\", \"right\", \"up\", \"down\" or \"here\".",
+                    "For example, \"playerDir\" or \"radarRobotDir\" don't always return cardinal directions, but simply the number of horizontal and vertical steps.",
+                    "\"toCardinal\" takes a direction and returns the cardinal direction that most closely matches the input.",
+                    "\"toLesserCardinal\" takes a direction and returns another cardinal direction that most closely matches the input, not including the one returned by \"toCardinal\"."
+                ]
+            }
         ]
 
     }
